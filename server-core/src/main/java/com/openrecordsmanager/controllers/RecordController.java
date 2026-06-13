@@ -22,12 +22,12 @@ import java.util.stream.Collectors;
 @RequestMapping("/record")
 public class RecordController {
 
-    private final ResourceRegistry<?> resourceRegistry;
+    private final ResourceRegistry resourceRegistry;
     private final RecordTypeRepository recordTypeRepository;
     private final RecordPropertyRepository recordPropertyRepository;
     private final ListTypeRepository listTypeRepository;
 
-    public RecordController(ResourceRegistry<?> resourceRegistry, RecordTypeRepository recordTypeRepository, RecordPropertyRepository recordPropertyRepository, ListTypeRepository listTypeRepository) {
+    public RecordController(ResourceRegistry resourceRegistry, RecordTypeRepository recordTypeRepository, RecordPropertyRepository recordPropertyRepository, ListTypeRepository listTypeRepository) {
         this.resourceRegistry = resourceRegistry;
         this.recordTypeRepository = recordTypeRepository;
         this.recordPropertyRepository = recordPropertyRepository;

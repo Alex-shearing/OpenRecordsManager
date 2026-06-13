@@ -20,11 +20,11 @@ import java.util.Optional;
 @RequestMapping("/auth")
 public class AuthController {
 
-    private final ResourceRegistry<?> resource;
+    private final ResourceRegistry resource;
     private final AuthProviderRepository authProviderRepository;
 
     // Spring automatically injects the PluginRuntimeManager Bean here
-    public AuthController(ResourceRegistry<?> pluginManager, AuthProviderRepository authProviderRepository) {
+    public AuthController(ResourceRegistry pluginManager, AuthProviderRepository authProviderRepository) {
         this.resource = pluginManager;
         this.authProviderRepository = authProviderRepository;
     }

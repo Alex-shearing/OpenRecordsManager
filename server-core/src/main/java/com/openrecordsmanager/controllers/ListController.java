@@ -20,11 +20,11 @@ import java.util.stream.Collectors;
 @RequestMapping("/list")
 public class ListController {
 
-    private final ResourceRegistry<?> resourceRegistry;
+    private final ResourceRegistry resourceRegistry;
     private final ListTypeRepository listTypeRepository;
     private final ListElementRepository listElementRepository;
 
-    public ListController(ResourceRegistry<?> resourceRegistry, ListTypeRepository listTypeRepository, ListElementRepository listElementRepository) {
+    public ListController(ResourceRegistry resourceRegistry, ListTypeRepository listTypeRepository, ListElementRepository listElementRepository) {
         this.resourceRegistry = resourceRegistry;
         this.listTypeRepository = listTypeRepository;
         this.listElementRepository = listElementRepository;
