@@ -1,9 +1,11 @@
 package com.openrecordsmanager.config;
 
+import com.openrecordsmanager.RegisterableComponent;
+
 import java.util.Locale;
 import java.util.Objects;
 
-public final class ConfigProperty<T> {
+public final class ConfigDefinition<T> implements RegisterableComponent {
     private final String id;
     private final ConfigValueType<T> type;
     private final String name;
@@ -11,7 +13,7 @@ public final class ConfigProperty<T> {
     private final T defaultValue;
     private final String alias;
 
-    private ConfigProperty(String id, ConfigValueType<T> type, String name, String description, T defaultValue, String alias) {
+    private ConfigDefinition(String id, ConfigValueType<T> type, String name, String description, T defaultValue, String alias) {
         Objects.requireNonNull(id, "ID cannot be null");
         Objects.requireNonNull(type, "type cannot be null");
         Objects.requireNonNull(name, "name cannot be null");
@@ -104,8 +106,8 @@ public final class ConfigProperty<T> {
             return this;
         }
 
-        public ConfigProperty<T> build() {
-            return new ConfigProperty<>(this.id, this.type, this.name, this.description, this.defaultValue, this.alias);
+        public ConfigDefinition<T> build() {
+            return new ConfigDefinition<>(this.id, this.type, this.name, this.description, this.defaultValue, this.alias);
         }
     }
 }

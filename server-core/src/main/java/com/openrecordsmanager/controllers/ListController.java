@@ -7,6 +7,7 @@ import com.openrecordsmanager.model.repositories.ListElementRepository;
 import com.openrecordsmanager.model.repositories.ListTypeRepository;
 import com.openrecordsmanager.resources.ResourceIdentifier;
 import com.openrecordsmanager.resources.ResourceRegistry;
+import com.openrecordsmanager.resources.ResourceType;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -72,12 +73,12 @@ public class ListController {
 
     @GetMapping("/template")
     public ResponseEntity<ApiResponse<Set<ResourceIdentifier>>> getTemplates() {
-        return ResponseEntity.ok(ApiResponse.success(this.resourceRegistry.getLists().keySet()));
+        return ResponseEntity.ok(ApiResponse.success(this.resourceRegistry.getIds(ResourceType.LIST)));
     }
 
     @GetMapping("/template/{template}")
     public ResponseEntity<ApiResponse<ListDefinition>> getTemplate(@PathVariable("template") ResourceIdentifier listId) {
-        ListDefinition listDef = this.resourceRegistry.getLists().get(listId);
+        ListDefinition listDef = this.resourceRegistry.getComponent(ResourceType.LIST, listId);
         if (listDef == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ApiResponse.error("list_template_not_found"));
         }
@@ -86,7 +87,7 @@ public class ListController {
 
     @PostMapping("/template/{template}/apply")
     public ResponseEntity<ApiResponse<ListType>> applyList(@PathVariable("template") ResourceIdentifier listId) {
-        ListDefinition listDef = this.resourceRegistry.getLists().get(listId);
+        ListDefinition listDef = this.resourceRegistry.getComponent(ResourceType.LIST, listId);
         if (listDef == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ApiResponse.error("list_template_not_found"));
         }

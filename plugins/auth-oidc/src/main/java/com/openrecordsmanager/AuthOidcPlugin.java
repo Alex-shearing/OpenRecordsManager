@@ -14,9 +14,9 @@ public class AuthOidcPlugin implements Plugin {
     }
 
     @Override
-    public void initialise(PluginResourceRegistry registry) {
+    public void initialise(PluginContext registry) {
         LOGGER.info("Initializing plugin...");
 
-        registry.registerInstanceComponents(OIDC_AUTH_PROVIDER_TYPE);
+        registry.registerComponents(OIDC_AUTH_PROVIDER_TYPE);
     }
 }

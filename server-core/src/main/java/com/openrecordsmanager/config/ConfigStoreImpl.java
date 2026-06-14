@@ -2,6 +2,7 @@ package com.openrecordsmanager.config;
 
 import com.google.common.collect.ImmutableMap;
 import com.openrecordsmanager.resources.ResourceRegistry;
+import com.openrecordsmanager.resources.ResourceType;
 import jakarta.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,13 +14,13 @@ public class ConfigStoreImpl extends EnumerablePropertySource<ConfigStoreImpl> i
     private static final Logger LOGGER = LoggerFactory.getLogger(ConfigStoreImpl.class);
 
     private final String[] stringKeys;
-    private final Map<ConfigProperty<?>, ConfigStoreImpl.ConfigValue<?>> configs;
+    private final Map<ConfigDefinition<?>, ConfigStoreImpl.ConfigValue<?>> configs;
 
-    private ConfigStoreImpl(Map<ConfigProperty<?>, ConfigValue<?>> configs) {
+    private ConfigStoreImpl(Map<ConfigDefinition<?>, ConfigValue<?>> configs) {
         super("custom_config");
         this.configs = configs;
         Set<String> keys = new HashSet<>();
-        for (ConfigProperty<?> property : this.configs.keySet()) {
+        for (ConfigDefinition<?> property : this.configs.keySet()) {
             keys.add(property.id());
             if (property.alias() != null) {
                 keys.add(property.alias());
@@ -28,11 +29,11 @@ public class ConfigStoreImpl extends EnumerablePropertySource<ConfigStoreImpl> i
         this.stringKeys = keys.toArray(String[]::new);
     }
 
-    public Set<ConfigProperty<?>> getProperties() {
+    public Set<ConfigDefinition<?>> getProperties() {
         return this.configs.keySet();
     }
 
-    public <T> T getProperty(ConfigProperty<T> key) {
+    public <T> T getProperty(ConfigDefinition<T> key) {
         return (T) this.configs.get(key).value;
     }
 
@@ -48,23 +49,23 @@ public class ConfigStoreImpl extends EnumerablePropertySource<ConfigStoreImpl> i
     }
 
     public static ConfigStoreImpl build(@Nullable ResourceRegistry pluginManager) {
-        List<ConfigProperty<?>> pluginConfigs = List.of();
+        Collection<ConfigDefinition<?>> pluginConfigs = List.of();
         if (pluginManager != null) {
-            pluginConfigs = pluginManager.getConfigProperties();
+            pluginConfigs = pluginManager.getComponents(ResourceType.CONFIG);
         }
 
         int totalConfig = ConfigProperties.BUILTIN_CONFIG.length + pluginConfigs.size();
-        ImmutableMap.Builder<ConfigProperty<?>, ConfigStoreImpl.ConfigValue<?>> propertiesBuilder = ImmutableMap.builderWithExpectedSize(totalConfig);
+        ImmutableMap.Builder<ConfigDefinition<?>, ConfigStoreImpl.ConfigValue<?>> propertiesBuilder = ImmutableMap.builderWithExpectedSize(totalConfig);
 
         // Load defaults into map
-        for (ConfigProperty<?> property : ConfigProperties.BUILTIN_CONFIG) {
+        for (ConfigDefinition<?> property : ConfigProperties.BUILTIN_CONFIG) {
             propertiesBuilder.put(property, new ConfigStoreImpl.ConfigValue<>(property));
         }
-        for (ConfigProperty<?> property : pluginConfigs) {
+        for (ConfigDefinition<?> property : pluginConfigs) {
             propertiesBuilder.put(property, new ConfigStoreImpl.ConfigValue<>(property));
         }
 
-        Map<ConfigProperty<?>, ConfigValue<?>> properties = propertiesBuilder.build();
+        Map<ConfigDefinition<?>, ConfigValue<?>> properties = propertiesBuilder.build();
 
         // Load from ENV variables
         properties.forEach((configProperty, configValue) -> {
@@ -82,10 +83,10 @@ public class ConfigStoreImpl extends EnumerablePropertySource<ConfigStoreImpl> i
 
 
     public static class ConfigValue<T> {
-        private final ConfigProperty<T> key;
+        private final ConfigDefinition<T> key;
         private T value;
 
-        public ConfigValue(ConfigProperty<T> key) {
+        public ConfigValue(ConfigDefinition<T> key) {
             this.key = key;
             this.value = key.defaultValue();
         }

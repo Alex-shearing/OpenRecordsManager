@@ -2,7 +2,7 @@ package com.openrecordsmanager.plugin.defaults_aus_gov;
 
 import com.openrecordsmanager.BuiltinResources;
 import com.openrecordsmanager.Plugin;
-import com.openrecordsmanager.PluginResourceRegistry;
+import com.openrecordsmanager.PluginContext;
 import com.openrecordsmanager.recordtype.RecordTypeDefinition;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,10 +40,10 @@ public class DefaultsAusGovPlugin implements Plugin {
     }
 
     @Override
-    public void initialise(PluginResourceRegistry registry) {
+    public void initialise(PluginContext registry) {
         LOGGER.info("Initializing plugin...");
 
-        registry.registerInstanceComponents(
+        registry.registerComponents(
                 Lists.SECURITY_CLASSIFICATION, Lists.SECURITY_CAVEAT, Lists.RELEASABILITY_CAVEAT, Lists.INFORMATION_MANAGEMENT_MARKER, Lists.RECORD_CATEGORY,
                 Properties.RECORD_SECURITY_CLASSIFICATION, Properties.RECORD_SECURITY_CAVEAT, Properties.RECORD_SECURITY_RELEASABILITY,
                 Properties.RECORD_SECURITY_IMM, Properties.RECORD_CATEGORY, Properties.JURISDICTION,

@@ -7,7 +7,7 @@ import java.util.Objects;
 import java.util.regex.Pattern;
 
 public class ResourceIdentifier implements Serializable {
-    private static final Pattern VALID_IDENTIFIER = Pattern.compile("^[a-z_]+$");
+    private static final Pattern VALID_IDENTIFIER = Pattern.compile("^[a-z_.]+$");
 
     public final String source;
     public final String item;
@@ -50,7 +50,7 @@ public class ResourceIdentifier implements Serializable {
         }
 
         if (!VALID_IDENTIFIER.matcher(input).matches()) {
-            throw new IllegalArgumentException(String.format("Invalid identifier '%s can only container lower-case letters or underscore", input));
+            throw new IllegalArgumentException(String.format("Invalid identifier '%s', contains invalid characters", input));
         }
 
         return input;

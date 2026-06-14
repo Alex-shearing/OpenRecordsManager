@@ -10,6 +10,7 @@ import com.openrecordsmanager.property.PropertyDefinition;
 import com.openrecordsmanager.recordtype.RecordTypeDefinition;
 import com.openrecordsmanager.resources.ResourceIdentifier;
 import com.openrecordsmanager.resources.ResourceRegistry;
+import com.openrecordsmanager.resources.ResourceType;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -50,12 +51,12 @@ public class RecordController {
 
     @GetMapping("/type/template")
     public ResponseEntity<ApiResponse<Set<ResourceIdentifier>>> getRecordTypeTemplates() {
-        return ResponseEntity.ok(ApiResponse.success(this.resourceRegistry.getRecordTypes().keySet()));
+        return ResponseEntity.ok(ApiResponse.success(this.resourceRegistry.getIds(ResourceType.RECORD_TYPE)));
     }
 
     @GetMapping("/type/template/{template}")
     public ResponseEntity<ApiResponse<RecordTypeDefinition>> getRecordTypeTemplate(@PathVariable("template") ResourceIdentifier templateId) {
-        RecordTypeDefinition template = this.resourceRegistry.getRecordTypes().get(templateId);
+        RecordTypeDefinition template = this.resourceRegistry.getComponent(ResourceType.RECORD_TYPE, templateId);
         if (template == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ApiResponse.error("record_template_not_found"));
         }
@@ -64,7 +65,7 @@ public class RecordController {
 
     @PostMapping("/type/template/{template}/apply")
     public ResponseEntity<ApiResponse<RecordType>> applyRecordTypeTemplate(@PathVariable("template") ResourceIdentifier templateId, @RequestParam(value = "makeProperties", required = false, defaultValue = "false") boolean makeProperties) {
-        RecordTypeDefinition template = this.resourceRegistry.getRecordTypes().get(templateId);
+        RecordTypeDefinition template = this.resourceRegistry.getComponent(ResourceType.RECORD_TYPE, templateId);
         if (template == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ApiResponse.error("record_template_not_found"));
         }

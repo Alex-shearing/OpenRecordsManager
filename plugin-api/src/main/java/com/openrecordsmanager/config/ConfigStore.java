@@ -1,5 +1,5 @@
 package com.openrecordsmanager.config;
 
 public interface ConfigStore {
-    <T> T getProperty(ConfigProperty<T> key);
+    <T> T getProperty(ConfigDefinition<T> key);
 }

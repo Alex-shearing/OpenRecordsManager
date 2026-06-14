@@ -2,11 +2,11 @@ package com.openrecordsmanager.resources;
 
 import com.google.common.collect.ImmutableMap;
 import com.openrecordsmanager.Plugin;
-import com.openrecordsmanager.PluginResourceRegistry;
+import com.openrecordsmanager.PluginContext;
 import com.openrecordsmanager.RegisterableComponent;
 import com.openrecordsmanager.auth.InputAuthProviderType;
 import com.openrecordsmanager.auth.RedirectAuthProviderType;
-import com.openrecordsmanager.config.ConfigProperty;
+import com.openrecordsmanager.config.ConfigDefinition;
 import com.openrecordsmanager.list.ListDefinition;
 import com.openrecordsmanager.property.PropertyDefinition;
 import com.openrecordsmanager.recordtype.RecordTypeDefinition;
@@ -15,26 +15,45 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 
 @Service
 public class ResourceRegistry {
     private static final Logger LOGGER = LoggerFactory.getLogger(ResourceRegistry.class);
 
-    private final List<ConfigProperty<?>> configProperties = new ArrayList<>();
-    private final Map<ResourceType, Map<ResourceIdentifier, RegisterableComponent>> resources = buildMap();
+    private final Map<ResourceIdentifier, ConfigDefinition<?>> config;
+    private final Map<ResourceIdentifier, ListDefinition> list;
+    private final Map<ResourceIdentifier, PropertyDefinition<?>> property;
+    private final Map<ResourceIdentifier, RecordTypeDefinition> recordType;
+    private final Map<ResourceIdentifier, InputAuthProviderType> inputAuthProvider;
+    private final Map<ResourceIdentifier, RedirectAuthProviderType> redirectAuthProvider;
+
+    private final Map<ResourceType, Map<ResourceIdentifier, ? extends RegisterableComponent>> resources;
 
     public ResourceRegistry(PluginManager pluginManager) {
+        Builder builder = new Builder();
         for (Plugin plugin : pluginManager.getPlugins()) {
             LOGGER.info("Initializing plugin {}...", plugin.getName());
-            plugin.initialise(new PluginImpl(plugin.getName()));
+            plugin.initialise(new PluginContextImpl(builder, plugin));
         }
+
+        this.resources = ImmutableMap.of(
+                ResourceType.CONFIG, this.config = builder.config.build(),
+                ResourceType.LIST, this.list = builder.list.build(),
+                ResourceType.PROPERTY, this.property = builder.property.build(),
+                ResourceType.RECORD_TYPE, this.recordType = builder.recordType.build(),
+                ResourceType.INPUT_AUTH_PROVIDER, this.inputAuthProvider = builder.inputAuthProvider.build(),
+                ResourceType.REDIRECT_AUTH_PROVIDER, this.redirectAuthProvider = builder.redirectAuthProvider.build()
+        );
     }
 
     @Nullable
     public ResourceIdentifier getResourceId(RegisterableComponent definition) {
         for (ResourceType value : ResourceType.values()) {
-            Map<ResourceIdentifier, RegisterableComponent> map = resources.get(value);
+            Map<ResourceIdentifier, ? extends RegisterableComponent> map = resources.get(value);
             if (!map.containsValue(definition)) {
                 continue;
             }
@@ -49,90 +68,49 @@ public class ResourceRegistry {
         return null;
     }
 
-    public List<ConfigProperty<?>> getConfigProperties() {
-        return configProperties;
+    public Set<ResourceIdentifier> getIds(ResourceType type) {
+        return this.resources.get(type).keySet();
     }
 
-    public Map<ResourceIdentifier, ? extends RegisterableComponent> getResources(ResourceType type) {
-        return this.resources.get(type);
+    public <T extends RegisterableComponent> Collection<T> getComponents(ResourceType type) {
+        return (Collection<T>) this.resources.get(type).values();
     }
 
-    @SuppressWarnings("unchecked")
-    public Map<ResourceIdentifier, InputAuthProviderType> getInputAuthProviders() {
-        return (Map<ResourceIdentifier, InputAuthProviderType>) this.getResources(ResourceType.INPUT_AUTH_PROVIDER);
+    public <T extends RegisterableComponent> T getComponent(ResourceType type, ResourceIdentifier id) {
+        return (T) this.resources.get(type).get(id);
     }
 
-    @SuppressWarnings("unchecked")
-    public Map<ResourceIdentifier, RedirectAuthProviderType> getRedirectAuthProviders() {
-        return (Map<ResourceIdentifier, RedirectAuthProviderType>) this.getResources(ResourceType.REDIRECT_AUTH_PROVIDER);
-    }
+    private static class Builder {
+        private final ImmutableMap.Builder<ResourceIdentifier, ConfigDefinition<?>> config = ImmutableMap.builder();
+        private final ImmutableMap.Builder<ResourceIdentifier, ListDefinition> list = ImmutableMap.builder();
+        private final ImmutableMap.Builder<ResourceIdentifier, PropertyDefinition<?>> property = ImmutableMap.builder();
+        private final ImmutableMap.Builder<ResourceIdentifier, RecordTypeDefinition> recordType = ImmutableMap.builder();
+        private final ImmutableMap.Builder<ResourceIdentifier, InputAuthProviderType> inputAuthProvider = ImmutableMap.builder();
+        private final ImmutableMap.Builder<ResourceIdentifier, RedirectAuthProviderType> redirectAuthProvider = ImmutableMap.builder();
 
-    @SuppressWarnings("unchecked")
-    public Map<ResourceIdentifier, ListDefinition> getLists() {
-        return (Map<ResourceIdentifier, ListDefinition>) this.getResources(ResourceType.LIST);
-    }
+        private void registerInstance(PluginContextImpl context, RegisterableComponent component) {
+            ResourceIdentifier identifier = new ResourceIdentifier(context.plugin.getName(), component.id());
 
-    @SuppressWarnings("unchecked")
-    public Map<ResourceIdentifier, PropertyDefinition<?>> getProperties() {
-        return (Map<ResourceIdentifier, PropertyDefinition<?>>) this.getResources(ResourceType.PROPERTY);
-    }
+            LOGGER.info("Registering plugin resource '{}'", identifier);
 
-    @SuppressWarnings("unchecked")
-    public Map<ResourceIdentifier, RecordTypeDefinition> getRecordTypes() {
-        return (Map<ResourceIdentifier, RecordTypeDefinition>) this.getResources(ResourceType.RECORD_TYPE);
-    }
-
-    private <K extends RegisterableComponent> void registerInstance(PluginImpl plugin, K component) {
-        ResourceIdentifier identifier = new ResourceIdentifier(plugin.name, component.id());
-
-        boolean registered = false;
-        for (ResourceType value : ResourceType.values()) {
-            if (value.isOf(component)) {
-                this.resources.get(value).put(identifier, component);
-                registered = true;
-                break;
+            switch (component) {
+                case ConfigDefinition<?> s -> this.config.put(identifier, s);
+                case ListDefinition s -> this.list.put(identifier, s);
+                case PropertyDefinition<?> s -> this.property.put(identifier, s);
+                case RecordTypeDefinition s -> this.recordType.put(identifier, s);
+                case InputAuthProviderType s -> this.inputAuthProvider.put(identifier, s);
+                case RedirectAuthProviderType s -> this.redirectAuthProvider.put(identifier, s);
+                default ->
+                        LOGGER.error("Did not know how to register instance '{}' of type {}", identifier, component.getClass());
             }
         }
-
-        if (!registered) {
-            LOGGER.error("Did not know how to register instance '{}' of type {}", identifier, component.getClass());
-        }
-
-//        switch (component) {
-//            case ListDefinition listDefinition -> this.lists.put(identifier, listDefinition);
-//            case PropertyDefinition<?> property -> this.properties.put(identifier, property);
-//            case RecordTypeDefinition recordType -> this.recordTypes.put(identifier, recordType);
-//            case InputAuthProviderType recordType -> this.inputAuthProviderTypes.put(identifier, recordType);
-//            case RedirectAuthProviderType recordType -> this.redirectAuthProviderTypes.put(identifier, recordType);
-//            default ->
-//                    LOGGER.error("Did not know how to register instance '{}' of type {}", identifier, component.getClass());
-//        }
     }
 
-    private static Map<ResourceType, Map<ResourceIdentifier, RegisterableComponent>> buildMap() {
-        ImmutableMap.Builder<ResourceType, Map<ResourceIdentifier, RegisterableComponent>> builder = ImmutableMap.builder();
-        for (ResourceType value : ResourceType.values()) {
-            builder.put(value, new HashMap<>());
-        }
-        return builder.build();
-    }
-
-    private class PluginImpl implements PluginResourceRegistry {
-        private final String name;
-
-        public PluginImpl(String name) {
-            this.name = name;
-        }
-
+    private record PluginContextImpl(Builder builder, Plugin plugin) implements PluginContext {
         @Override
-        public void registerConfig(ConfigProperty<?> property) {
-            ResourceRegistry.this.configProperties.add(property);
-        }
-
-        @Override
-        public void registerInstanceComponents(RegisterableComponent... types) {
+        public void registerComponents(RegisterableComponent... types) {
             for (RegisterableComponent type : types) {
-                registerInstance(this, type);
+                this.builder.registerInstance(this, type);
             }
         }
     }

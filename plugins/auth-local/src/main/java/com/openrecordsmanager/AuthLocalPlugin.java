@@ -1,6 +1,6 @@
 package com.openrecordsmanager;
 
-import com.openrecordsmanager.config.ConfigProperty;
+import com.openrecordsmanager.config.ConfigDefinition;
 import com.openrecordsmanager.config.ConfigValueType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -10,7 +10,7 @@ public class AuthLocalPlugin implements Plugin {
 
     public static final LocalAuthProviderType LOCAL_AUTH_PROVIDER_TYPE = new LocalAuthProviderType();
 
-    public static final ConfigProperty<Boolean> CONFIG_ADMIN_ENABLED = ConfigProperty.builder("auth.auth_local.enable_default_admin", ConfigValueType.BOOL)
+    public static final ConfigDefinition<Boolean> CONFIG_ADMIN_ENABLED = ConfigDefinition.builder("auth.auth_local.enable_default_admin", ConfigValueType.BOOL)
             .name("Enable Default Admin Account")
             .description("Enables the default admin account with basic, well known credentials.")
             .defaultValue(false)
@@ -22,11 +22,9 @@ public class AuthLocalPlugin implements Plugin {
     }
 
     @Override
-    public void initialise(PluginResourceRegistry registry) {
+    public void initialise(PluginContext registry) {
         LOGGER.info("Initializing plugin...");
 
-        registry.registerConfig(CONFIG_ADMIN_ENABLED);
-
-        registry.registerInstanceComponents(LOCAL_AUTH_PROVIDER_TYPE);
+        registry.registerComponents(CONFIG_ADMIN_ENABLED, LOCAL_AUTH_PROVIDER_TYPE);
     }
 }

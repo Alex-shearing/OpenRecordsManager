@@ -37,8 +37,8 @@ public class BuiltinResources implements Plugin {
     }
 
     @Override
-    public void initialise(PluginResourceRegistry registry) {
-        registry.registerInstanceComponents(
+    public void initialise(PluginContext registry) {
+        registry.registerComponents(
                 NOTES, DATE_REGISTERED, DATE_CREATED, KEYWORDS, MIME_TYPE
         );
     }

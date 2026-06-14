@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.openrecordsmanager.property.PropertyDefinition;
 import com.openrecordsmanager.resources.ResourceIdentifier;
 import com.openrecordsmanager.resources.ResourceRegistry;
+import com.openrecordsmanager.resources.ResourceType;
 import jakarta.persistence.*;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
@@ -46,7 +47,7 @@ public class Record {
             return null;
         }
 
-        PropertyDefinition<T> propDef = (PropertyDefinition<T>) registry.getProperties().get(property);
+        PropertyDefinition<T> propDef = registry.getComponent(ResourceType.PROPERTY, property);
         return propDef.getType().validate(propDef, value);
     }
 }
