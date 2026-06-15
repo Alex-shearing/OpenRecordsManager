@@ -67,7 +67,7 @@ public class AuthController {
             return ResponseEntity.badRequest().body(ApiResponse.error("invalid authentication provider"));
         }
 
-        RedirectAuthProviderType type = this.resource.getRedirectAuthProviders().get(provider.get().getProviderType());
+        RedirectAuthProviderType type = this.resource.getComponent(ResourceType.REDIRECT_AUTH_PROVIDER, provider.get().getProviderType());
         if (type == null) {
             return ResponseEntity.badRequest().body(ApiResponse.error("invalid authentication provider"));
         }

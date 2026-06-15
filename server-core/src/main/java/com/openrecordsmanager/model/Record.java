@@ -47,7 +47,7 @@ public class Record {
             return null;
         }
 
-        PropertyDefinition<T> propDef = registry.getComponent(ResourceType.PROPERTY, property);
+        PropertyDefinition<T> propDef = (PropertyDefinition<T>) registry.getComponent(ResourceType.PROPERTY, property);
         return propDef.getType().validate(propDef, value);
     }
 }
