@@ -1,8 +1,7 @@
 package com.openrecordsmanager.resources;
 
-import com.google.common.collect.HashBasedTable;
+import com.google.common.collect.ImmutableTable;
 import com.google.common.collect.Table;
-import com.google.common.collect.Tables;
 import com.openrecordsmanager.Plugin;
 import com.openrecordsmanager.PluginContext;
 import com.openrecordsmanager.RegisterableComponent;
@@ -12,6 +11,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.util.Collection;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
@@ -28,18 +28,20 @@ public class ResourceRegistry {
             plugin.initialise(new PluginContextImpl(builder, plugin));
         }
 
-        this.resources = Tables.synchronizedTable(builder.table);
+        this.resources = builder.table.buildOrThrow();
     }
 
     @Nullable
-    public ResourceIdentifier getResourceId(RegisterableComponent definition) {
-        if (this.resources.containsValue(definition)) {
+    public <T extends RegisterableComponent> ResourceIdentifier getResourceId(ResourceType<T> type, T definition) {
+        Map<ResourceIdentifier, RegisterableComponent> values = this.resources.row(type);
+
+        if (values.containsValue(definition)) {
             return null;
         }
 
-        for (Table.Cell<ResourceType<?>, ResourceIdentifier, ? extends RegisterableComponent> cell : this.resources.cellSet()) {
+        for (Map.Entry<ResourceIdentifier, RegisterableComponent> cell : values.entrySet()) {
             if (Objects.equals(cell.getValue(), definition)) {
-                return cell.getColumnKey();
+                return cell.getKey();
             }
         }
 
@@ -50,18 +52,20 @@ public class ResourceRegistry {
         return this.resources.row(type).keySet();
     }
 
+    @SuppressWarnings("unchecked")
     public <T extends RegisterableComponent> Collection<T> getComponents(ResourceType<T> type) {
         return (Collection<T>) this.resources.row(type).values();
     }
 
+    @SuppressWarnings("unchecked")
     public <T extends RegisterableComponent> T getComponent(ResourceType<T> type, ResourceIdentifier id) {
         return (T) this.resources.get(type, id);
     }
 
     private static class Builder {
-        private final Table<ResourceType<?>, ResourceIdentifier, RegisterableComponent> table = HashBasedTable.create(ResourceType.VALUES.length, 1);
+        private final ImmutableTable.Builder<ResourceType<?>, ResourceIdentifier, RegisterableComponent> table = ImmutableTable.builder();
 
-        private <T extends RegisterableComponent> void registerInstance(PluginContextImpl context, RegisterableComponent component) {
+        private void registerInstance(PluginContextImpl context, RegisterableComponent component) {
             ResourceIdentifier identifier = new ResourceIdentifier(context.plugin.getName(), component.id());
 
             ResourceType<? extends RegisterableComponent> type = ResourceType.fromObject(component);

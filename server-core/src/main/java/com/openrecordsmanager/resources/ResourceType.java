@@ -7,6 +7,7 @@ import com.openrecordsmanager.config.ConfigDefinition;
 import com.openrecordsmanager.list.ListDefinition;
 import com.openrecordsmanager.property.PropertyDefinition;
 import com.openrecordsmanager.recordtype.RecordTypeDefinition;
+import org.jspecify.annotations.Nullable;
 
 import java.util.Objects;
 
@@ -30,10 +31,12 @@ public class ResourceType<T extends RegisterableComponent> {
         return this.componentClass.isInstance(object);
     }
 
-    public static ResourceType<? extends RegisterableComponent> fromObject(RegisterableComponent object) {
+    @Nullable
+    @SuppressWarnings("unchecked")
+    public static <K extends RegisterableComponent> ResourceType<K> fromObject(K object) {
         for (ResourceType<?> value : VALUES) {
             if (value.is(object)) {
-                return value;
+                return (ResourceType<K>) value;
             }
         }
 

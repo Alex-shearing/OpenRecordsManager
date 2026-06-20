@@ -10,9 +10,9 @@ import java.util.Map;
 public class ListDefinition implements RegisterableComponent {
     public final String id;
     public final String display;
-    public final ImmutableMap<String, ListItem> defaultEntries;
+    public final ImmutableMap<String, ListItemDef> defaultEntries;
 
-    private ListDefinition(String id, String display, ImmutableMap<String, ListItem> defaultEntries) {
+    private ListDefinition(String id, String display, ImmutableMap<String, ListItemDef> defaultEntries) {
         this.id = id;
         this.display = display;
         this.defaultEntries = defaultEntries;
@@ -29,7 +29,7 @@ public class ListDefinition implements RegisterableComponent {
 
     public static class Builder {
         private final String id;
-        private final HashMap<String, ListItem> defaultEntries = new HashMap<>();
+        private final HashMap<String, ListItemDef> defaultEntries = new HashMap<>();
         private String name;
 
         Builder(String id) {
@@ -42,13 +42,13 @@ public class ListDefinition implements RegisterableComponent {
             return this;
         }
 
-        public Builder entry(String id, ListItem defaultEntry) {
+        public Builder entry(String id, ListItemDef defaultEntry) {
             this.defaultEntries.put(id, defaultEntry);
             return this;
         }
 
         public ListDefinition build() {
-            ImmutableMap<String, ListItem> entries = this.defaultEntries.entrySet().stream()
+            ImmutableMap<String, ListItemDef> entries = this.defaultEntries.entrySet().stream()
                     .sorted(Comparator.comparingInt(o -> o.getValue().index()))
                     .collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue));
             return new ListDefinition(this.id, this.name, entries);

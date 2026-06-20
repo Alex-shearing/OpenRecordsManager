@@ -5,6 +5,7 @@ import com.openrecordsmanager.model.util.DbResourceIdentifier;
 import com.openrecordsmanager.recordtype.RecordTypeDefinition;
 import com.openrecordsmanager.resources.ResourceIdentifier;
 import com.openrecordsmanager.resources.ResourceRegistry;
+import com.openrecordsmanager.resources.ResourceType;
 import jakarta.persistence.Column;
 import jakarta.persistence.EmbeddedId;
 import jakarta.persistence.Entity;
@@ -50,7 +51,7 @@ public class RecordType {
     public RecordType fromDefinition(ResourceRegistry registry, RecordTypeDefinition definition) {
         this.name = definition.name();
         this.contentTypes = definition.allowedContentTypes();
-        this.properties = definition.properties().stream().map(registry::getResourceId).collect(Collectors.toSet());
+        this.properties = definition.properties().stream().map(def -> registry.getResourceId(ResourceType.PROPERTY, def)).collect(Collectors.toSet());
 
         return this;
     }

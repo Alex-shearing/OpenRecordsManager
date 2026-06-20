@@ -19,8 +19,10 @@ public class PropertyDefinition<T> implements RegisterableComponent {
     private final BiPredicate<RecordObject, PropertyDefinition<T>> validator;
     @Nullable
     private final T defaultValue;
+    @Nullable
+    private final String securityFilter;
 
-    private PropertyDefinition(String id, PropertyType<T> type, String name, String description, @Nullable ListDefinition listType, @Nullable BiPredicate<RecordObject, PropertyDefinition<T>> validator, @Nullable T defaultValue) {
+    private PropertyDefinition(String id, PropertyType<T> type, String name, String description, @Nullable ListDefinition listType, @Nullable BiPredicate<RecordObject, PropertyDefinition<T>> validator, @Nullable T defaultValue, @Nullable String securityFilter) {
         this.id = id;
         this.type = type;
         this.name = name;
@@ -28,6 +30,7 @@ public class PropertyDefinition<T> implements RegisterableComponent {
         this.listType = listType;
         this.validator = validator;
         this.defaultValue = defaultValue;
+        this.securityFilter = securityFilter;
     }
 
     public PropertyType<T> getType() {
@@ -54,6 +57,10 @@ public class PropertyDefinition<T> implements RegisterableComponent {
         return defaultValue;
     }
 
+    public @Nullable String getSecurityFilter() {
+        return securityFilter;
+    }
+
     @Override
     public String id() {
         return this.id;
@@ -64,8 +71,8 @@ public class PropertyDefinition<T> implements RegisterableComponent {
     }
 
     public static class Builder<T> {
-        private String id;
-        private PropertyType<T> type;
+        private final String id;
+        private final PropertyType<T> type;
         private String name;
         private String description;
         @Nullable
@@ -73,6 +80,8 @@ public class PropertyDefinition<T> implements RegisterableComponent {
         @Nullable
         private BiPredicate<RecordObject, PropertyDefinition<T>> validator;
         private T defaultValue;
+        @Nullable
+        private String securityFilter;
 
         private Builder(String id, PropertyType<T> type) {
             this.id = id;
@@ -109,12 +118,17 @@ public class PropertyDefinition<T> implements RegisterableComponent {
             return this;
         }
 
+        public Builder<T> securityFilter(String filter) {
+            this.securityFilter = filter;
+            return this;
+        }
+
         public PropertyDefinition<T> build() {
             Objects.requireNonNull(this.id, "Property 'id' must not be null");
             Objects.requireNonNull(this.type, "Property 'type' must not be null");
             Objects.requireNonNull(this.name, "Property 'name' must not be null");
             Objects.requireNonNull(this.description, "Property 'description' must not be null");
-            return new PropertyDefinition<>(this.id, this.type, this.name, this.description, this.listType, this.validator, this.defaultValue);
+            return new PropertyDefinition<>(this.id, this.type, this.name, this.description, this.listType, this.validator, this.defaultValue, this.securityFilter);
         }
     }
 }

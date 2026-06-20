@@ -14,5 +14,13 @@ public class ConfigProperties {
             .defaultValue("workgroup")
             .build();
 
-    public static ConfigDefinition<?>[] BUILTIN_CONFIG = {WORKGROUP_DATABASE_URL, WORKGROUP_NAME};
+    public static final ConfigDefinition<String> LOGGING_LEVEL = ConfigDefinition.builder("logging.level", ConfigValueType.STRING)
+            .name("Workgroup Log Level")
+            .alias("logging.level.root")
+            .description("The log level of the workgroup server")
+            .defaultValue("INFO")
+            .build();
+
+
+    public static ConfigDefinition<?>[] BUILTIN_CONFIG = {WORKGROUP_DATABASE_URL, WORKGROUP_NAME, LOGGING_LEVEL};
 }

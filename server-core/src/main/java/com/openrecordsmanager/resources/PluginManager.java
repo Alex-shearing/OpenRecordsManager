@@ -10,10 +10,7 @@ import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.ServiceLoader;
+import java.util.*;
 
 @Service
 public class PluginManager {
@@ -21,18 +18,10 @@ public class PluginManager {
 
     private List<Plugin> plugins = Collections.emptyList();
 
-    public PluginManager() {
-        this.loadPluginsFromDirectory("./plugins");
-    }
-
-    public List<Plugin> getPlugins() {
-        return plugins;
-    }
-
-    public void loadPluginsFromDirectory(String directoryPath) {
-        File loc = new File(directoryPath);
+    public PluginManager(Plugin... additionalPlugins) {
+        File loc = new File("./plugins");
         if (!loc.exists() || !loc.isDirectory()) {
-            LOGGER.warn("Plugin directory '{}' not found. Plugins will not be loaded.", directoryPath);
+            LOGGER.warn("Plugin directory '{}' not found. Plugins will not be loaded.", loc.getName());
             return;
         }
 
@@ -58,6 +47,7 @@ public class PluginManager {
 
         List<Plugin> loadedPlugins = new ArrayList<>();
         loadedPlugins.add(new BuiltinResources());
+        loadedPlugins.addAll(Arrays.asList(additionalPlugins));
 
         // Initialise all the plugins
         for (Plugin plugin : loader) {
@@ -66,5 +56,9 @@ public class PluginManager {
         }
 
         this.plugins = Collections.unmodifiableList(loadedPlugins);
+    }
+
+    public List<Plugin> getPlugins() {
+        return plugins;
     }
 }

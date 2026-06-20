@@ -7,7 +7,7 @@ import java.util.Objects;
 import java.util.regex.Pattern;
 
 public class ResourceIdentifier implements Serializable {
-    private static final Pattern VALID_IDENTIFIER = Pattern.compile("^[a-z_.]+$");
+    private static final Pattern VALID_IDENTIFIER = Pattern.compile("^[a-z0-9_.]+$");
 
     public final String source;
     public final String item;

@@ -1,15 +1,12 @@
 package com.openrecordsmanager.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.openrecordsmanager.property.PropertyDefinition;
 import com.openrecordsmanager.resources.ResourceIdentifier;
-import com.openrecordsmanager.resources.ResourceRegistry;
-import com.openrecordsmanager.resources.ResourceType;
 import jakarta.persistence.*;
-import org.hibernate.annotations.JdbcTypeCode;
-import org.hibernate.type.SqlTypes;
 
-import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 @Entity
@@ -33,21 +30,27 @@ public class Record {
     @JsonProperty
     public FileStoreEntry file;
 
-    @Column(nullable = false)
+    @OneToMany(cascade = CascadeType.ALL)
     @JsonProperty
-    @JdbcTypeCode(SqlTypes.JSON)
-    public Map<ResourceIdentifier, Object> properties;
+    public Set<RecordPropertyValue<?>> properties;
 
     public Record() {
     }
 
-    public <T> T getProperty(ResourceRegistry registry, ResourceIdentifier property) {
-        Object value = this.properties.get(property);
-        if (value == null) {
-            return null;
-        }
+    public Record(UUID id, String title, RecordType type, FileStoreEntry file, Set<RecordPropertyValue<?>> properties) {
+        this.id = id;
+        this.title = title;
+        this.type = type;
+        this.file = file;
+        this.properties = properties;
+    }
 
-        PropertyDefinition<T> propDef = (PropertyDefinition<T>) registry.getComponent(ResourceType.PROPERTY, property);
-        return propDef.getType().validate(propDef, value);
+    public <T> T getProperty(ObjectProperty<T> recordProperty) {
+        return (T) this.getProperty(recordProperty.id.getId());
+    }
+
+    public Object getProperty(ResourceIdentifier id) {
+        Optional<RecordPropertyValue<?>> property = this.properties.stream().filter(recordPropertyValue -> Objects.equals(recordPropertyValue.property.id.getId(), id)).findFirst();
+        return property.map(userPropertyValue -> userPropertyValue.value).orElse(null);
     }
 }

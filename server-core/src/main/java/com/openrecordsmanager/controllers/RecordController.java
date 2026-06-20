@@ -1,6 +1,6 @@
 package com.openrecordsmanager.controllers;
 
-import com.openrecordsmanager.model.RecordProperty;
+import com.openrecordsmanager.model.ObjectProperty;
 import com.openrecordsmanager.model.RecordType;
 import com.openrecordsmanager.model.repositories.ListTypeRepository;
 import com.openrecordsmanager.model.repositories.RecordPropertyRepository;
@@ -72,19 +72,19 @@ public class RecordController {
 
         if (makeProperties) {
             for (PropertyDefinition<?> property : template.properties()) {
-                ResourceIdentifier id = this.resourceRegistry.getResourceId(property);
-                Optional<RecordProperty> prop = this.recordPropertyRepository.findById(id);
+                ResourceIdentifier id = this.resourceRegistry.getResourceId(ResourceType.PROPERTY, property);
+                Optional<ObjectProperty> prop = this.recordPropertyRepository.findById(id);
                 if (prop.isEmpty()) {
-                    RecordProperty recordProperty = new RecordProperty(id).fromDefinition(this.listTypeRepository, this.resourceRegistry, property);
-                    this.recordPropertyRepository.saveAndFlush(recordProperty);
+                    ObjectProperty objectProperty = new ObjectProperty(id).fromDefinition(this.listTypeRepository, this.resourceRegistry, property);
+                    this.recordPropertyRepository.saveAndFlush(objectProperty);
                 }
             }
         }
 
         // Validate all properties exist
         for (PropertyDefinition<?> property : template.properties()) {
-            ResourceIdentifier id = this.resourceRegistry.getResourceId(property);
-            Optional<RecordProperty> prop = this.recordPropertyRepository.findById(id);
+            ResourceIdentifier id = this.resourceRegistry.getResourceId(ResourceType.PROPERTY, property);
+            Optional<ObjectProperty> prop = this.recordPropertyRepository.findById(id);
             if (prop.isEmpty()) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ApiResponse.error("record_property_not_found"));
             }

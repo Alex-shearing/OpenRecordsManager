@@ -26,12 +26,12 @@ public class DefaultsAusGovPlugin implements Plugin {
             .property(BuiltinResources.DATE_CREATED)
             .property(BuiltinResources.DATE_REGISTERED)
             .property(BuiltinResources.NOTES)
-            .property(Properties.RECORD_SECURITY_CLASSIFICATION)
-            .property(Properties.RECORD_SECURITY_CAVEAT)
-            .property(Properties.RECORD_SECURITY_RELEASABILITY)
-            .property(Properties.RECORD_SECURITY_IMM)
-            .property(Properties.RECORD_CATEGORY)
-            .property(Properties.JURISDICTION)
+            .property(RecordProperties.RECORD_SECURITY_CLASSIFICATION)
+            .property(RecordProperties.RECORD_SECURITY_CAVEAT)
+            .property(RecordProperties.RECORD_SECURITY_RELEASABILITY)
+            .property(RecordProperties.RECORD_SECURITY_IMM)
+            .property(RecordProperties.RECORD_CATEGORY)
+            .property(RecordProperties.JURISDICTION)
             .build();
 
     @Override
@@ -45,8 +45,12 @@ public class DefaultsAusGovPlugin implements Plugin {
 
         registry.registerComponents(
                 Lists.SECURITY_CLASSIFICATION, Lists.SECURITY_CAVEAT, Lists.RELEASABILITY_CAVEAT, Lists.INFORMATION_MANAGEMENT_MARKER, Lists.RECORD_CATEGORY,
-                Properties.RECORD_SECURITY_CLASSIFICATION, Properties.RECORD_SECURITY_CAVEAT, Properties.RECORD_SECURITY_RELEASABILITY,
-                Properties.RECORD_SECURITY_IMM, Properties.RECORD_CATEGORY, Properties.JURISDICTION,
+
+                RecordProperties.RECORD_SECURITY_CLASSIFICATION, RecordProperties.RECORD_SECURITY_CAVEAT, RecordProperties.RECORD_SECURITY_RELEASABILITY,
+                RecordProperties.RECORD_SECURITY_IMM, RecordProperties.RECORD_CATEGORY, RecordProperties.JURISDICTION,
+                
+                UserProperties.USER_SECURITY_CLASSIFICATION, UserProperties.USER_SECURITY_CAVEAT,
+
                 EMAIL_RECORD_TYPE
         );
     }

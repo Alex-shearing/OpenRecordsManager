@@ -1,11 +1,8 @@
 package com.openrecordsmanager.property;
 
-import com.openrecordsmanager.list.ListItem;
+import com.openrecordsmanager.list.IListElement;
 
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public abstract class PropertyType<T> {
     public static Map<String, PropertyType<?>> TYPES = new HashMap<>(7);
@@ -45,27 +42,27 @@ public abstract class PropertyType<T> {
         }
     };
 
-    public static final PropertyType<ListItem> LIST_ITEM = new PropertyType<>("list_item") {
+    public static final PropertyType<IListElement> LIST_ITEM = new PropertyType<>("list_item") {
         @Override
-        public ListItem validate(PropertyDefinition<ListItem> definition, Object value) {
-            return value instanceof ListItem v ? v : null;
+        public IListElement validate(PropertyDefinition<IListElement> definition, Object value) {
+            return value instanceof IListElement v ? v : null;
         }
     };
 
-    public static final PropertyType<Set<ListItem>> LIST_MULTIPLE = new PropertyType<>("list_multiple") {
+    public static final PropertyType<List<IListElement>> LIST_MULTIPLE = new PropertyType<>("list_multiple") {
         @SuppressWarnings("unchecked")
         @Override
-        public Set<ListItem> validate(PropertyDefinition<Set<ListItem>> definition, Object value) {
+        public List<IListElement> validate(PropertyDefinition<List<IListElement>> definition, Object value) {
             if (value instanceof Set<?> v) {
                 if (v.isEmpty()) {
-                    return (Set<ListItem>) v;
+                    return (List<IListElement>) v;
                 }
                 for (Object o : v) {
-                    if (!(o instanceof ListItem)) {
+                    if (!(o instanceof IListElement)) {
                         return null;
                     }
                 }
-                return (Set<ListItem>) v;
+                return (List<IListElement>) v;
             }
             return null;
         }

@@ -5,7 +5,7 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
-public record ListItem(String display, String description, int index, Date activeTo, Set<String> aliases) {
+public record ListItemDef(String display, String description, int index, Date activeTo, Set<String> aliases) {
 
     public static Builder builder(String id) {
         return new Builder(id);
@@ -47,8 +47,8 @@ public record ListItem(String display, String description, int index, Date activ
             return this;
         }
 
-        public ListItem build() {
-            return new ListItem(display, description, this.index, activeTo, aliases);
+        public ListItemDef build() {
+            return new ListItemDef(display, description, this.index, activeTo, aliases);
         }
     }
 }

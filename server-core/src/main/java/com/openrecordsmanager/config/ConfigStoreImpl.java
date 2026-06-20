@@ -69,6 +69,7 @@ public class ConfigStoreImpl extends EnumerablePropertySource<ConfigStoreImpl> i
 
         // Load from ENV variables
         properties.forEach((configProperty, configValue) -> {
+            LOGGER.trace("attempt to load {} env variable", configProperty.getEnvName());
             String var = System.getenv(configProperty.getEnvName());
             if (var != null) {
                 LOGGER.info("Loading config from environment variable {}", configProperty.getEnvName());
