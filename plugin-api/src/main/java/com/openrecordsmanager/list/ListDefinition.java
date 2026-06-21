@@ -7,6 +7,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
 
+@SuppressWarnings("unused")
 public class ListDefinition implements RegisterableComponent {
     public final String id;
     public final String display;

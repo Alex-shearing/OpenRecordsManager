@@ -4,6 +4,8 @@ import com.google.common.collect.ImmutableMap;
 import com.openrecordsmanager.resources.ResourceRegistry;
 import com.openrecordsmanager.resources.ResourceType;
 import jakarta.annotation.Nullable;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.NullMarked;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.env.EnumerablePropertySource;
@@ -29,21 +31,19 @@ public class ConfigStoreImpl extends EnumerablePropertySource<ConfigStoreImpl> i
         this.stringKeys = keys.toArray(String[]::new);
     }
 
-    public Set<ConfigDefinition<?>> getProperties() {
-        return this.configs.keySet();
-    }
 
     public <T> T getProperty(ConfigDefinition<T> key) {
         return (T) this.configs.get(key).value;
     }
 
     @Override
+    @NullMarked
     public String[] getPropertyNames() {
         return this.stringKeys;
     }
 
     @Override
-    public @org.jspecify.annotations.Nullable Object getProperty(String name) {
+    public @Nullable Object getProperty(@NonNull String name) {
         return this.configs.keySet().stream().filter(configProperty -> configProperty.isKey(name))
                 .map(configProperty -> this.configs.get(configProperty).value).findFirst().orElse(null);
     }

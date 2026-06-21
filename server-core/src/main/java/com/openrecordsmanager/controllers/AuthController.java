@@ -16,6 +16,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/auth")
@@ -45,13 +46,13 @@ public class AuthController {
     }
 
     @GetMapping("/redirect/{auth_provider}")
-    public ResponseEntity<ApiResponse<AuthenticationResponse>> redirect(@PathVariable("auth_provider") long authProvider) {
+    public ResponseEntity<ApiResponse<AuthenticationResponse>> redirect(@PathVariable("auth_provider") UUID authProvider) {
         Optional<AuthProvider> provider = this.authProviderRepository.findById(authProvider);
         if (provider.isEmpty()) {
             return ResponseEntity.badRequest().body(ApiResponse.error("invalid authentication provider"));
         }
 
-        RedirectAuthProviderType type = this.resource.getComponent(ResourceType.REDIRECT_AUTH_PROVIDER, provider.get().getProviderType());
+        RedirectAuthProviderType type = this.resource.getComponent(ResourceType.REDIRECT_AUTH_PROVIDER, provider.get().providerType);
         if (type == null) {
             return ResponseEntity.badRequest().body(ApiResponse.error("invalid authentication provider"));
         }
@@ -61,13 +62,13 @@ public class AuthController {
 
 
     @GetMapping("/callback/{auth_provider}")
-    public ResponseEntity<ApiResponse<AuthenticationResponse>> callback(HttpServletRequest request, @PathVariable("auth_provider") long authProvider) throws URISyntaxException {
+    public ResponseEntity<ApiResponse<AuthenticationResponse>> callback(HttpServletRequest request, @PathVariable("auth_provider") UUID authProvider) throws URISyntaxException {
         Optional<AuthProvider> provider = this.authProviderRepository.findById(authProvider);
         if (provider.isEmpty()) {
             return ResponseEntity.badRequest().body(ApiResponse.error("invalid authentication provider"));
         }
 
-        RedirectAuthProviderType type = this.resource.getComponent(ResourceType.REDIRECT_AUTH_PROVIDER, provider.get().getProviderType());
+        RedirectAuthProviderType type = this.resource.getComponent(ResourceType.REDIRECT_AUTH_PROVIDER, provider.get().providerType);
         if (type == null) {
             return ResponseEntity.badRequest().body(ApiResponse.error("invalid authentication provider"));
         }

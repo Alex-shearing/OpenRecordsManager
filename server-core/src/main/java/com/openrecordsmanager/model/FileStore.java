@@ -23,9 +23,10 @@ public class FileStore {
     @JsonProperty
     public Map<String, Object> properties;
 
-    @OneToMany(fetch = FetchType.LAZY)
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "store")
     public Set<FileStoreEntry> files;
 
-    public FileStore() {
+    @Deprecated
+    protected FileStore() {
     }
 }

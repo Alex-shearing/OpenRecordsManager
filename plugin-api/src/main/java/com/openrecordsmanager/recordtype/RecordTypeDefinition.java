@@ -11,7 +11,8 @@ import java.util.Objects;
 import java.util.Set;
 
 public record RecordTypeDefinition(String id, String name, String description, Set<PropertyDefinition<?>> properties,
-                                   @Nullable Set<String> allowedContentTypes) implements RegisterableComponent {
+                                   @Nullable Set<String> allowedContentTypes, @Nullable String securityFilter,
+                                   SecurityFilterUsage securityFilterUsage) implements RegisterableComponent {
 
     public static Builder builder(String id) {
         return new Builder(id);
@@ -22,8 +23,9 @@ public record RecordTypeDefinition(String id, String name, String description, S
         private String name;
         private String description = "";
         private final Set<PropertyDefinition<?>> properties = new HashSet<>();
-        @Nullable
         private Set<String> allowedContentTypes = null;
+        private String securityFilter = null;
+        private SecurityFilterUsage securityFilterUsage = SecurityFilterUsage.HIDE_FILES;
 
         private Builder(String id) {
             this.id = id;
@@ -45,6 +47,17 @@ public record RecordTypeDefinition(String id, String name, String description, S
             return this;
         }
 
+        public Builder securityFilterUsage(SecurityFilterUsage filterUsage) {
+            this.securityFilterUsage = filterUsage;
+            return this;
+        }
+
+        public Builder securityFilter(String filter, SecurityFilterUsage filterUsage) {
+            this.securityFilter = filter;
+            this.securityFilterUsage = filterUsage;
+            return this;
+        }
+
         /**
          * This will be determined using the {@link java.nio.file.Files#probeContentType(Path)} method.
          * Supports using asterisk (*) wildcard characters (i.e. `*`, `text/*`).
@@ -63,7 +76,15 @@ public record RecordTypeDefinition(String id, String name, String description, S
             Objects.requireNonNull(this.description, "Property 'description' must not be null");
             Objects.requireNonNull(this.properties, "Property 'properties' must not be null");
 
-            return new RecordTypeDefinition(this.id, this.name, this.description, this.properties, this.allowedContentTypes);
+            return new RecordTypeDefinition(
+                    this.id,
+                    this.name,
+                    this.description,
+                    this.properties,
+                    this.allowedContentTypes,
+                    this.securityFilter,
+                    this.securityFilterUsage
+            );
         }
     }
 }

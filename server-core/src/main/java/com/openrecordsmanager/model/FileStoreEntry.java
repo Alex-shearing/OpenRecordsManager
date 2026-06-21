@@ -12,8 +12,8 @@ public class FileStoreEntry {
     @JsonProperty
     public UUID id;
 
-    @ManyToOne
-    @JoinColumn(name = "store_id")
+    @ManyToOne(optional = false)
+    @JoinColumn
     @JsonProperty
     public FileStore store;
 
@@ -33,6 +33,7 @@ public class FileStoreEntry {
     @JsonProperty
     public long sizeBytes;
 
-    public FileStoreEntry() {
+    @Deprecated
+    protected FileStoreEntry() {
     }
 }

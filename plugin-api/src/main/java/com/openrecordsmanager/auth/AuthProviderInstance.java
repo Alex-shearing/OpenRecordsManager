@@ -1,9 +1,10 @@
 package com.openrecordsmanager.auth;
 
 import java.util.Map;
+import java.util.UUID;
 
 public interface AuthProviderInstance {
-    Long getId();
+    UUID getId();
 
     String getName();
 

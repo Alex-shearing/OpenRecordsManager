@@ -1,13 +1,12 @@
 package com.openrecordsmanager.property;
 
-import com.openrecordsmanager.RecordObject;
 import com.openrecordsmanager.RegisterableComponent;
 import com.openrecordsmanager.list.ListDefinition;
 import org.jspecify.annotations.Nullable;
 
 import java.util.Objects;
-import java.util.function.BiPredicate;
 
+@SuppressWarnings("unused")
 public class PropertyDefinition<T> implements RegisterableComponent {
     private final String id;
     private final PropertyType<T> type;
@@ -16,13 +15,13 @@ public class PropertyDefinition<T> implements RegisterableComponent {
     @Nullable
     private final ListDefinition listType;
     @Nullable
-    private final BiPredicate<RecordObject, PropertyDefinition<T>> validator;
+    private final String validator;
     @Nullable
     private final T defaultValue;
     @Nullable
     private final String securityFilter;
 
-    private PropertyDefinition(String id, PropertyType<T> type, String name, String description, @Nullable ListDefinition listType, @Nullable BiPredicate<RecordObject, PropertyDefinition<T>> validator, @Nullable T defaultValue, @Nullable String securityFilter) {
+    private PropertyDefinition(String id, PropertyType<T> type, String name, String description, @Nullable ListDefinition listType, @Nullable String validator, @Nullable T defaultValue, @Nullable String securityFilter) {
         this.id = id;
         this.type = type;
         this.name = name;
@@ -49,8 +48,8 @@ public class PropertyDefinition<T> implements RegisterableComponent {
         return listType;
     }
 
-    public @Nullable BiPredicate<RecordObject, PropertyDefinition<T>> getValidator() {
-        return validator;
+    public @Nullable String getValidator() {
+        return this.validator;
     }
 
     public @Nullable T getDefaultValue() {
@@ -78,7 +77,7 @@ public class PropertyDefinition<T> implements RegisterableComponent {
         @Nullable
         private ListDefinition listType;
         @Nullable
-        private BiPredicate<RecordObject, PropertyDefinition<T>> validator;
+        private String validator;
         private T defaultValue;
         @Nullable
         private String securityFilter;
@@ -108,7 +107,7 @@ public class PropertyDefinition<T> implements RegisterableComponent {
             return this;
         }
 
-        public Builder<T> validator(BiPredicate<RecordObject, PropertyDefinition<T>> validator) {
+        public Builder<T> validator(String validator) {
             this.validator = validator;
             return this;
         }

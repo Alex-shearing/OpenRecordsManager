@@ -33,7 +33,7 @@ public class ListController {
 
     @GetMapping("")
     public ResponseEntity<ApiResponse<Set<ResourceIdentifier>>> getLists() {
-        return ResponseEntity.ok(ApiResponse.success(this.listTypeRepository.findAll().stream().map(listType -> listType.id.getId()).collect(Collectors.toSet())));
+        return ResponseEntity.ok(ApiResponse.success(this.listTypeRepository.findAll().stream().map(listType -> listType.id).collect(Collectors.toSet())));
     }
 
     @GetMapping("/{list}")
@@ -51,7 +51,7 @@ public class ListController {
         if (type.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ApiResponse.error("list_not_found"));
         }
-        Optional<ListElement> el = type.get().children.stream().filter(listElement1 -> Objects.equals(listElement1.id.getId(), listElement)).findFirst();
+        Optional<ListElement> el = type.get().children.stream().filter(listElement1 -> Objects.equals(listElement1.id, listElement)).findFirst();
         if (el.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ApiResponse.error("list_element_not_found"));
         }
@@ -64,7 +64,7 @@ public class ListController {
         if (type.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ApiResponse.error("list_not_found"));
         }
-        Set<ListElement> el = type.get().children.stream().filter(listElement1 -> listElement1.id.getId().toString().contains(value)).collect(Collectors.toSet());
+        Set<ListElement> el = type.get().children.stream().filter(listElement1 -> listElement1.id.toString().contains(value)).collect(Collectors.toSet());
         if (el.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ApiResponse.error("list_element_not_found"));
         }
@@ -92,12 +92,12 @@ public class ListController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ApiResponse.error("list_template_not_found"));
         }
 
-        ListType type = this.listTypeRepository.findById(listId).orElse(new ListType()).fromDefinition(listDef);
+        ListType type = this.listTypeRepository.findById(listId).orElse(new ListType(listId, listDef));
         this.listTypeRepository.saveAndFlush(type);
 
         listDef.defaultEntries.forEach((s, listItem) -> {
             ResourceIdentifier id = new ResourceIdentifier(listId.source, s);
-            ListElement ele = this.listElementRepository.findById(id).orElse(new ListElement()).fromDefinition(type, listItem);
+            ListElement ele = this.listElementRepository.findById(id).orElse(new ListElement(id, type, listItem));
             this.listElementRepository.saveAndFlush(ele);
         });
 

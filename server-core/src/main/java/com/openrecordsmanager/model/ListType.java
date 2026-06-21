@@ -3,7 +3,6 @@ package com.openrecordsmanager.model;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.openrecordsmanager.list.ListDefinition;
-import com.openrecordsmanager.model.util.DbResourceIdentifier;
 import com.openrecordsmanager.resources.ResourceIdentifier;
 import jakarta.persistence.*;
 
@@ -14,9 +13,9 @@ import java.util.List;
 @Table(name = "list_type")
 @JsonPropertyOrder({"id", "display"})
 public class ListType {
-    @EmbeddedId
+    @Id
     @JsonProperty
-    public DbResourceIdentifier id;
+    public ResourceIdentifier id;
 
     @Column(nullable = false)
     @JsonProperty
@@ -27,17 +26,17 @@ public class ListType {
     @JsonProperty
     public List<ListElement> children;
 
-    public ListType() {
+    @Deprecated
+    protected ListType() {
+    }
+
+    public ListType(ResourceIdentifier id, ListDefinition def) {
+        this(id, def.display);
+    }
+
+    public ListType(ResourceIdentifier id, String display) {
+        this.id = id;
+        this.display = display;
         this.children = new ArrayList<>();
-    }
-
-    public ListType(ResourceIdentifier id) {
-        this.id = new DbResourceIdentifier(id);
-        this();
-    }
-
-    public ListType fromDefinition(ListDefinition def) {
-        this.display = def.display;
-        return this;
     }
 }

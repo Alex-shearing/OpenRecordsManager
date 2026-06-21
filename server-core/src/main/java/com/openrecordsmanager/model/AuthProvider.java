@@ -8,6 +8,7 @@ import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
 import java.util.Map;
+import java.util.UUID;
 
 @Entity
 @Table(name = "auth_provider")
@@ -15,25 +16,21 @@ public class AuthProvider implements AuthProviderInstance {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private UUID id;
 
     @Column(name = "provider_type", nullable = false)
     @Convert(converter = ResourceIdentifierDbConverter.class)
-    private ResourceIdentifier providerType;
+    public ResourceIdentifier providerType;
 
     @Column(name = "name", nullable = false)
-    private String name;
+    public String name;
 
     @Column(name = "settings", nullable = false)
     @JdbcTypeCode(SqlTypes.JSON)
-    private Map<String, Object> settings;
-
-    public ResourceIdentifier getProviderType() {
-        return this.providerType;
-    }
+    public Map<String, Object> settings;
 
     @Override
-    public Long getId() {
+    public UUID getId() {
         return this.id;
     }
 

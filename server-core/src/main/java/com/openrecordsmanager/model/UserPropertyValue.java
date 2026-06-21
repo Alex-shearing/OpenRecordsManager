@@ -9,17 +9,17 @@ import java.util.UUID;
 
 @Entity
 @Table(name = "user_property_value")
-public class UserPropertyValue<T> {
+public class UserPropertyValue<T> implements ObjectPropertyHolder.ObjectPropertyValue<T> {
     @Id
     @JsonProperty
     public UUID id;
 
-    @ManyToOne
-    @JoinColumn(name = "user_id")
+    @ManyToOne(optional = false)
+    @JoinColumn(nullable = false)
     public User user;
 
-    @ManyToOne(targetEntity = ObjectProperty.class)
-    @JoinColumn(name = "property_id")
+    @ManyToOne(targetEntity = ObjectProperty.class, optional = false)
+    @JoinColumn(nullable = false)
     public ObjectProperty<T> property;
 
     @Column(nullable = false)
@@ -27,7 +27,8 @@ public class UserPropertyValue<T> {
     @JsonProperty
     public T value;
 
-    public UserPropertyValue() {
+    @Deprecated
+    protected UserPropertyValue() {
     }
 
     public UserPropertyValue(User user, ObjectProperty<T> property, T value) {
@@ -35,5 +36,15 @@ public class UserPropertyValue<T> {
         this.user = user;
         this.property = property;
         this.value = value;
+    }
+
+    @Override
+    public ObjectProperty<T> getProperty() {
+        return this.property;
+    }
+
+    @Override
+    public T getValue() {
+        return this.value;
     }
 }

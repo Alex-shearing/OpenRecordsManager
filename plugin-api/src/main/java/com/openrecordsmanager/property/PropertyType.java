@@ -4,6 +4,7 @@ import com.openrecordsmanager.list.IListElement;
 
 import java.util.*;
 
+@SuppressWarnings("unused")
 public abstract class PropertyType<T> {
     public static Map<String, PropertyType<?>> TYPES = new HashMap<>(7);
 
@@ -21,10 +22,13 @@ public abstract class PropertyType<T> {
         }
     };
 
-    public static final PropertyType<Integer> INTEGER = new PropertyType<>("integer") {
+    public static final PropertyType<Long> INTEGER = new PropertyType<>("integer") {
         @Override
-        public Integer validate(PropertyDefinition<Integer> definition, Object value) {
-            return value instanceof Integer v ? v : null;
+        public Long validate(PropertyDefinition<Long> definition, Object value) {
+            if (value instanceof Long l) return l;
+            if (value instanceof Integer i) return i.longValue();
+
+            return null;
         }
     };
 

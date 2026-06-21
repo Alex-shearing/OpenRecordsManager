@@ -2,20 +2,20 @@ package com.openrecordsmanager.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.openrecordsmanager.model.repositories.ListTypeRepository;
-import com.openrecordsmanager.model.util.DbResourceIdentifier;
 import com.openrecordsmanager.property.PropertyDefinition;
 import com.openrecordsmanager.property.PropertyType;
 import com.openrecordsmanager.resources.ResourceIdentifier;
 import com.openrecordsmanager.resources.ResourceRegistry;
 import com.openrecordsmanager.resources.ResourceType;
 import jakarta.persistence.*;
+import org.jspecify.annotations.Nullable;
 
 @Entity
 @Table(name = "object_property")
 public class ObjectProperty<T> {
-    @EmbeddedId
+    @Id
     @JsonProperty
-    public DbResourceIdentifier id;
+    public ResourceIdentifier id;
 
     @Column(nullable = false)
     @JsonProperty
@@ -33,34 +33,43 @@ public class ObjectProperty<T> {
     public PropertyType<T> type;
 
     @ManyToOne
-    @JoinColumn(name = "list_type_id")
+    @JoinColumn
     @JsonProperty
+    @Nullable
     public ListType listType;
 
-    @Column(nullable = false)
+    @Column()
     @JsonProperty
+    @Nullable
+    public String validator;
+
+    @Column()
+    @JsonProperty
+    @Nullable
     public String securityFilter;
 
+    @Deprecated
     protected ObjectProperty() {
     }
 
-    public ObjectProperty(ResourceIdentifier identifier) {
-        this.id = new DbResourceIdentifier(identifier);
+    public ObjectProperty(ResourceIdentifier identifier, String name, String description, PropertyType<T> type) {
+        this.id = identifier;
+        this.name = name;
+        this.description = description;
+        this.type = type;
     }
 
-    public ObjectProperty<T> fromDefinition(ListTypeRepository repository, ResourceRegistry registry, PropertyDefinition<T> definition) {
-        this.name = definition.getName();
-        this.description = definition.getDescription();
-        this.type = definition.getType();
+    public ObjectProperty(ResourceIdentifier identifier, ListTypeRepository repository, ResourceRegistry registry, PropertyDefinition<T> definition) {
+        this(identifier, definition.getName(), definition.getDescription(), definition.getType());
         if (definition.getListType() != null) {
             this.listType = repository.findById(registry.getResourceId(ResourceType.LIST, definition.getListType())).orElseThrow();
         }
+        this.validator = definition.getValidator();
         this.securityFilter = definition.getSecurityFilter();
-
-        return this;
     }
 
     @PostLoad
+    @SuppressWarnings("unchecked")
     private void onLoad() {
         if (this.typeDbValue != null) {
             this.type = (PropertyType<T>) PropertyType.TYPES.get(this.typeDbValue);

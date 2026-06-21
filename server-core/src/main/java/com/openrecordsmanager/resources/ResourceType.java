@@ -9,17 +9,27 @@ import com.openrecordsmanager.property.PropertyDefinition;
 import com.openrecordsmanager.recordtype.RecordTypeDefinition;
 import org.jspecify.annotations.Nullable;
 
+import java.util.Map;
 import java.util.Objects;
 
 public class ResourceType<T extends RegisterableComponent> {
+    @SuppressWarnings("unchecked")
     public static final ResourceType<ConfigDefinition<?>> CONFIG = new ResourceType<>((Class<ConfigDefinition<?>>) (Class<?>) ConfigDefinition.class);
     public static final ResourceType<ListDefinition> LIST = new ResourceType<>(ListDefinition.class);
+    @SuppressWarnings("unchecked")
     public static final ResourceType<PropertyDefinition<?>> PROPERTY = new ResourceType<>((Class<PropertyDefinition<?>>) (Class<?>) PropertyDefinition.class);
     public static final ResourceType<RecordTypeDefinition> RECORD_TYPE = new ResourceType<>(RecordTypeDefinition.class);
     public static final ResourceType<InputAuthProviderType> INPUT_AUTH_PROVIDER = new ResourceType<>(InputAuthProviderType.class);
     public static final ResourceType<RedirectAuthProviderType> REDIRECT_AUTH_PROVIDER = new ResourceType<>(RedirectAuthProviderType.class);
 
-    public static final ResourceType<?>[] VALUES = {CONFIG, LIST, PROPERTY, RECORD_TYPE, INPUT_AUTH_PROVIDER, REDIRECT_AUTH_PROVIDER};
+    private static final Map<String, ResourceType<?>> VALUES = Map.of(
+            "config", CONFIG,
+            "list", LIST,
+            "property", PROPERTY,
+            "record_type", RECORD_TYPE,
+            "input_auth_provider", INPUT_AUTH_PROVIDER,
+            "redirect_auth_provider", REDIRECT_AUTH_PROVIDER
+    );
 
     private final Class<T> componentClass;
 
@@ -34,13 +44,18 @@ public class ResourceType<T extends RegisterableComponent> {
     @Nullable
     @SuppressWarnings("unchecked")
     public static <K extends RegisterableComponent> ResourceType<K> fromObject(K object) {
-        for (ResourceType<?> value : VALUES) {
+        for (ResourceType<?> value : VALUES.values()) {
             if (value.is(object)) {
                 return (ResourceType<K>) value;
             }
         }
 
         return null;
+    }
+
+    @Nullable
+    public static ResourceType<?> fromString(String id) {
+        return VALUES.get(id);
     }
 
     @Override

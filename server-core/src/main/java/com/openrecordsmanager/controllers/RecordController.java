@@ -5,7 +5,6 @@ import com.openrecordsmanager.model.RecordType;
 import com.openrecordsmanager.model.repositories.ListTypeRepository;
 import com.openrecordsmanager.model.repositories.RecordPropertyRepository;
 import com.openrecordsmanager.model.repositories.RecordTypeRepository;
-import com.openrecordsmanager.model.util.DbResourceIdentifier;
 import com.openrecordsmanager.property.PropertyDefinition;
 import com.openrecordsmanager.recordtype.RecordTypeDefinition;
 import com.openrecordsmanager.resources.ResourceIdentifier;
@@ -37,12 +36,12 @@ public class RecordController {
 
     @GetMapping("/type")
     public ResponseEntity<ApiResponse<Set<ResourceIdentifier>>> getRecordTypes() {
-        return ResponseEntity.ok(ApiResponse.success(this.recordTypeRepository.findAll().stream().map(listType -> listType.id.getId()).collect(Collectors.toSet())));
+        return ResponseEntity.ok(ApiResponse.success(this.recordTypeRepository.findAll().stream().map(listType -> listType.id).collect(Collectors.toSet())));
     }
 
     @GetMapping("/type/{type}")
     public ResponseEntity<ApiResponse<RecordType>> getRecordType(@PathVariable("type") ResourceIdentifier typeId) {
-        Optional<RecordType> recTemplate = this.recordTypeRepository.findById(new DbResourceIdentifier(typeId));
+        Optional<RecordType> recTemplate = this.recordTypeRepository.findById(typeId);
         if (recTemplate.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ApiResponse.error("record_template_not_found"));
         }
@@ -73,10 +72,9 @@ public class RecordController {
         if (makeProperties) {
             for (PropertyDefinition<?> property : template.properties()) {
                 ResourceIdentifier id = this.resourceRegistry.getResourceId(ResourceType.PROPERTY, property);
-                Optional<ObjectProperty> prop = this.recordPropertyRepository.findById(id);
+                Optional<ObjectProperty<?>> prop = this.recordPropertyRepository.findById(id);
                 if (prop.isEmpty()) {
-                    ObjectProperty objectProperty = new ObjectProperty(id).fromDefinition(this.listTypeRepository, this.resourceRegistry, property);
-                    this.recordPropertyRepository.saveAndFlush(objectProperty);
+                    constructProperty(id, property);
                 }
             }
         }
@@ -84,19 +82,22 @@ public class RecordController {
         // Validate all properties exist
         for (PropertyDefinition<?> property : template.properties()) {
             ResourceIdentifier id = this.resourceRegistry.getResourceId(ResourceType.PROPERTY, property);
-            Optional<ObjectProperty> prop = this.recordPropertyRepository.findById(id);
+            Optional<ObjectProperty<?>> prop = this.recordPropertyRepository.findById(id);
             if (prop.isEmpty()) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ApiResponse.error("record_property_not_found"));
             }
         }
 
-        RecordType type = this.recordTypeRepository.findById(templateId).orElse(new RecordType(templateId))
-                .fromDefinition(this.resourceRegistry, template);
+        RecordType type = this.recordTypeRepository.findById(templateId).orElse(new RecordType(templateId, this.resourceRegistry, template));
         this.recordTypeRepository.saveAndFlush(type);
 
         return ResponseEntity.ok(ApiResponse.success(type));
     }
 
+    private <T> void constructProperty(ResourceIdentifier id, PropertyDefinition<T> definition) {
+        ObjectProperty<T> objectProperty = new ObjectProperty<T>(id, this.listTypeRepository, this.resourceRegistry, definition);
+        this.recordPropertyRepository.saveAndFlush(objectProperty);
+    }
 
     @PutMapping("/")
     public ResponseEntity<ApiResponse<Set<ResourceIdentifier>>> putRecord() {

@@ -29,10 +29,10 @@
   </component>
   <component name="DBNavigator.Project.DatabaseAssistantManager">
     <assistants>
-      <assistant-state connection-id="917ea075-25a4-4c44-8edd-7270e2ddad2e" assistant-type="PUBLIC" default-profile-name="" selected-chat-id="" availability="AVAILABLE" acknowledgement="NONE" selected="true">
+      <assistant-state connection-id="917ea075-25a4-4c44-8edd-7270e2ddad2e" assistant-type="SELECT_AI" default-profile-name="" selected-chat-id="" availability="UNAVAILABLE" acknowledgement="NONE">
         <tools />
       </assistant-state>
-      <assistant-state connection-id="917ea075-25a4-4c44-8edd-7270e2ddad2e" assistant-type="SELECT_AI" default-profile-name="" selected-chat-id="" availability="UNAVAILABLE" acknowledgement="NONE">
+      <assistant-state connection-id="917ea075-25a4-4c44-8edd-7270e2ddad2e" assistant-type="PUBLIC" default-profile-name="" selected-chat-id="" availability="AVAILABLE" acknowledgement="NONE" selected="true">
         <tools />
       </assistant-state>
     </assistants>
@@ -79,6 +79,7 @@ from
         <condition column="id" operator="=" value="" active="true" />
       </filter>
     </filter-actions>
+    <filter-actions connection-id="917ea075-25a4-4c44-8edd-7270e2ddad2e" dataset="orm_system.user_properties" active-filter-id="" />
     <filter-actions connection-id="917ea075-25a4-4c44-8edd-7270e2ddad2e" dataset="orm_system.list_element" active-filter-id="7fcd9c6a-09b0-42d6-a68e-53d755d11db2">
       <filter id="7fcd9c6a-09b0-42d6-a68e-53d755d11db2" name="Filter" temporary="false" custom-name="false" type="basic" join-type="AND" />
     </filter-actions>

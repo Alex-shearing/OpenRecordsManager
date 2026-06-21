@@ -1,17 +1,18 @@
 package com.openrecordsmanager.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.openrecordsmanager.resources.ResourceIdentifier;
+import com.openrecordsmanager.expressions.ExpressionsService;
+import com.openrecordsmanager.recordtype.SecurityFilterUsage;
 import jakarta.persistence.*;
+import org.jspecify.annotations.Nullable;
 
-import java.util.Objects;
-import java.util.Optional;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
 @Entity
 @Table(name = "record")
-public class Record {
+public class Record implements ObjectPropertyHolder<RecordPropertyValue<?>> {
     @Id
     @JsonProperty
     public UUID id;
@@ -20,37 +21,50 @@ public class Record {
     @JsonProperty
     public String title;
 
-    @ManyToOne
-    @JoinColumn(name = "type_id")
+    @ManyToOne(optional = false)
+    @JoinColumn(nullable = false)
     @JsonProperty
     public RecordType type;
 
     @OneToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "file_id")
+    @JoinColumn
     @JsonProperty
     public FileStoreEntry file;
 
-    @OneToMany(cascade = CascadeType.ALL)
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "record")
     @JsonProperty
     public Set<RecordPropertyValue<?>> properties;
 
-    public Record() {
+    @Deprecated
+    protected Record() {
     }
 
-    public Record(UUID id, String title, RecordType type, FileStoreEntry file, Set<RecordPropertyValue<?>> properties) {
+    public Record(UUID id, String title, RecordType type, FileStoreEntry file) {
         this.id = id;
         this.title = title;
         this.type = type;
         this.file = file;
-        this.properties = properties;
+        this.properties = new HashSet<>();
     }
 
-    public <T> T getProperty(ObjectProperty<T> recordProperty) {
-        return (T) this.getProperty(recordProperty.id.getId());
+    @Override
+    public Set<RecordPropertyValue<?>> getProperties() {
+        return this.properties;
     }
 
-    public Object getProperty(ResourceIdentifier id) {
-        Optional<RecordPropertyValue<?>> property = this.properties.stream().filter(recordPropertyValue -> Objects.equals(recordPropertyValue.property.id.getId(), id)).findFirst();
-        return property.map(userPropertyValue -> userPropertyValue.value).orElse(null);
+    public SecurityFilterUsage securityFilter(ExpressionsService expressions, User user, @Nullable Record record) {
+        // Check record type filter
+        if (!expressions.checkPropertyExpression(this.id, this.type.securityFilter, null, user, record)) {
+            return this.type.securityFilterUsage;
+        }
+
+        // Check all properties
+        for (RecordPropertyValue<?> property : this.properties) {
+            if (!property.securityFilter(expressions, user, record)) {
+                return this.type.securityFilterUsage;
+            }
+        }
+
+        return SecurityFilterUsage.SHOW_ALL;
     }
 }
