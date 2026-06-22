@@ -1,5 +1,8 @@
 package com.openrecordsmanager.config;
 
+import com.openrecordsmanager.api.config.ConfigDefinition;
+import com.openrecordsmanager.api.config.ConfigValueType;
+
 public class ConfigProperties {
     public static final ConfigDefinition<String> WORKGROUP_DATABASE_URL = ConfigDefinition.builder("workgroup.database", ConfigValueType.STRING)
             .name("Database URL")
@@ -20,7 +23,6 @@ public class ConfigProperties {
             .description("The log level of the workgroup server")
             .defaultValue("INFO")
             .build();
-
 
     public static ConfigDefinition<?>[] BUILTIN_CONFIG = {WORKGROUP_DATABASE_URL, WORKGROUP_NAME, LOGGING_LEVEL};
 }

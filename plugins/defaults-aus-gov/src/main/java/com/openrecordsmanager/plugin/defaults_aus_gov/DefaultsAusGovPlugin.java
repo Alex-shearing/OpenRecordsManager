@@ -1,9 +1,9 @@
 package com.openrecordsmanager.plugin.defaults_aus_gov;
 
-import com.openrecordsmanager.BuiltinResources;
-import com.openrecordsmanager.Plugin;
-import com.openrecordsmanager.PluginContext;
-import com.openrecordsmanager.recordtype.RecordTypeDefinition;
+import com.openrecordsmanager.api.BuiltinResources;
+import com.openrecordsmanager.api.Plugin;
+import com.openrecordsmanager.api.PluginContext;
+import com.openrecordsmanager.api.recordtype.RecordTypeDefinition;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -48,7 +48,7 @@ public class DefaultsAusGovPlugin implements Plugin {
 
                 RecordProperties.RECORD_SECURITY_CLASSIFICATION, RecordProperties.RECORD_SECURITY_CAVEAT, RecordProperties.RECORD_SECURITY_RELEASABILITY,
                 RecordProperties.RECORD_SECURITY_IMM, RecordProperties.RECORD_CATEGORY, RecordProperties.JURISDICTION,
-                
+
                 UserProperties.USER_SECURITY_CLASSIFICATION, UserProperties.USER_SECURITY_CAVEAT,
 
                 EMAIL_RECORD_TYPE

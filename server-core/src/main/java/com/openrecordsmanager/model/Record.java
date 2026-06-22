@@ -1,8 +1,8 @@
 package com.openrecordsmanager.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.openrecordsmanager.expressions.ExpressionsService;
-import com.openrecordsmanager.recordtype.SecurityFilterUsage;
+import com.openrecordsmanager.api.recordtype.SecurityFilterUsage;
+import com.openrecordsmanager.resources.ExpressionsService;
 import jakarta.persistence.*;
 import org.jspecify.annotations.Nullable;
 
@@ -22,7 +22,7 @@ public class Record implements ObjectPropertyHolder<RecordPropertyValue<?>> {
     public String title;
 
     @ManyToOne(optional = false)
-    @JoinColumn(nullable = false)
+    @JoinColumn(nullable = false, foreignKey = @ForeignKey(name = "FK_RECORD_RECORDTYPE"))
     @JsonProperty
     public RecordType type;
 

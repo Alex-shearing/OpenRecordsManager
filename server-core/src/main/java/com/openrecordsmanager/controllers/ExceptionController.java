@@ -14,6 +14,8 @@ public class ExceptionController {
                 ex.getMessage()
         );
 
+        ex.printStackTrace();
+
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
     }
 }

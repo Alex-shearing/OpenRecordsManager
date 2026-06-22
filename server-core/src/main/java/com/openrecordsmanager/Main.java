@@ -1,6 +1,6 @@
 package com.openrecordsmanager;
 
-import com.openrecordsmanager.config.ConfigStore;
+import com.openrecordsmanager.api.config.ConfigStore;
 import com.openrecordsmanager.config.ConfigStoreImpl;
 import com.openrecordsmanager.resources.ResourceRegistry;
 import org.springframework.boot.SpringApplication;

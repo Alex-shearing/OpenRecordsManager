@@ -1,8 +1,8 @@
 package com.openrecordsmanager.controllers;
 
-import com.openrecordsmanager.Plugin;
+import com.openrecordsmanager.api.Plugin;
+import com.openrecordsmanager.api.config.ConfigStore;
 import com.openrecordsmanager.config.ConfigProperties;
-import com.openrecordsmanager.config.ConfigStore;
 import com.openrecordsmanager.resources.PluginManager;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;

@@ -1,13 +1,17 @@
 package com.openrecordsmanager.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.openrecordsmanager.model.repositories.ListTypeRepository;
-import com.openrecordsmanager.property.PropertyDefinition;
-import com.openrecordsmanager.property.PropertyType;
+import com.openrecordsmanager.model.repositories.DataRepository;
+import com.openrecordsmanager.model.util.PropertyTypeConverter;
+import com.openrecordsmanager.api.property.PropertyDefinition;
+import com.openrecordsmanager.api.property.PropertyType;
+import com.openrecordsmanager.resources.ExpressionsService;
 import com.openrecordsmanager.resources.ResourceIdentifier;
 import com.openrecordsmanager.resources.ResourceRegistry;
-import com.openrecordsmanager.resources.ResourceType;
+import com.openrecordsmanager.resources.types.ResourceTypes;
 import jakarta.persistence.*;
+import org.hibernate.annotations.JavaType;
+import org.hibernate.type.descriptor.java.ObjectJavaType;
 import org.jspecify.annotations.Nullable;
 
 @Entity
@@ -25,11 +29,10 @@ public class ObjectProperty<T> {
     @JsonProperty
     public String description;
 
-    @Column(name = "type", nullable = false)
-    private String typeDbValue;
-
+    @Column(nullable = false)
+    @Convert(converter = PropertyTypeConverter.class)
+    @JavaType(ObjectJavaType.class)
     @JsonProperty
-    @Transient
     public PropertyType<T> type;
 
     @ManyToOne
@@ -59,28 +62,16 @@ public class ObjectProperty<T> {
         this.type = type;
     }
 
-    public ObjectProperty(ResourceIdentifier identifier, ListTypeRepository repository, ResourceRegistry registry, PropertyDefinition<T> definition) {
+    public ObjectProperty(ResourceIdentifier identifier, ResourceRegistry registry, ExpressionsService expressions, DataRepository repository, PropertyDefinition<T> definition) {
         this(identifier, definition.getName(), definition.getDescription(), definition.getType());
-        if (definition.getListType() != null) {
-            this.listType = repository.findById(registry.getResourceId(ResourceType.LIST, definition.getListType())).orElseThrow();
+        if (definition.getType().allowsList() && definition.getListType() != null) {
+            ResourceIdentifier listId = registry.getResourceId(ResourceTypes.LIST, definition.getListType());
+            if (listId == null) {
+                throw new IllegalArgumentException("ListType " + definition.getListType().id() + " does not exist");
+            }
+            this.listType = repository.listTypeRepo.findById(listId).orElseThrow();
         }
-        this.validator = definition.getValidator();
-        this.securityFilter = definition.getSecurityFilter();
-    }
-
-    @PostLoad
-    @SuppressWarnings("unchecked")
-    private void onLoad() {
-        if (this.typeDbValue != null) {
-            this.type = (PropertyType<T>) PropertyType.TYPES.get(this.typeDbValue);
-        }
-    }
-
-    @PrePersist
-    @PreUpdate
-    private void onSave() {
-        if (this.type != null) {
-            this.typeDbValue = this.type.name;
-        }
+        this.validator = expressions.buildExpression(definition.getValidator());
+        this.securityFilter = expressions.buildExpression(definition.getSecurityFilter());
     }
 }

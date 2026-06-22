@@ -1,8 +1,8 @@
 package com.openrecordsmanager.plugin.defaults_aus_gov;
 
-import com.openrecordsmanager.list.IListElement;
-import com.openrecordsmanager.property.PropertyDefinition;
-import com.openrecordsmanager.property.PropertyType;
+import com.openrecordsmanager.api.list.IListElement;
+import com.openrecordsmanager.api.property.PropertyDefinition;
+import com.openrecordsmanager.api.property.PropertyType;
 
 import java.util.List;
 

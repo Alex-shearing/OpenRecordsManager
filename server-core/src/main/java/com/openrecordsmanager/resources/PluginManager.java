@@ -1,7 +1,7 @@
 package com.openrecordsmanager.resources;
 
-import com.openrecordsmanager.BuiltinResources;
-import com.openrecordsmanager.Plugin;
+import com.openrecordsmanager.api.BuiltinResources;
+import com.openrecordsmanager.api.Plugin;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;

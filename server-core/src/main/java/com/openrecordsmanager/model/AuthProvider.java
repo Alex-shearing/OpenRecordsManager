@@ -1,7 +1,7 @@
 package com.openrecordsmanager.model;
 
-import com.openrecordsmanager.auth.AuthProviderInstance;
-import com.openrecordsmanager.model.util.ResourceIdentifierDbConverter;
+import com.openrecordsmanager.api.auth.AuthProviderInstance;
+import com.openrecordsmanager.model.util.ResourceIdentifierConverter;
 import com.openrecordsmanager.resources.ResourceIdentifier;
 import jakarta.persistence.*;
 import org.hibernate.annotations.JdbcTypeCode;
@@ -19,7 +19,7 @@ public class AuthProvider implements AuthProviderInstance {
     private UUID id;
 
     @Column(name = "provider_type", nullable = false)
-    @Convert(converter = ResourceIdentifierDbConverter.class)
+    @Convert(converter = ResourceIdentifierConverter.class)
     public ResourceIdentifier providerType;
 
     @Column(name = "name", nullable = false)

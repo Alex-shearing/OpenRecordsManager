@@ -1,11 +1,11 @@
 package com.openrecordsmanager.controllers;
 
-import com.openrecordsmanager.auth.RedirectAuthProviderType;
-import com.openrecordsmanager.auth.UserDetails;
+import com.openrecordsmanager.api.auth.RedirectAuthProviderType;
+import com.openrecordsmanager.api.auth.UserDetails;
 import com.openrecordsmanager.model.AuthProvider;
 import com.openrecordsmanager.model.repositories.AuthProviderRepository;
 import com.openrecordsmanager.resources.ResourceRegistry;
-import com.openrecordsmanager.resources.ResourceType;
+import com.openrecordsmanager.resources.types.ResourceTypes;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -52,7 +52,7 @@ public class AuthController {
             return ResponseEntity.badRequest().body(ApiResponse.error("invalid authentication provider"));
         }
 
-        RedirectAuthProviderType type = this.resource.getComponent(ResourceType.REDIRECT_AUTH_PROVIDER, provider.get().providerType);
+        RedirectAuthProviderType type = this.resource.getComponent(ResourceTypes.REDIRECT_AUTH_PROVIDER, provider.get().providerType);
         if (type == null) {
             return ResponseEntity.badRequest().body(ApiResponse.error("invalid authentication provider"));
         }
@@ -68,7 +68,7 @@ public class AuthController {
             return ResponseEntity.badRequest().body(ApiResponse.error("invalid authentication provider"));
         }
 
-        RedirectAuthProviderType type = this.resource.getComponent(ResourceType.REDIRECT_AUTH_PROVIDER, provider.get().providerType);
+        RedirectAuthProviderType type = this.resource.getComponent(ResourceTypes.REDIRECT_AUTH_PROVIDER, provider.get().providerType);
         if (type == null) {
             return ResponseEntity.badRequest().body(ApiResponse.error("invalid authentication provider"));
         }

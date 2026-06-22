@@ -26,7 +26,6 @@ public interface ObjectPropertyHolder<T extends ObjectPropertyHolder.ObjectPrope
         return (K) this.getProperty(userProperty.id);
     }
 
-
     interface ObjectPropertyValue<T> {
         ObjectProperty<T> getProperty();
 

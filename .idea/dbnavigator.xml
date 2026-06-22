@@ -74,16 +74,19 @@ from
     <filter-actions connection-id="917ea075-25a4-4c44-8edd-7270e2ddad2e" dataset="orm_system.list_type" active-filter-id="9d217cc0-e32e-4ca5-9f93-9acd1828e8a6">
       <filter id="9d217cc0-e32e-4ca5-9f93-9acd1828e8a6" name="Filter" temporary="false" custom-name="false" type="basic" join-type="AND" />
     </filter-actions>
+    <filter-actions connection-id="917ea075-25a4-4c44-8edd-7270e2ddad2e" dataset="orm_system.record_type" active-filter-id="EMPTY_FILTER" />
     <filter-actions connection-id="917ea075-25a4-4c44-8edd-7270e2ddad2e" dataset="orm_system.auth_provider" active-filter-id="EMPTY_FILTER">
       <filter id="6dd95021-0089-474a-998c-142dce4e4359" name="Filter" temporary="false" custom-name="false" type="basic" join-type="AND">
         <condition column="id" operator="=" value="" active="true" />
       </filter>
     </filter-actions>
     <filter-actions connection-id="917ea075-25a4-4c44-8edd-7270e2ddad2e" dataset="orm_system.user_properties" active-filter-id="" />
+    <filter-actions connection-id="917ea075-25a4-4c44-8edd-7270e2ddad2e" dataset="orm_system.object_property" active-filter-id="EMPTY_FILTER" />
+    <filter-actions connection-id="917ea075-25a4-4c44-8edd-7270e2ddad2e" dataset="orm_system.record_type_properties" active-filter-id="EMPTY_FILTER" />
     <filter-actions connection-id="917ea075-25a4-4c44-8edd-7270e2ddad2e" dataset="orm_system.list_element" active-filter-id="7fcd9c6a-09b0-42d6-a68e-53d755d11db2">
       <filter id="7fcd9c6a-09b0-42d6-a68e-53d755d11db2" name="Filter" temporary="false" custom-name="false" type="basic" join-type="AND" />
     </filter-actions>
-    <filter-actions connection-id="917ea075-25a4-4c44-8edd-7270e2ddad2e" dataset="orm_system.record_property_value" active-filter-id="" />
+    <filter-actions connection-id="917ea075-25a4-4c44-8edd-7270e2ddad2e" dataset="orm_system.record_property_value" active-filter-id="EMPTY_FILTER" />
   </component>
   <component name="DBNavigator.Project.ExecutionManager">
     <retain-sticky-names value="false" />
@@ -134,6 +137,9 @@ from
         </database>
         <properties>
           <auto-commit value="false" />
+          <properties>
+            <property key="mode" value="ro" />
+          </properties>
         </properties>
         <ssh-settings>
           <active value="false" />

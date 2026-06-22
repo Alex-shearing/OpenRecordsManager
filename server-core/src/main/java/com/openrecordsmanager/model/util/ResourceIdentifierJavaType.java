@@ -39,8 +39,11 @@ public class ResourceIdentifierJavaType extends AbstractClassJavaType<ResourceId
 
     @Override
     public <X> ResourceIdentifier wrap(X value, WrapperOptions options) {
-        if (value == null) return null;
-        if (value instanceof String) return ResourceIdentifier.valueOf((String) value);
-        throw unknownWrap(value.getClass());
+        return switch (value) {
+            case null -> null;
+            case ResourceIdentifier identifier -> identifier;
+            case String str -> ResourceIdentifier.valueOf(str);
+            default -> throw unknownWrap(value.getClass());
+        };
     }
 }

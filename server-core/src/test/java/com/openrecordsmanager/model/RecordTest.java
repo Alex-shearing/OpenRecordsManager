@@ -1,8 +1,8 @@
 package com.openrecordsmanager.model;
 
-import com.openrecordsmanager.expressions.ExpressionsService;
-import com.openrecordsmanager.property.PropertyType;
-import com.openrecordsmanager.recordtype.SecurityFilterUsage;
+import com.openrecordsmanager.api.property.PropertyType;
+import com.openrecordsmanager.api.recordtype.SecurityFilterUsage;
+import com.openrecordsmanager.resources.ExpressionsService;
 import com.openrecordsmanager.resources.ResourceIdentifier;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -23,7 +23,7 @@ class RecordTest {
                 ResourceIdentifier.valueOf("test:number_property"),
                 "Number property",
                 "Number property",
-                PropertyType.INTEGER
+                PropertyType.NUMBER
         );
         TEST_USER.properties.add(new UserPropertyValue<>(null, numberProperty, 10L));
 

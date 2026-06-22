@@ -11,7 +11,7 @@ public class StringToProjectIdConverter implements Converter<String, ResourceIde
         if (source == null || source.isBlank()) {
             return null;
         }
-        
+
         return ResourceIdentifier.valueOf(source);
     }
 }

@@ -1,13 +1,13 @@
 package com.openrecordsmanager.controllers;
 
-import com.openrecordsmanager.list.ListDefinition;
+import com.openrecordsmanager.api.list.ListDefinition;
 import com.openrecordsmanager.model.ListElement;
 import com.openrecordsmanager.model.ListType;
-import com.openrecordsmanager.model.repositories.ListElementRepository;
-import com.openrecordsmanager.model.repositories.ListTypeRepository;
+import com.openrecordsmanager.model.repositories.DataRepository;
+import com.openrecordsmanager.resources.ExpressionsService;
 import com.openrecordsmanager.resources.ResourceIdentifier;
 import com.openrecordsmanager.resources.ResourceRegistry;
-import com.openrecordsmanager.resources.ResourceType;
+import com.openrecordsmanager.resources.types.ResourceTypes;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -21,24 +21,24 @@ import java.util.stream.Collectors;
 @RequestMapping("/list")
 public class ListController {
 
-    private final ResourceRegistry resourceRegistry;
-    private final ListTypeRepository listTypeRepository;
-    private final ListElementRepository listElementRepository;
+    private final ResourceRegistry registry;
+    private final DataRepository repository;
+    private final ExpressionsService expressions;
 
-    public ListController(ResourceRegistry resourceRegistry, ListTypeRepository listTypeRepository, ListElementRepository listElementRepository) {
-        this.resourceRegistry = resourceRegistry;
-        this.listTypeRepository = listTypeRepository;
-        this.listElementRepository = listElementRepository;
+    public ListController(ResourceRegistry registry, DataRepository repository, ExpressionsService expressions) {
+        this.registry = registry;
+        this.repository = repository;
+        this.expressions = expressions;
     }
 
     @GetMapping("")
     public ResponseEntity<ApiResponse<Set<ResourceIdentifier>>> getLists() {
-        return ResponseEntity.ok(ApiResponse.success(this.listTypeRepository.findAll().stream().map(listType -> listType.id).collect(Collectors.toSet())));
+        return ResponseEntity.ok(ApiResponse.success(this.repository.listTypeRepo.findAll().stream().map(listType -> listType.id).collect(Collectors.toSet())));
     }
 
     @GetMapping("/{list}")
     public ResponseEntity<ApiResponse<ListType>> getList(@PathVariable("list") ResourceIdentifier listType) {
-        Optional<ListType> type = this.listTypeRepository.findById(listType);
+        Optional<ListType> type = this.repository.listTypeRepo.findById(listType);
         if (type.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ApiResponse.error("list_not_found"));
         }
@@ -47,7 +47,7 @@ public class ListController {
 
     @GetMapping("/{list}/{element}")
     public ResponseEntity<ApiResponse<ListElement>> getListElement(@PathVariable("list") ResourceIdentifier listType, @PathVariable("element") ResourceIdentifier listElement) {
-        Optional<ListType> type = this.listTypeRepository.findById(listType);
+        Optional<ListType> type = this.repository.listTypeRepo.findById(listType);
         if (type.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ApiResponse.error("list_not_found"));
         }
@@ -60,7 +60,7 @@ public class ListController {
 
     @GetMapping("/{list}/search")
     public ResponseEntity<ApiResponse<Set<ListElement>>> searchListElement(@PathVariable("list") ResourceIdentifier listType, @RequestParam("value") String value) {
-        Optional<ListType> type = this.listTypeRepository.findById(listType);
+        Optional<ListType> type = this.repository.listTypeRepo.findById(listType);
         if (type.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ApiResponse.error("list_not_found"));
         }
@@ -73,12 +73,12 @@ public class ListController {
 
     @GetMapping("/template")
     public ResponseEntity<ApiResponse<Set<ResourceIdentifier>>> getTemplates() {
-        return ResponseEntity.ok(ApiResponse.success(this.resourceRegistry.getIds(ResourceType.LIST)));
+        return ResponseEntity.ok(ApiResponse.success(this.registry.getIds(ResourceTypes.LIST)));
     }
 
     @GetMapping("/template/{template}")
     public ResponseEntity<ApiResponse<ListDefinition>> getTemplate(@PathVariable("template") ResourceIdentifier listId) {
-        ListDefinition listDef = this.resourceRegistry.getComponent(ResourceType.LIST, listId);
+        ListDefinition listDef = this.registry.getComponent(ResourceTypes.LIST, listId);
         if (listDef == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ApiResponse.error("list_template_not_found"));
         }
@@ -87,18 +87,16 @@ public class ListController {
 
     @PostMapping("/template/{template}/apply")
     public ResponseEntity<ApiResponse<ListType>> applyList(@PathVariable("template") ResourceIdentifier listId) {
-        ListDefinition listDef = this.resourceRegistry.getComponent(ResourceType.LIST, listId);
+        ListDefinition listDef = this.registry.getComponent(ResourceTypes.LIST, listId);
         if (listDef == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ApiResponse.error("list_template_not_found"));
         }
 
-        ListType type = this.listTypeRepository.findById(listId).orElse(new ListType(listId, listDef));
-        this.listTypeRepository.saveAndFlush(type);
+        ListType type = ResourceTypes.LIST.register(this.repository, this.registry, this.expressions, listId, listDef, false);
 
         listDef.defaultEntries.forEach((s, listItem) -> {
             ResourceIdentifier id = new ResourceIdentifier(listId.source, s);
-            ListElement ele = this.listElementRepository.findById(id).orElse(new ListElement(id, type, listItem));
-            this.listElementRepository.saveAndFlush(ele);
+            ResourceTypes.LIST_ELEMENT.register(this.repository, this.registry, this.expressions, id, listItem, false);
         });
 
         return ResponseEntity.ok(ApiResponse.success(type));

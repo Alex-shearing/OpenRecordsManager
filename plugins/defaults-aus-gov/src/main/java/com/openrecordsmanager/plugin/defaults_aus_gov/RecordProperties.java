@@ -1,8 +1,8 @@
 package com.openrecordsmanager.plugin.defaults_aus_gov;
 
-import com.openrecordsmanager.list.IListElement;
-import com.openrecordsmanager.property.PropertyDefinition;
-import com.openrecordsmanager.property.PropertyType;
+import com.openrecordsmanager.api.list.IListElement;
+import com.openrecordsmanager.api.property.PropertyDefinition;
+import com.openrecordsmanager.api.property.PropertyType;
 
 import java.util.List;
 
@@ -11,21 +11,21 @@ public class RecordProperties {
             .name("Record Security Classification")
             .description("Security classification of the record.")
             .listType(Lists.SECURITY_CLASSIFICATION)
-            .securityFilter("principal['defaults_aus_gov:user_security_classification'] >= value")
+            .securityFilter("principal[{0}] >= value", UserProperties.USER_SECURITY_CLASSIFICATION)
             .build();
     public static final PropertyDefinition<List<IListElement>> RECORD_SECURITY_IMM = PropertyDefinition.builder("record_security_imm", PropertyType.LIST_MULTIPLE)
             .name("Record Information Management Marker")
             .description("Standardised tags used to indicate specific legal, professional, or ethical restrictions on access and use.")
             .listType(Lists.INFORMATION_MANAGEMENT_MARKER)
-            .validator("value.size() == 0 || resource['defaults_aus_gov:record_security_classification'] >= list('defaults_aus_gov:official_sensitive')")
+            .validator("value.size() == 0 || resource[{0}] >= list('defaults_aus_gov:official_sensitive')", RECORD_SECURITY_CLASSIFICATION)
             .build();
     public static final PropertyDefinition<List<IListElement>> RECORD_SECURITY_CAVEAT = PropertyDefinition.builder("record_security_caveat", PropertyType.LIST_MULTIPLE)
             .name("Record Security Caveat")
             .description("Warning that a security classified record or mandate requires special handling, " +
                     "and that only people cleared and briefed to see it may have access.")
             .listType(Lists.SECURITY_CAVEAT)
-            .securityFilter("value.all(x, x in principal['defaults_aus_gov:user_security_caveat'])")
-            .validator("value.size() == 0 || resource['defaults_aus_gov:record_security_classification'] >= list('defaults_aus_gov:protected')")
+            .securityFilter("value.all(x, x in principal[{0}])", UserProperties.USER_SECURITY_CAVEAT)
+            .validator("value.size() == 0 || resource[{0}] >= list('defaults_aus_gov:protected')", RECORD_SECURITY_CLASSIFICATION)
             .build();
     public static final PropertyDefinition<List<IListElement>> RECORD_SECURITY_RELEASABILITY = PropertyDefinition.builder("record_security_releasability", PropertyType.LIST_MULTIPLE)
             .name("Record Releasability")

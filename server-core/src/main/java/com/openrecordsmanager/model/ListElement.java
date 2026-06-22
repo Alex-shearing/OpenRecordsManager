@@ -3,8 +3,8 @@ package com.openrecordsmanager.model;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import com.openrecordsmanager.list.IListElement;
-import com.openrecordsmanager.list.ListItemDef;
+import com.openrecordsmanager.api.list.IListElement;
+import com.openrecordsmanager.api.list.ListElementDefinition;
 import com.openrecordsmanager.resources.ResourceIdentifier;
 import jakarta.persistence.*;
 import org.hibernate.annotations.JdbcTypeCode;
@@ -52,7 +52,7 @@ public class ListElement implements IListElement {
     protected ListElement() {
     }
 
-    public ListElement(ResourceIdentifier id, ListType parent, ListItemDef def) {
+    public ListElement(ResourceIdentifier id, ListType parent, ListElementDefinition def) {
         this(id, parent, def.display(), def.description(), def.index(), def.activeTo(), def.aliases());
     }
 
