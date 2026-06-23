@@ -10,6 +10,7 @@ import com.openrecordsmanager.resources.ResourceIdentifier;
 import java.util.Optional;
 
 public class ObjectPropertyType extends ResourceType<PropertyDefinition<?>, ObjectProperty<?>> {
+    @SuppressWarnings("unchecked")
     public ObjectPropertyType() {
         super("object_property", (Class<PropertyDefinition<?>>) (Class<?>) PropertyDefinition.class);
     }

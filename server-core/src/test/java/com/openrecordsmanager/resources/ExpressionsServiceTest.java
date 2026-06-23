@@ -71,9 +71,6 @@ class ExpressionsServiceTest {
     @Autowired
     private ExpressionsService expressions;
 
-    @Autowired
-    private ResourceCatalog registry;
-
     @Test
     void checkPropertyExpression_numberValue() {
         // Check user and record comparisons

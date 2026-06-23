@@ -75,7 +75,7 @@ public final class ConfigDefinition<T> implements Component {
 
     public static class Builder<T> {
         private final String id;
-        private ConfigValueType<T> type;
+        private final ConfigValueType<T> type;
         private String name;
         private String description;
         private T defaultValue;

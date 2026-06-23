@@ -78,10 +78,9 @@ public class ResourceCatalog {
 
             this.table.put(type, identifier, component);
 
+            // List specific registration to all list children
             if (component instanceof ListDefinition def) {
-                def.defaultEntries.forEach((s, listItemDef) -> {
-                    registerInstance(context, listItemDef);
-                });
+                def.defaultEntries.forEach((_, listItemDef) -> registerInstance(context, listItemDef));
             }
         }
     }

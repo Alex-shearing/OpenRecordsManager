@@ -33,7 +33,7 @@ public class ConfigStoreImpl extends EnumerablePropertySource<ConfigStoreImpl> i
         this.stringKeys = keys.toArray(String[]::new);
     }
 
-
+    @SuppressWarnings("unchecked")
     public <T> T getProperty(ConfigDefinition<T> key) {
         return (T) this.configs.get(key).value;
     }

@@ -49,7 +49,7 @@ public class ExpressionsService {
                 .addFunctionDeclarations(getCompilerDeclaration())
                 .build();
         this.celRuntime = CelRuntimeFactory.standardCelRuntimeBuilder()
-                .addFunctionBindings(getRuntimeBinding(registry, listElementRepo))
+                .addFunctionBindings(getRuntimeBinding(listElementRepo))
                 .build();
     }
 
@@ -159,7 +159,7 @@ public class ExpressionsService {
         );
     }
 
-    public static List<CelFunctionBinding> getRuntimeBinding(ResourceCatalog registry, ListElementRepository listElementRepo) {
+    public static List<CelFunctionBinding> getRuntimeBinding(ListElementRepository listElementRepo) {
         return List.of(
                 // List element comparisons
                 CelFunctionBinding.from(

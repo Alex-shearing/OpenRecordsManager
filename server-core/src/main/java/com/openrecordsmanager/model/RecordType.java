@@ -78,10 +78,9 @@ public class RecordType {
                 .stream()
                 .map(def -> createRecordTypeProperty(def, catalog, repository))
                 .collect(Collectors.<RecordTypeProperty<?>>toSet());
-
-        System.out.println(this.properties);
     }
 
+    @SuppressWarnings("unchecked")
     private <T> RecordTypeProperty<T> createRecordTypeProperty(Map.Entry<PropertyDefinition<?>, ?> entry, ResourceCatalog catalog, DataRepository repository) {
         ResourceIdentifier propId = catalog.getResourceId(ResourceTypes.PROPERTY, entry.getKey());
         if (propId == null) {

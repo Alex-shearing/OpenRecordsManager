@@ -18,6 +18,10 @@ public class ListElementResourceType extends ResourceType<ListElementDefinition,
     @Override
     public ListElement register(DataRepository repository, ResourceCatalog catalog, ExpressionsService expressions, ResourceIdentifier id, ListElementDefinition definition) {
         ResourceIdentifier parentId = catalog.getResourceId(ResourceTypes.LIST, definition.parent());
+        if (parentId == null) {
+            throw new IllegalArgumentException("attempted to register list element to a parent that was not registered");
+        }
+
         ListType parent = repository.listTypeRepo.findById(parentId).orElseThrow();
 
         ListElement type = new ListElement(id, parent, definition);
