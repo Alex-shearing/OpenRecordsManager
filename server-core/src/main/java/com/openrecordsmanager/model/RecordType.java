@@ -51,7 +51,11 @@ public class RecordType {
     public Set<String> contentTypes;
 
     @JsonProperty
-    @OneToMany(fetch = FetchType.EAGER, mappedBy = "recordType")
+    @ElementCollection
+    @CollectionTable(
+            name = "record_type_property",
+            joinColumns = @JoinColumn(name = "record_type")
+    )
     public Set<RecordTypeProperty<?>> properties;
 
     @Deprecated
@@ -89,7 +93,7 @@ public class RecordType {
             throw new IllegalArgumentException("Attempted to use property that was not registered: " + propId);
         }
 
-        return new RecordTypeProperty<>(this, (ObjectProperty<T>) property.get(), (T) entry.getValue());
+        return new RecordTypeProperty<>((ObjectProperty<T>) property.get(), (T) entry.getValue());
     }
 
     public boolean supportsFile() {
