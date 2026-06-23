@@ -1,11 +1,11 @@
 package com.openrecordsmanager.controllers;
 
+import com.openrecordsmanager.api.recordtype.RecordTypeDefinition;
 import com.openrecordsmanager.model.RecordType;
 import com.openrecordsmanager.model.repositories.DataRepository;
-import com.openrecordsmanager.api.recordtype.RecordTypeDefinition;
 import com.openrecordsmanager.resources.ExpressionsService;
+import com.openrecordsmanager.resources.ResourceCatalog;
 import com.openrecordsmanager.resources.ResourceIdentifier;
-import com.openrecordsmanager.resources.ResourceRegistry;
 import com.openrecordsmanager.resources.types.ResourceTypes;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,11 +19,11 @@ import java.util.stream.Collectors;
 @RequestMapping("/record")
 public class RecordController {
 
-    private final ResourceRegistry registry;
+    private final ResourceCatalog registry;
     private final ExpressionsService expressions;
     private final DataRepository repository;
 
-    public RecordController(ResourceRegistry registry, ExpressionsService expressions, DataRepository repository) {
+    public RecordController(ResourceCatalog registry, ExpressionsService expressions, DataRepository repository) {
         this.registry = registry;
         this.expressions = expressions;
         this.repository = repository;

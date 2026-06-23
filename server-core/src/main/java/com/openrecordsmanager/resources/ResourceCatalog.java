@@ -2,11 +2,12 @@ package com.openrecordsmanager.resources;
 
 import com.google.common.collect.ImmutableTable;
 import com.google.common.collect.Table;
+import com.openrecordsmanager.api.Component;
 import com.openrecordsmanager.api.Plugin;
 import com.openrecordsmanager.api.PluginContext;
-import com.openrecordsmanager.api.RegisterableComponent;
 import com.openrecordsmanager.api.list.ListDefinition;
 import com.openrecordsmanager.resources.types.ResourceType;
+import com.openrecordsmanager.resources.types.ResourceTypes;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,12 +19,12 @@ import java.util.Objects;
 import java.util.Set;
 
 @Service
-public class ResourceRegistry {
-    private static final Logger LOGGER = LoggerFactory.getLogger(ResourceRegistry.class);
+public class ResourceCatalog {
+    private static final Logger LOGGER = LoggerFactory.getLogger(ResourceCatalog.class);
 
-    private final Table<ResourceType<?, ?>, ResourceIdentifier, RegisterableComponent> resources;
+    private final Table<ResourceType<?, ?>, ResourceIdentifier, ? extends Component> resources;
 
-    public ResourceRegistry(PluginManager pluginManager) {
+    public ResourceCatalog(PluginManager pluginManager) {
         Builder builder = new Builder();
         for (Plugin plugin : pluginManager.getPlugins()) {
             LOGGER.info("Initializing plugin {}...", plugin.getName());
@@ -34,10 +35,11 @@ public class ResourceRegistry {
     }
 
     @Nullable
-    public <T extends RegisterableComponent> ResourceIdentifier getResourceId(ResourceType<T, ?> type, T definition) {
-        Map<ResourceIdentifier, RegisterableComponent> values = this.resources.row(type);
+    @SuppressWarnings("unchecked")
+    public <T extends Component> ResourceIdentifier getResourceId(ResourceType<T, ?> type, T definition) {
+        Map<ResourceIdentifier, T> values = (Map<ResourceIdentifier, T>) this.resources.row(type);
 
-        for (Map.Entry<ResourceIdentifier, RegisterableComponent> cell : values.entrySet()) {
+        for (Map.Entry<ResourceIdentifier, T> cell : values.entrySet()) {
             if (Objects.equals(cell.getValue(), definition)) {
                 return cell.getKey();
             }
@@ -51,22 +53,22 @@ public class ResourceRegistry {
     }
 
     @SuppressWarnings("unchecked")
-    public <T extends RegisterableComponent> Collection<T> getComponents(ResourceType<T, ?> type) {
+    public <T extends Component> Collection<T> getComponents(ResourceType<T, ?> type) {
         return (Collection<T>) this.resources.row(type).values();
     }
 
     @SuppressWarnings("unchecked")
-    public <T extends RegisterableComponent> T getComponent(ResourceType<T, ?> type, ResourceIdentifier id) {
+    public <T extends Component> T getComponent(ResourceType<T, ?> type, ResourceIdentifier id) {
         return (T) this.resources.get(type, id);
     }
 
     private static class Builder {
-        private final ImmutableTable.Builder<ResourceType<?, ?>, ResourceIdentifier, RegisterableComponent> table = ImmutableTable.builder();
+        private final ImmutableTable.Builder<ResourceType<?, ?>, ResourceIdentifier, Component> table = ImmutableTable.builder();
 
-        private void registerInstance(PluginContextImpl context, RegisterableComponent component) {
+        private void registerInstance(PluginContextImpl context, Component component) {
             ResourceIdentifier identifier = new ResourceIdentifier(context.plugin.getName(), component.id());
 
-            ResourceType<? extends RegisterableComponent, ?> type = ResourceType.fromObject(component);
+            ResourceType<? extends Component, ?> type = ResourceTypes.fromObject(component);
             if (type == null) {
                 LOGGER.error("Did not know how to register instance '{}' of type {}", identifier, component.getClass());
                 return;
@@ -86,8 +88,8 @@ public class ResourceRegistry {
 
     private record PluginContextImpl(Builder builder, Plugin plugin) implements PluginContext {
         @Override
-        public void registerComponents(RegisterableComponent... types) {
-            for (RegisterableComponent type : types) {
+        public void registerComponents(Component... types) {
+            for (Component type : types) {
                 this.builder.registerInstance(this, type);
             }
         }

@@ -1,9 +1,9 @@
 package com.openrecordsmanager.resources;
 
 import com.openrecordsmanager.api.list.IListElement;
+import com.openrecordsmanager.api.property.PropertyType;
 import com.openrecordsmanager.model.*;
 import com.openrecordsmanager.model.Record;
-import com.openrecordsmanager.api.property.PropertyType;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -72,7 +72,7 @@ class ExpressionsServiceTest {
     private ExpressionsService expressions;
 
     @Autowired
-    private ResourceRegistry registry;
+    private ResourceCatalog registry;
 
     @Test
     void checkPropertyExpression_numberValue() {

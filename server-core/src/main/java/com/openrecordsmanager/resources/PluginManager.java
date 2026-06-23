@@ -25,18 +25,18 @@ public class PluginManager {
             return;
         }
 
-        File[] flist = loc.listFiles((_, name) -> name.endsWith(".jar"));
-        if (flist == null) return;
+        File[] jarList = loc.listFiles((_, name) -> name.endsWith(".jar"));
+        if (jarList == null) return;
 
-        URL[] urls = new URL[flist.length];
-        for (int i = 0; i < flist.length; i++) {
+        URL[] urls = new URL[jarList.length];
+        for (int i = 0; i < jarList.length; i++) {
             try {
-                urls[i] = flist[i].toURI().toURL();
+                urls[i] = jarList[i].toURI().toURL();
             } catch (MalformedURLException e) {
-                LOGGER.error("Failed to load URL for plugin file {}", flist[i].getName());
+                LOGGER.error("Failed to load URL for plugin file {}", jarList[i].getName());
                 continue;
             }
-            LOGGER.info("Found plugin JAR: {}", flist[i].getName());
+            LOGGER.info("Found plugin JAR: {}", jarList[i].getName());
         }
 
         // Create an isolated ClassLoader so plugins don't corrupt Server Core classpath
@@ -49,7 +49,7 @@ public class PluginManager {
         loadedPlugins.add(new BuiltinResources());
         loadedPlugins.addAll(Arrays.asList(additionalPlugins));
 
-        // Initialise all the plugins
+        // Initialize all the plugins
         for (Plugin plugin : loader) {
             LOGGER.info("Found plugin '{}', loading...", plugin.getName());
             loadedPlugins.add(plugin);

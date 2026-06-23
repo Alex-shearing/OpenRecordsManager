@@ -1,13 +1,13 @@
 package com.openrecordsmanager.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.openrecordsmanager.model.repositories.DataRepository;
-import com.openrecordsmanager.model.util.PropertyTypeConverter;
 import com.openrecordsmanager.api.property.PropertyDefinition;
 import com.openrecordsmanager.api.property.PropertyType;
+import com.openrecordsmanager.model.repositories.DataRepository;
+import com.openrecordsmanager.model.util.PropertyTypeConverter;
 import com.openrecordsmanager.resources.ExpressionsService;
+import com.openrecordsmanager.resources.ResourceCatalog;
 import com.openrecordsmanager.resources.ResourceIdentifier;
-import com.openrecordsmanager.resources.ResourceRegistry;
 import com.openrecordsmanager.resources.types.ResourceTypes;
 import jakarta.persistence.*;
 import org.hibernate.annotations.JavaType;
@@ -62,7 +62,7 @@ public class ObjectProperty<T> {
         this.type = type;
     }
 
-    public ObjectProperty(ResourceIdentifier identifier, ResourceRegistry registry, ExpressionsService expressions, DataRepository repository, PropertyDefinition<T> definition) {
+    public ObjectProperty(ResourceIdentifier identifier, ResourceCatalog registry, ExpressionsService expressions, DataRepository repository, PropertyDefinition<T> definition) {
         this(identifier, definition.getName(), definition.getDescription(), definition.getType());
         if (definition.getType().allowsList() && definition.getListType() != null) {
             ResourceIdentifier listId = registry.getResourceId(ResourceTypes.LIST, definition.getListType());

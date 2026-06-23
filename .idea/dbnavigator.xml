@@ -29,10 +29,10 @@
   </component>
   <component name="DBNavigator.Project.DatabaseAssistantManager">
     <assistants>
-      <assistant-state connection-id="917ea075-25a4-4c44-8edd-7270e2ddad2e" assistant-type="SELECT_AI" default-profile-name="" selected-chat-id="" availability="UNAVAILABLE" acknowledgement="NONE">
+      <assistant-state connection-id="917ea075-25a4-4c44-8edd-7270e2ddad2e" assistant-type="PUBLIC" default-profile-name="" selected-chat-id="" availability="AVAILABLE" acknowledgement="NONE" selected="true">
         <tools />
       </assistant-state>
-      <assistant-state connection-id="917ea075-25a4-4c44-8edd-7270e2ddad2e" assistant-type="PUBLIC" default-profile-name="" selected-chat-id="" availability="AVAILABLE" acknowledgement="NONE" selected="true">
+      <assistant-state connection-id="917ea075-25a4-4c44-8edd-7270e2ddad2e" assistant-type="SELECT_AI" default-profile-name="" selected-chat-id="" availability="UNAVAILABLE" acknowledgement="NONE">
         <tools />
       </assistant-state>
     </assistants>
@@ -62,7 +62,9 @@ from
     <last-used-providers />
   </component>
   <component name="DBNavigator.Project.DatabaseFileManager">
-    <open-files />
+    <open-files>
+      <object connection-id="917ea075-25a4-4c44-8edd-7270e2ddad2e" object-ref="schemas/orm_system/tables/record_type" />
+    </open-files>
   </component>
   <component name="DBNavigator.Project.DatabasePrerequisiteManager">
     <prerequisites />
@@ -75,6 +77,7 @@ from
       <filter id="9d217cc0-e32e-4ca5-9f93-9acd1828e8a6" name="Filter" temporary="false" custom-name="false" type="basic" join-type="AND" />
     </filter-actions>
     <filter-actions connection-id="917ea075-25a4-4c44-8edd-7270e2ddad2e" dataset="orm_system.record_type" active-filter-id="EMPTY_FILTER" />
+    <filter-actions connection-id="917ea075-25a4-4c44-8edd-7270e2ddad2e" dataset="orm_system.record_type_property" active-filter-id="EMPTY_FILTER" />
     <filter-actions connection-id="917ea075-25a4-4c44-8edd-7270e2ddad2e" dataset="orm_system.auth_provider" active-filter-id="EMPTY_FILTER">
       <filter id="6dd95021-0089-474a-998c-142dce4e4359" name="Filter" temporary="false" custom-name="false" type="basic" join-type="AND">
         <condition column="id" operator="=" value="" active="true" />

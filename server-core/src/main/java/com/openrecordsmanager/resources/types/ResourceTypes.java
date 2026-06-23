@@ -1,5 +1,6 @@
 package com.openrecordsmanager.resources.types;
 
+import com.openrecordsmanager.api.Component;
 import com.openrecordsmanager.api.auth.InputAuthProviderType;
 import com.openrecordsmanager.api.auth.RedirectAuthProviderType;
 import com.openrecordsmanager.api.config.ConfigDefinition;
@@ -11,6 +12,7 @@ import com.openrecordsmanager.model.ListElement;
 import com.openrecordsmanager.model.ListType;
 import com.openrecordsmanager.model.ObjectProperty;
 import com.openrecordsmanager.model.RecordType;
+import org.jspecify.annotations.Nullable;
 
 public class ResourceTypes {
     @SuppressWarnings("unchecked")
@@ -25,4 +27,16 @@ public class ResourceTypes {
     public static final ResourceType<?, ?>[] VALUES = {
             CONFIG, LIST, LIST_ELEMENT, PROPERTY, RECORD_TYPE, INPUT_AUTH_PROVIDER, REDIRECT_AUTH_PROVIDER
     };
+
+    @Nullable
+    @SuppressWarnings("unchecked")
+    public static <K extends Component, D> ResourceType<K, D> fromObject(K object) {
+        for (ResourceType<?, ?> value : VALUES) {
+            if (value.is(object)) {
+                return (ResourceType<K, D>) value;
+            }
+        }
+
+        return null;
+    }
 }

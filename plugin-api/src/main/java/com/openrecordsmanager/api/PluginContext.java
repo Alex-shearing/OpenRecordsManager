@@ -1,5 +1,5 @@
 package com.openrecordsmanager.api;
 
 public interface PluginContext {
-    void registerComponents(RegisterableComponent... types);
+    void registerComponents(Component... types);
 }

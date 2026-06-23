@@ -1,6 +1,6 @@
 package com.openrecordsmanager.api.list;
 
-import com.openrecordsmanager.api.RegisterableComponent;
+import com.openrecordsmanager.api.Component;
 
 import java.util.Calendar;
 import java.util.Date;
@@ -8,7 +8,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 public record ListElementDefinition(String id, String display, String description, int index, Date activeTo,
-                                    Set<String> aliases, ListDefinition parent) implements RegisterableComponent {
+                                    Set<String> aliases, ListDefinition parent) implements Component {
 
     @Override
     public String id() {
@@ -16,7 +16,7 @@ public record ListElementDefinition(String id, String display, String descriptio
     }
 
     @Override
-    public Set<RegisterableComponent> getDependencies() {
+    public Set<Component> getDependencies() {
         return Set.of(this.parent);
     }
 

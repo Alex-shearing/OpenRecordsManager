@@ -5,8 +5,8 @@ import com.openrecordsmanager.model.ListElement;
 import com.openrecordsmanager.model.ListType;
 import com.openrecordsmanager.model.repositories.DataRepository;
 import com.openrecordsmanager.resources.ExpressionsService;
+import com.openrecordsmanager.resources.ResourceCatalog;
 import com.openrecordsmanager.resources.ResourceIdentifier;
-import com.openrecordsmanager.resources.ResourceRegistry;
 import com.openrecordsmanager.resources.types.ResourceTypes;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -21,11 +21,11 @@ import java.util.stream.Collectors;
 @RequestMapping("/list")
 public class ListController {
 
-    private final ResourceRegistry registry;
+    private final ResourceCatalog registry;
     private final DataRepository repository;
     private final ExpressionsService expressions;
 
-    public ListController(ResourceRegistry registry, DataRepository repository, ExpressionsService expressions) {
+    public ListController(ResourceCatalog registry, DataRepository repository, ExpressionsService expressions) {
         this.registry = registry;
         this.repository = repository;
         this.expressions = expressions;

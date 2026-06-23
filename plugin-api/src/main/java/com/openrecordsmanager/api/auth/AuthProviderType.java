@@ -1,6 +1,6 @@
 package com.openrecordsmanager.api.auth;
 
-import com.openrecordsmanager.api.RegisterableComponent;
+import com.openrecordsmanager.api.Component;
 
-public abstract class AuthProviderType implements RegisterableComponent {
+public abstract class AuthProviderType implements Component {
 }

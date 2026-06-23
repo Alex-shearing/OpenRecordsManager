@@ -1,12 +1,13 @@
 package com.openrecordsmanager.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.openrecordsmanager.model.repositories.DataRepository;
+import com.openrecordsmanager.api.property.PropertyDefinition;
 import com.openrecordsmanager.api.recordtype.RecordTypeDefinition;
 import com.openrecordsmanager.api.recordtype.SecurityFilterUsage;
+import com.openrecordsmanager.model.repositories.DataRepository;
 import com.openrecordsmanager.resources.ExpressionsService;
+import com.openrecordsmanager.resources.ResourceCatalog;
 import com.openrecordsmanager.resources.ResourceIdentifier;
-import com.openrecordsmanager.resources.ResourceRegistry;
 import com.openrecordsmanager.resources.types.ResourceTypes;
 import jakarta.persistence.*;
 import org.hibernate.annotations.JdbcTypeCode;
@@ -14,6 +15,7 @@ import org.hibernate.type.SqlTypes;
 import org.jspecify.annotations.Nullable;
 
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -48,10 +50,9 @@ public class RecordType {
     @JdbcTypeCode(SqlTypes.JSON)
     public Set<String> contentTypes;
 
-    @Column(nullable = false)
     @JsonProperty
-    @ManyToMany(fetch = FetchType.EAGER)
-    public Set<ObjectProperty<?>> properties;
+    @OneToMany(fetch = FetchType.EAGER, mappedBy = "recordType")
+    public Set<RecordTypeProperty<?>> properties;
 
     @Deprecated
     protected RecordType() {
@@ -67,23 +68,28 @@ public class RecordType {
         this.properties = new HashSet<>();
     }
 
-    public RecordType(ResourceIdentifier id, ResourceRegistry registry, ExpressionsService expressions, DataRepository repository, RecordTypeDefinition definition) {
+    public RecordType(ResourceIdentifier id, ResourceCatalog catalog, ExpressionsService expressions, DataRepository repository, RecordTypeDefinition definition) {
         this(id, definition.name(), definition.description(), definition.allowedContentTypes(), expressions.buildExpression(definition.securityFilter()), definition.securityFilterUsage());
-        this.properties = definition.properties()
+        this.properties = definition.properties().entrySet()
                 .stream()
-                .map(def -> {
-                    ResourceIdentifier propId = registry.getResourceId(ResourceTypes.PROPERTY, def);
-                    if (propId == null) {
-                        throw new IllegalArgumentException("Attempted to use property that was not registered: " + def.getName());
-                    }
-                    Optional<ObjectProperty<?>> prop = repository.objectPropertyRepo.findById(propId);
-                    if (prop.isEmpty()) {
-                        throw new IllegalArgumentException("Attempted to use property that does not exist: " + propId);
-                    }
+                .map(def -> createRecordTypeProperty(def, catalog, repository))
+                .collect(Collectors.<RecordTypeProperty<?>>toSet());
 
-                    return prop.get();
-                })
-                .collect(Collectors.toSet());
+        System.out.println(this.properties);
+    }
+
+    private <T> RecordTypeProperty<T> createRecordTypeProperty(Map.Entry<PropertyDefinition<?>, ?> entry, ResourceCatalog catalog, DataRepository repository) {
+        ResourceIdentifier propId = catalog.getResourceId(ResourceTypes.PROPERTY, entry.getKey());
+        if (propId == null) {
+            throw new IllegalArgumentException("Attempted to use property that was not in catalog: " + entry.getKey().getName());
+        }
+
+        Optional<ObjectProperty<?>> property = ResourceTypes.PROPERTY.getRegistered(propId, repository);
+        if (property.isEmpty()) {
+            throw new IllegalArgumentException("Attempted to use property that was not registered: " + propId);
+        }
+
+        return new RecordTypeProperty<>(this, (ObjectProperty<T>) property.get(), (T) entry.getValue());
     }
 
     public boolean supportsFile() {

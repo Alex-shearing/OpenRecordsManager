@@ -2,10 +2,10 @@ package com.openrecordsmanager.api;
 
 import java.util.Set;
 
-public interface RegisterableComponent {
+public interface Component {
     String id();
 
-    default Set<RegisterableComponent> getDependencies() {
+    default Set<Component> getDependencies() {
         return Set.of();
     }
 }

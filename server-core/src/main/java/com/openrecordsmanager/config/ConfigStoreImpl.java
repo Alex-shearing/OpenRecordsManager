@@ -3,7 +3,7 @@ package com.openrecordsmanager.config;
 import com.google.common.collect.ImmutableMap;
 import com.openrecordsmanager.api.config.ConfigDefinition;
 import com.openrecordsmanager.api.config.ConfigStore;
-import com.openrecordsmanager.resources.ResourceRegistry;
+import com.openrecordsmanager.resources.ResourceCatalog;
 import com.openrecordsmanager.resources.types.ResourceTypes;
 import jakarta.annotation.Nullable;
 import org.jspecify.annotations.NonNull;
@@ -53,7 +53,7 @@ public class ConfigStoreImpl extends EnumerablePropertySource<ConfigStoreImpl> i
                 .orElse(null);
     }
 
-    public static ConfigStoreImpl build(@Nullable ResourceRegistry pluginManager) {
+    public static ConfigStoreImpl build(@Nullable ResourceCatalog pluginManager) {
         Collection<ConfigDefinition<?>> pluginConfigs = List.of();
         if (pluginManager != null) {
             pluginConfigs = pluginManager.getComponents(ResourceTypes.CONFIG);

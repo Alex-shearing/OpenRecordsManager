@@ -5,8 +5,8 @@ import com.openrecordsmanager.model.ListElement;
 import com.openrecordsmanager.model.ListType;
 import com.openrecordsmanager.model.repositories.DataRepository;
 import com.openrecordsmanager.resources.ExpressionsService;
+import com.openrecordsmanager.resources.ResourceCatalog;
 import com.openrecordsmanager.resources.ResourceIdentifier;
-import com.openrecordsmanager.resources.ResourceRegistry;
 
 import java.util.Optional;
 
@@ -16,8 +16,8 @@ public class ListElementResourceType extends ResourceType<ListElementDefinition,
     }
 
     @Override
-    public ListElement register(DataRepository repository, ResourceRegistry registry, ExpressionsService expressions, ResourceIdentifier id, ListElementDefinition definition) {
-        ResourceIdentifier parentId = registry.getResourceId(ResourceTypes.LIST, definition.parent());
+    public ListElement register(DataRepository repository, ResourceCatalog catalog, ExpressionsService expressions, ResourceIdentifier id, ListElementDefinition definition) {
+        ResourceIdentifier parentId = catalog.getResourceId(ResourceTypes.LIST, definition.parent());
         ListType parent = repository.listTypeRepo.findById(parentId).orElseThrow();
 
         ListElement type = new ListElement(id, parent, definition);
@@ -25,7 +25,7 @@ public class ListElementResourceType extends ResourceType<ListElementDefinition,
     }
 
     @Override
-    protected Optional<ListElement> get(ResourceIdentifier id, DataRepository repo) {
+    public Optional<ListElement> getRegistered(ResourceIdentifier id, DataRepository repo) {
         return repo.listElementRepo.findById(id);
     }
 }

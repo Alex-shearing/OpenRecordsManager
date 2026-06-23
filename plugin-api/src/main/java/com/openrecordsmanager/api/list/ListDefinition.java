@@ -1,14 +1,14 @@
 package com.openrecordsmanager.api.list;
 
 import com.google.common.collect.ImmutableMap;
-import com.openrecordsmanager.api.RegisterableComponent;
+import com.openrecordsmanager.api.Component;
 
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
 
 @SuppressWarnings("unused")
-public class ListDefinition implements RegisterableComponent {
+public class ListDefinition implements Component {
     public final String id;
     public final String display;
     public final Map<String, ListElementDefinition> defaultEntries;

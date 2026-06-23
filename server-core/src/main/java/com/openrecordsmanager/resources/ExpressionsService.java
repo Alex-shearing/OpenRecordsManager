@@ -35,11 +35,11 @@ import java.util.UUID;
 public class ExpressionsService {
     private static final Logger LOGGER = LoggerFactory.getLogger(ExpressionsService.class);
 
-    private final ResourceRegistry registry;
+    private final ResourceCatalog registry;
     private final CelCompiler celCompiler;
     private final CelRuntime celRuntime;
 
-    public ExpressionsService(ResourceRegistry registry, ListElementRepository listElementRepo) {
+    public ExpressionsService(ResourceCatalog registry, ListElementRepository listElementRepo) {
         this.registry = registry;
         this.celCompiler = CelCompilerFactory.standardCelCompilerBuilder()
                 .addVar("value", SimpleType.DYN)
@@ -159,7 +159,7 @@ public class ExpressionsService {
         );
     }
 
-    public static List<CelFunctionBinding> getRuntimeBinding(ResourceRegistry registry, ListElementRepository listElementRepo) {
+    public static List<CelFunctionBinding> getRuntimeBinding(ResourceCatalog registry, ListElementRepository listElementRepo) {
         return List.of(
                 // List element comparisons
                 CelFunctionBinding.from(

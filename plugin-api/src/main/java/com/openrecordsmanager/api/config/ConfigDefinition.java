@@ -1,11 +1,11 @@
 package com.openrecordsmanager.api.config;
 
-import com.openrecordsmanager.api.RegisterableComponent;
+import com.openrecordsmanager.api.Component;
 
 import java.util.Locale;
 import java.util.Objects;
 
-public final class ConfigDefinition<T> implements RegisterableComponent {
+public final class ConfigDefinition<T> implements Component {
     private final String id;
     private final ConfigValueType<T> type;
     private final String name;

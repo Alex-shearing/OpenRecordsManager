@@ -1,6 +1,6 @@
 package com.openrecordsmanager.api.property;
 
-import com.openrecordsmanager.api.RegisterableComponent;
+import com.openrecordsmanager.api.Component;
 import com.openrecordsmanager.api.expression.ExpressionBuilder;
 import com.openrecordsmanager.api.list.ListDefinition;
 import org.jspecify.annotations.Nullable;
@@ -11,7 +11,7 @@ import java.util.Objects;
 import java.util.Set;
 
 @SuppressWarnings("unused")
-public class PropertyDefinition<T> implements RegisterableComponent {
+public class PropertyDefinition<T> implements Component {
     private final String id;
     private final PropertyType<T> type;
     private final String name;
@@ -25,7 +25,7 @@ public class PropertyDefinition<T> implements RegisterableComponent {
     @Nullable
     private final ExpressionBuilder securityFilter;
 
-    private final Set<RegisterableComponent> dependencies = new HashSet<>();
+    private final Set<Component> dependencies = new HashSet<>();
 
     private PropertyDefinition(String id, PropertyType<T> type, String name, String description, @Nullable ListDefinition listType, @Nullable ExpressionBuilder validator, @Nullable T defaultValue, @Nullable ExpressionBuilder securityFilter) {
         this.id = id;
@@ -70,7 +70,7 @@ public class PropertyDefinition<T> implements RegisterableComponent {
         return securityFilter;
     }
 
-    public Set<RegisterableComponent> getDependencies() {
+    public Set<Component> getDependencies() {
         return dependencies;
     }
 

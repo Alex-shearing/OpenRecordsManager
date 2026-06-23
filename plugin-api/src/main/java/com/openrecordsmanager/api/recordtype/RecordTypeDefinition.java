@@ -1,29 +1,26 @@
 package com.openrecordsmanager.api.recordtype;
 
-import com.openrecordsmanager.api.RegisterableComponent;
+import com.openrecordsmanager.api.Component;
 import com.openrecordsmanager.api.expression.ExpressionBuilder;
 import com.openrecordsmanager.api.property.PropertyDefinition;
 import org.jspecify.annotations.Nullable;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 
-public final class RecordTypeDefinition implements RegisterableComponent {
+public final class RecordTypeDefinition implements Component {
     private final String id;
     private final String name;
     private final String description;
-    private final Set<PropertyDefinition<?>> properties;
+    private final Map<PropertyDefinition<?>, ?> properties;
     private final @Nullable Set<String> allowedContentTypes;
     private final @Nullable ExpressionBuilder securityFilter;
     private final SecurityFilterUsage securityFilterUsage;
 
-    private final Set<RegisterableComponent> dependencies = new HashSet<>();
+    private final Set<Component> dependencies = new HashSet<>();
 
-    public RecordTypeDefinition(String id, String name, String description, Set<PropertyDefinition<?>> properties,
+    public RecordTypeDefinition(String id, String name, String description, Map<PropertyDefinition<?>, ?> properties,
                                 @Nullable Set<String> allowedContentTypes, @Nullable ExpressionBuilder securityFilter,
                                 SecurityFilterUsage securityFilterUsage) {
         this.id = id;
@@ -34,7 +31,7 @@ public final class RecordTypeDefinition implements RegisterableComponent {
         this.securityFilter = securityFilter;
         this.securityFilterUsage = securityFilterUsage;
 
-        this.dependencies.addAll(this.properties);
+        this.dependencies.addAll(this.properties.keySet());
 
         if (securityFilter != null) this.dependencies.addAll(List.of(securityFilter.dependencies()));
     }
@@ -56,7 +53,7 @@ public final class RecordTypeDefinition implements RegisterableComponent {
         return description;
     }
 
-    public Set<PropertyDefinition<?>> properties() {
+    public Map<PropertyDefinition<?>, ?> properties() {
         return properties;
     }
 
@@ -73,7 +70,7 @@ public final class RecordTypeDefinition implements RegisterableComponent {
     }
 
     @Override
-    public Set<RegisterableComponent> getDependencies() {
+    public Set<Component> getDependencies() {
         return dependencies;
     }
 
@@ -81,7 +78,7 @@ public final class RecordTypeDefinition implements RegisterableComponent {
         private final String id;
         private String name;
         private String description = "";
-        private final Set<PropertyDefinition<?>> properties = new HashSet<>();
+        private final Map<PropertyDefinition<?>, Object> properties = new HashMap<>();
         private Set<String> allowedContentTypes = null;
         private ExpressionBuilder securityFilter = null;
         private SecurityFilterUsage securityFilterUsage = SecurityFilterUsage.HIDE_FILES;
@@ -102,7 +99,12 @@ public final class RecordTypeDefinition implements RegisterableComponent {
         }
 
         public Builder property(PropertyDefinition<?> property) {
-            this.properties.add(property);
+            this.properties.put(property, null);
+            return this;
+        }
+
+        public <T> Builder property(PropertyDefinition<T> property, T defaultValue) {
+            this.properties.put(property, defaultValue);
             return this;
         }
 
