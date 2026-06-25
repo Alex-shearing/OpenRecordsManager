@@ -1,16 +1,13 @@
 package com.openrecordsmanager.resources;
 
 import com.fasterxml.jackson.annotation.JsonValue;
+import org.jspecify.annotations.NonNull;
 
 import java.io.Serializable;
-import java.util.Objects;
 import java.util.regex.Pattern;
 
-public class ResourceIdentifier implements Serializable {
+public record ResourceIdentifier(String source, String item) implements Serializable {
     private static final Pattern VALID_IDENTIFIER = Pattern.compile("^[a-z0-9_.]+$");
-
-    public final String source;
-    public final String item;
 
     public ResourceIdentifier(String source, String item) {
         this.source = validateIdentifier(source);
@@ -28,20 +25,9 @@ public class ResourceIdentifier implements Serializable {
 
     @Override
     @JsonValue
+    @NonNull
     public String toString() {
         return this.source + ":" + this.item;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (o == null || getClass() != o.getClass()) return false;
-        ResourceIdentifier that = (ResourceIdentifier) o;
-        return Objects.equals(source, that.source) && Objects.equals(item, that.item);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(source, item);
     }
 
     private static String validateIdentifier(String input) {

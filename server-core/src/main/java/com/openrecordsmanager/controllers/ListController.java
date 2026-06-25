@@ -95,7 +95,7 @@ public class ListController {
         ListType type = ResourceTypes.LIST.register(this.repository, this.registry, this.expressions, listId, listDef, false);
 
         listDef.defaultEntries.forEach((s, listItem) -> {
-            ResourceIdentifier id = new ResourceIdentifier(listId.source, s);
+            ResourceIdentifier id = new ResourceIdentifier(listId.source(), s);
             ResourceTypes.LIST_ELEMENT.register(this.repository, this.registry, this.expressions, id, listItem, false);
         });
 

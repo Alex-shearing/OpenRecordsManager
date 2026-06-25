@@ -58,9 +58,7 @@ public class OidcAuthProviderType extends RedirectAuthProviderType {
                     .build();
 
             return request.toURI();
-        } catch (URISyntaxException | IOException e) {
-            throw new RuntimeException(e);
-        } catch (ParseException e) {
+        } catch (URISyntaxException | IOException | ParseException e) {
             throw new RuntimeException(e);
         }
     }
@@ -114,11 +112,7 @@ public class OidcAuthProviderType extends RedirectAuthProviderType {
         } catch (ParseException e) {
             LOGGER.error("OIDC redirect URI parse error: {}", e.getMessage());
             return null;
-        } catch (URISyntaxException e) {
-            throw new RuntimeException(e);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        } catch (java.text.ParseException e) {
+        } catch (URISyntaxException | IOException | java.text.ParseException e) {
             throw new RuntimeException(e);
         }
     }

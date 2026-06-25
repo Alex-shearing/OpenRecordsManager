@@ -8,7 +8,6 @@ public class ConfigProperties {
             .name("Database URL")
             .alias("spring.datasource.url")
             .description("A JDBC URL to the database")
-            .defaultValue("asdasd")
             .build();
 
     public static final ConfigDefinition<String> WORKGROUP_NAME = ConfigDefinition.builder("workgroup.name", ConfigValueType.STRING)
@@ -24,5 +23,5 @@ public class ConfigProperties {
             .defaultValue("INFO")
             .build();
 
-    public static ConfigDefinition<?>[] BUILTIN_CONFIG = {WORKGROUP_DATABASE_URL, WORKGROUP_NAME, LOGGING_LEVEL};
+    public static final ConfigDefinition<?>[] BUILTIN_CONFIG = {WORKGROUP_DATABASE_URL, WORKGROUP_NAME, LOGGING_LEVEL};
 }

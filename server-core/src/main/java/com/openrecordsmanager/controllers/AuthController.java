@@ -25,7 +25,6 @@ public class AuthController {
     private final ResourceCatalog catalog;
     private final DataRepository repository;
 
-    // Spring automatically injects the PluginRuntimeManager Bean here
     public AuthController(ResourceCatalog catalog, DataRepository repository) {
         this.catalog = catalog;
         this.repository = repository;
@@ -78,8 +77,6 @@ public class AuthController {
         if (user == null) {
             return ResponseEntity.badRequest().body(ApiResponse.error("invalid authentication attempt"));
         }
-
-        System.out.println(user.email());
 
         return ResponseEntity.ok(ApiResponse.success(new AuthenticationResponse("token")));
     }

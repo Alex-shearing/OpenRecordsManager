@@ -40,7 +40,7 @@ public class User implements ObjectPropertyHolder<UserPropertyValue<?>> {
     }
 
     @Override
-    public boolean hasProperty(ObjectProperty<?> property) {
+    public boolean canSetProperty(ObjectProperty<?> property) {
         return true;
     }
 

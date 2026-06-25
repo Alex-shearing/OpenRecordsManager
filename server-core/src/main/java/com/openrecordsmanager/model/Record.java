@@ -35,7 +35,7 @@ public class Record implements ObjectPropertyHolder<RecordPropertyValue<?>> {
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "record")
     @MapKey(name = "property")
     @JsonProperty
-    public Map<ObjectProperty<?>, RecordPropertyValue<?>> properties;
+    private Map<ObjectProperty<?>, RecordPropertyValue<?>> properties;
 
     @Deprecated
     protected Record() {
@@ -48,7 +48,7 @@ public class Record implements ObjectPropertyHolder<RecordPropertyValue<?>> {
         this.file = file;
         if (this.type != null) {
             this.properties = type.properties.stream()
-                    .map(prop -> Map.entry(prop.property, prop.getPropertyValue(this, null)))
+                    .map(prop -> Map.entry(prop.property, newProperty(prop)))
                     .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
         } else {
             this.properties = new HashMap<>();
@@ -71,12 +71,18 @@ public class Record implements ObjectPropertyHolder<RecordPropertyValue<?>> {
         return new RecordPropertyValue<>(this, property, value);
     }
 
+    @SuppressWarnings("unchecked")
     private <T> RecordPropertyValue<T> newProperty(RecordTypeProperty<T> property) {
-        return this.createProperty(property.property, property.getDefault());
+        RecordPropertyValue<?> oldValue = this.properties.get(property.property);
+
+        // Either get the previous value (if exists) or the property default
+        T newValue = oldValue != null && oldValue.value != null ? (T) oldValue.value : property.getDefault();
+
+        return this.createProperty(property.property, newValue);
     }
 
     @Override
-    public boolean hasProperty(ObjectProperty<?> property) {
+    public boolean canSetProperty(ObjectProperty<?> property) {
         return this.type == null || this.properties.containsKey(property);
     }
 

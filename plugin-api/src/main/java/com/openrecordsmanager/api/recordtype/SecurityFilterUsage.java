@@ -18,6 +18,5 @@ public enum SecurityFilterUsage {
      * Does not hide any aspect of the record for a user who does not pass the security filter.
      */
     SHOW_ALL,
-    ;
 
 }

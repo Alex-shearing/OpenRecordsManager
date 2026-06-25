@@ -25,14 +25,14 @@ public interface ObjectPropertyHolder<T extends ObjectPropertyHolder.ObjectPrope
         return (K) this.getProperties().get(property).getValue();
     }
 
-    boolean hasProperty(ObjectProperty<?> property);
+    boolean canSetProperty(ObjectProperty<?> property);
 
     <V> T createProperty(ObjectProperty<V> property, V value);
 
     default <K> void setProperty(ObjectProperty<K> property, K value) {
         T holder = this.getProperties().get(property);
         if (holder == null) {
-            if (!this.hasProperty(property)) {
+            if (!this.canSetProperty(property)) {
                 throw new IllegalArgumentException("Property " + property + " does not exist on object");
             }
 

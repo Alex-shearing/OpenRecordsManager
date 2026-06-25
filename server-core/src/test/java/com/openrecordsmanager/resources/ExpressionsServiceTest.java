@@ -117,7 +117,7 @@ class ExpressionsServiceTest {
         ObjectProperty<Boolean> recordProperty = new ObjectProperty<>(ResourceIdentifier.valueOf("test:record_boolean"), "Record Boolean", "Record Boolean", PropertyType.BOOLEAN);
 
         Record record = new Record(UUID.randomUUID(), "Record title", null, null);
-        record.properties.put(recordProperty, new RecordPropertyValue<>(record, recordProperty, false));
+        record.setProperty(recordProperty, false);
 
         // Check user has all required items
         Assertions.assertTrue(this.expressions.checkPropertyExpression(EMPTY_UUID, "value == principal['test:string_property'] && resource['test:record_boolean'] == false", "test value", TEST_USER, record), "Extended resource: User should have access");

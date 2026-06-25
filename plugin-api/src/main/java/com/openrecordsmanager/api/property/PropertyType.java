@@ -6,7 +6,7 @@ import java.util.*;
 
 @SuppressWarnings("unused")
 public abstract class PropertyType<T> {
-    public static Map<String, PropertyType<?>> TYPES = new HashMap<>(7);
+    public static final Map<String, PropertyType<?>> TYPES = new HashMap<>(7);
 
     public static final PropertyType<String> CALCULATED = new PropertyType<>("calculated") {
         @Override
