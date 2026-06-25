@@ -5,36 +5,54 @@ import com.openrecordsmanager.resources.ResourceIdentifier;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 public interface ObjectPropertyHolder<T extends ObjectPropertyHolder.ObjectPropertyValue<?>> {
 
-    Set<T> getProperties();
+    Map<ObjectProperty<?>, T> getProperties();
 
     default Map<String, Object> toPropertyMap() {
-        return this.getProperties().stream().map(el -> Map.entry(el.getProperty().id.toString(), el.getValue())).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+        return this.getProperties().entrySet().stream().map(el -> Map.entry(el.getKey().id.toString(), el.getValue().getValue())).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 
     default Object getProperty(ResourceIdentifier id) {
-        Optional<T> property = this.getProperties().stream().filter(prop -> Objects.equals(prop.getProperty().id, id)).findFirst();
-        return property.map(userPropertyValue -> userPropertyValue.getValue()).orElse(null);
+        Optional<ObjectProperty<?>> property = this.getProperties().keySet().stream().filter(prop -> Objects.equals(prop.id, id)).findFirst();
+        return property.map(this::getProperty).orElse(null);
     }
 
     @SuppressWarnings("unchecked")
     default <K> K getProperty(ObjectProperty<K> property) {
-        Optional<ObjectPropertyHolder.ObjectPropertyValue<K>> test = this.getProperties().stream()
-                .filter(t -> Objects.equals(t.getProperty(), property))
-                .map(prop -> (ObjectPropertyValue<K>) prop)
-                .findFirst();
+        return (K) this.getProperties().get(property).getValue();
+    }
 
-        return test.map(ObjectPropertyValue::getValue).orElse(null);
+    boolean hasProperty(ObjectProperty<?> property);
+
+    <V> T createProperty(ObjectProperty<V> property, V value);
+
+    default <K> void setProperty(ObjectProperty<K> property, K value) {
+        T holder = this.getProperties().get(property);
+        if (holder == null) {
+            if (!this.hasProperty(property)) {
+                throw new IllegalArgumentException("Property " + property + " does not exist on object");
+            }
+
+            holder = this.createProperty(property, value);
+            this.getProperties().put(property, holder);
+        }
+
+        holder.setValueUnchecked(value);
     }
 
     interface ObjectPropertyValue<T> {
         ObjectProperty<T> getProperty();
 
         T getValue();
-    }
 
+        void setValue(T value);
+
+        @SuppressWarnings("unchecked")
+        default void setValueUnchecked(Object value) {
+            this.setValue((T) value);
+        }
+    }
 }

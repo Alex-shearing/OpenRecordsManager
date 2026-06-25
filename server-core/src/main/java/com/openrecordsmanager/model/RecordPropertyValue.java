@@ -60,4 +60,9 @@ public class RecordPropertyValue<T> implements ObjectPropertyHolder.ObjectProper
     public T getValue() {
         return this.value;
     }
+
+    @Override
+    public void setValue(T value) {
+        this.value = value;
+    }
 }

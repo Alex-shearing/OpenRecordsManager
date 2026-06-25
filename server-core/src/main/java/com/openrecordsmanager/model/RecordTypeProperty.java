@@ -19,7 +19,7 @@ public class RecordTypeProperty<T> {
     private T defaultValue;
 
     @Deprecated
-    public RecordTypeProperty() {
+    protected RecordTypeProperty() {
     }
 
     public RecordTypeProperty(ObjectProperty<T> property, @Nullable T defaultValue) {

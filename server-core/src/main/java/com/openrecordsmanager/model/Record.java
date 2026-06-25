@@ -6,7 +6,8 @@ import com.openrecordsmanager.resources.ExpressionsService;
 import jakarta.persistence.*;
 import org.jspecify.annotations.Nullable;
 
-import java.util.Set;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -32,8 +33,9 @@ public class Record implements ObjectPropertyHolder<RecordPropertyValue<?>> {
     public FileStoreEntry file;
 
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "record")
+    @MapKey(name = "property")
     @JsonProperty
-    public Set<RecordPropertyValue<?>> properties;
+    public Map<ObjectProperty<?>, RecordPropertyValue<?>> properties;
 
     @Deprecated
     protected Record() {
@@ -44,9 +46,13 @@ public class Record implements ObjectPropertyHolder<RecordPropertyValue<?>> {
         this.title = title;
         this.type = type;
         this.file = file;
-        this.properties = type.properties.stream()
-                .map(prop -> prop.getPropertyValue(this, null))
-                .collect(Collectors.toSet());
+        if (this.type != null) {
+            this.properties = type.properties.stream()
+                    .map(prop -> Map.entry(prop.property, prop.getPropertyValue(this, null)))
+                    .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+        } else {
+            this.properties = new HashMap<>();
+        }
     }
 
     public RecordType getType() {
@@ -56,12 +62,26 @@ public class Record implements ObjectPropertyHolder<RecordPropertyValue<?>> {
     public void setType(RecordType type) {
         this.type = type;
         this.properties = type.properties.stream()
-                .map(prop -> prop.getPropertyValue(this, null))
-                .collect(Collectors.toSet());
+                .map(prop -> Map.entry(prop.property, newProperty(prop)))
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 
     @Override
-    public Set<RecordPropertyValue<?>> getProperties() {
+    public <V> RecordPropertyValue<V> createProperty(ObjectProperty<V> property, V value) {
+        return new RecordPropertyValue<>(this, property, value);
+    }
+
+    private <T> RecordPropertyValue<T> newProperty(RecordTypeProperty<T> property) {
+        return this.createProperty(property.property, property.getDefault());
+    }
+
+    @Override
+    public boolean hasProperty(ObjectProperty<?> property) {
+        return this.type == null || this.properties.containsKey(property);
+    }
+
+    @Override
+    public Map<ObjectProperty<?>, RecordPropertyValue<?>> getProperties() {
         return this.properties;
     }
 
@@ -72,7 +92,7 @@ public class Record implements ObjectPropertyHolder<RecordPropertyValue<?>> {
         }
 
         // Check all properties
-        for (RecordPropertyValue<?> property : this.properties) {
+        for (RecordPropertyValue<?> property : this.properties.values()) {
             if (!property.securityFilter(expressions, user, record)) {
                 return this.type.securityFilterUsage;
             }

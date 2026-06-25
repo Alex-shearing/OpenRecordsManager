@@ -38,7 +38,7 @@ class ExpressionsServiceTest {
                 "Number property",
                 PropertyType.NUMBER
         );
-        TEST_USER.properties.add(new UserPropertyValue<>(null, numberProperty, 10L));
+        TEST_USER.setProperty(numberProperty, 10L);
 
         // String property
         ObjectProperty<String> stringProperty = new ObjectProperty<>(
@@ -47,7 +47,7 @@ class ExpressionsServiceTest {
                 "String property",
                 PropertyType.STRING
         );
-        TEST_USER.properties.add(new UserPropertyValue<>(null, stringProperty, "test value"));
+        TEST_USER.setProperty(stringProperty, "test value");
 
         // List property
         ObjectProperty<IListElement> listProperty = new ObjectProperty<>(
@@ -56,7 +56,7 @@ class ExpressionsServiceTest {
                 "List property",
                 PropertyType.LIST_ITEM
         );
-        TEST_USER.properties.add(new UserPropertyValue<>(null, listProperty, LIST_ITEM_2));
+        TEST_USER.setProperty(listProperty, LIST_ITEM_2);
 
         // List multiple property
         ObjectProperty<List<IListElement>> listMultiple = new ObjectProperty<>(
@@ -65,7 +65,7 @@ class ExpressionsServiceTest {
                 "List multiple property",
                 PropertyType.LIST_MULTIPLE
         );
-        TEST_USER.properties.add(new UserPropertyValue<>(null, listMultiple, List.of(LIST_ITEM_1, LIST_ITEM_3)));
+        TEST_USER.setProperty(listMultiple, List.of(LIST_ITEM_1, LIST_ITEM_3));
     }
 
     @Autowired
@@ -117,7 +117,7 @@ class ExpressionsServiceTest {
         ObjectProperty<Boolean> recordProperty = new ObjectProperty<>(ResourceIdentifier.valueOf("test:record_boolean"), "Record Boolean", "Record Boolean", PropertyType.BOOLEAN);
 
         Record record = new Record(UUID.randomUUID(), "Record title", null, null);
-        record.properties.add(new RecordPropertyValue<>(record, recordProperty, false));
+        record.properties.put(recordProperty, new RecordPropertyValue<>(record, recordProperty, false));
 
         // Check user has all required items
         Assertions.assertTrue(this.expressions.checkPropertyExpression(EMPTY_UUID, "value == principal['test:string_property'] && resource['test:record_boolean'] == false", "test value", TEST_USER, record), "Extended resource: User should have access");

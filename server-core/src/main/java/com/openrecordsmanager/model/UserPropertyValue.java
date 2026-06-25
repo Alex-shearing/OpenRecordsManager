@@ -47,4 +47,9 @@ public class UserPropertyValue<T> implements ObjectPropertyHolder.ObjectProperty
     public T getValue() {
         return this.value;
     }
+
+    @Override
+    public void setValue(T value) {
+        this.value = value;
+    }
 }

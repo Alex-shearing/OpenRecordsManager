@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
+import java.util.HashSet;
 import java.util.UUID;
 
 @SpringBootTest
@@ -25,7 +26,7 @@ class RecordTest {
                 "Number property",
                 PropertyType.NUMBER
         );
-        TEST_USER.properties.add(new UserPropertyValue<>(null, numberProperty, 10L));
+        TEST_USER.setProperty(numberProperty, 10L);
 
         // String property
         ObjectProperty<String> stringProperty = new ObjectProperty<>(
@@ -34,7 +35,7 @@ class RecordTest {
                 "String property",
                 PropertyType.STRING
         );
-        TEST_USER.properties.add(new UserPropertyValue<>(null, stringProperty, "test value"));
+        TEST_USER.setProperty(stringProperty, "test value");
     }
 
     @Autowired
@@ -56,16 +57,17 @@ class RecordTest {
                 "Record type",
                 null,
                 null,
-                SecurityFilterUsage.HIDE_RECORD
+                SecurityFilterUsage.HIDE_RECORD,
+                new HashSet<>()
         );
+        recordType.properties.add(new RecordTypeProperty<>(stringProperty, null));
 
         Record record = new Record(UUID.randomUUID(), "Record", recordType, null);
-        record.properties.add(new RecordPropertyValue<>(record, stringProperty, "test value"));
+        record.setProperty(stringProperty, "test value");
 
         Assertions.assertEquals(SecurityFilterUsage.SHOW_ALL, record.securityFilter(this.expressionsService, TEST_USER, record), "User should have access");
 
-        record.properties.clear();
-        record.properties.add(new RecordPropertyValue<>(record, stringProperty, "other value"));
+        record.setProperty(stringProperty, "other value");
 
         Assertions.assertEquals(SecurityFilterUsage.HIDE_RECORD, record.securityFilter(this.expressionsService, TEST_USER, record), "User should not have access");
     }
@@ -78,7 +80,8 @@ class RecordTest {
                 "Record type",
                 null,
                 "principal['test:string_property'] == 'not this'",
-                SecurityFilterUsage.HIDE_RECORD
+                SecurityFilterUsage.HIDE_RECORD,
+                new HashSet<>()
         );
 
         Record record = new Record(UUID.randomUUID(), "Record", recordType, null);

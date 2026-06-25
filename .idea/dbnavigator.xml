@@ -62,9 +62,7 @@ from
     <last-used-providers />
   </component>
   <component name="DBNavigator.Project.DatabaseFileManager">
-    <open-files>
-      <object connection-id="917ea075-25a4-4c44-8edd-7270e2ddad2e" object-ref="schemas/orm_system/tables/record_type" />
-    </open-files>
+    <open-files />
   </component>
   <component name="DBNavigator.Project.DatabasePrerequisiteManager">
     <prerequisites />
@@ -90,6 +88,7 @@ from
       <filter id="7fcd9c6a-09b0-42d6-a68e-53d755d11db2" name="Filter" temporary="false" custom-name="false" type="basic" join-type="AND" />
     </filter-actions>
     <filter-actions connection-id="917ea075-25a4-4c44-8edd-7270e2ddad2e" dataset="orm_system.record_property_value" active-filter-id="EMPTY_FILTER" />
+    <filter-actions connection-id="917ea075-25a4-4c44-8edd-7270e2ddad2e" dataset="orm_system.record" active-filter-id="EMPTY_FILTER" />
   </component>
   <component name="DBNavigator.Project.ExecutionManager">
     <retain-sticky-names value="false" />

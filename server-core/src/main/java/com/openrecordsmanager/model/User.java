@@ -4,8 +4,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import org.jspecify.annotations.Nullable;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
 @Entity
@@ -21,8 +21,9 @@ public class User implements ObjectPropertyHolder<UserPropertyValue<?>> {
     public AuthProvider authProvider;
 
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "user")
+    @MapKey(name = "property")
     @JsonProperty
-    public Set<UserPropertyValue<?>> properties;
+    private Map<ObjectProperty<?>, UserPropertyValue<?>> properties;
 
     @Deprecated
     protected User() {
@@ -30,11 +31,21 @@ public class User implements ObjectPropertyHolder<UserPropertyValue<?>> {
 
     public User(UUID id) {
         this.id = id;
-        this.properties = new HashSet<>();
+        this.properties = new HashMap<>();
     }
 
     @Override
-    public Set<UserPropertyValue<?>> getProperties() {
+    public Map<ObjectProperty<?>, UserPropertyValue<?>> getProperties() {
         return this.properties;
+    }
+
+    @Override
+    public boolean hasProperty(ObjectProperty<?> property) {
+        return true;
+    }
+
+    @Override
+    public <V> UserPropertyValue<?> createProperty(ObjectProperty<V> property, V value) {
+        return new UserPropertyValue<>(this, property, value);
     }
 }
