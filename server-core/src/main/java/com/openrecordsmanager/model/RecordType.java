@@ -14,7 +14,6 @@ import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 import org.jspecify.annotations.Nullable;
 
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -62,26 +61,25 @@ public class RecordType {
     protected RecordType() {
     }
 
-    public RecordType(ResourceIdentifier id, String name, String description, @Nullable Set<String> contentTypes, @Nullable String securityFilter, SecurityFilterUsage securityFilterUsage) {
+    public RecordType(ResourceIdentifier id, String name, String description, @Nullable Set<String> contentTypes, @Nullable String securityFilter, SecurityFilterUsage securityFilterUsage, Set<RecordTypeProperty<?>> properties) {
         this.id = id;
         this.description = description;
         this.name = name;
         this.contentTypes = contentTypes;
         this.securityFilter = securityFilter;
         this.securityFilterUsage = securityFilterUsage;
-        this.properties = new HashSet<>();
+        this.properties = properties;
     }
 
     public RecordType(ResourceIdentifier id, ResourceCatalog catalog, ExpressionsService expressions, DataRepository repository, RecordTypeDefinition definition) {
-        this(id, definition.name(), definition.description(), definition.allowedContentTypes(), expressions.buildExpression(definition.securityFilter()), definition.securityFilterUsage());
-        this.properties = definition.properties().entrySet()
+        this(id, definition.name(), definition.description(), definition.allowedContentTypes(), expressions.buildExpression(definition.securityFilter()), definition.securityFilterUsage(), definition.properties().entrySet()
                 .stream()
                 .map(def -> createRecordTypeProperty(def, catalog, repository))
-                .collect(Collectors.<RecordTypeProperty<?>>toSet());
+                .collect(Collectors.<RecordTypeProperty<?>>toSet()));
     }
 
     @SuppressWarnings("unchecked")
-    private <T> RecordTypeProperty<T> createRecordTypeProperty(Map.Entry<PropertyDefinition<?>, ?> entry, ResourceCatalog catalog, DataRepository repository) {
+    private static <T> RecordTypeProperty<T> createRecordTypeProperty(Map.Entry<PropertyDefinition<?>, ?> entry, ResourceCatalog catalog, DataRepository repository) {
         ResourceIdentifier propId = catalog.getResourceId(ResourceTypes.PROPERTY, entry.getKey());
         if (propId == null) {
             throw new IllegalArgumentException("Attempted to use property that was not in catalog: " + entry.getKey().getName());

@@ -6,9 +6,9 @@ import com.openrecordsmanager.resources.ExpressionsService;
 import jakarta.persistence.*;
 import org.jspecify.annotations.Nullable;
 
-import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Entity
 @Table(name = "record")
@@ -24,7 +24,7 @@ public class Record implements ObjectPropertyHolder<RecordPropertyValue<?>> {
     @ManyToOne(optional = false)
     @JoinColumn(nullable = false, foreignKey = @ForeignKey(name = "FK_RECORD_RECORDTYPE"))
     @JsonProperty
-    public RecordType type;
+    private RecordType type;
 
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn
@@ -44,7 +44,20 @@ public class Record implements ObjectPropertyHolder<RecordPropertyValue<?>> {
         this.title = title;
         this.type = type;
         this.file = file;
-        this.properties = new HashSet<>();
+        this.properties = type.properties.stream()
+                .map(prop -> prop.getPropertyValue(this, null))
+                .collect(Collectors.toSet());
+    }
+
+    public RecordType getType() {
+        return this.type;
+    }
+
+    public void setType(RecordType type) {
+        this.type = type;
+        this.properties = type.properties.stream()
+                .map(prop -> prop.getPropertyValue(this, null))
+                .collect(Collectors.toSet());
     }
 
     @Override

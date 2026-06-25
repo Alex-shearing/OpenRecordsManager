@@ -17,13 +17,18 @@ public interface ObjectPropertyHolder<T extends ObjectPropertyHolder.ObjectPrope
     }
 
     default Object getProperty(ResourceIdentifier id) {
-        Optional<T> property = this.getProperties().stream().filter(recordPropertyValue -> Objects.equals(recordPropertyValue.getProperty().id, id)).findFirst();
+        Optional<T> property = this.getProperties().stream().filter(prop -> Objects.equals(prop.getProperty().id, id)).findFirst();
         return property.map(userPropertyValue -> userPropertyValue.getValue()).orElse(null);
     }
 
     @SuppressWarnings("unchecked")
-    default <K> K getProperty(ObjectProperty<K> userProperty) {
-        return (K) this.getProperty(userProperty.id);
+    default <K> K getProperty(ObjectProperty<K> property) {
+        Optional<ObjectPropertyHolder.ObjectPropertyValue<K>> test = this.getProperties().stream()
+                .filter(t -> Objects.equals(t.getProperty(), property))
+                .map(prop -> (ObjectPropertyValue<K>) prop)
+                .findFirst();
+
+        return test.map(ObjectPropertyValue::getValue).orElse(null);
     }
 
     interface ObjectPropertyValue<T> {

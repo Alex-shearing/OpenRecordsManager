@@ -4,7 +4,6 @@ import com.google.common.collect.ImmutableMap;
 import com.openrecordsmanager.api.expression.ExpressionBuilder;
 import com.openrecordsmanager.model.ListElement;
 import com.openrecordsmanager.model.Record;
-import com.openrecordsmanager.model.RecordPropertyValue;
 import com.openrecordsmanager.model.User;
 import com.openrecordsmanager.model.repositories.ListElementRepository;
 import com.openrecordsmanager.resources.types.ResourceTypes;
@@ -64,11 +63,7 @@ public class ExpressionsService {
                         .toArray()
         );
     }
-
-    public boolean checkPropertyExpression(UUID id, String filter, Object value, User user) {
-        return checkPropertyExpression(id, filter, value, user, null);
-    }
-
+    
     public boolean checkPropertyExpression(UUID id, String filter, @Nullable Object value, User user, @Nullable Record record) {
         if (filter == null || filter.isBlank()) {
             LOGGER.trace("no filter provided for property: {}", id);
@@ -100,10 +95,6 @@ public class ExpressionsService {
             LOGGER.error("Failed to evaluate filter: {}", filter, e);
             return false;
         }
-    }
-
-    public boolean checkSecurity(RecordPropertyValue<?> property, User user) {
-        return checkPropertyExpression(property.id, property.property.securityFilter, property.value, user);
     }
 
     public static List<CelFunctionDecl> getCompilerDeclaration() {

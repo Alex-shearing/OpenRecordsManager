@@ -114,7 +114,7 @@ public class PropertyDefinition<T> implements Component {
         }
 
         public Builder<T> listType(ListDefinition listType) {
-            if (this.type != PropertyType.LIST_MULTIPLE && this.type != PropertyType.LIST_ITEM) {
+            if (!this.type.allowsList()) {
                 throw new IllegalArgumentException("listType can only be used for list or list item");
             }
             this.listType = listType;

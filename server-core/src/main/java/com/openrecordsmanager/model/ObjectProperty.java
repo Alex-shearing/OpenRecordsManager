@@ -11,8 +11,12 @@ import com.openrecordsmanager.resources.ResourceIdentifier;
 import com.openrecordsmanager.resources.types.ResourceTypes;
 import jakarta.persistence.*;
 import org.hibernate.annotations.JavaType;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 import org.hibernate.type.descriptor.java.ObjectJavaType;
 import org.jspecify.annotations.Nullable;
+
+import java.util.Objects;
 
 @Entity
 @Table(name = "object_property")
@@ -51,6 +55,12 @@ public class ObjectProperty<T> {
     @Nullable
     public String securityFilter;
 
+    @Column()
+    @JsonProperty
+    @Nullable
+    @JdbcTypeCode(SqlTypes.JSON)
+    public T defaultValue;
+
     @Deprecated
     protected ObjectProperty() {
     }
@@ -73,5 +83,18 @@ public class ObjectProperty<T> {
         }
         this.validator = expressions.buildExpression(definition.getValidator());
         this.securityFilter = expressions.buildExpression(definition.getSecurityFilter());
+        this.defaultValue = definition.getDefaultValue();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) return false;
+        ObjectProperty<?> that = (ObjectProperty<?>) o;
+        return Objects.equals(id, that.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(id);
     }
 }

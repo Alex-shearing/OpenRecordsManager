@@ -74,42 +74,42 @@ class ExpressionsServiceTest {
     @Test
     void checkPropertyExpression_numberValue() {
         // Check user and record comparisons
-        Assertions.assertTrue(this.expressions.checkPropertyExpression(EMPTY_UUID, "principal['test:number_property'] == value", 10, TEST_USER), "Number equals: User should have access");
-        Assertions.assertTrue(this.expressions.checkPropertyExpression(EMPTY_UUID, "principal['test:number_property'] >= value", 5, TEST_USER), "Number greater than: User should have access");
-        Assertions.assertFalse(this.expressions.checkPropertyExpression(EMPTY_UUID, "principal['test:number_property'] > value", 15, TEST_USER), "Number greater than: User should not have access");
+        Assertions.assertTrue(this.expressions.checkPropertyExpression(EMPTY_UUID, "principal['test:number_property'] == value", 10, TEST_USER, null), "Number equals: User should have access");
+        Assertions.assertTrue(this.expressions.checkPropertyExpression(EMPTY_UUID, "principal['test:number_property'] >= value", 5, TEST_USER, null), "Number greater than: User should have access");
+        Assertions.assertFalse(this.expressions.checkPropertyExpression(EMPTY_UUID, "principal['test:number_property'] > value", 15, TEST_USER, null), "Number greater than: User should not have access");
     }
 
     @Test
     void checkPropertyExpression_stringValue() {
         // Check user and record have the same string value
-        Assertions.assertTrue(this.expressions.checkPropertyExpression(EMPTY_UUID, "value == principal['test:string_property']", "test value", TEST_USER), "String equals: User should have access");
-        Assertions.assertFalse(this.expressions.checkPropertyExpression(EMPTY_UUID, "value == principal['test:string_property']", "other value", TEST_USER), "String equals: User should not have access");
-        Assertions.assertTrue(this.expressions.checkPropertyExpression(EMPTY_UUID, "value != principal['test:string_property']", "other value", TEST_USER), "String does not equal: User should have access");
+        Assertions.assertTrue(this.expressions.checkPropertyExpression(EMPTY_UUID, "value == principal['test:string_property']", "test value", TEST_USER, null), "String equals: User should have access");
+        Assertions.assertFalse(this.expressions.checkPropertyExpression(EMPTY_UUID, "value == principal['test:string_property']", "other value", TEST_USER, null), "String equals: User should not have access");
+        Assertions.assertTrue(this.expressions.checkPropertyExpression(EMPTY_UUID, "value != principal['test:string_property']", "other value", TEST_USER, null), "String does not equal: User should have access");
     }
 
     @Test
     void checkPropertyExpression_listItem() {
         // Check user and record list value match
-        Assertions.assertTrue(this.expressions.checkPropertyExpression(EMPTY_UUID, "value == principal['test:list_property']", LIST_ITEM_2, TEST_USER), "List item equals: User should have access");
-        Assertions.assertFalse(this.expressions.checkPropertyExpression(EMPTY_UUID, "value == principal['test:list_property']", LIST_ITEM_1, TEST_USER), "List item equals: User should not have access");
-        Assertions.assertTrue(this.expressions.checkPropertyExpression(EMPTY_UUID, "value != principal['test:list_property']", LIST_ITEM_1, TEST_USER), "List item not equals: User should have access");
+        Assertions.assertTrue(this.expressions.checkPropertyExpression(EMPTY_UUID, "value == principal['test:list_property']", LIST_ITEM_2, TEST_USER, null), "List item equals: User should have access");
+        Assertions.assertFalse(this.expressions.checkPropertyExpression(EMPTY_UUID, "value == principal['test:list_property']", LIST_ITEM_1, TEST_USER, null), "List item equals: User should not have access");
+        Assertions.assertTrue(this.expressions.checkPropertyExpression(EMPTY_UUID, "value != principal['test:list_property']", LIST_ITEM_1, TEST_USER, null), "List item not equals: User should have access");
 
         // Check user has a higher index than the record list property
-        Assertions.assertTrue(this.expressions.checkPropertyExpression(EMPTY_UUID, "principal['test:list_property'] >= value", LIST_ITEM_2, TEST_USER), "List index greater than: User should have access");
+        Assertions.assertTrue(this.expressions.checkPropertyExpression(EMPTY_UUID, "principal['test:list_property'] >= value", LIST_ITEM_2, TEST_USER, null), "List index greater than: User should have access");
     }
 
     @Test
     void checkPropertyExpression_listItemList() {
         // Check user has the records property value in a list property of the user
-        Assertions.assertTrue(this.expressions.checkPropertyExpression(EMPTY_UUID, "value in principal['test:list_multiple_property']", LIST_ITEM_1, TEST_USER), "Value in list: User should have access");
-        Assertions.assertFalse(this.expressions.checkPropertyExpression(EMPTY_UUID, "value in principal['test:list_multiple_property']", LIST_ITEM_2, TEST_USER), "Value in list: User should not have access");
+        Assertions.assertTrue(this.expressions.checkPropertyExpression(EMPTY_UUID, "value in principal['test:list_multiple_property']", LIST_ITEM_1, TEST_USER, null), "Value in list: User should have access");
+        Assertions.assertFalse(this.expressions.checkPropertyExpression(EMPTY_UUID, "value in principal['test:list_multiple_property']", LIST_ITEM_2, TEST_USER, null), "Value in list: User should not have access");
     }
 
     @Test
     void checkPropertyExpression_listListItemList() {
         // Check user has all required items
-        Assertions.assertTrue(this.expressions.checkPropertyExpression(EMPTY_UUID, "value.all(x, x in principal['test:list_multiple_property'])", List.of(LIST_ITEM_1, LIST_ITEM_3), TEST_USER), "All values in list: User should have access");
-        Assertions.assertFalse(this.expressions.checkPropertyExpression(EMPTY_UUID, "value.all(x, x in principal['test:list_multiple_property'])", List.of(LIST_ITEM_1, LIST_ITEM_2, LIST_ITEM_3), TEST_USER), "All values in list: User should not have access");
+        Assertions.assertTrue(this.expressions.checkPropertyExpression(EMPTY_UUID, "value.all(x, x in principal['test:list_multiple_property'])", List.of(LIST_ITEM_1, LIST_ITEM_3), TEST_USER, null), "All values in list: User should have access");
+        Assertions.assertFalse(this.expressions.checkPropertyExpression(EMPTY_UUID, "value.all(x, x in principal['test:list_multiple_property'])", List.of(LIST_ITEM_1, LIST_ITEM_2, LIST_ITEM_3), TEST_USER, null), "All values in list: User should not have access");
     }
 
     @Test

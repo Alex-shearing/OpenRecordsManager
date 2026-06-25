@@ -108,16 +108,11 @@ public final class RecordTypeDefinition implements Component {
             return this;
         }
 
-        public Builder securityFilterUsage(SecurityFilterUsage filterUsage) {
-            this.securityFilterUsage = filterUsage;
-            return this;
+        public Builder securityFilter(SecurityFilterUsage filterUsage, String filter, PropertyDefinition<?>... components) {
+            return this.securityFilter(filterUsage, ExpressionBuilder.from(filter, components));
         }
 
-        public Builder securityFilter(String filter, SecurityFilterUsage filterUsage) {
-            return this.securityFilter(ExpressionBuilder.from(filter), filterUsage);
-        }
-
-        public Builder securityFilter(ExpressionBuilder filter, SecurityFilterUsage filterUsage) {
+        public Builder securityFilter(SecurityFilterUsage filterUsage, ExpressionBuilder filter) {
             this.securityFilter = filter;
             this.securityFilterUsage = filterUsage;
             return this;
