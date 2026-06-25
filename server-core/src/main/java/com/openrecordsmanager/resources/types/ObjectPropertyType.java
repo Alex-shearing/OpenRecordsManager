@@ -1,6 +1,7 @@
 package com.openrecordsmanager.resources.types;
 
 import com.openrecordsmanager.api.property.PropertyDefinition;
+import com.openrecordsmanager.model.ListType;
 import com.openrecordsmanager.model.ObjectProperty;
 import com.openrecordsmanager.model.repositories.DataRepository;
 import com.openrecordsmanager.resources.ExpressionsService;
@@ -14,10 +15,33 @@ public class ObjectPropertyType extends ResourceType<PropertyDefinition<?>, Obje
     public ObjectPropertyType() {
         super("object_property", (Class<PropertyDefinition<?>>) (Class<?>) PropertyDefinition.class);
     }
-
+    
     @Override
-    public ObjectProperty<?> register(DataRepository repository, ResourceCatalog catalog, ExpressionsService expressions, ResourceIdentifier id, PropertyDefinition<?> definition) {
-        ObjectProperty<?> type = new ObjectProperty<>(id, catalog, expressions, repository, definition);
+    protected ObjectProperty<?> register(DataRepository repository, ResourceCatalog catalog, ExpressionsService expressions, ResourceIdentifier id, PropertyDefinition<?> definition) {
+        return this.registerInternal(repository, catalog, expressions, id, definition);
+    }
+
+    private <T> ObjectProperty<?> registerInternal(DataRepository repository, ResourceCatalog catalog, ExpressionsService expressions, ResourceIdentifier id, PropertyDefinition<T> definition) {
+        ListType listType = null;
+        if (definition.getType().allowsList() && definition.getListType() != null) {
+            ResourceIdentifier listId = catalog.getResourceId(ResourceTypes.LIST, definition.getListType());
+            if (listId == null) {
+                throw new IllegalArgumentException("ListType " + definition.getListType().id() + " does not exist");
+            }
+            listType = repository.listTypeRepo.findById(listId).orElseThrow();
+        }
+
+        ObjectProperty<?> type = new ObjectProperty<>(
+                id,
+                definition.getName(),
+                definition.getDescription(),
+                definition.getType(),
+                listType,
+                expressions.buildExpression(definition.getValidator()),
+                expressions.buildExpression(definition.getSecurityFilter()),
+                definition.getDefaultValue()
+        );
+
         return repository.objectPropertyRepo.saveAndFlush(type);
     }
 

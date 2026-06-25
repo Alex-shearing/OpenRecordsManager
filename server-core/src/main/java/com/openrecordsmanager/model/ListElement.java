@@ -4,11 +4,11 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.openrecordsmanager.api.list.IListElement;
-import com.openrecordsmanager.api.list.ListElementDefinition;
 import com.openrecordsmanager.resources.ResourceIdentifier;
 import jakarta.persistence.*;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
+import org.jspecify.annotations.Nullable;
 
 import java.util.Date;
 import java.util.Set;
@@ -39,6 +39,7 @@ public class ListElement implements IListElement {
 
     @Column()
     @JsonProperty
+    @Nullable
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public Date activeTo;
 
@@ -52,11 +53,15 @@ public class ListElement implements IListElement {
     protected ListElement() {
     }
 
-    public ListElement(ResourceIdentifier id, ListType parent, ListElementDefinition def) {
-        this(id, parent, def.display(), def.description(), def.index(), def.activeTo(), def.aliases());
-    }
-
-    public ListElement(ResourceIdentifier id, ListType parent, String display, String description, int elementIndex, Date activeTo, Set<String> aliases) {
+    public ListElement(
+            ResourceIdentifier id,
+            ListType parent,
+            String display,
+            String description,
+            int elementIndex,
+            @Nullable Date activeTo,
+            Set<String> aliases
+    ) {
         this.id = id;
         this.parent = parent;
         this.display = display;

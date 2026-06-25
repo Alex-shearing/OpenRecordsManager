@@ -16,7 +16,7 @@ public class ListResourceType extends ResourceType<ListDefinition, ListType> {
 
     @Override
     public ListType register(DataRepository repository, ResourceCatalog catalog, ExpressionsService expressions, ResourceIdentifier id, ListDefinition definition) {
-        ListType type = new ListType(id, definition);
+        ListType type = new ListType(id, definition.display);
         return repository.listTypeRepo.saveAndFlush(type);
     }
 

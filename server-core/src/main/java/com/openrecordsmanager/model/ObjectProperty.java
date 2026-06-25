@@ -1,14 +1,9 @@
 package com.openrecordsmanager.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.openrecordsmanager.api.property.PropertyDefinition;
 import com.openrecordsmanager.api.property.PropertyType;
-import com.openrecordsmanager.model.repositories.DataRepository;
 import com.openrecordsmanager.model.util.PropertyTypeConverter;
-import com.openrecordsmanager.resources.ExpressionsService;
-import com.openrecordsmanager.resources.ResourceCatalog;
 import com.openrecordsmanager.resources.ResourceIdentifier;
-import com.openrecordsmanager.resources.types.ResourceTypes;
 import jakarta.persistence.*;
 import org.hibernate.annotations.JavaType;
 import org.hibernate.annotations.JdbcTypeCode;
@@ -65,25 +60,28 @@ public class ObjectProperty<T> {
     protected ObjectProperty() {
     }
 
-    public ObjectProperty(ResourceIdentifier identifier, String name, String description, PropertyType<T> type) {
+    public ObjectProperty(
+            ResourceIdentifier identifier,
+            String name,
+            String description,
+            PropertyType<T> type,
+            @Nullable ListType listType,
+            @Nullable String validator,
+            @Nullable String securityFilter,
+            @Nullable T defaultValue
+    ) {
         this.id = identifier;
         this.name = name;
         this.description = description;
         this.type = type;
+        this.listType = listType;
+        this.validator = validator;
+        this.securityFilter = securityFilter;
+        this.defaultValue = defaultValue;
     }
 
-    public ObjectProperty(ResourceIdentifier identifier, ResourceCatalog registry, ExpressionsService expressions, DataRepository repository, PropertyDefinition<T> definition) {
-        this(identifier, definition.getName(), definition.getDescription(), definition.getType());
-        if (definition.getType().allowsList() && definition.getListType() != null) {
-            ResourceIdentifier listId = registry.getResourceId(ResourceTypes.LIST, definition.getListType());
-            if (listId == null) {
-                throw new IllegalArgumentException("ListType " + definition.getListType().id() + " does not exist");
-            }
-            this.listType = repository.listTypeRepo.findById(listId).orElseThrow();
-        }
-        this.validator = expressions.buildExpression(definition.getValidator());
-        this.securityFilter = expressions.buildExpression(definition.getSecurityFilter());
-        this.defaultValue = definition.getDefaultValue();
+    public ObjectProperty(ResourceIdentifier identifier, String name, String description, PropertyType<T> type) {
+        this(identifier, name, description, type, null, null, null, null);
     }
 
     @Override

@@ -25,7 +25,7 @@ public abstract class ResourceType<T extends Component, D> {
         return this.componentClass.isInstance(object);
     }
 
-    public D register(DataRepository repository, ResourceCatalog catalog, ExpressionsService expressions, ResourceIdentifier id, T definition, boolean includeDependencies) {
+    public final D register(DataRepository repository, ResourceCatalog catalog, ExpressionsService expressions, ResourceIdentifier id, T definition, boolean includeDependencies) {
         if (includeDependencies) {
             for (Component dependency : definition.getDependencies()) {
                 ResourceType<Component, ?> childType = ResourceTypes.fromObject(dependency);

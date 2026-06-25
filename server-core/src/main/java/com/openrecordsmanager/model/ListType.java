@@ -2,7 +2,6 @@ package com.openrecordsmanager.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import com.openrecordsmanager.api.list.ListDefinition;
 import com.openrecordsmanager.resources.ResourceIdentifier;
 import jakarta.persistence.*;
 
@@ -28,10 +27,6 @@ public class ListType {
 
     @Deprecated
     protected ListType() {
-    }
-
-    public ListType(ResourceIdentifier id, ListDefinition def) {
-        this(id, def.display);
     }
 
     public ListType(ResourceIdentifier id, String display) {

@@ -41,8 +41,4 @@ public class RecordTypeProperty<T> {
 
         return this.property.defaultValue;
     }
-
-    public RecordPropertyValue<T> getPropertyValue(Record record, @Nullable T existingValue) {
-        return new RecordPropertyValue<>(record, this.property, existingValue == null ? this.getDefault() : existingValue);
-    }
 }

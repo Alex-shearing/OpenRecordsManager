@@ -24,7 +24,15 @@ public class ListElementResourceType extends ResourceType<ListElementDefinition,
 
         ListType parent = repository.listTypeRepo.findById(parentId).orElseThrow();
 
-        ListElement type = new ListElement(id, parent, definition);
+        ListElement type = new ListElement(
+                id,
+                parent,
+                definition.display(),
+                definition.description(),
+                definition.index(),
+                definition.activeTo(),
+                definition.aliases()
+        );
         return repository.listElementRepo.saveAndFlush(type);
     }
 

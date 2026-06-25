@@ -1,13 +1,14 @@
 package com.openrecordsmanager.api.list;
 
 import com.openrecordsmanager.api.Component;
+import org.jspecify.annotations.Nullable;
 
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
-public record ListElementDefinition(String id, String display, String description, int index, Date activeTo,
+public record ListElementDefinition(String id, String display, String description, int index, @Nullable Date activeTo,
                                     Set<String> aliases, ListDefinition parent) implements Component {
 
     @Override
@@ -25,9 +26,10 @@ public record ListElementDefinition(String id, String display, String descriptio
         private final String id;
         private final String display;
         private final Set<String> aliases = new HashSet<>();
+        
         private String description = "";
         private int index = 0;
-        private Date activeTo;
+        private Date activeTo = null;
 
         public Builder(ListDefinition.Builder parentBuilder, String id, String display) {
             this.parentBuilder = parentBuilder;
