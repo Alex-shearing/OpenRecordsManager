@@ -4,7 +4,6 @@ import com.openrecordsmanager.api.Plugin;
 import com.openrecordsmanager.api.config.ConfigStore;
 import com.openrecordsmanager.config.ConfigProperties;
 import com.openrecordsmanager.resources.PluginManager;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -22,9 +21,12 @@ public class InfoController {
     }
 
     @GetMapping
-    public ResponseEntity<ApiResponse<EnvironmentResponse>> getEnvironment() {
-        String[] plugins = this.pluginManager.getPlugins().stream().map(Plugin::getName).toArray(String[]::new);
-        return ResponseEntity.ok(ApiResponse.success(new EnvironmentResponse(this.config.getProperty(ConfigProperties.WORKGROUP_NAME), plugins, this.config.getProperty(ConfigProperties.WORKGROUP_DATABASE_URL))));
+    public ApiResponse<EnvironmentResponse> getEnvironment() {
+        return ApiResponse.success(new EnvironmentResponse(
+                this.config.getProperty(ConfigProperties.WORKGROUP_NAME),
+                this.pluginManager.getPlugins().stream().map(Plugin::getName).toArray(String[]::new),
+                this.config.getProperty(ConfigProperties.WORKGROUP_DATABASE_URL)
+        ));
     }
 
     public record EnvironmentResponse(String workgroup, String[] plugins, String database) {

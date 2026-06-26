@@ -1,6 +1,6 @@
 package com.openrecordsmanager.plugin.defaults_aus_gov;
 
-import com.openrecordsmanager.api.BuiltinResources;
+import com.openrecordsmanager.api.BuiltinComponents;
 import com.openrecordsmanager.api.Plugin;
 import com.openrecordsmanager.api.PluginContext;
 import com.openrecordsmanager.api.recordtype.RecordTypeDefinition;
@@ -23,9 +23,9 @@ public class DefaultsAusGovPlugin implements Plugin {
             .name("Email Record")
             .description("Use this to record email records.")
             .supportsFile("text/plain", "text/html", "multipart/alternative", "multipart/mixed")
-            .property(BuiltinResources.DATE_CREATED)
-            .property(BuiltinResources.DATE_REGISTERED)
-            .property(BuiltinResources.NOTES)
+            .property(BuiltinComponents.DATE_CREATED)
+            .property(BuiltinComponents.DATE_REGISTERED)
+            .property(BuiltinComponents.NOTES, "This is an email")
             .property(RecordProperties.RECORD_SECURITY_CLASSIFICATION)
             .property(RecordProperties.RECORD_SECURITY_CAVEAT)
             .property(RecordProperties.RECORD_SECURITY_RELEASABILITY)

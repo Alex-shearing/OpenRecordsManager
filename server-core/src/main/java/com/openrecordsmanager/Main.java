@@ -2,7 +2,7 @@ package com.openrecordsmanager;
 
 import com.openrecordsmanager.api.config.ConfigStore;
 import com.openrecordsmanager.config.ConfigStoreImpl;
-import com.openrecordsmanager.resources.ResourceCatalog;
+import com.openrecordsmanager.resources.ComponentCatalog;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.persistence.autoconfigure.EntityScan;
@@ -18,7 +18,7 @@ public class Main {
     }
 
     @Bean
-    public ConfigStore configStore(ResourceCatalog manager) {
+    public ConfigStore configStore(ComponentCatalog manager) {
         return ConfigStoreImpl.build(manager);
     }
 }

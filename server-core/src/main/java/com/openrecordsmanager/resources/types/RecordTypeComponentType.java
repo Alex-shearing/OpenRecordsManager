@@ -6,8 +6,8 @@ import com.openrecordsmanager.model.ObjectProperty;
 import com.openrecordsmanager.model.RecordType;
 import com.openrecordsmanager.model.RecordTypeProperty;
 import com.openrecordsmanager.model.repositories.DataRepository;
+import com.openrecordsmanager.resources.ComponentCatalog;
 import com.openrecordsmanager.resources.ExpressionsService;
-import com.openrecordsmanager.resources.ResourceCatalog;
 import com.openrecordsmanager.resources.ResourceIdentifier;
 
 import java.util.Map;
@@ -15,13 +15,13 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-public class RecordTypeType extends ResourceType<RecordTypeDefinition, RecordType> {
-    public RecordTypeType() {
-        super("record_type", RecordTypeDefinition.class);
+public class RecordTypeComponentType extends ComponentType<RecordTypeDefinition, RecordType> {
+    public RecordTypeComponentType() {
+        super("record_types", RecordTypeDefinition.class);
     }
 
     @Override
-    public RecordType register(DataRepository repository, ResourceCatalog catalog, ExpressionsService expressions, ResourceIdentifier id, RecordTypeDefinition definition) {
+    public RecordType register(DataRepository repository, ComponentCatalog catalog, ExpressionsService expressions, ResourceIdentifier id, RecordTypeDefinition definition) {
         Set<RecordTypeProperty<?>> properties = definition.properties().entrySet()
                 .stream()
                 .map(def -> createRecordTypeProperty(def, catalog, repository))
@@ -40,13 +40,13 @@ public class RecordTypeType extends ResourceType<RecordTypeDefinition, RecordTyp
     }
 
     @SuppressWarnings("unchecked")
-    private static <T> RecordTypeProperty<T> createRecordTypeProperty(Map.Entry<PropertyDefinition<?>, ?> entry, ResourceCatalog catalog, DataRepository repository) {
-        ResourceIdentifier propId = catalog.getResourceId(ResourceTypes.PROPERTY, entry.getKey());
+    private static <T> RecordTypeProperty<T> createRecordTypeProperty(Map.Entry<PropertyDefinition<?>, ?> entry, ComponentCatalog catalog, DataRepository repository) {
+        ResourceIdentifier propId = catalog.getId(ComponentTypes.PROPERTY, entry.getKey());
         if (propId == null) {
             throw new IllegalArgumentException("Attempted to use property that was not in catalog: " + entry.getKey().getName());
         }
 
-        Optional<ObjectProperty<?>> property = ResourceTypes.PROPERTY.getRegistered(propId, repository);
+        Optional<ObjectProperty<?>> property = ComponentTypes.PROPERTY.getRegistered(propId, repository);
         if (property.isEmpty()) {
             throw new IllegalArgumentException("Attempted to use property that was not registered: " + propId);
         }

@@ -6,7 +6,7 @@ import com.openrecordsmanager.model.ListElement;
 import com.openrecordsmanager.model.Record;
 import com.openrecordsmanager.model.User;
 import com.openrecordsmanager.model.repositories.ListElementRepository;
-import com.openrecordsmanager.resources.types.ResourceTypes;
+import com.openrecordsmanager.resources.types.ComponentTypes;
 import dev.cel.common.CelAbstractSyntaxTree;
 import dev.cel.common.CelFunctionDecl;
 import dev.cel.common.CelOverloadDecl;
@@ -34,11 +34,11 @@ import java.util.UUID;
 public class ExpressionsService {
     private static final Logger LOGGER = LoggerFactory.getLogger(ExpressionsService.class);
 
-    private final ResourceCatalog registry;
+    private final ComponentCatalog registry;
     private final CelCompiler celCompiler;
     private final CelRuntime celRuntime;
 
-    public ExpressionsService(ResourceCatalog registry, ListElementRepository listElementRepo) {
+    public ExpressionsService(ComponentCatalog registry, ListElementRepository listElementRepo) {
         this.registry = registry;
         this.celCompiler = CelCompilerFactory.standardCelCompilerBuilder()
                 .addVar("value", SimpleType.DYN)
@@ -59,11 +59,11 @@ public class ExpressionsService {
         return MessageFormat.format(
                 builder.filter(),
                 Arrays.stream(builder.dependencies())
-                        .map(property -> "'" + registry.getResourceId(ResourceTypes.PROPERTY, property) + "'")
+                        .map(property -> "'" + registry.getId(ComponentTypes.PROPERTY, property) + "'")
                         .toArray()
         );
     }
-    
+
     public boolean checkPropertyExpression(UUID id, String filter, @Nullable Object value, User user, @Nullable Record record) {
         if (filter == null || filter.isBlank()) {
             LOGGER.trace("no filter provided for property: {}", id);

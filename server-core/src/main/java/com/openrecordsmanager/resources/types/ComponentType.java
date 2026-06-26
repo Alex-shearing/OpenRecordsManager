@@ -2,8 +2,8 @@ package com.openrecordsmanager.resources.types;
 
 import com.openrecordsmanager.api.Component;
 import com.openrecordsmanager.model.repositories.DataRepository;
+import com.openrecordsmanager.resources.ComponentCatalog;
 import com.openrecordsmanager.resources.ExpressionsService;
-import com.openrecordsmanager.resources.ResourceCatalog;
 import com.openrecordsmanager.resources.ResourceIdentifier;
 
 import java.util.HashSet;
@@ -11,12 +11,12 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
-public abstract class ResourceType<T extends Component, D> {
+public abstract class ComponentType<T extends Component, D> {
 
     private final String name;
     private final Class<T> componentClass;
 
-    public ResourceType(String name, Class<T> componentClass) {
+    public ComponentType(String name, Class<T> componentClass) {
         this.name = name;
         this.componentClass = componentClass;
     }
@@ -25,14 +25,14 @@ public abstract class ResourceType<T extends Component, D> {
         return this.componentClass.isInstance(object);
     }
 
-    public final D register(DataRepository repository, ResourceCatalog catalog, ExpressionsService expressions, ResourceIdentifier id, T definition, boolean includeDependencies) {
+    public final D register(DataRepository repository, ComponentCatalog catalog, ExpressionsService expressions, ResourceIdentifier id, T definition, boolean includeDependencies) {
         if (includeDependencies) {
             for (Component dependency : definition.getDependencies()) {
-                ResourceType<Component, ?> childType = ResourceTypes.fromObject(dependency);
+                ComponentType<Component, ?> childType = ComponentTypes.fromObject(dependency);
                 if (childType == null) {
                     throw new IllegalStateException("Cannot find child resource type for dependency " + dependency);
                 }
-                ResourceIdentifier dependencyId = catalog.getResourceId(childType, dependency);
+                ResourceIdentifier dependencyId = catalog.getId(childType, dependency);
 
                 childType.register(repository, catalog, expressions, dependencyId, dependency, true);
             }
@@ -44,12 +44,12 @@ public abstract class ResourceType<T extends Component, D> {
         return this.register(repository, catalog, expressions, id, definition);
     }
 
-    protected abstract D register(DataRepository repository, ResourceCatalog catalog, ExpressionsService expressions, ResourceIdentifier id, T definition);
+    protected abstract D register(DataRepository repository, ComponentCatalog catalog, ExpressionsService expressions, ResourceIdentifier id, T definition);
 
     public abstract Optional<D> getRegistered(ResourceIdentifier id, DataRepository repo);
 
-    public Optional<T> getComponent(ResourceIdentifier id, ResourceCatalog catalog) {
-        return Optional.ofNullable(catalog.getComponent(this, id));
+    public Optional<T> getComponent(ResourceIdentifier id, ComponentCatalog catalog) {
+        return catalog.getComponent(this, id);
     }
 
     /**
@@ -59,15 +59,15 @@ public abstract class ResourceType<T extends Component, D> {
      * @param repository data repository
      * @param catalog    resource catalog
      */
-    protected static void validateAllDependenciesRegistered(Component component, DataRepository repository, ResourceCatalog catalog) {
+    protected static void validateAllDependenciesRegistered(Component component, DataRepository repository, ComponentCatalog catalog) {
         Set<Component> dependencies = collectDependencies(component, new HashSet<>());
 
         for (Component dependency : dependencies) {
-            ResourceType<Component, ?> childType = ResourceTypes.fromObject(dependency);
+            ComponentType<Component, ?> childType = ComponentTypes.fromObject(dependency);
             if (childType == null) {
                 throw new IllegalStateException("Cannot find child resource type for dependency " + dependency);
             }
-            ResourceIdentifier dependencyId = catalog.getResourceId(childType, dependency);
+            ResourceIdentifier dependencyId = catalog.getId(childType, dependency);
 
             Optional<?> childComponent = childType.getRegistered(dependencyId, repository);
             if (childComponent.isEmpty()) {
@@ -97,7 +97,7 @@ public abstract class ResourceType<T extends Component, D> {
     @Override
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) return false;
-        ResourceType<?, ?> that = (ResourceType<?, ?>) o;
+        ComponentType<?, ?> that = (ComponentType<?, ?>) o;
         return Objects.equals(componentClass, that.componentClass);
     }
 

@@ -5,7 +5,7 @@ import com.openrecordsmanager.api.property.PropertyType;
 
 import java.util.Date;
 
-public class BuiltinResources implements Plugin {
+public class BuiltinComponents implements Plugin {
     public static final PropertyDefinition<String> NOTES = PropertyDefinition.builder("notes", PropertyType.STRING)
             .name("Notes")
             .description("Notes on the object")

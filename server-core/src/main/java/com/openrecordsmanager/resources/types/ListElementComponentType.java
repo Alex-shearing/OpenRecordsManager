@@ -4,20 +4,20 @@ import com.openrecordsmanager.api.list.ListElementDefinition;
 import com.openrecordsmanager.model.ListElement;
 import com.openrecordsmanager.model.ListType;
 import com.openrecordsmanager.model.repositories.DataRepository;
+import com.openrecordsmanager.resources.ComponentCatalog;
 import com.openrecordsmanager.resources.ExpressionsService;
-import com.openrecordsmanager.resources.ResourceCatalog;
 import com.openrecordsmanager.resources.ResourceIdentifier;
 
 import java.util.Optional;
 
-public class ListElementResourceType extends ResourceType<ListElementDefinition, ListElement> {
-    public ListElementResourceType() {
-        super("list_element", ListElementDefinition.class);
+public class ListElementComponentType extends ComponentType<ListElementDefinition, ListElement> {
+    public ListElementComponentType() {
+        super("list_elements", ListElementDefinition.class);
     }
 
     @Override
-    public ListElement register(DataRepository repository, ResourceCatalog catalog, ExpressionsService expressions, ResourceIdentifier id, ListElementDefinition definition) {
-        ResourceIdentifier parentId = catalog.getResourceId(ResourceTypes.LIST, definition.parent());
+    public ListElement register(DataRepository repository, ComponentCatalog catalog, ExpressionsService expressions, ResourceIdentifier id, ListElementDefinition definition) {
+        ResourceIdentifier parentId = catalog.getId(ComponentTypes.LIST, definition.parent());
         if (parentId == null) {
             throw new IllegalArgumentException("attempted to register list element to a parent that was not registered");
         }

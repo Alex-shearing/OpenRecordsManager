@@ -1,6 +1,6 @@
 package com.openrecordsmanager.resources;
 
-import com.openrecordsmanager.api.BuiltinResources;
+import com.openrecordsmanager.api.BuiltinComponents;
 import com.openrecordsmanager.api.Plugin;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,7 +46,7 @@ public class PluginManager {
         ServiceLoader<Plugin> loader = ServiceLoader.load(Plugin.class, ucl);
 
         List<Plugin> loadedPlugins = new ArrayList<>();
-        loadedPlugins.add(new BuiltinResources());
+        loadedPlugins.add(new BuiltinComponents());
         loadedPlugins.addAll(Arrays.asList(additionalPlugins));
 
         // Initialize all the plugins
