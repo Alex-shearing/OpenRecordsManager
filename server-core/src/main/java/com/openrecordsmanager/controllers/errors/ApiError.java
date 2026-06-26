@@ -15,19 +15,19 @@ public class ApiError extends RuntimeException {
     }
 
     public static ApiError notFound(String type, String resource) {
-        throw new NotFound(type, resource);
+        return new NotFound(type, resource);
     }
 
     public static ApiError notFound(String type, ResourceIdentifier resource) {
-        throw new NotFound(type, resource.toString());
+        return ApiError.notFound(type, resource.toString());
     }
 
     public static ApiError serverError(String pattern, Object... params) {
-        throw new ServerError(MessageFormat.format(pattern, params));
+        return new ServerError(MessageFormat.format(pattern, params));
     }
 
     public static ApiError authError(String error) {
-        throw new AuthenticationError(error);
+        return new AuthenticationError(error);
     }
 
     public boolean shouldLog() {
