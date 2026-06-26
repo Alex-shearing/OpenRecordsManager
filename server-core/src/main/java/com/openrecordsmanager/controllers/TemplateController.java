@@ -36,7 +36,7 @@ public class TemplateController {
     @GetMapping("/record_types/{template}")
     public ApiResponse<RecordTypeDefinition> getRecordTypeTemplate(@PathVariable("template") ResourceIdentifier templateId) {
         RecordTypeDefinition template = ComponentTypes.RECORD_TYPE.getComponent(templateId, this.catalog)
-                .orElseThrow(() -> ApiError.notFound("record template", templateId));
+                .orElseThrow(() -> ApiError.templateNotFound(ComponentTypes.RECORD_TYPE, templateId));
 
         return ApiResponse.success(template);
     }
@@ -44,7 +44,7 @@ public class TemplateController {
     @PostMapping("/record_types/{template}/apply")
     public ApiResponse<RecordType> applyRecordTypeTemplate(@PathVariable("template") ResourceIdentifier templateId, @RequestParam(value = "includeDependencies", required = false, defaultValue = "false") boolean includeDependencies) {
         RecordTypeDefinition template = ComponentTypes.RECORD_TYPE.getComponent(templateId, this.catalog)
-                .orElseThrow(() -> ApiError.notFound("record template", templateId));
+                .orElseThrow(() -> ApiError.templateNotFound(ComponentTypes.RECORD_TYPE, templateId));
 
         RecordType type = ComponentTypes.RECORD_TYPE.register(this.repository, this.catalog, this.expressions, templateId, template, includeDependencies);
 
@@ -59,7 +59,7 @@ public class TemplateController {
     @GetMapping("/lists/{template}")
     public ApiResponse<ListDefinition> getTemplate(@PathVariable("template") ResourceIdentifier templateId) {
         ListDefinition listDef = ComponentTypes.LIST.getComponent(templateId, this.catalog)
-                .orElseThrow(() -> ApiError.notFound("list template", templateId));
+                .orElseThrow(() -> ApiError.templateNotFound(ComponentTypes.LIST, templateId));
 
         return ApiResponse.success(listDef);
     }
@@ -67,7 +67,7 @@ public class TemplateController {
     @PostMapping("/lists/{template}/apply")
     public ApiResponse<ListType> applyList(@PathVariable("template") ResourceIdentifier templateId) {
         ListDefinition listDef = ComponentTypes.LIST.getComponent(templateId, this.catalog)
-                .orElseThrow(() -> ApiError.notFound("list template", templateId));
+                .orElseThrow(() -> ApiError.templateNotFound(ComponentTypes.LIST, templateId));
 
         ListType type = ComponentTypes.LIST.register(this.repository, this.catalog, this.expressions, templateId, listDef, false);
 

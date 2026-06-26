@@ -20,15 +20,20 @@ public interface ObjectPropertyHolder<T extends ObjectPropertyHolder.ObjectPrope
         return property.map(this::getProperty).orElse(null);
     }
 
-    @SuppressWarnings("unchecked")
     default <K> K getProperty(ObjectProperty<K> property) {
-        return (K) this.getProperties().get(property).getValue();
+        return property.type.cast(this.getProperties().get(property).getValue());
     }
 
     boolean canSetProperty(ObjectProperty<?> property);
 
     <V> T createProperty(ObjectProperty<V> property, V value);
 
+    /**
+     * Set a property on the holder, creating it if allowed.
+     *
+     * @param property the property to set/create
+     * @param value    the value to set to
+     */
     default <K> void setProperty(ObjectProperty<K> property, K value) {
         T holder = this.getProperties().get(property);
         if (holder == null) {
@@ -40,7 +45,7 @@ public interface ObjectPropertyHolder<T extends ObjectPropertyHolder.ObjectPrope
             this.getProperties().put(property, holder);
         }
 
-        holder.setValueUnchecked(value);
+        holder.setValue(holder.getProperty().type.cast(value));
     }
 
     interface ObjectPropertyValue<T> {
@@ -49,10 +54,5 @@ public interface ObjectPropertyHolder<T extends ObjectPropertyHolder.ObjectPrope
         T getValue();
 
         void setValue(T value);
-
-        @SuppressWarnings("unchecked")
-        default void setValueUnchecked(Object value) {
-            this.setValue((T) value);
-        }
     }
 }

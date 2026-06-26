@@ -10,21 +10,21 @@ public abstract class PropertyType<T> {
 
     public static final PropertyType<String> CALCULATED = new PropertyType<>("calculated") {
         @Override
-        public String validate(PropertyDefinition<String> definition, Object value) {
+        public String cast(Object value) {
             return "tba";
         }
     };
 
     public static final PropertyType<String> STRING = new PropertyType<>("string") {
         @Override
-        public String validate(PropertyDefinition<String> definition, Object value) {
+        public String cast(Object value) {
             return value instanceof String v ? v : null;
         }
     };
 
     public static final PropertyType<Long> NUMBER = new PropertyType<>("number") {
         @Override
-        public Long validate(PropertyDefinition<Long> definition, Object value) {
+        public Long cast(Object value) {
             if (value instanceof Long l) return l;
             if (value instanceof Integer i) return i.longValue();
 
@@ -34,21 +34,21 @@ public abstract class PropertyType<T> {
 
     public static final PropertyType<Double> DECIMAL = new PropertyType<>("decimal") {
         @Override
-        public Double validate(PropertyDefinition<Double> definition, Object value) {
+        public Double cast(Object value) {
             return value instanceof Double v ? v : null;
         }
     };
 
     public static final PropertyType<Boolean> BOOLEAN = new PropertyType<>("boolean") {
         @Override
-        public Boolean validate(PropertyDefinition<Boolean> definition, Object value) {
+        public Boolean cast(Object value) {
             return value instanceof Boolean v ? v : null;
         }
     };
 
     public static final PropertyType<IListElement> LIST_ITEM = new PropertyType<>("list_item") {
         @Override
-        public IListElement validate(PropertyDefinition<IListElement> definition, Object value) {
+        public IListElement cast(Object value) {
             return value instanceof IListElement v ? v : null;
         }
     };
@@ -56,7 +56,7 @@ public abstract class PropertyType<T> {
     public static final PropertyType<List<IListElement>> LIST_MULTIPLE = new PropertyType<>("list_multiple") {
         @SuppressWarnings("unchecked")
         @Override
-        public List<IListElement> validate(PropertyDefinition<List<IListElement>> definition, Object value) {
+        public List<IListElement> cast(Object value) {
             if (value instanceof Set<?> v) {
                 if (v.isEmpty()) {
                     return (List<IListElement>) v;
@@ -74,7 +74,7 @@ public abstract class PropertyType<T> {
 
     public static final PropertyType<Date> DATE = new PropertyType<>("date") {
         @Override
-        public Date validate(PropertyDefinition<Date> definition, Object value) {
+        public Date cast(Object value) {
             return value instanceof Date v ? v : null;
         }
     };
@@ -86,7 +86,7 @@ public abstract class PropertyType<T> {
         TYPES.put(name, this);
     }
 
-    public abstract T validate(PropertyDefinition<T> definition, Object value);
+    public abstract T cast(Object value);
 
     public boolean allowsList() {
         return this == LIST_ITEM || this == LIST_MULTIPLE;

@@ -71,12 +71,11 @@ public class Record implements ObjectPropertyHolder<RecordPropertyValue<?>> {
         return new RecordPropertyValue<>(this, property, value);
     }
 
-    @SuppressWarnings("unchecked")
     private <T> RecordPropertyValue<T> newProperty(RecordTypeProperty<T> property) {
         RecordPropertyValue<?> oldValue = this.properties.get(property.property);
 
         // Either get the previous value (if exists) or the property default
-        T newValue = oldValue != null && oldValue.value != null ? (T) oldValue.value : property.getDefault();
+        T newValue = oldValue != null && oldValue.value != null ? property.property.type.cast(oldValue.value) : property.getDefault();
 
         return this.createProperty(property.property, newValue);
     }

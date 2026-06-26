@@ -1,6 +1,7 @@
 package com.openrecordsmanager.controllers.errors;
 
 import com.openrecordsmanager.resources.ResourceIdentifier;
+import com.openrecordsmanager.resources.types.ComponentType;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 
@@ -18,8 +19,12 @@ public class ApiError extends RuntimeException {
         return new NotFound(type, resource);
     }
 
-    public static ApiError notFound(String type, ResourceIdentifier resource) {
-        return ApiError.notFound(type, resource.toString());
+    public static ApiError notFound(ComponentType<?, ?> type, ResourceIdentifier resource) {
+        return ApiError.notFound(type.toString(), resource.toString());
+    }
+
+    public static ApiError templateNotFound(ComponentType<?, ?> type, ResourceIdentifier resource) {
+        return ApiError.notFound(type.toString() + " template", resource.toString());
     }
 
     public static ApiError serverError(String pattern, Object... params) {
@@ -40,12 +45,17 @@ public class ApiError extends RuntimeException {
 
     public static class NotFound extends ApiError {
         public NotFound(String type, String resource) {
-            super(HttpStatus.NOT_FOUND, MessageFormat.format("{0} resource {1} not found", type, resource));
+            super(HttpStatus.NOT_FOUND, MessageFormat.format("object {0} of type {1} not found", resource, type));
         }
 
         @Override
         public boolean shouldLog() {
             return false;
+        }
+
+        @Override
+        public String getUserMessage() {
+            return this.getMessage();
         }
     }
 

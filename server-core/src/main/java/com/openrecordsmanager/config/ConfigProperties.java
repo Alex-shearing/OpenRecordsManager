@@ -23,5 +23,11 @@ public class ConfigProperties {
             .defaultValue("INFO")
             .build();
 
-    public static final ConfigDefinition<?>[] BUILTIN_CONFIG = {WORKGROUP_DATABASE_URL, WORKGROUP_NAME, LOGGING_LEVEL};
+    public static final ConfigDefinition<Boolean> DETAILED_ERRORS = ConfigDefinition.builder("debug.detailed_errors", ConfigValueType.BOOL)
+            .name("Return Detailed API Errors")
+            .description("If enabled, the API will return detailed errors when they occur. This should only be enabled for debugging.")
+            .defaultValue(false)
+            .build();
+
+    public static final ConfigDefinition<?>[] BUILTIN_CONFIG = {WORKGROUP_DATABASE_URL, WORKGROUP_NAME, LOGGING_LEVEL, DETAILED_ERRORS};
 }
