@@ -1,20 +1,25 @@
 package com.openrecordsmanager.controllers;
 
+import com.openrecordsmanager.api.config.ConfigStore;
+import com.openrecordsmanager.config.ConfigProperties;
 import com.openrecordsmanager.controllers.errors.ApiError;
-import com.openrecordsmanager.model.ObjectProperty;
+import com.openrecordsmanager.model.*;
 import com.openrecordsmanager.model.Record;
-import com.openrecordsmanager.model.RecordType;
 import com.openrecordsmanager.model.repositories.DataRepository;
 import com.openrecordsmanager.resources.ExpressionsService;
 import com.openrecordsmanager.resources.ResourceIdentifier;
 import com.openrecordsmanager.resources.types.ComponentTypes;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
+import java.io.InputStream;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/records")
@@ -22,10 +27,12 @@ public class RecordController {
 
     private final ExpressionsService expressions;
     private final DataRepository repository;
+    private final ConfigStore config;
 
-    public RecordController(ExpressionsService expressions, DataRepository repository) {
+    public RecordController(ExpressionsService expressions, DataRepository repository, ConfigStore config) {
         this.expressions = expressions;
         this.repository = repository;
+        this.config = config;
     }
 
     @PostMapping()
@@ -33,15 +40,64 @@ public class RecordController {
         RecordType type = this.repository.recordTypeRepo.findById(input.type())
                 .orElseThrow(() -> ApiError.notFound(ComponentTypes.RECORD_TYPE, input.type()));
 
-        Record record = new Record(UUID.randomUUID(), "tba", type, null);
+        Record record = new Record("tba", type);
         input.properties.forEach((identifier, o) -> {
             ObjectProperty<?> property = this.repository.objectPropertyRepo.findById(identifier)
                     .orElseThrow(() -> ApiError.notFound(ComponentTypes.PROPERTY, identifier));
+
             setProperty(record, property, o);
         });
 
         return this.repository.recordRepo.saveAndFlush(record);
     }
+
+    @GetMapping("/{id}")
+    public Record getRecord(@PathVariable("id") UUID id) {
+        return this.repository.recordRepo.findById(id)
+                .orElseThrow(() -> ApiError.notFound("record", id.toString()));
+    }
+
+    @PutMapping(value = "/{id}/revisions/{version}", consumes = MediaType.APPLICATION_OCTET_STREAM_VALUE)
+    public boolean newRevision(@PathVariable("id") UUID id, @PathVariable("version") double version, InputStream file) {
+        Record record = this.repository.recordRepo.findById(id)
+                .orElseThrow(() -> ApiError.notFound("record", id.toString()));
+
+        FileStore fileStore = this.repository.fileStoreRepo.findById(this.config.getProperty(ConfigProperties.DEFAULT_FILE_STORE))
+                .orElseThrow(() -> ApiError.notFound("file store", id.toString()));
+
+        record.addRevision(version, fileStore.newFile(file));
+
+        this.repository.recordRepo.saveAndFlush(record);
+
+        return true;
+    }
+
+    @GetMapping("/{id}/revisions")
+    public List<Double> getRevisions(@PathVariable("id") UUID id) {
+        return this.repository.recordRepo.findById(id)
+                .orElseThrow(() -> ApiError.notFound("record", id.toString()))
+                .revisions.stream().map(recordRevision -> recordRevision.version).collect(Collectors.toList());
+    }
+
+    @GetMapping("/{id}/revisions/{version}")
+    public ResponseEntity<Resource> getRevision(@PathVariable("id") UUID id, @PathVariable("version") double version) {
+        RecordRevision rev = this.repository.recordRepo.findByRecordId(id, version)
+                .orElseThrow(() -> ApiError.notFound("record revision", id.toString() + "/" + version));
+
+        System.out.println(rev.file.hash);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + version + "\"");
+
+        return null;
+
+//        return ResponseEntity.ok()
+//                .headers(headers)
+//                .contentLength(file.length())
+//                .contentType(MediaType.APPLICATION_OCTET_STREAM)
+//                .body(resource);
+    }
+
 
     private static <K> void setProperty(Record record, ObjectProperty<K> property, Object value) {
         record.setProperty(property, property.type.cast(value));

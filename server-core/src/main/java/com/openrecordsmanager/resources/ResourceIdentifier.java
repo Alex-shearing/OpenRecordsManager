@@ -14,13 +14,21 @@ public record ResourceIdentifier(String source, String item) implements Serializ
         this.item = validateIdentifier(item);
     }
 
-    public static ResourceIdentifier valueOf(String string) {
-        String[] parts = string.split(":");
+    public ResourceIdentifier(String identifier) {
+        String[] parts = identifier.split(":");
         if (parts.length != 2) {
-            throw new IllegalArgumentException(String.format("Resource identifier '%s' is invalid. Could not split correctly", string));
+            throw new IllegalArgumentException(String.format("Resource identifier '%s' is invalid. Could not split correctly", identifier));
         }
 
-        return new ResourceIdentifier(parts[0], parts[1]);
+        this(parts[0], parts[1]);
+    }
+
+    public ResourceIdentifier(ResourceIdentifier identifier) {
+        this(identifier.source, identifier.item);
+    }
+
+    public static ResourceIdentifier valueOf(String string) {
+        return new ResourceIdentifier(string);
     }
 
     @Override

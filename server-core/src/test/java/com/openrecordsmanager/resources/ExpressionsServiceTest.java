@@ -116,7 +116,7 @@ class ExpressionsServiceTest {
     void checkPropertyExpression_withRecord() {
         ObjectProperty<Boolean> recordProperty = new ObjectProperty<>(ResourceIdentifier.valueOf("test:record_boolean"), "Record Boolean", "Record Boolean", PropertyType.BOOLEAN);
 
-        Record record = new Record(UUID.randomUUID(), "Record title", null, null);
+        Record record = new Record("Record title", null);
         record.setProperty(recordProperty, false);
 
         // Check user has all required items

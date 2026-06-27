@@ -9,7 +9,7 @@ import org.springframework.core.env.ConfigurableEnvironment;
 public class CustomConfig implements EnvironmentPostProcessor {
     @Override
     public void postProcessEnvironment(ConfigurableEnvironment environment, @NonNull SpringApplication application) {
-        ConfigStoreImpl conf = ConfigStoreImpl.build(null);
+        ConfigStoreImpl conf = new ConfigStoreImpl(null, null);
         environment.getPropertySources().addFirst(conf);
     }
 }

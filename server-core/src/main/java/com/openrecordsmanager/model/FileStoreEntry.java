@@ -36,4 +36,13 @@ public class FileStoreEntry {
     @Deprecated
     protected FileStoreEntry() {
     }
+
+    public FileStoreEntry(FileStore store, String path, String hashAlgorithm, String hash, long sizeBytes) {
+        this.id = UUID.randomUUID();
+        this.store = store;
+        this.path = path;
+        this.hashAlgorithm = hashAlgorithm;
+        this.hash = hash;
+        this.sizeBytes = sizeBytes;
+    }
 }

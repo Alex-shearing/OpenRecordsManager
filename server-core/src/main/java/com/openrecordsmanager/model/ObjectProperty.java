@@ -10,11 +10,17 @@ import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 import org.hibernate.type.descriptor.java.ObjectJavaType;
 import org.jspecify.annotations.Nullable;
+import tools.jackson.core.JacksonException;
+import tools.jackson.core.JsonGenerator;
+import tools.jackson.databind.SerializationContext;
+import tools.jackson.databind.ValueSerializer;
+import tools.jackson.databind.annotation.JsonSerialize;
 
 import java.util.Objects;
 
 @Entity
 @Table(name = "object_property")
+@JsonSerialize(using = ObjectProperty.Serializer.class)
 public class ObjectProperty<T> {
     @Id
     @JsonProperty
@@ -94,5 +100,21 @@ public class ObjectProperty<T> {
     @Override
     public int hashCode() {
         return Objects.hashCode(id);
+    }
+
+    public static class Serializer extends ValueSerializer<ObjectProperty<?>> {
+        @Override
+        public void serialize(ObjectProperty<?> value, JsonGenerator gen, SerializationContext ctxt) throws JacksonException {
+            gen.writeStartObject();
+
+            gen.writeStringProperty("id", value.id.toString());
+            gen.writeStringProperty("name", value.name);
+            gen.writeStringProperty("type", value.type.name);
+            if (value.listType != null) {
+                gen.writeStringProperty("list_type", value.listType.id.toString());
+            }
+
+            gen.writeEndObject();
+        }
     }
 }

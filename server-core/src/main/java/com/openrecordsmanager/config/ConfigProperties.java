@@ -3,6 +3,8 @@ package com.openrecordsmanager.config;
 import com.openrecordsmanager.api.config.ConfigDefinition;
 import com.openrecordsmanager.api.config.ConfigValueType;
 
+import java.util.UUID;
+
 public class ConfigProperties {
     public static final ConfigDefinition<String> WORKGROUP_DATABASE_URL = ConfigDefinition.builder("workgroup.database", ConfigValueType.STRING)
             .name("Database URL")
@@ -29,5 +31,10 @@ public class ConfigProperties {
             .defaultValue(false)
             .build();
 
-    public static final ConfigDefinition<?>[] BUILTIN_CONFIG = {WORKGROUP_DATABASE_URL, WORKGROUP_NAME, LOGGING_LEVEL, DETAILED_ERRORS};
+    public static final ConfigDefinition<UUID> DEFAULT_FILE_STORE = ConfigDefinition.builder("workgroup.default_file_store", ConfigValueType.UUID)
+            .name("Default File Store")
+            .description("Sets the default store used to store new files.")
+            .build();
+
+    public static final ConfigDefinition<?>[] BUILTIN_CONFIG = {WORKGROUP_DATABASE_URL, WORKGROUP_NAME, LOGGING_LEVEL, DETAILED_ERRORS, DEFAULT_FILE_STORE};
 }

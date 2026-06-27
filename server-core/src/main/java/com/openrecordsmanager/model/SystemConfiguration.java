@@ -11,9 +11,18 @@ public class SystemConfiguration {
     private Long id;
 
     @Column(name = "config_key", unique = true, nullable = false)
-    private String configKey;
+    public String configKey;
 
     @Column(name = "config_value")
-    private String configValue;
+    public String configValue;
+
+    @Deprecated
+    protected SystemConfiguration() {
+    }
+
+    public SystemConfiguration(String configKey, String configValue) {
+        this.configKey = configKey;
+        this.configValue = configValue;
+    }
 
 }

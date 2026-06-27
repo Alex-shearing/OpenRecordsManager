@@ -62,7 +62,7 @@ class RecordTest {
         );
         recordType.properties.add(new RecordTypeProperty<>(stringProperty, null));
 
-        Record record = new Record(UUID.randomUUID(), "Record", recordType, null);
+        Record record = new Record("Record", recordType);
         record.setProperty(stringProperty, "test value");
 
         Assertions.assertEquals(SecurityFilterUsage.SHOW_ALL, record.securityFilter(this.expressionsService, TEST_USER, record), "User should have access");
@@ -84,7 +84,7 @@ class RecordTest {
                 new HashSet<>()
         );
 
-        Record record = new Record(UUID.randomUUID(), "Record", recordType, null);
+        Record record = new Record("Record", recordType);
 
         Assertions.assertEquals(SecurityFilterUsage.HIDE_RECORD, record.securityFilter(this.expressionsService, TEST_USER, record), "User should not have access");
 

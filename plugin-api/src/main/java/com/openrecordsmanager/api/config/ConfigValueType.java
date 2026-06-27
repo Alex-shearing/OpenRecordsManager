@@ -2,6 +2,7 @@ package com.openrecordsmanager.api.config;
 
 import java.util.Arrays;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.function.Function;
 
 public class ConfigValueType<T> {
@@ -9,6 +10,7 @@ public class ConfigValueType<T> {
     public static final ConfigValueType<Integer> INT = new ConfigValueType<>(Integer.class, Integer::valueOf);
     public static final ConfigValueType<Double> DOUBLE = new ConfigValueType<>(Double.class, Double::valueOf);
     public static final ConfigValueType<Boolean> BOOL = new ConfigValueType<>(Boolean.class, Boolean::valueOf);
+    public static final ConfigValueType<UUID> UUID = new ConfigValueType<>(UUID.class, java.util.UUID::fromString);
     public static final ConfigValueType<String[]> STRING_LIST = new ConfigValueType<>(String[].class, s -> s.split(";"));
     public static final ConfigValueType<Integer[]> INT_LIST = new ConfigValueType<>(Integer[].class, s -> Arrays.stream(s.split(";")).mapToInt(Integer::valueOf).boxed().toArray(Integer[]::new));
 

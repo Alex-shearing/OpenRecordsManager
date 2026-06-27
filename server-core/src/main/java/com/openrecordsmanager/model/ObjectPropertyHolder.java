@@ -45,7 +45,7 @@ public interface ObjectPropertyHolder<T extends ObjectPropertyHolder.ObjectPrope
             this.getProperties().put(property, holder);
         }
 
-        holder.setValue(holder.getProperty().type.cast(value));
+        holder.setValueRaw(value);
     }
 
     interface ObjectPropertyValue<T> {
@@ -54,5 +54,9 @@ public interface ObjectPropertyHolder<T extends ObjectPropertyHolder.ObjectPrope
         T getValue();
 
         void setValue(T value);
+
+        default void setValueRaw(Object value) {
+            this.setValue(getProperty().type.cast(value));
+        }
     }
 }
