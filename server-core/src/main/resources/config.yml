@@ -3,11 +3,12 @@
 #####################
 # This is the local configuration file for ORM.
 # It has the second-highest precedence when loading configuration options.
-# The order is: Environment Variables > Configuration File > Database.
+# The order of precedence is: Environment Variables > Configuration File > Database.
 
 # Config that affects the whole workgroup
 workgroup:
-  database: jdbc:sqlite:orm_system.db?foreign_keys=on
+  # JDBC URL for the workgroup database
+  database: jdbc:sqlite:orm_system.db
 
 # Config that affects just the server that is reading the config
 server:
