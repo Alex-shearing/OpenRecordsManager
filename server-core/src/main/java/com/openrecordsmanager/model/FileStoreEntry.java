@@ -1,37 +1,39 @@
 package com.openrecordsmanager.model;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.openrecordsmanager.resources.ComponentCatalog;
+import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.core.io.Resource;
 
+import java.io.IOException;
 import java.util.UUID;
 
 @Entity
 @Table(name = "file_store_entry")
 public class FileStoreEntry {
     @Id
-    @JsonProperty
     public UUID id;
 
     @ManyToOne(optional = false)
     @JoinColumn
-    @JsonProperty
     public FileStore store;
 
     @Column(nullable = false)
-    @JsonProperty
     public String path;
 
     @Column(nullable = false)
-    @JsonProperty
     public String hashAlgorithm;
 
     @Column(nullable = false)
-    @JsonProperty
     public String hash;
 
     @Column(nullable = false)
-    @JsonProperty
     public long sizeBytes;
+
+    @Column()
+    @Nullable
+    public String extension;
 
     @Deprecated
     protected FileStoreEntry() {
@@ -44,5 +46,20 @@ public class FileStoreEntry {
         this.hashAlgorithm = hashAlgorithm;
         this.hash = hash;
         this.sizeBytes = sizeBytes;
+    }
+
+    public Resource getFile(ComponentCatalog catalog) {
+        try {
+            return new InputStreamResource(this.store.getFile(this, catalog));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public String getFileName(String name) {
+        if (this.extension != null) {
+            name += "." + this.extension;
+        }
+        return name;
     }
 }

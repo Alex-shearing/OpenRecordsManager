@@ -27,7 +27,7 @@ public class FileStoreController {
 
     @PostMapping()
     public FileStore newFileStore() {
-        FileStore store = new FileStore(ResourceIdentifier.valueOf("file_store_type:s3"), Map.of());
+        FileStore store = new FileStore(ResourceIdentifier.valueOf("filestore_s3:s3"), Map.of());
         return this.repository.fileStoreRepo.saveAndFlush(store);
     }
 

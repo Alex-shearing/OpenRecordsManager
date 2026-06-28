@@ -1,14 +1,18 @@
 package com.openrecordsmanager.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.hash.HashFunction;
+import com.google.common.hash.Hashing;
+import com.google.common.hash.HashingInputStream;
+import com.google.common.io.CountingInputStream;
+import com.openrecordsmanager.api.filestore.FileStoreType;
+import com.openrecordsmanager.resources.ComponentCatalog;
 import com.openrecordsmanager.resources.ResourceIdentifier;
+import com.openrecordsmanager.resources.types.ComponentTypes;
 import jakarta.persistence.*;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.security.DigestInputStream;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -43,37 +47,37 @@ public class FileStore {
         this.properties = properties;
     }
 
-    public FileStoreEntry newFile(InputStream file) {
-        byte[] hashBytes;
-        long length = 0;
+    public FileStoreEntry newFile(InputStream file, ComponentCatalog catalog) {
+        FileStoreType type = catalog.getComponent(ComponentTypes.FILE_STORE_TYPE, this.type)
+                .orElseThrow(() -> new IllegalArgumentException("file store type not found"));
+
+        HashFunction hashFunction = getHashFunction(CURRENT_HASH_ALGORITHM);
+
+        CountingInputStream countingStream = new CountingInputStream(file);
+        HashingInputStream hashingStream = new HashingInputStream(hashFunction, countingStream);
+
+        // Save the file into the store
+        String path = "/test";
         try {
-            MessageDigest md = MessageDigest.getInstance(CURRENT_HASH_ALGORITHM);
-            // Use a DigestInputStream to automatically update the MessageDigest as the file is read
-            try (DigestInputStream dis = new DigestInputStream(file, md)) {
-                byte[] buffer = new byte[8192];
-                int bytesRead;
-                while ((bytesRead = dis.read(buffer)) != -1) {
-                    length += bytesRead;
-                }
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-
-            hashBytes = md.digest();
-        } catch (NoSuchAlgorithmException e) {
-            throw new RuntimeException("Failed to initialize SHA-256 algorithm for file hashing.");
+            type.save(this.properties, path, hashingStream);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
 
-        // Convert the byte array into a hexadecimal string
-        StringBuilder hexString = new StringBuilder();
-        for (byte b : hashBytes) {
-            String hex = Integer.toHexString(0xff & b);
-            if (hex.length() == 1) {
-                hexString.append('0');
-            }
-            hexString.append(hex);
-        }
+        return new FileStoreEntry(this, path, CURRENT_HASH_ALGORITHM, hashingStream.hash().toString(), countingStream.getCount());
+    }
 
-        return new FileStoreEntry(this, "/todo", CURRENT_HASH_ALGORITHM, hexString.toString(), length);
+    public InputStream getFile(FileStoreEntry entry, ComponentCatalog catalog) throws IOException {
+        FileStoreType type = catalog.getComponent(ComponentTypes.FILE_STORE_TYPE, this.type)
+                .orElseThrow(() -> new IllegalArgumentException("file store type not found"));
+        return type.retrieve(this.properties, entry.path);
+    }
+
+    public static HashFunction getHashFunction(String algorithm) {
+        return switch (algorithm) {
+            case "SHA-256" -> Hashing.sha256();
+            case "SHA-512" -> Hashing.sha512();
+            default -> throw new IllegalStateException("Unknown hash function: " + algorithm);
+        };
     }
 }

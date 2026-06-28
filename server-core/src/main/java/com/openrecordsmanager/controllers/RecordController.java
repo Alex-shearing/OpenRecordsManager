@@ -6,6 +6,7 @@ import com.openrecordsmanager.controllers.errors.ApiError;
 import com.openrecordsmanager.model.*;
 import com.openrecordsmanager.model.Record;
 import com.openrecordsmanager.model.repositories.DataRepository;
+import com.openrecordsmanager.resources.ComponentCatalog;
 import com.openrecordsmanager.resources.ExpressionsService;
 import com.openrecordsmanager.resources.ResourceIdentifier;
 import com.openrecordsmanager.resources.types.ComponentTypes;
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.io.InputStream;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -28,11 +30,13 @@ public class RecordController {
     private final ExpressionsService expressions;
     private final DataRepository repository;
     private final ConfigStore config;
+    private final ComponentCatalog catalog;
 
-    public RecordController(ExpressionsService expressions, DataRepository repository, ConfigStore config) {
+    public RecordController(ExpressionsService expressions, DataRepository repository, ConfigStore config, ComponentCatalog catalog) {
         this.expressions = expressions;
         this.repository = repository;
         this.config = config;
+        this.catalog = catalog;
     }
 
     @PostMapping()
@@ -65,7 +69,7 @@ public class RecordController {
         FileStore fileStore = this.repository.fileStoreRepo.findById(this.config.getProperty(ConfigProperties.DEFAULT_FILE_STORE))
                 .orElseThrow(() -> ApiError.notFound("file store", id.toString()));
 
-        record.addRevision(version, fileStore.newFile(file));
+        record.addRevision(version, fileStore.newFile(file, this.catalog));
 
         this.repository.recordRepo.saveAndFlush(record);
 
@@ -84,18 +88,15 @@ public class RecordController {
         RecordRevision rev = this.repository.recordRepo.findByRecordId(id, version)
                 .orElseThrow(() -> ApiError.notFound("record revision", id.toString() + "/" + version));
 
-        System.out.println(rev.file.hash);
-
         HttpHeaders headers = new HttpHeaders();
-        headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + version + "\"");
+        headers.add(HttpHeaders.CONTENT_DISPOSITION, String.format("attachment; filename=\"%s\"", rev.file.getFileName(Double.toString(version))));
+        headers.add("Content-Digest", String.format("%s=:%s:", rev.file.hashAlgorithm.toLowerCase(Locale.ROOT), rev.file.hash));
 
-        return null;
-
-//        return ResponseEntity.ok()
-//                .headers(headers)
-//                .contentLength(file.length())
-//                .contentType(MediaType.APPLICATION_OCTET_STREAM)
-//                .body(resource);
+        return ResponseEntity.ok()
+                .headers(headers)
+                .contentLength(rev.file.sizeBytes)
+                .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                .body(rev.file.getFile(this.catalog));
     }
 
 
