@@ -2,11 +2,13 @@ package com.openrecordsmanager.resources;
 
 import com.openrecordsmanager.api.BuiltinComponents;
 import com.openrecordsmanager.api.Plugin;
+import jakarta.annotation.PreDestroy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -17,6 +19,7 @@ public class PluginManager {
     private static final Logger LOGGER = LoggerFactory.getLogger(PluginManager.class);
 
     private List<Plugin> plugins = Collections.emptyList();
+    private URLClassLoader classLoader;
 
     public PluginManager(Plugin... additionalPlugins) {
         File loc = new File("./plugins");
@@ -40,10 +43,10 @@ public class PluginManager {
         }
 
         // Create an isolated ClassLoader so plugins don't corrupt Server Core classpath
-        URLClassLoader ucl = new URLClassLoader(urls, this.getClass().getClassLoader());
+        this.classLoader = new URLClassLoader(urls, this.getClass().getClassLoader());
 
         // Use ServiceLoader to discover implementations inside the JARs
-        ServiceLoader<Plugin> loader = ServiceLoader.load(Plugin.class, ucl);
+        ServiceLoader<Plugin> loader = ServiceLoader.load(Plugin.class, this.classLoader);
 
         List<Plugin> loadedPlugins = new ArrayList<>();
         loadedPlugins.add(new BuiltinComponents());
@@ -60,5 +63,17 @@ public class PluginManager {
 
     public List<Plugin> getPlugins() {
         return plugins;
+    }
+
+    @PreDestroy
+    public void close() {
+        if (this.classLoader != null) {
+            try {
+                LOGGER.info("Closing plugin ClassLoader...");
+                this.classLoader.close();
+            } catch (IOException e) {
+                LOGGER.error("Failed to close plugin ClassLoader", e);
+            }
+        }
     }
 }

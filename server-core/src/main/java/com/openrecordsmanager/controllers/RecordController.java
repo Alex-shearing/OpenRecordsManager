@@ -62,7 +62,7 @@ public class RecordController {
     }
 
     @PutMapping(value = "/{id}/revisions/{version}", consumes = MediaType.APPLICATION_OCTET_STREAM_VALUE)
-    public boolean newRevision(@PathVariable("id") UUID id, @PathVariable("version") double version, InputStream file) {
+    public void newRevision(@PathVariable("id") UUID id, @PathVariable("version") double version, InputStream file) {
         Record record = this.repository.recordRepo.findById(id)
                 .orElseThrow(() -> ApiError.notFound("record", id.toString()));
 
@@ -72,8 +72,6 @@ public class RecordController {
         record.addRevision(version, fileStore.newFile(file, this.catalog));
 
         this.repository.recordRepo.saveAndFlush(record);
-
-        return true;
     }
 
     @GetMapping("/{id}/revisions")
