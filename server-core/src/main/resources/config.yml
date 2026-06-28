@@ -1,0 +1,26 @@
+#####################
+# ORM Configuration #
+#####################
+# This is the local configuration file for ORM.
+# It has the second-highest precedence when loading configuration options.
+# The order is: Environment Variables > Configuration File > Database.
+
+# Config that affects the whole workgroup
+workgroup:
+  database: jdbc:sqlite:orm_system.db?foreign_keys=on
+
+# Config that affects just the server that is reading the config
+server:
+  plugins:
+    # Define the directory to load plugins from
+    directory: ./plugins
+  debug:
+    # If enabled, detailed API error messages will be returned to the user
+    detailed_errors: true
+    # If enabled, will print SQL statements to the log
+    show_sql: true
+  logging:
+    # Define the minimum log level for writing to logs
+    level: INFO
+    # Define the path that logs should be stored
+    path: ./logs

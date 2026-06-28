@@ -25,8 +25,15 @@ public class ConfigController {
         this.catalog = catalog;
     }
 
-    @GetMapping
-    public Map<String, Optional<?>> getEnvironment() {
+    @GetMapping()
+    public Map<String, Optional<?>> getConfig() {
+        return this.catalog.getComponents(ComponentTypes.CONFIG).stream()
+                .map(config -> Map.entry(config.id(), this.repository.configRepo.findByConfigKey(config.id())))
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+    }
+
+    @GetMapping("/this_server")
+    public Map<String, Optional<?>> getThisServerEnvironment() {
         return this.catalog.getComponents(ComponentTypes.CONFIG).stream()
                 .map(config -> Map.entry(config.id(), config.type().fromString(this.environment.getProperty(config.id()))))
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));

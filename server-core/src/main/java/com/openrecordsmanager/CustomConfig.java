@@ -9,6 +9,6 @@ import org.springframework.core.env.ConfigurableEnvironment;
 public class CustomConfig implements EnvironmentPostProcessor {
     @Override
     public void postProcessEnvironment(ConfigurableEnvironment environment, @NonNull SpringApplication application) {
-        environment.getPropertySources().addFirst(new DatabaseConfigSource());
+        environment.getPropertySources().addLast(new DatabaseConfigSource());
     }
 }

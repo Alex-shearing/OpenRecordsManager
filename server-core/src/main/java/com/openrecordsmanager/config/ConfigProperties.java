@@ -8,7 +8,6 @@ import java.util.UUID;
 public class ConfigProperties {
     public static final ConfigDefinition<String> WORKGROUP_DATABASE_URL = ConfigDefinition.builder("workgroup.database", ConfigValueType.STRING)
             .name("Database URL")
-            .alias("spring.datasource.url")
             .description("A JDBC URL to the database")
             .build();
 
@@ -22,13 +21,13 @@ public class ConfigProperties {
             .description("Sets the default store used to store new files.")
             .build();
 
-    public static final ConfigDefinition<Boolean> DETAILED_ERRORS = ConfigDefinition.builder("debug.detailed_errors", ConfigValueType.BOOL)
+    public static final ConfigDefinition<Boolean> DETAILED_ERRORS = ConfigDefinition.builder("server.debug.detailed_errors", ConfigValueType.BOOL)
             .name("Return Detailed API Errors")
             .description("If enabled, the API will return detailed errors when they occur. This should only be enabled for debugging.")
             .defaultValue(false)
             .build();
 
-    public static final ConfigDefinition<String> PLUGIN_LOAD_DIRECTORY = ConfigDefinition.builder("plugins.directory", ConfigValueType.STRING)
+    public static final ConfigDefinition<String> PLUGIN_LOAD_DIRECTORY = ConfigDefinition.builder("server.plugins.directory", ConfigValueType.STRING)
             .name("Plugins Load Directory")
             .defaultValue("./plugins")
             .description("Defines the directory used to load plugins from.")

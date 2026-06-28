@@ -66,7 +66,12 @@ public class RecordController {
         Record record = this.repository.recordRepo.findById(id)
                 .orElseThrow(() -> ApiError.notFound("record", id.toString()));
 
-        FileStore fileStore = this.repository.fileStoreRepo.findById(this.environment.getProperty(ConfigProperties.WORKGROUP_DEFAULT_FILE_STORE.id(), UUID.class))
+        UUID defaultStoreId = this.environment.getProperty(ConfigProperties.WORKGROUP_DEFAULT_FILE_STORE.id(), UUID.class);
+        if (defaultStoreId == null) {
+            throw ApiError.serverError("There is no value set for the {0} configuration", ConfigProperties.WORKGROUP_DEFAULT_FILE_STORE.id());
+        }
+
+        FileStore fileStore = this.repository.fileStoreRepo.findById(defaultStoreId)
                 .orElseThrow(() -> ApiError.notFound("file store", id.toString()));
 
         record.addRevision(version, fileStore.newFile(file, this.catalog));

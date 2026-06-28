@@ -25,7 +25,7 @@ public class PluginManager {
 
     @Autowired
     public PluginManager(
-            @Value("${plugins.directory}") String pluginDirectory,
+            @Value("${server.plugins.directory}") String pluginDirectory,
             Plugin... additionalPlugins
     ) {
         File loc = new File(pluginDirectory);
