@@ -6,7 +6,6 @@ import com.openrecordsmanager.model.*;
 import com.openrecordsmanager.model.Record;
 import com.openrecordsmanager.model.repositories.DataRepository;
 import com.openrecordsmanager.resources.ComponentCatalog;
-import com.openrecordsmanager.resources.ExpressionsService;
 import com.openrecordsmanager.resources.ResourceIdentifier;
 import com.openrecordsmanager.resources.types.ComponentTypes;
 import org.springframework.core.env.Environment;
@@ -17,23 +16,19 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.InputStream;
-import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/records")
 public class RecordController {
 
-    private final ExpressionsService expressions;
     private final DataRepository repository;
     private final Environment environment;
     private final ComponentCatalog catalog;
 
-    public RecordController(ExpressionsService expressions, DataRepository repository, Environment environment, ComponentCatalog catalog) {
-        this.expressions = expressions;
+    public RecordController(DataRepository repository, Environment environment, ComponentCatalog catalog) {
         this.repository = repository;
         this.environment = environment;
         this.catalog = catalog;
@@ -80,10 +75,8 @@ public class RecordController {
     }
 
     @GetMapping("/{id}/revisions")
-    public List<Double> getRevisions(@PathVariable("id") UUID id) {
-        return this.repository.recordRepo.findById(id)
-                .orElseThrow(() -> ApiError.notFound("record", id.toString()))
-                .revisions.stream().map(recordRevision -> recordRevision.version).collect(Collectors.toList());
+    public double[] getRevisions(@PathVariable("id") UUID id) {
+        return this.repository.recordRepo.getRevisions(id);
     }
 
     @GetMapping("/{id}/revisions/{version}")

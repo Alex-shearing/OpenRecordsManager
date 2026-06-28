@@ -30,7 +30,7 @@ public class Record implements ObjectPropertyHolder<RecordPropertyValue<?>> {
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "record", fetch = FetchType.LAZY)
     public List<RecordRevision> revisions;
 
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "record")
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "record", fetch = FetchType.EAGER)
     @MapKey(name = "property")
     private Map<ObjectProperty<?>, RecordPropertyValue<?>> properties;
 
