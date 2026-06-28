@@ -1,11 +1,14 @@
 package com.openrecordsmanager.controllers;
 
-import com.openrecordsmanager.api.config.ConfigStore;
 import com.openrecordsmanager.model.SystemConfiguration;
 import com.openrecordsmanager.model.repositories.DataRepository;
+import com.openrecordsmanager.resources.ComponentCatalog;
+import com.openrecordsmanager.resources.types.ComponentTypes;
+import org.springframework.core.env.Environment;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @RestController
@@ -13,17 +16,19 @@ import java.util.stream.Collectors;
 public class ConfigController {
 
     private final DataRepository repository;
-    private final ConfigStore config;
+    private final Environment environment;
+    private final ComponentCatalog catalog;
 
-    public ConfigController(DataRepository repository, ConfigStore config) {
+    public ConfigController(DataRepository repository, Environment config, ComponentCatalog catalog) {
         this.repository = repository;
-        this.config = config;
+        this.environment = config;
+        this.catalog = catalog;
     }
 
     @GetMapping
-    public Map<String, Object> getConfig() {
-        return this.config.getProperties().stream()
-                .map(config -> Map.entry(config.id(), this.config.getProperty(config)))
+    public Map<String, Optional<?>> getEnvironment() {
+        return this.catalog.getComponents(ComponentTypes.CONFIG).stream()
+                .map(config -> Map.entry(config.id(), config.type().fromString(this.environment.getProperty(config.id()))))
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 

@@ -1,6 +1,9 @@
 package com.openrecordsmanager.plugin.filestore_s3;
 
 import com.openrecordsmanager.api.filestore.FileStoreType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -12,6 +15,7 @@ import java.util.Map;
  * An implementation of S3 compatible file storage.
  */
 public class S3FileStoreType extends FileStoreType {
+    private static final Logger LOGGER = LoggerFactory.getLogger(S3FileStoreType.class);
 
     @Override
     public String id() {
@@ -23,7 +27,7 @@ public class S3FileStoreType extends FileStoreType {
         String bucket = (String) properties.getOrDefault("bucket", "default-bucket");
         String endpoint = (String) properties.getOrDefault("endpoint", "s3.amazonaws.com");
 
-        System.out.println("Uploading file to S3: endpoint=" + endpoint + ", bucket=" + bucket + ", key=" + path);
+        LOGGER.info("Uploading file to S3: endpoint={}, bucket={}, key={}", endpoint, bucket, path);
 
         // Simulating S3 compatible storage using a local mock directory
         File destFile = new File("./data/s3_mock/" + bucket, path);
@@ -40,7 +44,7 @@ public class S3FileStoreType extends FileStoreType {
         String bucket = (String) properties.getOrDefault("bucket", "default-bucket");
         String endpoint = (String) properties.getOrDefault("endpoint", "s3.amazonaws.com");
 
-        System.out.println("Downloading file from S3: endpoint=" + endpoint + ", bucket=" + bucket + ", key=" + path);
+        LOGGER.info("Downloading file from S3: endpoint={}, bucket={}, key={}", endpoint, bucket, path);
 
         File srcFile = new File("./data/s3_mock/" + bucket, path);
         if (!srcFile.exists()) {

@@ -1,9 +1,9 @@
 package com.openrecordsmanager.controllers;
 
 import com.openrecordsmanager.api.Plugin;
-import com.openrecordsmanager.api.config.ConfigStore;
 import com.openrecordsmanager.config.ConfigProperties;
 import com.openrecordsmanager.resources.PluginManager;
+import org.springframework.core.env.Environment;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -13,9 +13,9 @@ import org.springframework.web.bind.annotation.RestController;
 public class InfoController {
 
     private final PluginManager pluginManager;
-    private final ConfigStore config;
+    private final Environment config;
 
-    public InfoController(PluginManager pluginManager, ConfigStore config) {
+    public InfoController(PluginManager pluginManager, Environment config) {
         this.pluginManager = pluginManager;
         this.config = config;
     }
@@ -23,9 +23,9 @@ public class InfoController {
     @GetMapping
     public ApiResponse<EnvironmentResponse> getEnvironment() {
         return ApiResponse.success(new EnvironmentResponse(
-                this.config.getProperty(ConfigProperties.WORKGROUP_NAME),
+                this.config.getProperty(ConfigProperties.WORKGROUP_NAME.id()),
                 this.pluginManager.getPlugins().stream().map(Plugin::getName).toArray(String[]::new),
-                this.config.getProperty(ConfigProperties.WORKGROUP_DATABASE_URL)
+                this.config.getProperty(ConfigProperties.WORKGROUP_DATABASE_URL.id())
         ));
     }
 

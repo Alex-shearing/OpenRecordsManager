@@ -5,6 +5,8 @@ import com.openrecordsmanager.api.Plugin;
 import jakarta.annotation.PreDestroy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
@@ -18,18 +20,30 @@ import java.util.*;
 public class PluginManager {
     private static final Logger LOGGER = LoggerFactory.getLogger(PluginManager.class);
 
-    private List<Plugin> plugins = Collections.emptyList();
-    private URLClassLoader classLoader;
+    private final List<Plugin> plugins;
+    private final URLClassLoader classLoader;
 
-    public PluginManager(Plugin... additionalPlugins) {
-        File loc = new File("./plugins");
+    @Autowired
+    public PluginManager(
+            @Value("${plugins.directory}") String pluginDirectory,
+            Plugin... additionalPlugins
+    ) {
+        File loc = new File(pluginDirectory);
         if (!loc.exists() || !loc.isDirectory()) {
-            LOGGER.warn("Plugin directory '{}' not found. Plugins will not be loaded.", loc.getName());
+            LOGGER.warn("Plugin directory '{}' not found. Plugins will not be loaded.", loc.getAbsolutePath());
+            this.plugins = List.of();
+            this.classLoader = null;
             return;
+        } else {
+            LOGGER.info("Loading plugins from '{}'.", loc.getAbsolutePath());
         }
 
         File[] jarList = loc.listFiles((_, name) -> name.endsWith(".jar"));
-        if (jarList == null) return;
+        if (jarList == null) {
+            this.plugins = List.of();
+            this.classLoader = null;
+            return;
+        }
 
         URL[] urls = new URL[jarList.length];
         for (int i = 0; i < jarList.length; i++) {

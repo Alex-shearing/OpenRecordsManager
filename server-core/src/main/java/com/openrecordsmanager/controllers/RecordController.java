@@ -1,6 +1,5 @@
 package com.openrecordsmanager.controllers;
 
-import com.openrecordsmanager.api.config.ConfigStore;
 import com.openrecordsmanager.config.ConfigProperties;
 import com.openrecordsmanager.controllers.errors.ApiError;
 import com.openrecordsmanager.model.*;
@@ -10,6 +9,7 @@ import com.openrecordsmanager.resources.ComponentCatalog;
 import com.openrecordsmanager.resources.ExpressionsService;
 import com.openrecordsmanager.resources.ResourceIdentifier;
 import com.openrecordsmanager.resources.types.ComponentTypes;
+import org.springframework.core.env.Environment;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -29,13 +29,13 @@ public class RecordController {
 
     private final ExpressionsService expressions;
     private final DataRepository repository;
-    private final ConfigStore config;
+    private final Environment environment;
     private final ComponentCatalog catalog;
 
-    public RecordController(ExpressionsService expressions, DataRepository repository, ConfigStore config, ComponentCatalog catalog) {
+    public RecordController(ExpressionsService expressions, DataRepository repository, Environment environment, ComponentCatalog catalog) {
         this.expressions = expressions;
         this.repository = repository;
-        this.config = config;
+        this.environment = environment;
         this.catalog = catalog;
     }
 
@@ -66,7 +66,7 @@ public class RecordController {
         Record record = this.repository.recordRepo.findById(id)
                 .orElseThrow(() -> ApiError.notFound("record", id.toString()));
 
-        FileStore fileStore = this.repository.fileStoreRepo.findById(this.config.getProperty(ConfigProperties.DEFAULT_FILE_STORE))
+        FileStore fileStore = this.repository.fileStoreRepo.findById(this.environment.getProperty(ConfigProperties.WORKGROUP_DEFAULT_FILE_STORE.id(), UUID.class))
                 .orElseThrow(() -> ApiError.notFound("file store", id.toString()));
 
         record.addRevision(version, fileStore.newFile(file, this.catalog));

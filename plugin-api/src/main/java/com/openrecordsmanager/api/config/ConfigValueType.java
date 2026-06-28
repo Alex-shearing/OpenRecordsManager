@@ -14,7 +14,7 @@ public class ConfigValueType<T> {
     public static final ConfigValueType<String[]> STRING_LIST = new ConfigValueType<>(String[].class, s -> s.split(";"));
     public static final ConfigValueType<Integer[]> INT_LIST = new ConfigValueType<>(Integer[].class, s -> Arrays.stream(s.split(";")).mapToInt(Integer::valueOf).boxed().toArray(Integer[]::new));
 
-    private final Class<T> cType;
+    public final Class<T> cType;
     private final Function<String, T> converter;
 
     private ConfigValueType(Class<T> cType, Function<String, T> converter) {
