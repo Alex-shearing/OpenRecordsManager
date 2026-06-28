@@ -14,7 +14,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.core.env.EnumerablePropertySource;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Stream;
 
 @Service
 public class ConfigStoreImpl extends EnumerablePropertySource<ConfigStoreImpl> implements ConfigStore {
@@ -25,30 +29,27 @@ public class ConfigStoreImpl extends EnumerablePropertySource<ConfigStoreImpl> i
     @Nullable
     private final DataRepository repository;
 
-    public ConfigStoreImpl(@Nullable ComponentCatalog pluginManager, @Nullable DataRepository repository) {
+    public ConfigStoreImpl(@Nullable ComponentCatalog catalog, @Nullable DataRepository repository) {
         super("custom_config");
         this.repository = repository;
 
-        Collection<ConfigDefinition<?>> pluginConfigs = List.of();
-        if (pluginManager != null) {
-            pluginConfigs = pluginManager.getComponents(ComponentTypes.CONFIG);
-        }
-
-        int totalConfig = ConfigProperties.BUILTIN_CONFIG.length + pluginConfigs.size();
-        ImmutableMap.Builder<ConfigDefinition<?>, ConfigStoreImpl.ConfigValue<?>> propertiesBuilder = ImmutableMap.builderWithExpectedSize(totalConfig);
+        ImmutableMap.Builder<ConfigDefinition<?>, ConfigStoreImpl.ConfigValue<?>> propertiesBuilder = ImmutableMap.builder();
 
         // Load defaults into map
         for (ConfigDefinition<?> property : ConfigProperties.BUILTIN_CONFIG) {
             propertiesBuilder.put(property, new ConfigStoreImpl.ConfigValue<>(property));
         }
-        for (ConfigDefinition<?> property : pluginConfigs) {
-            propertiesBuilder.put(property, new ConfigStoreImpl.ConfigValue<>(property));
+        if (catalog != null) {
+            for (ConfigDefinition<?> property : catalog.getComponents(ComponentTypes.CONFIG)) {
+                propertiesBuilder.put(property, new ConfigStoreImpl.ConfigValue<>(property));
+            }
         }
 
-        Map<ConfigDefinition<?>, ConfigValue<?>> properties = propertiesBuilder.build();
+        Map<ConfigDefinition<?>, ConfigValue<?>> configs = propertiesBuilder.build();
 
-        // Load from ENV variables
-        properties.forEach((configProperty, configValue) -> {
+        // Load in defaults
+        configs.forEach((configProperty, configValue) -> {
+            // Load from ENV
             String envVal = System.getenv(configProperty.getEnvName());
             if (envVal != null) {
                 LOGGER.info("Loading config from environment variable {}", configProperty.getEnvName());
@@ -70,15 +71,11 @@ public class ConfigStoreImpl extends EnumerablePropertySource<ConfigStoreImpl> i
             }
         });
 
-        this.configs = properties;
-        Set<String> keys = new HashSet<>();
-        for (ConfigDefinition<?> property : this.configs.keySet()) {
-            keys.add(property.id());
-            if (property.alias() != null) {
-                keys.add(property.alias());
-            }
-        }
-        this.stringKeys = keys.toArray(String[]::new);
+        this.configs = configs;
+        this.stringKeys = this.configs.keySet().stream()
+                .flatMap(def -> Stream.of(def.id(), def.alias()))
+                .filter(Objects::nonNull)
+                .toArray(String[]::new);
     }
 
     @SuppressWarnings("unchecked")

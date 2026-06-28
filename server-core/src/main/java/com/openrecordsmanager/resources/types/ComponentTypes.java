@@ -4,6 +4,7 @@ import com.openrecordsmanager.api.Component;
 import com.openrecordsmanager.api.auth.InputAuthProviderType;
 import com.openrecordsmanager.api.auth.RedirectAuthProviderType;
 import com.openrecordsmanager.api.config.ConfigDefinition;
+import com.openrecordsmanager.api.filestore.FileStoreType;
 import com.openrecordsmanager.api.list.ListDefinition;
 import com.openrecordsmanager.api.list.ListElementDefinition;
 import com.openrecordsmanager.api.property.PropertyDefinition;
@@ -23,9 +24,10 @@ public class ComponentTypes {
     public static final ComponentType<RecordTypeDefinition, RecordType> RECORD_TYPE = new RecordTypeComponentType();
     public static final UnregisterableComponentType<InputAuthProviderType> INPUT_AUTH_PROVIDER = new UnregisterableComponentType<>("input_auth_providers", InputAuthProviderType.class);
     public static final UnregisterableComponentType<RedirectAuthProviderType> REDIRECT_AUTH_PROVIDER = new UnregisterableComponentType<>("redirect_auth_providers", RedirectAuthProviderType.class);
+    public static final UnregisterableComponentType<FileStoreType> FILE_STORE_TYPE = new UnregisterableComponentType<>("file_store_types", FileStoreType.class);
 
     public static final ComponentType<?, ?>[] VALUES = {
-            CONFIG, LIST, LIST_ELEMENT, PROPERTY, RECORD_TYPE, INPUT_AUTH_PROVIDER, REDIRECT_AUTH_PROVIDER
+            CONFIG, LIST, LIST_ELEMENT, PROPERTY, RECORD_TYPE, INPUT_AUTH_PROVIDER, REDIRECT_AUTH_PROVIDER, FILE_STORE_TYPE
     };
 
     @Nullable

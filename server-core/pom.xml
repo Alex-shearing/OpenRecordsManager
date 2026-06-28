@@ -125,6 +125,22 @@
                                     <overWrite>true</overWrite>
                                     <outputDirectory>${project.basedir}/plugins</outputDirectory>
                                 </artifactItem>
+                                <artifactItem>
+                                    <groupId>com.openrecordsmanager</groupId>
+                                    <artifactId>filestore-local</artifactId>
+                                    <version>${project.version}</version>
+                                    <type>jar</type>
+                                    <overWrite>true</overWrite>
+                                    <outputDirectory>${project.basedir}/plugins</outputDirectory>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>com.openrecordsmanager</groupId>
+                                    <artifactId>filestore-s3</artifactId>
+                                    <version>${project.version}</version>
+                                    <type>jar</type>
+                                    <overWrite>true</overWrite>
+                                    <outputDirectory>${project.basedir}/plugins</outputDirectory>
+                                </artifactItem>
                             </artifactItems>
                         </configuration>
                     </execution>
