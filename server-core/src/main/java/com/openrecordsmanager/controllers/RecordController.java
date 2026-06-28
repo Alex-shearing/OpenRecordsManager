@@ -71,10 +71,10 @@ public class RecordController {
             throw ApiError.serverError("There is no value set for the {0} configuration", ConfigProperties.WORKGROUP_DEFAULT_FILE_STORE.id());
         }
 
-        FileStore fileStore = this.repository.fileStoreRepo.findById(defaultStoreId)
+        FileStore<?> fileStore = this.repository.fileStoreRepo.findById(defaultStoreId)
                 .orElseThrow(() -> ApiError.notFound("file store", id.toString()));
 
-        record.addRevision(version, fileStore.newFile(file, this.catalog));
+        record.addRevision(version, fileStore.newFile(file));
 
         this.repository.recordRepo.saveAndFlush(record);
     }

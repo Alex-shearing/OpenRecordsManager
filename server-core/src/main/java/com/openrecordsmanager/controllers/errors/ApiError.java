@@ -8,7 +8,7 @@ import org.springframework.http.HttpStatusCode;
 import java.text.MessageFormat;
 
 public class ApiError extends RuntimeException {
-    public HttpStatusCode httpStatusCode;
+    public final HttpStatusCode httpStatusCode;
 
     public ApiError(HttpStatusCode code, String message) {
         super(message);

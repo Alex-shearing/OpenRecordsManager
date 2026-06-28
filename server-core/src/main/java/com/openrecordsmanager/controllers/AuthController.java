@@ -30,11 +30,6 @@ public class AuthController {
         this.repository = repository;
     }
 
-    @GetMapping("/provider_types")
-    public String providerTypes() {
-        return "ok";
-    }
-
     @PostMapping("/login")
     public String login(@RequestBody Map<String, String> loginRequest) {
         String username = loginRequest.get("username");

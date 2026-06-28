@@ -4,18 +4,17 @@ import com.openrecordsmanager.api.filestore.FileStoreType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Map;
+import java.io.*;
 
 /**
  * An implementation of S3 compatible file storage.
  */
-public class S3FileStoreType extends FileStoreType {
+public class S3FileStoreType extends FileStoreType<S3FileStoreType.S3FileStoreSettings> {
     private static final Logger LOGGER = LoggerFactory.getLogger(S3FileStoreType.class);
+
+    public S3FileStoreType() {
+        super(S3FileStoreSettings.class);
+    }
 
     @Override
     public String id() {
@@ -23,9 +22,9 @@ public class S3FileStoreType extends FileStoreType {
     }
 
     @Override
-    public void save(Map<String, Object> properties, String path, InputStream data) throws IOException {
-        String bucket = (String) properties.getOrDefault("bucket", "default-bucket");
-        String endpoint = (String) properties.getOrDefault("endpoint", "s3.amazonaws.com");
+    public void save(S3FileStoreSettings properties, String path, InputStream data) throws IOException {
+        String bucket = properties.bucket;
+        String endpoint = properties.endpoint;
 
         LOGGER.info("Uploading file to S3: endpoint={}, bucket={}, key={}", endpoint, bucket, path);
 
@@ -40,9 +39,9 @@ public class S3FileStoreType extends FileStoreType {
     }
 
     @Override
-    public InputStream retrieve(Map<String, Object> properties, String path) throws IOException {
-        String bucket = (String) properties.getOrDefault("bucket", "default-bucket");
-        String endpoint = (String) properties.getOrDefault("endpoint", "s3.amazonaws.com");
+    public InputStream retrieve(S3FileStoreSettings properties, String path) throws IOException {
+        String bucket = properties.bucket;
+        String endpoint = properties.endpoint;
 
         LOGGER.info("Downloading file from S3: endpoint={}, bucket={}, key={}", endpoint, bucket, path);
 
@@ -51,5 +50,8 @@ public class S3FileStoreType extends FileStoreType {
             throw new IOException("S3 Object not found: bucket=" + bucket + ", key=" + path);
         }
         return new FileInputStream(srcFile);
+    }
+
+    public record S3FileStoreSettings(String bucket, String endpoint) {
     }
 }

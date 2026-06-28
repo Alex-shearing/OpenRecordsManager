@@ -29,16 +29,15 @@ public class DatabaseConfigSource extends EnumerablePropertySource<DatabaseConfi
     }
 
     public <T> T getProperty(ConfigDefinition<T> key) {
-        T defaultVal = null;
         if (this.repository != null) {
             Optional<T> val = this.repository.configRepo.findByConfigKey(key.id())
                     .flatMap(dbConfig -> key.type().fromString(dbConfig.configValue));
+            
             if (val.isPresent()) {
                 return val.get();
             }
-            defaultVal = key.defaultValue();
         }
-        return defaultVal;
+        return key.defaultValue();
     }
 
     @Override

@@ -119,9 +119,9 @@ public class Record implements ObjectPropertyHolder<RecordPropertyValue<?>> {
             gen.writeStringProperty("type", value.type.id.toString());
 
             gen.writeObjectPropertyStart("properties");
-            value.properties.forEach((objectProperty, val) -> {
-                gen.writePOJOProperty(objectProperty.id.toString(), val.getValue());
-            });
+            value.properties.forEach((objectProperty, val) ->
+                    gen.writePOJOProperty(objectProperty.id.toString(), val.getValue())
+            );
             gen.writeEndObject();
 
             gen.writeEndObject();

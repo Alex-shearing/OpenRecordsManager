@@ -24,7 +24,8 @@ public class ComponentTypes {
     public static final ComponentType<RecordTypeDefinition, RecordType> RECORD_TYPE = new RecordTypeComponentType();
     public static final UnregisterableComponentType<InputAuthProviderType> INPUT_AUTH_PROVIDER = new UnregisterableComponentType<>("input_auth_providers", InputAuthProviderType.class);
     public static final UnregisterableComponentType<RedirectAuthProviderType> REDIRECT_AUTH_PROVIDER = new UnregisterableComponentType<>("redirect_auth_providers", RedirectAuthProviderType.class);
-    public static final UnregisterableComponentType<FileStoreType> FILE_STORE_TYPE = new UnregisterableComponentType<>("file_store_types", FileStoreType.class);
+    @SuppressWarnings("unchecked")
+    public static final UnregisterableComponentType<FileStoreType<?>> FILE_STORE_TYPE = new UnregisterableComponentType<>("file_store_types", (Class<FileStoreType<?>>) (Class<?>) FileStoreType.class);
 
     public static final ComponentType<?, ?>[] VALUES = {
             CONFIG, LIST, LIST_ELEMENT, PROPERTY, RECORD_TYPE, INPUT_AUTH_PROVIDER, REDIRECT_AUTH_PROVIDER, FILE_STORE_TYPE

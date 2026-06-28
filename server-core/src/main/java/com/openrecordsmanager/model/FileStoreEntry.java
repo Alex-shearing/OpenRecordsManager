@@ -17,7 +17,7 @@ public class FileStoreEntry {
 
     @ManyToOne(optional = false)
     @JoinColumn
-    public FileStore store;
+    public FileStore<?> store;
 
     @Column(nullable = false)
     public String path;
@@ -39,7 +39,7 @@ public class FileStoreEntry {
     protected FileStoreEntry() {
     }
 
-    public FileStoreEntry(FileStore store, String path, String hashAlgorithm, String hash, long sizeBytes) {
+    public FileStoreEntry(FileStore<?> store, String path, String hashAlgorithm, String hash, long sizeBytes) {
         this.id = UUID.randomUUID();
         this.store = store;
         this.path = path;
@@ -50,7 +50,7 @@ public class FileStoreEntry {
 
     public Resource getFile(ComponentCatalog catalog) {
         try {
-            return new InputStreamResource(this.store.getFile(this, catalog));
+            return new InputStreamResource(this.store.getFile(this));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

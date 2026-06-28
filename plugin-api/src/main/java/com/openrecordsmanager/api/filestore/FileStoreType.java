@@ -1,15 +1,22 @@
 package com.openrecordsmanager.api.filestore;
 
 import com.openrecordsmanager.api.Component;
-import java.io.InputStream;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.node.ObjectNode;
+
 import java.io.IOException;
-import java.util.Map;
+import java.io.InputStream;
 
 /**
  * Defines a type of file store (e.g., local storage, Amazon S3) that can be provided by plugins.
  */
-public abstract class FileStoreType implements Component {
-    
+public abstract class FileStoreType<T> implements Component {
+    private final Class<T> propertiesClass;
+
+    protected FileStoreType(Class<T> propertiesClass) {
+        this.propertiesClass = propertiesClass;
+    }
+
     /**
      * Saves a file into the storage provider using the specified instance properties.
      *
@@ -18,7 +25,7 @@ public abstract class FileStoreType implements Component {
      * @param data       the file contents stream
      * @throws IOException if there is an error saving the file
      */
-    public abstract void save(Map<String, Object> properties, String path, InputStream data) throws IOException;
+    public abstract void save(T properties, String path, InputStream data) throws IOException;
 
     /**
      * Retrieves a file from the storage provider using the specified instance properties.
@@ -28,5 +35,10 @@ public abstract class FileStoreType implements Component {
      * @return an input stream of the file content
      * @throws IOException if there is an error retrieving the file
      */
-    public abstract InputStream retrieve(Map<String, Object> properties, String path) throws IOException;
+    public abstract InputStream retrieve(T properties, String path) throws IOException;
+
+    public T parseOptions(ObjectNode properties) {
+        ObjectMapper mapper = new ObjectMapper();
+        return mapper.treeToValue(properties, propertiesClass);
+    }
 }
