@@ -5,6 +5,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
+import java.util.UUID;
 
 /**
  * An implementation of S3 compatible file storage.
@@ -22,9 +23,11 @@ public class S3FileStoreType extends FileStoreType<S3FileStoreType.S3FileStoreSe
     }
 
     @Override
-    public void save(S3FileStoreSettings properties, String path, InputStream data) throws IOException {
+    public String save(S3FileStoreSettings properties, InputStream data) throws IOException {
         String bucket = properties.bucket;
         String endpoint = properties.endpoint;
+
+        String path = UUID.randomUUID().toString();
 
         LOGGER.info("Uploading file to S3: endpoint={}, bucket={}, key={}", endpoint, bucket, path);
 
@@ -36,18 +39,20 @@ public class S3FileStoreType extends FileStoreType<S3FileStoreType.S3FileStoreSe
         try (FileOutputStream out = new FileOutputStream(destFile)) {
             data.transferTo(out);
         }
+
+        return path;
     }
 
     @Override
-    public InputStream retrieve(S3FileStoreSettings properties, String path) throws IOException {
+    public InputStream retrieve(S3FileStoreSettings properties, String data) throws IOException {
         String bucket = properties.bucket;
         String endpoint = properties.endpoint;
 
-        LOGGER.info("Downloading file from S3: endpoint={}, bucket={}, key={}", endpoint, bucket, path);
+        LOGGER.info("Downloading file from S3: endpoint={}, bucket={}, key={}", endpoint, bucket, data);
 
-        File srcFile = new File("./data/s3_mock/" + bucket, path);
+        File srcFile = new File("./data/s3_mock/" + bucket, data);
         if (!srcFile.exists()) {
-            throw new IOException("S3 Object not found: bucket=" + bucket + ", key=" + path);
+            throw new IOException("S3 Object not found: bucket=" + bucket + ", key=" + data);
         }
         return new FileInputStream(srcFile);
     }

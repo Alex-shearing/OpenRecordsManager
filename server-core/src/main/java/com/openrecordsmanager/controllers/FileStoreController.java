@@ -8,9 +8,8 @@ import com.openrecordsmanager.resources.ComponentCatalog;
 import com.openrecordsmanager.resources.ResourceIdentifier;
 import com.openrecordsmanager.resources.types.ComponentTypes;
 import org.springframework.web.bind.annotation.*;
-import tools.jackson.databind.ObjectMapper;
-import tools.jackson.databind.node.ObjectNode;
 
+import java.util.Map;
 import java.util.UUID;
 
 @RestController
@@ -25,7 +24,7 @@ public class FileStoreController {
         this.catalog = catalog;
     }
 
-    @GetMapping()
+    @GetMapping
     public UUID[] list() {
         return this.repository.fileStoreRepo.findAllIds();
     }
@@ -36,16 +35,24 @@ public class FileStoreController {
                 .orElseThrow(() -> ApiError.notFound("file store", id.toString()));
     }
 
-    @PostMapping()
-    public FileStore<?> newFileStore() {
-        ObjectMapper mapper = new ObjectMapper();
-        ObjectNode object = mapper.createObjectNode();
-        object.put("bucket", "bucket");
-        object.put("endpoint", "endpoint");
+    @PostMapping
+    public FileStore<?> newFileStore(@RequestBody NewFileStore input) {
+        FileStoreType<?> type = this.catalog.getComponent(ComponentTypes.FILE_STORE_TYPE, input.type)
+                .orElseThrow(() -> ApiError.notFound(ComponentTypes.FILE_STORE_TYPE, input.type));
 
-        FileStoreType<?> type = this.catalog.getComponent(ComponentTypes.FILE_STORE_TYPE, ResourceIdentifier.valueOf("filestore_s3:s3")).orElseThrow();
+        return this.repository.fileStoreRepo.saveAndFlush(new FileStore<>(type, input.properties));
+    }
 
-        FileStore<?> store = new FileStore<>(type, object);
+    public record NewFileStore(ResourceIdentifier type, Map<String, Object> properties) {
+    }
+
+    @PutMapping("/{id}")
+    public FileStore<?> updateFileStore(@PathVariable("id") UUID id, @RequestBody Map<String, Object> properties) {
+        FileStore<?> store = this.repository.fileStoreRepo.findById(id)
+                .orElseThrow(() -> ApiError.notFound("file store", id.toString()));
+
+        store.setProperties(properties);
+
         return this.repository.fileStoreRepo.saveAndFlush(store);
     }
 

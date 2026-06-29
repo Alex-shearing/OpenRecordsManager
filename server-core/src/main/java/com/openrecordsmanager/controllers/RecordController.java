@@ -5,16 +5,18 @@ import com.openrecordsmanager.controllers.errors.ApiError;
 import com.openrecordsmanager.model.*;
 import com.openrecordsmanager.model.Record;
 import com.openrecordsmanager.model.repositories.DataRepository;
-import com.openrecordsmanager.resources.ComponentCatalog;
 import com.openrecordsmanager.resources.ResourceIdentifier;
 import com.openrecordsmanager.resources.types.ComponentTypes;
 import org.springframework.core.env.Environment;
 import org.springframework.core.io.Resource;
+import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.Locale;
 import java.util.Map;
@@ -26,15 +28,13 @@ public class RecordController {
 
     private final DataRepository repository;
     private final Environment environment;
-    private final ComponentCatalog catalog;
 
-    public RecordController(DataRepository repository, Environment environment, ComponentCatalog catalog) {
+    public RecordController(DataRepository repository, Environment environment) {
         this.repository = repository;
         this.environment = environment;
-        this.catalog = catalog;
     }
 
-    @PostMapping()
+    @PostMapping
     public Record newRecord(@RequestBody NewRecordContent input) {
         RecordType type = this.repository.recordTypeRepo.findById(input.type())
                 .orElseThrow(() -> ApiError.notFound(ComponentTypes.RECORD_TYPE, input.type()));
@@ -57,7 +57,13 @@ public class RecordController {
     }
 
     @PutMapping(value = "/{id}/revisions/{version}", consumes = MediaType.APPLICATION_OCTET_STREAM_VALUE)
-    public void newRevision(@PathVariable("id") UUID id, @PathVariable("version") double version, InputStream file) {
+    public void newRevision(
+            @PathVariable("id") UUID id,
+            @PathVariable("version") double version,
+            @RequestHeader(value = HttpHeaders.CONTENT_DISPOSITION, required = false) String dispositionHeader,
+            @RequestParam(value = "ext", required = false, defaultValue = "") String fileExtension,
+            InputStream file
+    ) {
         Record record = this.repository.recordRepo.findById(id)
                 .orElseThrow(() -> ApiError.notFound("record", id.toString()));
 
@@ -69,9 +75,36 @@ public class RecordController {
         FileStore<?> fileStore = this.repository.fileStoreRepo.findById(defaultStoreId)
                 .orElseThrow(() -> ApiError.notFound("file store", id.toString()));
 
-        record.addRevision(version, fileStore.newFile(file));
+        // if no explicit file extension is supplied, attempt to extract it from the content disposition header
+        if (fileExtension.isBlank() && dispositionHeader != null) {
+            ContentDisposition disposition = ContentDisposition.parse(dispositionHeader);
+            String filename = disposition.getFilename();
+            if (filename != null && !filename.isBlank()) {
+                fileExtension = getExtensionFromFile(filename);
+            }
+        }
+
+        record.addRevision(version, fileStore.newFile(file, fileExtension));
 
         this.repository.recordRepo.saveAndFlush(record);
+    }
+
+    @PutMapping(value = "/{id}/revisions/{version}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public void newRevision(
+            @PathVariable("id") UUID id,
+            @PathVariable("version") double version,
+            @RequestPart("file") MultipartFile file
+    ) throws IOException {
+        String extension = "";
+        if (file.getOriginalFilename() != null && file.getOriginalFilename().contains(".")) {
+            extension = getExtensionFromFile(file.getOriginalFilename());
+        }
+
+        this.newRevision(id, version, null, extension, file.getInputStream());
+    }
+
+    private String getExtensionFromFile(String fileName) {
+        return fileName.substring(fileName.lastIndexOf("."));
     }
 
     @GetMapping("/{id}/revisions")
@@ -92,7 +125,7 @@ public class RecordController {
                 .headers(headers)
                 .contentLength(rev.file.sizeBytes)
                 .contentType(MediaType.APPLICATION_OCTET_STREAM)
-                .body(rev.file.getFile(this.catalog));
+                .body(rev.file.getFile());
     }
 
 

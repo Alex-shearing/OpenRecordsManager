@@ -42,6 +42,7 @@ public class ConfigController {
     @PutMapping("/{id}")
     public SystemConfiguration setConfig(@PathVariable("id") String id, @RequestBody String value) {
         SystemConfiguration config = this.repository.configRepo.findByConfigKey(id).orElseGet(() -> new SystemConfiguration(id, value));
+        config.configValue = value;
         return this.repository.configRepo.saveAndFlush(config);
     }
 

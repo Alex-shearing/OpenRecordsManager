@@ -42,7 +42,10 @@ public class TemplateController {
     }
 
     @PostMapping("/record_types/{template}/apply")
-    public ApiResponse<RecordType> applyRecordTypeTemplate(@PathVariable("template") ResourceIdentifier templateId, @RequestParam(value = "includeDependencies", required = false, defaultValue = "false") boolean includeDependencies) {
+    public ApiResponse<RecordType> applyRecordTypeTemplate(
+            @PathVariable("template") ResourceIdentifier templateId,
+            @RequestParam(value = "includeDependencies", required = false, defaultValue = "false") boolean includeDependencies
+    ) {
         RecordTypeDefinition template = ComponentTypes.RECORD_TYPE.getComponent(templateId, this.catalog)
                 .orElseThrow(() -> ApiError.templateNotFound(ComponentTypes.RECORD_TYPE, templateId));
 

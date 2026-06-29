@@ -1,6 +1,5 @@
 package com.openrecordsmanager.model;
 
-import com.openrecordsmanager.resources.ComponentCatalog;
 import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
 import org.springframework.core.io.InputStreamResource;
@@ -39,16 +38,17 @@ public class FileStoreEntry {
     protected FileStoreEntry() {
     }
 
-    public FileStoreEntry(FileStore<?> store, String path, String hashAlgorithm, String hash, long sizeBytes) {
+    public FileStoreEntry(FileStore<?> store, String path, String hashAlgorithm, String hash, long sizeBytes, String extension) {
         this.id = UUID.randomUUID();
         this.store = store;
         this.path = path;
         this.hashAlgorithm = hashAlgorithm;
         this.hash = hash;
         this.sizeBytes = sizeBytes;
+        this.extension = extension;
     }
 
-    public Resource getFile(ComponentCatalog catalog) {
+    public Resource getFile() {
         try {
             return new InputStreamResource(this.store.getFile(this));
         } catch (IOException e) {
