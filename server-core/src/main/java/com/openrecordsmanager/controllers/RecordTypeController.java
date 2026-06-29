@@ -1,11 +1,12 @@
 package com.openrecordsmanager.controllers;
 
-import com.openrecordsmanager.controllers.errors.ApiError;
+import com.openrecordsmanager.controllers.repsonse.errors.ApiError;
 import com.openrecordsmanager.model.RecordType;
 import com.openrecordsmanager.model.repositories.DataRepository;
 import com.openrecordsmanager.resources.ExpressionsService;
 import com.openrecordsmanager.resources.ResourceIdentifier;
 import com.openrecordsmanager.resources.types.ComponentTypes;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -25,17 +26,15 @@ public class RecordTypeController {
         this.repository = repository;
     }
 
-    @GetMapping
-    public ApiResponse<List<ResourceIdentifier>> getRecordTypes() {
-        return ApiResponse.success(this.repository.recordTypeRepo.findAllIds());
+    @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
+    public List<ResourceIdentifier> getRecordTypes() {
+        return this.repository.recordTypeRepo.findAllIds();
     }
 
-    @GetMapping("/{id}")
-    public ApiResponse<RecordType> getRecordType(@PathVariable("id") ResourceIdentifier id) {
-        RecordType type = this.repository.recordTypeRepo.findById(id)
+    @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public RecordType getRecordType(@PathVariable("id") ResourceIdentifier id) {
+        return this.repository.recordTypeRepo.findById(id)
                 .orElseThrow(() -> ApiError.notFound(ComponentTypes.RECORD_TYPE, id));
-
-        return ApiResponse.success(type);
     }
 
 }

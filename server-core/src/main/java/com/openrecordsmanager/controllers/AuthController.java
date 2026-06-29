@@ -2,13 +2,14 @@ package com.openrecordsmanager.controllers;
 
 import com.openrecordsmanager.api.auth.RedirectAuthProviderType;
 import com.openrecordsmanager.api.auth.UserDetails;
-import com.openrecordsmanager.controllers.errors.ApiError;
+import com.openrecordsmanager.controllers.repsonse.errors.ApiError;
 import com.openrecordsmanager.model.AuthProvider;
 import com.openrecordsmanager.model.repositories.DataRepository;
 import com.openrecordsmanager.resources.ComponentCatalog;
 import com.openrecordsmanager.resources.types.ComponentTypes;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
@@ -30,7 +31,7 @@ public class AuthController {
         this.repository = repository;
     }
 
-    @PostMapping("/login")
+    @PostMapping(value = "/login", produces = MediaType.APPLICATION_JSON_VALUE)
     public String login(@RequestBody Map<String, String> loginRequest) {
         String username = loginRequest.get("username");
         String password = loginRequest.get("password");
@@ -39,7 +40,7 @@ public class AuthController {
         return "ok";
     }
 
-    @GetMapping("/redirect/{auth_provider}")
+    @GetMapping(value = "/redirect/{auth_provider}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Void> redirect(@PathVariable("auth_provider") UUID authProvider) {
         AuthProvider provider = this.repository.authProviderRepo.findById(authProvider)
                 .orElseThrow(() -> ApiError.serverError("authentication provider not found"));
@@ -50,8 +51,8 @@ public class AuthController {
     }
 
 
-    @GetMapping("/callback/{auth_provider}")
-    public ApiResponse<AuthenticationResponse> callback(HttpServletRequest request, @PathVariable("auth_provider") UUID authProvider) throws URISyntaxException {
+    @GetMapping(value = "/callback/{auth_provider}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public AuthenticationResponse callback(HttpServletRequest request, @PathVariable("auth_provider") UUID authProvider) throws URISyntaxException {
         AuthProvider provider = this.repository.authProviderRepo.findById(authProvider)
                 .orElseThrow(() -> ApiError.serverError("authentication provider not found"));
         RedirectAuthProviderType type = ComponentTypes.REDIRECT_AUTH_PROVIDER.getComponent(provider.providerType, this.catalog)
@@ -63,7 +64,7 @@ public class AuthController {
             throw ApiError.authError("Username or password is incorrect");
         }
 
-        return ApiResponse.success(new AuthenticationResponse("token"));
+        return new AuthenticationResponse("token");
     }
 
     public record AuthenticationResponse(String token) {

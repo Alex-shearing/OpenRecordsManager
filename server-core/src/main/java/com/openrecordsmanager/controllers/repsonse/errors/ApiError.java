@@ -1,4 +1,4 @@
-package com.openrecordsmanager.controllers.errors;
+package com.openrecordsmanager.controllers.repsonse.errors;
 
 import com.openrecordsmanager.resources.ResourceIdentifier;
 import com.openrecordsmanager.resources.types.ComponentType;

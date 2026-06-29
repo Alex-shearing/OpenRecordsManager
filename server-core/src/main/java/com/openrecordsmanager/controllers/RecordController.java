@@ -1,7 +1,7 @@
 package com.openrecordsmanager.controllers;
 
 import com.openrecordsmanager.config.ConfigProperties;
-import com.openrecordsmanager.controllers.errors.ApiError;
+import com.openrecordsmanager.controllers.repsonse.errors.ApiError;
 import com.openrecordsmanager.model.*;
 import com.openrecordsmanager.model.Record;
 import com.openrecordsmanager.model.repositories.DataRepository;
@@ -34,8 +34,8 @@ public class RecordController {
         this.environment = environment;
     }
 
-    @PostMapping
-    public ApiResponse<Record> newRecord(@RequestBody NewRecordContent input) {
+    @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE)
+    public Record newRecord(@RequestBody NewRecordContent input) {
         RecordType type = this.repository.recordTypeRepo.findById(input.type())
                 .orElseThrow(() -> ApiError.notFound(ComponentTypes.RECORD_TYPE, input.type()));
 
@@ -47,19 +47,21 @@ public class RecordController {
             setProperty(record, property, o);
         });
 
-        return ApiResponse.success(this.repository.recordRepo.saveAndFlush(record));
+        return this.repository.recordRepo.saveAndFlush(record);
     }
 
-    @GetMapping("/{id}")
-    public ApiResponse<Record> getRecord(@PathVariable("id") UUID id) {
-        Record record = this.repository.recordRepo.findById(id)
+    @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public Record getRecord(@PathVariable("id") UUID id) {
+        return this.repository.recordRepo.findById(id)
                 .orElseThrow(() -> ApiError.notFound("record", id.toString()));
-
-        return ApiResponse.success(record);
     }
 
-    @PutMapping(value = "/{id}/revisions/{version}", consumes = MediaType.APPLICATION_OCTET_STREAM_VALUE)
-    public ApiResponse<Void> newRevision(
+    @PutMapping(
+            value = "/{id}/revisions/{version}",
+            consumes = MediaType.APPLICATION_OCTET_STREAM_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    public void newRevision(
             @PathVariable("id") UUID id,
             @PathVariable("version") double version,
             @RequestHeader(value = HttpHeaders.CONTENT_DISPOSITION, required = false) String dispositionHeader,
@@ -89,12 +91,14 @@ public class RecordController {
         record.addRevision(version, fileStore.newFile(file, fileExtension));
 
         this.repository.recordRepo.saveAndFlush(record);
-
-        return ApiResponse.success(null);
     }
 
-    @PutMapping(value = "/{id}/revisions/{version}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ApiResponse<Void> newRevision(
+    @PutMapping(
+            value = "/{id}/revisions/{version}",
+            consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    public void newRevision(
             @PathVariable("id") UUID id,
             @PathVariable("version") double version,
             @RequestPart("file") MultipartFile file
@@ -104,19 +108,19 @@ public class RecordController {
             extension = getExtensionFromFile(file.getOriginalFilename());
         }
 
-        return this.newRevision(id, version, null, extension, file.getInputStream());
+        this.newRevision(id, version, null, extension, file.getInputStream());
     }
 
     private String getExtensionFromFile(String fileName) {
         return fileName.substring(fileName.lastIndexOf("."));
     }
 
-    @GetMapping("/{id}/revisions")
-    public ApiResponse<double[]> getRevisions(@PathVariable("id") UUID id) {
-        return ApiResponse.success(this.repository.recordRepo.getRevisions(id));
+    @GetMapping(value = "/{id}/revisions", produces = MediaType.APPLICATION_JSON_VALUE)
+    public double[] getRevisions(@PathVariable("id") UUID id) {
+        return this.repository.recordRepo.getRevisions(id);
     }
 
-    @GetMapping("/{id}/revisions/{version}")
+    @GetMapping(value = "/{id}/revisions/{version}", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
     public ResponseEntity<Resource> getRevision(@PathVariable("id") UUID id, @PathVariable("version") double version) {
         RecordRevision rev = this.repository.recordRepo.findByRecordId(id, version)
                 .orElseThrow(() -> ApiError.notFound("record revision", id.toString() + "/" + version));
@@ -132,7 +136,6 @@ public class RecordController {
                 .body(rev.file.getFile());
     }
 
-
     private static <K> void setProperty(Record record, ObjectProperty<K> property, Object value) {
         record.setProperty(property, property.type.cast(value));
     }
@@ -142,6 +145,4 @@ public class RecordController {
             Map<ResourceIdentifier, Object> properties
     ) {
     }
-
-
 }

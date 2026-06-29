@@ -1,7 +1,6 @@
-package com.openrecordsmanager.controllers.errors;
+package com.openrecordsmanager.controllers.repsonse.errors;
 
 import com.openrecordsmanager.config.ConfigProperties;
-import com.openrecordsmanager.controllers.ApiResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.env.Environment;
