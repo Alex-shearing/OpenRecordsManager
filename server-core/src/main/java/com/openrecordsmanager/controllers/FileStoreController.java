@@ -25,35 +25,37 @@ public class FileStoreController {
     }
 
     @GetMapping
-    public UUID[] list() {
-        return this.repository.fileStoreRepo.findAllIds();
+    public ApiResponse<UUID[]> list() {
+        return ApiResponse.success(this.repository.fileStoreRepo.findAllIds());
     }
 
     @GetMapping("/{id}")
-    public FileStore<?> get(@PathVariable("id") UUID id) {
-        return this.repository.fileStoreRepo.findById(id)
+    public ApiResponse<FileStore<?>> get(@PathVariable("id") UUID id) {
+        FileStore<?> store = this.repository.fileStoreRepo.findById(id)
                 .orElseThrow(() -> ApiError.notFound("file store", id.toString()));
+
+        return ApiResponse.success(store);
     }
 
     @PostMapping
-    public FileStore<?> newFileStore(@RequestBody NewFileStore input) {
+    public ApiResponse<FileStore<?>> newFileStore(@RequestBody NewFileStore input) {
         FileStoreType<?> type = this.catalog.getComponent(ComponentTypes.FILE_STORE_TYPE, input.type)
                 .orElseThrow(() -> ApiError.notFound(ComponentTypes.FILE_STORE_TYPE, input.type));
 
-        return this.repository.fileStoreRepo.saveAndFlush(new FileStore<>(type, input.properties));
+        return ApiResponse.success(this.repository.fileStoreRepo.saveAndFlush(new FileStore<>(type, input.properties)));
     }
 
     public record NewFileStore(ResourceIdentifier type, Map<String, Object> properties) {
     }
 
     @PutMapping("/{id}")
-    public FileStore<?> updateFileStore(@PathVariable("id") UUID id, @RequestBody Map<String, Object> properties) {
+    public ApiResponse<FileStore<?>> updateFileStore(@PathVariable("id") UUID id, @RequestBody Map<String, Object> properties) {
         FileStore<?> store = this.repository.fileStoreRepo.findById(id)
                 .orElseThrow(() -> ApiError.notFound("file store", id.toString()));
 
         store.setProperties(properties);
 
-        return this.repository.fileStoreRepo.saveAndFlush(store);
+        return ApiResponse.success(this.repository.fileStoreRepo.saveAndFlush(store));
     }
 
 }

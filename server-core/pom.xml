@@ -46,6 +46,12 @@
             <version>0.13.1</version>
         </dependency>
 
+        <dependency>
+            <groupId>org.springdoc</groupId>
+            <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+            <version>3.0.3</version>
+        </dependency>
+
         <!-- Bundle SQLite driver directly (great for lightweight/local mode) -->
         <dependency>
             <groupId>org.xerial</groupId>

@@ -25,25 +25,29 @@ public class ConfigController {
         this.catalog = catalog;
     }
 
-    @GetMapping()
-    public Map<String, Optional<?>> getConfig() {
-        return this.catalog.getComponents(ComponentTypes.CONFIG).stream()
+    @GetMapping
+    public ApiResponse<Map<String, Optional<?>>> getConfig() {
+        Map<String, Optional<?>> properties = this.catalog.getComponents(ComponentTypes.CONFIG).stream()
                 .map(config -> Map.entry(config.id(), this.repository.configRepo.findByConfigKey(config.id())))
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+
+        return ApiResponse.success(properties);
     }
 
     @GetMapping("/this_server")
-    public Map<String, Optional<?>> getThisServerEnvironment() {
-        return this.catalog.getComponents(ComponentTypes.CONFIG).stream()
+    public ApiResponse<Map<String, Optional<?>>> getThisServerEnvironment() {
+        Map<String, Optional<?>> properties = this.catalog.getComponents(ComponentTypes.CONFIG).stream()
                 .map(config -> Map.entry(config.id(), config.type().fromString(this.environment.getProperty(config.id()))))
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+
+        return ApiResponse.success(properties);
     }
 
     @PutMapping("/{id}")
-    public SystemConfiguration setConfig(@PathVariable("id") String id, @RequestBody String value) {
+    public ApiResponse<SystemConfiguration> setConfig(@PathVariable("id") String id, @RequestBody String value) {
         SystemConfiguration config = this.repository.configRepo.findByConfigKey(id).orElseGet(() -> new SystemConfiguration(id, value));
         config.configValue = value;
-        return this.repository.configRepo.saveAndFlush(config);
+        return ApiResponse.success(this.repository.configRepo.saveAndFlush(config));
     }
 
 }

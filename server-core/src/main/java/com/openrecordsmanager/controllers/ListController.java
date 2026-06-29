@@ -22,7 +22,7 @@ public class ListController {
         this.repository = repository;
     }
 
-    @GetMapping("")
+    @GetMapping
     public ApiResponse<Set<ResourceIdentifier>> getLists() {
         return ApiResponse.success(this.repository.listTypeRepo.findAll().stream()
                 .map(listType -> listType.id).collect(Collectors.toSet()));

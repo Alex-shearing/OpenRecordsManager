@@ -26,14 +26,16 @@ public class RecordTypeController {
     }
 
     @GetMapping
-    public List<ResourceIdentifier> getRecordTypes() {
-        return this.repository.recordTypeRepo.findAllIds();
+    public ApiResponse<List<ResourceIdentifier>> getRecordTypes() {
+        return ApiResponse.success(this.repository.recordTypeRepo.findAllIds());
     }
 
     @GetMapping("/{id}")
-    public RecordType getRecordType(@PathVariable("id") ResourceIdentifier id) {
-        return this.repository.recordTypeRepo.findById(id)
+    public ApiResponse<RecordType> getRecordType(@PathVariable("id") ResourceIdentifier id) {
+        RecordType type = this.repository.recordTypeRepo.findById(id)
                 .orElseThrow(() -> ApiError.notFound(ComponentTypes.RECORD_TYPE, id));
+
+        return ApiResponse.success(type);
     }
 
 }

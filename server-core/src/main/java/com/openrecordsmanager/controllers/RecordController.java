@@ -35,7 +35,7 @@ public class RecordController {
     }
 
     @PostMapping
-    public Record newRecord(@RequestBody NewRecordContent input) {
+    public ApiResponse<Record> newRecord(@RequestBody NewRecordContent input) {
         RecordType type = this.repository.recordTypeRepo.findById(input.type())
                 .orElseThrow(() -> ApiError.notFound(ComponentTypes.RECORD_TYPE, input.type()));
 
@@ -47,17 +47,19 @@ public class RecordController {
             setProperty(record, property, o);
         });
 
-        return this.repository.recordRepo.saveAndFlush(record);
+        return ApiResponse.success(this.repository.recordRepo.saveAndFlush(record));
     }
 
     @GetMapping("/{id}")
-    public Record getRecord(@PathVariable("id") UUID id) {
-        return this.repository.recordRepo.findById(id)
+    public ApiResponse<Record> getRecord(@PathVariable("id") UUID id) {
+        Record record = this.repository.recordRepo.findById(id)
                 .orElseThrow(() -> ApiError.notFound("record", id.toString()));
+
+        return ApiResponse.success(record);
     }
 
     @PutMapping(value = "/{id}/revisions/{version}", consumes = MediaType.APPLICATION_OCTET_STREAM_VALUE)
-    public void newRevision(
+    public ApiResponse<Void> newRevision(
             @PathVariable("id") UUID id,
             @PathVariable("version") double version,
             @RequestHeader(value = HttpHeaders.CONTENT_DISPOSITION, required = false) String dispositionHeader,
@@ -87,10 +89,12 @@ public class RecordController {
         record.addRevision(version, fileStore.newFile(file, fileExtension));
 
         this.repository.recordRepo.saveAndFlush(record);
+
+        return ApiResponse.success(null);
     }
 
     @PutMapping(value = "/{id}/revisions/{version}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public void newRevision(
+    public ApiResponse<Void> newRevision(
             @PathVariable("id") UUID id,
             @PathVariable("version") double version,
             @RequestPart("file") MultipartFile file
@@ -100,7 +104,7 @@ public class RecordController {
             extension = getExtensionFromFile(file.getOriginalFilename());
         }
 
-        this.newRevision(id, version, null, extension, file.getInputStream());
+        return this.newRevision(id, version, null, extension, file.getInputStream());
     }
 
     private String getExtensionFromFile(String fileName) {
@@ -108,8 +112,8 @@ public class RecordController {
     }
 
     @GetMapping("/{id}/revisions")
-    public double[] getRevisions(@PathVariable("id") UUID id) {
-        return this.repository.recordRepo.getRevisions(id);
+    public ApiResponse<double[]> getRevisions(@PathVariable("id") UUID id) {
+        return ApiResponse.success(this.repository.recordRepo.getRevisions(id));
     }
 
     @GetMapping("/{id}/revisions/{version}")
