@@ -9,6 +9,7 @@ import com.openrecordsmanager.model.repositories.DataRepository;
 import com.openrecordsmanager.resources.ComponentCatalog;
 import com.openrecordsmanager.resources.ResourceIdentifier;
 import com.openrecordsmanager.resources.types.ComponentTypes;
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
@@ -36,6 +37,7 @@ public class FileStoreController {
     }
 
     @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(summary = "Get file store details")
     @NotFoundApiResponse
     public FileStore<?> get(@PathVariable("id") UUID id) {
         return this.repository.fileStoreRepo.findById(id)
@@ -43,6 +45,7 @@ public class FileStoreController {
     }
 
     @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(summary = "Create a new file store")
     @NotFoundApiResponse
     public FileStore<?> newFileStore(@RequestBody NewFileStore input) {
         FileStoreType<?> type = this.catalog.getComponent(ComponentTypes.FILE_STORE_TYPE, input.type)
@@ -55,6 +58,7 @@ public class FileStoreController {
     }
 
     @PutMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(summary = "Modify file store config")
     @NotFoundApiResponse
     public FileStore<?> updateFileStore(@PathVariable("id") UUID id, @RequestBody Map<String, Object> properties) {
         FileStore<?> store = this.repository.fileStoreRepo.findById(id)

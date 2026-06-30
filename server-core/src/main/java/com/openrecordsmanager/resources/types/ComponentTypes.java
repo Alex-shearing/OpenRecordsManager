@@ -15,6 +15,8 @@ import com.openrecordsmanager.model.ObjectProperty;
 import com.openrecordsmanager.model.RecordType;
 import org.jspecify.annotations.Nullable;
 
+import java.util.Objects;
+
 public class ComponentTypes {
     @SuppressWarnings("unchecked")
     public static final UnregisterableComponentType<ConfigDefinition<?>> CONFIG = new UnregisterableComponentType<>("configs", (Class<ConfigDefinition<?>>) (Class<?>) ConfigDefinition.class);
@@ -30,6 +32,14 @@ public class ComponentTypes {
     public static final ComponentType<?, ?>[] VALUES = {
             CONFIG, LIST, LIST_ELEMENT, PROPERTY, RECORD_TYPE, INPUT_AUTH_PROVIDER, REDIRECT_AUTH_PROVIDER, FILE_STORE_TYPE
     };
+
+    @Nullable
+    public static ComponentType<?, ?> fromName(String name) {
+        for (ComponentType<?, ?> value : VALUES) {
+            if (Objects.equals(value.name, name)) return value;
+        }
+        return null;
+    }
 
     @Nullable
     @SuppressWarnings("unchecked")

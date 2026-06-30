@@ -1,5 +1,7 @@
 package com.openrecordsmanager.controllers.repsonse;
 
+import com.openrecordsmanager.controllers.repsonse.errors.ApiResponseWrapper;
+import io.swagger.v3.core.converter.ModelConverters;
 import io.swagger.v3.oas.models.media.Content;
 import io.swagger.v3.oas.models.media.Schema;
 import org.springdoc.core.customizers.GlobalOpenApiCustomizer;
@@ -18,12 +20,12 @@ public class SwaggerConfiguration {
                         Content content = apiResponse.getContent();
                         if (content != null && content.containsKey("application/json")) {
                             // Dynamically wrap the endpoint's raw schema inside a reusable master metadata template
-                            Schema<?> wrappedSchema = new Schema<>()
-                                    .addProperty("success", new Schema<>().type("boolean").example(true))
-                                    .addProperty("timestamp", new Schema<>().type("string").format("date-time"))
-                                    .addProperty("data", content.get("application/json").getSchema());
+                            Schema<?> schema = ModelConverters.getInstance()
+                                    .readAllAsResolvedSchema(ApiResponseWrapper.class)
+                                    .schema;
+                            schema.getProperties().put("data", content.get("application/json").getSchema());
 
-                            content.get("application/json").setSchema(wrappedSchema);
+                            content.get("application/json").setSchema(schema);
                         }
                     });
                 });

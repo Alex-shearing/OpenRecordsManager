@@ -8,6 +8,7 @@ import com.openrecordsmanager.model.repositories.DataRepository;
 import com.openrecordsmanager.resources.ExpressionsService;
 import com.openrecordsmanager.resources.ResourceIdentifier;
 import com.openrecordsmanager.resources.types.ComponentTypes;
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -32,11 +33,13 @@ public class RecordTypeController {
     }
 
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(summary = "List all record types")
     public List<ResourceIdentifier> getRecordTypes() {
         return this.repository.recordTypeRepo.findAllIds();
     }
 
     @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(summary = "Get record type details")
     @NotFoundApiResponse
     public RecordType getRecordType(@PathVariable("id") ResourceIdentifier id) {
         return this.repository.recordTypeRepo.findById(id)

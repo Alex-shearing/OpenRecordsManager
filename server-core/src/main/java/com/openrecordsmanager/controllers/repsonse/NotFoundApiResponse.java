@@ -21,7 +21,7 @@ import java.lang.annotation.*;
                         value = """
                                 {
                                   "success": false,
-                                  "errorCode": "object {0} of type {1} not found",
+                                  "error": "object {0} of type {1} not found",
                                   "timestamp": "2026-06-29T23:05:00Z"
                                 }
                                 """

@@ -4,6 +4,7 @@ import com.openrecordsmanager.api.Plugin;
 import com.openrecordsmanager.config.ConfigProperties;
 import com.openrecordsmanager.controllers.repsonse.InternalServerErrorApiResponse;
 import com.openrecordsmanager.resources.PluginManager;
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import org.springframework.core.env.Environment;
 import org.springframework.http.MediaType;
@@ -26,6 +27,7 @@ public class InfoController {
     }
 
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(summary = "Get basic details about the environment")
     public EnvironmentResponse getEnvironment() {
         return new EnvironmentResponse(
                 this.config.getProperty(ConfigProperties.WORKGROUP_NAME.id()),

@@ -5,6 +5,7 @@ import com.openrecordsmanager.model.SystemConfiguration;
 import com.openrecordsmanager.model.repositories.DataRepository;
 import com.openrecordsmanager.resources.ComponentCatalog;
 import com.openrecordsmanager.resources.types.ComponentTypes;
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import org.springframework.core.env.Environment;
 import org.springframework.http.MediaType;
@@ -31,6 +32,7 @@ public class ConfigController {
     }
 
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(summary = "Get config values from the database")
     public Map<String, Optional<?>> getConfig() {
         return this.catalog.getComponents(ComponentTypes.CONFIG).stream()
                 .map(config -> Map.entry(config.id(), this.repository.configRepo.findByConfigKey(config.id())))
@@ -38,6 +40,7 @@ public class ConfigController {
     }
 
     @GetMapping(value = "/this_server", produces = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(summary = "Get the config values for this specific server")
     public Map<String, Optional<?>> getThisServerEnvironment() {
         return this.catalog.getComponents(ComponentTypes.CONFIG).stream()
                 .map(config -> Map.entry(config.id(), config.type().fromString(this.environment.getProperty(config.id()))))
@@ -45,6 +48,7 @@ public class ConfigController {
     }
 
     @PutMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(summary = "Set a config value in the database")
     public SystemConfiguration setConfig(@PathVariable("id") String id, @RequestBody String value) {
         SystemConfiguration config = this.repository.configRepo.findByConfigKey(id).orElseGet(() -> new SystemConfiguration(id, value));
         config.configValue = value;

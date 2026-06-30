@@ -9,6 +9,7 @@ import com.openrecordsmanager.model.Record;
 import com.openrecordsmanager.model.repositories.DataRepository;
 import com.openrecordsmanager.resources.ResourceIdentifier;
 import com.openrecordsmanager.resources.types.ComponentTypes;
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import org.springframework.core.env.Environment;
 import org.springframework.core.io.Resource;
@@ -41,6 +42,7 @@ public class RecordController {
 
     @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     @NotFoundApiResponse
+    @Operation(summary = "Create a new record")
     public Record newRecord(@RequestBody NewRecordContent input) {
         RecordType type = this.repository.recordTypeRepo.findById(input.type())
                 .orElseThrow(() -> ApiError.notFound(ComponentTypes.RECORD_TYPE, input.type()));
@@ -57,6 +59,7 @@ public class RecordController {
     }
 
     @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(summary = "Get record details")
     @NotFoundApiResponse
     public Record getRecord(@PathVariable("id") UUID id) {
         return this.repository.recordRepo.findById(id)
@@ -68,6 +71,7 @@ public class RecordController {
             consumes = MediaType.APPLICATION_OCTET_STREAM_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE
     )
+    @Operation(summary = "Upload new record revision")
     @NotFoundApiResponse
     public void newRevision(
             @PathVariable("id") UUID id,
@@ -106,6 +110,7 @@ public class RecordController {
             consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE
     )
+    @Operation(summary = "Upload new record revision")
     @NotFoundApiResponse
     public void newRevision(
             @PathVariable("id") UUID id,
@@ -125,6 +130,7 @@ public class RecordController {
     }
 
     @GetMapping(value = "/{id}/revisions", produces = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(summary = "List all revisions for a record")
     @NotFoundApiResponse
     public double[] getRevisions(@PathVariable("id") UUID id) {
         return this.repository.recordRepo.getRevisions(id)
@@ -132,6 +138,7 @@ public class RecordController {
     }
 
     @GetMapping(value = "/{id}/revisions/{version}", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
+    @Operation(summary = "Get record revision file")
     @NotFoundApiResponse
     public ResponseEntity<Resource> getRevision(@PathVariable("id") UUID id, @PathVariable("version") double version) {
         RecordRevision rev = this.repository.recordRepo.findByRecordId(id, version)

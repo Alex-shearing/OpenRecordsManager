@@ -17,7 +17,14 @@ public class ListComponentType extends ComponentType<ListDefinition, ListType> {
     @Override
     public ListType register(DataRepository repository, ComponentCatalog catalog, ExpressionsService expressions, ResourceIdentifier id, ListDefinition definition) {
         ListType type = new ListType(id, definition.display);
-        return repository.listTypeRepo.saveAndFlush(type);
+        repository.listTypeRepo.saveAndFlush(type);
+
+        definition.defaultEntries.forEach((s, listItem) -> {
+            ResourceIdentifier childId = new ResourceIdentifier(id.source(), s);
+            ComponentTypes.LIST_ELEMENT.register(repository, catalog, expressions, childId, listItem, false);
+        });
+
+        return type;
     }
 
     @Override

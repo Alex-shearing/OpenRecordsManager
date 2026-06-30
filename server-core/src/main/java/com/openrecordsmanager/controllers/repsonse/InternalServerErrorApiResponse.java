@@ -21,7 +21,7 @@ import java.lang.annotation.*;
                         value = """
                                 {
                                   "success": false,
-                                  "errorCode": "Internal Server Error",
+                                  "error": "Internal Server Error",
                                   "timestamp": "2026-06-29T23:05:00Z"
                                 }
                                 """

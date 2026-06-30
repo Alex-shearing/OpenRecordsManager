@@ -13,7 +13,7 @@ import java.util.Set;
 
 public abstract class ComponentType<T extends Component, D> {
 
-    private final String name;
+    public final String name;
     private final Class<T> componentClass;
 
     public ComponentType(String name, Class<T> componentClass) {
