@@ -16,5 +16,5 @@ public interface RecordRepository extends JpaRepository<Record, UUID> {
     Optional<RecordRevision> findByRecordId(@Param("recordId") UUID recordId, @Param("version") double version);
 
     @Query("SELECT e.version FROM RecordRevision e WHERE e.record.id = :recordId")
-    double[] getRevisions(@Param("recordId") UUID recordId);
+    Optional<double[]> getRevisions(@Param("recordId") UUID recordId);
 }

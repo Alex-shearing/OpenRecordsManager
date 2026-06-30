@@ -22,7 +22,7 @@ public class ExceptionController {
 
     @ExceptionHandler(Exception.class)
     @SuppressWarnings("unused")
-    public ResponseEntity<ApiResponse<Void>> handleGeneralException(Exception ex) {
+    public ResponseEntity<ApiResponseWrapper<Void>> handleGeneralException(Exception ex) {
         HttpStatusCode httpStatusCode = ex instanceof ApiError apiError ? apiError.httpStatusCode : HttpStatus.INTERNAL_SERVER_ERROR;
         String message = Boolean.TRUE.equals(config.getProperty(ConfigProperties.DETAILED_ERRORS.id(), Boolean.class)) ? ex.getMessage() :
                 ex instanceof ApiError error ? error.getUserMessage() : "Internal Server Error";
@@ -31,6 +31,6 @@ public class ExceptionController {
             LOGGER.error("Unexpected error encountered while processing request", ex);
         }
 
-        return ResponseEntity.status(httpStatusCode).body(ApiResponse.error(message));
+        return ResponseEntity.status(httpStatusCode).body(ApiResponseWrapper.error(message));
     }
 }

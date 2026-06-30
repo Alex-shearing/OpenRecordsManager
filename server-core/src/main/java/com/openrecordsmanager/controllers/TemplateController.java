@@ -2,6 +2,8 @@ package com.openrecordsmanager.controllers;
 
 import com.openrecordsmanager.api.list.ListDefinition;
 import com.openrecordsmanager.api.recordtype.RecordTypeDefinition;
+import com.openrecordsmanager.controllers.repsonse.InternalServerErrorApiResponse;
+import com.openrecordsmanager.controllers.repsonse.NotFoundApiResponse;
 import com.openrecordsmanager.controllers.repsonse.errors.ApiError;
 import com.openrecordsmanager.model.ListType;
 import com.openrecordsmanager.model.RecordType;
@@ -10,6 +12,7 @@ import com.openrecordsmanager.resources.ComponentCatalog;
 import com.openrecordsmanager.resources.ExpressionsService;
 import com.openrecordsmanager.resources.ResourceIdentifier;
 import com.openrecordsmanager.resources.types.ComponentTypes;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
@@ -17,6 +20,8 @@ import java.util.Set;
 
 @RestController
 @RequestMapping("/templates")
+@InternalServerErrorApiResponse
+@ApiResponse(responseCode = "200")
 public class TemplateController {
 
     private final ComponentCatalog catalog;
@@ -35,12 +40,14 @@ public class TemplateController {
     }
 
     @GetMapping(value = "/record_types/{template}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @NotFoundApiResponse
     public RecordTypeDefinition getRecordTypeTemplate(@PathVariable("template") ResourceIdentifier templateId) {
         return ComponentTypes.RECORD_TYPE.getComponent(templateId, this.catalog)
                 .orElseThrow(() -> ApiError.templateNotFound(ComponentTypes.RECORD_TYPE, templateId));
     }
 
     @PostMapping(value = "/record_types/{template}/apply", produces = MediaType.APPLICATION_JSON_VALUE)
+    @NotFoundApiResponse
     public RecordType applyRecordTypeTemplate(
             @PathVariable("template") ResourceIdentifier templateId,
             @RequestParam(value = "includeDependencies", required = false, defaultValue = "false") boolean includeDependencies
@@ -57,12 +64,14 @@ public class TemplateController {
     }
 
     @GetMapping(value = "/lists/{template}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @NotFoundApiResponse
     public ListDefinition getTemplate(@PathVariable("template") ResourceIdentifier templateId) {
         return ComponentTypes.LIST.getComponent(templateId, this.catalog)
                 .orElseThrow(() -> ApiError.templateNotFound(ComponentTypes.LIST, templateId));
     }
 
     @PostMapping(value = "/lists/{template}/apply", produces = MediaType.APPLICATION_JSON_VALUE)
+    @NotFoundApiResponse
     public ListType applyList(@PathVariable("template") ResourceIdentifier templateId) {
         ListDefinition listDef = ComponentTypes.LIST.getComponent(templateId, this.catalog)
                 .orElseThrow(() -> ApiError.templateNotFound(ComponentTypes.LIST, templateId));

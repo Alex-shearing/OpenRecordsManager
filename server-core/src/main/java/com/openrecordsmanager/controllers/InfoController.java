@@ -2,7 +2,9 @@ package com.openrecordsmanager.controllers;
 
 import com.openrecordsmanager.api.Plugin;
 import com.openrecordsmanager.config.ConfigProperties;
+import com.openrecordsmanager.controllers.repsonse.InternalServerErrorApiResponse;
 import com.openrecordsmanager.resources.PluginManager;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import org.springframework.core.env.Environment;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -11,6 +13,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/info")
+@InternalServerErrorApiResponse
+@ApiResponse(responseCode = "200")
 public class InfoController {
 
     private final PluginManager pluginManager;

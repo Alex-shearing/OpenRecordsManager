@@ -1,6 +1,6 @@
 package com.openrecordsmanager.controllers.repsonse;
 
-import com.openrecordsmanager.controllers.repsonse.errors.ApiResponse;
+import com.openrecordsmanager.controllers.repsonse.errors.ApiResponseWrapper;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 import org.springframework.core.MethodParameter;
@@ -27,7 +27,7 @@ public class ResponseWrapper implements ResponseBodyAdvice<Object> {
                                             ServerHttpRequest request, ServerHttpResponse response) {
 
         // If the endpoint already threw an error or explicitly returned an ApiResponse, pass it through
-        if (body instanceof ApiResponse || body == null || body instanceof ResponseEntity<?>) {
+        if (body instanceof ApiResponseWrapper || body == null || body instanceof ResponseEntity<?>) {
             return body;
         }
         String path = request.getURI().getPath();
@@ -35,6 +35,6 @@ public class ResponseWrapper implements ResponseBodyAdvice<Object> {
             return body;
         }
 
-        return ApiResponse.success(body);
+        return ApiResponseWrapper.success(body);
     }
 }

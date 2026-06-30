@@ -1,12 +1,15 @@
 package com.openrecordsmanager.controllers;
 
 import com.openrecordsmanager.config.ConfigProperties;
+import com.openrecordsmanager.controllers.repsonse.InternalServerErrorApiResponse;
+import com.openrecordsmanager.controllers.repsonse.NotFoundApiResponse;
 import com.openrecordsmanager.controllers.repsonse.errors.ApiError;
 import com.openrecordsmanager.model.*;
 import com.openrecordsmanager.model.Record;
 import com.openrecordsmanager.model.repositories.DataRepository;
 import com.openrecordsmanager.resources.ResourceIdentifier;
 import com.openrecordsmanager.resources.types.ComponentTypes;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import org.springframework.core.env.Environment;
 import org.springframework.core.io.Resource;
 import org.springframework.http.ContentDisposition;
@@ -24,6 +27,8 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/records")
+@InternalServerErrorApiResponse
+@ApiResponse(responseCode = "200")
 public class RecordController {
 
     private final DataRepository repository;
@@ -35,6 +40,7 @@ public class RecordController {
     }
 
     @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE)
+    @NotFoundApiResponse
     public Record newRecord(@RequestBody NewRecordContent input) {
         RecordType type = this.repository.recordTypeRepo.findById(input.type())
                 .orElseThrow(() -> ApiError.notFound(ComponentTypes.RECORD_TYPE, input.type()));
@@ -51,6 +57,7 @@ public class RecordController {
     }
 
     @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @NotFoundApiResponse
     public Record getRecord(@PathVariable("id") UUID id) {
         return this.repository.recordRepo.findById(id)
                 .orElseThrow(() -> ApiError.notFound("record", id.toString()));
@@ -61,6 +68,7 @@ public class RecordController {
             consumes = MediaType.APPLICATION_OCTET_STREAM_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE
     )
+    @NotFoundApiResponse
     public void newRevision(
             @PathVariable("id") UUID id,
             @PathVariable("version") double version,
@@ -98,6 +106,7 @@ public class RecordController {
             consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE
     )
+    @NotFoundApiResponse
     public void newRevision(
             @PathVariable("id") UUID id,
             @PathVariable("version") double version,
@@ -116,11 +125,14 @@ public class RecordController {
     }
 
     @GetMapping(value = "/{id}/revisions", produces = MediaType.APPLICATION_JSON_VALUE)
+    @NotFoundApiResponse
     public double[] getRevisions(@PathVariable("id") UUID id) {
-        return this.repository.recordRepo.getRevisions(id);
+        return this.repository.recordRepo.getRevisions(id)
+                .orElseThrow(() -> ApiError.notFound("record", id.toString()));
     }
 
     @GetMapping(value = "/{id}/revisions/{version}", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
+    @NotFoundApiResponse
     public ResponseEntity<Resource> getRevision(@PathVariable("id") UUID id, @PathVariable("version") double version) {
         RecordRevision rev = this.repository.recordRepo.findByRecordId(id, version)
                 .orElseThrow(() -> ApiError.notFound("record revision", id.toString() + "/" + version));

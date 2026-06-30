@@ -14,7 +14,7 @@ public class SwaggerConfiguration {
         return openApi -> {
             openApi.getPaths().values().forEach(pathItem -> {
                 pathItem.readOperations().forEach(operation -> {
-                    operation.getResponses().values().forEach(apiResponse -> {
+                    operation.getResponses().forEach((statusCode, apiResponse) -> {
                         Content content = apiResponse.getContent();
                         if (content != null && content.containsKey("application/json")) {
                             // Dynamically wrap the endpoint's raw schema inside a reusable master metadata template

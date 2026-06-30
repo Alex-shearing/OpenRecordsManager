@@ -1,9 +1,11 @@
 package com.openrecordsmanager.controllers;
 
+import com.openrecordsmanager.controllers.repsonse.InternalServerErrorApiResponse;
 import com.openrecordsmanager.model.SystemConfiguration;
 import com.openrecordsmanager.model.repositories.DataRepository;
 import com.openrecordsmanager.resources.ComponentCatalog;
 import com.openrecordsmanager.resources.types.ComponentTypes;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import org.springframework.core.env.Environment;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
@@ -14,6 +16,8 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/config")
+@InternalServerErrorApiResponse
+@ApiResponse(responseCode = "200")
 public class ConfigController {
 
     private final DataRepository repository;
