@@ -11,6 +11,7 @@ import com.openrecordsmanager.resources.types.ComponentTypes;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -19,9 +20,18 @@ import java.util.*;
 public class ComponentCatalog {
     private static final Logger LOGGER = LoggerFactory.getLogger(ComponentCatalog.class);
 
-    private final Table<ComponentType<?, ?>, ResourceIdentifier, ? extends Component> components;
+    private Table<ComponentType<?, ?>, ResourceIdentifier, ? extends Component> components;
 
-    public ComponentCatalog(PluginManager pluginManager) {
+    public ComponentCatalog(PluginManager pluginManager, @Value("${workgroup.default_file_store}") UUID defaultStore) {
+        this.loadCatalog(pluginManager);
+
+        if (pluginManager.checkStatus(this, defaultStore)) {
+            LOGGER.info("Plugin manager reported changes, reloading catalog");
+            this.loadCatalog(pluginManager);
+        }
+    }
+
+    private void loadCatalog(PluginManager pluginManager) {
         Builder builder = new Builder();
         for (Plugin plugin : pluginManager.getPlugins()) {
             LOGGER.info("Initializing plugin {}...", plugin.getName());

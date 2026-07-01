@@ -92,7 +92,7 @@ public class RecordController {
         }
 
         FileStore<?> fileStore = this.repository.fileStoreRepo.findById(defaultStoreId)
-                .orElseThrow(() -> ApiError.notFound("file store", id.toString()));
+                .orElseThrow(() -> ApiError.notFound("file store", defaultStoreId.toString()));
 
         // if no explicit file extension is supplied, attempt to extract it from the content disposition header
         if (fileExtension.isBlank() && dispositionHeader != null) {

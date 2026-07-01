@@ -39,7 +39,7 @@ public class FileStoreEntry {
     protected FileStoreEntry() {
     }
 
-    public FileStoreEntry(FileStore<?> store, String path, String hashAlgorithm, String hash, long sizeBytes, String extension) {
+    public FileStoreEntry(FileStore<?> store, String path, String hashAlgorithm, String hash, long sizeBytes, @Nullable String extension) {
         this.id = UUID.randomUUID();
         this.store = store;
         this.path = path;

@@ -1,14 +1,34 @@
 package com.openrecordsmanager;
 
 import com.openrecordsmanager.config.DatabaseConfigSource;
-import org.jspecify.annotations.NonNull;
-import org.springframework.boot.EnvironmentPostProcessor;
-import org.springframework.boot.SpringApplication;
-import org.springframework.core.env.ConfigurableEnvironment;
+import org.springframework.boot.context.properties.bind.Binder;
+import org.springframework.boot.jdbc.DataSourceBuilder;
+import org.springframework.boot.jdbc.autoconfigure.DataSourceProperties;
+import org.springframework.context.ApplicationContextInitializer;
+import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.jdbc.core.JdbcTemplate;
 
-public class CustomConfig implements EnvironmentPostProcessor {
+import javax.sql.DataSource;
+
+public class CustomConfig implements ApplicationContextInitializer<ConfigurableApplicationContext> {
     @Override
-    public void postProcessEnvironment(ConfigurableEnvironment environment, @NonNull SpringApplication application) {
-        environment.getPropertySources().addLast(new DatabaseConfigSource());
+    public void initialize(ConfigurableApplicationContext applicationContext) {
+        DataSourceProperties dsProps = Binder.get(applicationContext.getEnvironment())
+                .bind("spring.datasource", DataSourceProperties.class)
+                .orElse(null);
+
+        if (dsProps != null && dsProps.getUrl() != null) {
+            DataSource dataSource = DataSourceBuilder.create()
+                    .url(dsProps.getUrl())
+                    .username(dsProps.getUsername())
+                    .password(dsProps.getPassword())
+                    .driverClassName(dsProps.getDriverClassName())
+                    .build();
+
+            JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
+
+            applicationContext.getEnvironment().getPropertySources().addLast(new DatabaseConfigSource(jdbcTemplate));
+        }
+
     }
 }

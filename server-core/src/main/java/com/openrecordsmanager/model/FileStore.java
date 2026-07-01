@@ -11,7 +11,6 @@ import com.openrecordsmanager.resources.types.ComponentTypes;
 import jakarta.persistence.*;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
-import org.springframework.beans.factory.annotation.Autowired;
 import tools.jackson.core.JacksonException;
 import tools.jackson.core.JsonGenerator;
 import tools.jackson.databind.SerializationContext;
@@ -103,13 +102,6 @@ public class FileStore<T> {
     }
 
     public static class Serializer extends ValueSerializer<FileStore<?>> {
-
-        private final ComponentCatalog componentCatalog;
-
-        @Autowired
-        public Serializer(ComponentCatalog componentCatalog) {
-            this.componentCatalog = componentCatalog;
-        }
 
         @Override
         public void serialize(FileStore value, JsonGenerator gen, SerializationContext ctxt) throws JacksonException {
