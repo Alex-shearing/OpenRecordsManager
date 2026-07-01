@@ -33,9 +33,15 @@ public class ConfigProperties {
             .description("Defines the directory used to load plugins from.")
             .build();
 
+    public static final ConfigDefinition<Boolean> SKIP_PLUGIN_LOAD_CHECK = ConfigDefinition.builder("server.plugins.skip_startup_check", ConfigValueType.BOOL)
+            .name("Disable Plugin Load Check")
+            .defaultValue(false)
+            .description("Disables the plugin startup check.")
+            .build();
+
     public static final ConfigDefinition<?>[] BUILTIN_CONFIG = {
             WORKGROUP_DATABASE_URL, WORKGROUP_NAME, WORKGROUP_DEFAULT_FILE_STORE,
             DETAILED_ERRORS,
-            PLUGIN_LOAD_DIRECTORY
+            PLUGIN_LOAD_DIRECTORY, SKIP_PLUGIN_LOAD_CHECK
     };
 }

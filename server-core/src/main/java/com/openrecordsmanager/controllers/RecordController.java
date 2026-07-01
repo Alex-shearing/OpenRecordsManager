@@ -7,6 +7,7 @@ import com.openrecordsmanager.controllers.repsonse.errors.ApiError;
 import com.openrecordsmanager.model.*;
 import com.openrecordsmanager.model.Record;
 import com.openrecordsmanager.model.repositories.DataRepository;
+import com.openrecordsmanager.resources.ComponentCatalog;
 import com.openrecordsmanager.resources.ResourceIdentifier;
 import com.openrecordsmanager.resources.types.ComponentTypes;
 import io.swagger.v3.oas.annotations.Operation;
@@ -34,10 +35,12 @@ public class RecordController {
 
     private final DataRepository repository;
     private final Environment environment;
+    private final ComponentCatalog catalog;
 
-    public RecordController(DataRepository repository, Environment environment) {
+    public RecordController(DataRepository repository, Environment environment, ComponentCatalog catalog) {
         this.repository = repository;
         this.environment = environment;
+        this.catalog = catalog;
     }
 
     @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE)
@@ -100,7 +103,7 @@ public class RecordController {
             }
         }
 
-        record.addRevision(version, fileStore.newFile(file, fileExtension));
+        record.addRevision(version, fileStore.newFile(this.catalog, file, fileExtension));
 
         this.repository.recordRepo.saveAndFlush(record);
     }
@@ -152,7 +155,7 @@ public class RecordController {
                 .headers(headers)
                 .contentLength(rev.file.sizeBytes)
                 .contentType(MediaType.APPLICATION_OCTET_STREAM)
-                .body(rev.file.getFile());
+                .body(rev.file.getFile(this.catalog));
     }
 
     private static <K> void setProperty(Record record, ObjectProperty<K> property, Object value) {

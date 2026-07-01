@@ -1,5 +1,6 @@
 package com.openrecordsmanager.model;
 
+import com.openrecordsmanager.resources.ComponentCatalog;
 import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
 import org.springframework.core.io.InputStreamResource;
@@ -48,9 +49,9 @@ public class FileStoreEntry {
         this.extension = extension;
     }
 
-    public Resource getFile() {
+    public Resource getFile(ComponentCatalog catalog) {
         try {
-            return new InputStreamResource(this.store.getFile(this));
+            return new InputStreamResource(this.store.getFile(catalog, this));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

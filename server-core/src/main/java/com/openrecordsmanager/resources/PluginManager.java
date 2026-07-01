@@ -2,6 +2,7 @@ package com.openrecordsmanager.resources;
 
 import com.openrecordsmanager.api.BuiltinComponents;
 import com.openrecordsmanager.api.Plugin;
+import com.openrecordsmanager.model.repositories.PluginRepository;
 import jakarta.annotation.PreDestroy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,14 +21,18 @@ import java.util.*;
 public class PluginManager {
     private static final Logger LOGGER = LoggerFactory.getLogger(PluginManager.class);
 
+    private final PluginRepository repository;
     private final List<Plugin> plugins;
     private final URLClassLoader classLoader;
 
     @Autowired
     public PluginManager(
             @Value("${server.plugins.directory}") String pluginDirectory,
+            PluginRepository repository,
             Plugin... additionalPlugins
     ) {
+        this.repository = repository;
+
         File loc = new File(pluginDirectory);
         if (!loc.exists() || !loc.isDirectory()) {
             LOGGER.warn("Plugin directory '{}' not found. Plugins will not be loaded.", loc.getAbsolutePath());

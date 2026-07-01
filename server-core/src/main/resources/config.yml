@@ -15,13 +15,21 @@ server:
   plugins:
     # Define the directory to load plugins from
     directory: ./plugins
+    # Skip the check during startup to ensure all plugins are required plugins are loaded
+    skip_startup_check: false
   debug:
     # If enabled, detailed API error messages will be returned to the user
     detailed_errors: true
     # If enabled, will print SQL statements to the log
-    show_sql: true
+    show_sql: false
   logging:
     # Define the minimum log level for writing to logs
     level: INFO
     # Define the path that logs should be stored
-    path: ./logs
+    path: ./logs/openrecordsmanager.log
+    # Define a rolling log policy
+    rolling:
+      max-file-size: 10MB
+      max-history: 7
+      total-size-cap: 100MB
+      clean-history-on-start: false

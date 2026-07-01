@@ -51,7 +51,7 @@ public class FileStoreController {
         FileStoreType<?> type = this.catalog.getComponent(ComponentTypes.FILE_STORE_TYPE, input.type)
                 .orElseThrow(() -> ApiError.notFound(ComponentTypes.FILE_STORE_TYPE, input.type));
 
-        return this.repository.fileStoreRepo.saveAndFlush(new FileStore<>(type, input.properties));
+        return this.repository.fileStoreRepo.saveAndFlush(new FileStore<>(this.catalog, type, input.properties));
     }
 
     public record NewFileStore(ResourceIdentifier type, Map<String, Object> properties) {
@@ -64,7 +64,7 @@ public class FileStoreController {
         FileStore<?> store = this.repository.fileStoreRepo.findById(id)
                 .orElseThrow(() -> ApiError.notFound("file store", id.toString()));
 
-        store.setProperties(properties);
+        store.setProperties(this.catalog, properties);
 
         return this.repository.fileStoreRepo.saveAndFlush(store);
     }

@@ -5,8 +5,8 @@ import com.google.common.hash.Hashing;
 import com.google.common.hash.HashingInputStream;
 import com.google.common.io.CountingInputStream;
 import com.openrecordsmanager.api.filestore.FileStoreType;
-import com.openrecordsmanager.model.util.FileStoreTypeConverter;
 import com.openrecordsmanager.resources.ComponentCatalog;
+import com.openrecordsmanager.resources.ResourceIdentifier;
 import com.openrecordsmanager.resources.types.ComponentTypes;
 import jakarta.persistence.*;
 import org.hibernate.annotations.JdbcTypeCode;
@@ -34,9 +34,7 @@ public class FileStore<T> {
     public UUID id;
 
     @Column(nullable = false)
-    @Convert(converter = FileStoreTypeConverter.class)
-    @JdbcTypeCode(SqlTypes.VARCHAR)
-    public FileStoreType<T> type;
+    public ResourceIdentifier type;
 
     @Column(nullable = false)
     @JdbcTypeCode(SqlTypes.JSON)
@@ -49,13 +47,13 @@ public class FileStore<T> {
     protected FileStore() {
     }
 
-    public FileStore(FileStoreType<T> type, Map<String, Object> properties) {
+    public FileStore(ComponentCatalog catalog, FileStoreType<T> type, Map<String, Object> properties) {
         this.id = UUID.randomUUID();
-        this.type = type;
+        this.type = catalog.getId(ComponentTypes.FILE_STORE_TYPE, type);
         this.properties = type.serialiseOptions(type.parseOptions(properties));
     }
 
-    public FileStoreEntry newFile(InputStream file, String extension) {
+    public FileStoreEntry newFile(ComponentCatalog catalog, InputStream file, String extension) {
         HashFunction hashFunction = getHashFunction(CURRENT_HASH_ALGORITHM);
 
         CountingInputStream countingStream = new CountingInputStream(file);
@@ -64,24 +62,36 @@ public class FileStore<T> {
         // Save the file into the store
         String path;
         try {
-            path = this.type.save(this.getProperties(), hashingStream);
+            path = this.getStoreType(catalog).save(this.getProperties(catalog), hashingStream);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
 
-        return new FileStoreEntry(this, path, CURRENT_HASH_ALGORITHM, hashingStream.hash().toString(), countingStream.getCount(), extension);
+        return new FileStoreEntry(
+                this,
+                path,
+                CURRENT_HASH_ALGORITHM,
+                hashingStream.hash().toString(),
+                countingStream.getCount(),
+                extension
+        );
     }
 
-    public T getProperties() {
-        return this.type.parseOptions(properties);
+    public T getProperties(ComponentCatalog catalog) {
+        return this.getStoreType(catalog).parseOptions(properties);
     }
 
-    public InputStream getFile(FileStoreEntry entry) throws IOException {
-        return this.type.retrieve(this.getProperties(), entry.path);
+    public InputStream getFile(ComponentCatalog catalog, FileStoreEntry entry) throws IOException {
+        return this.getStoreType(catalog).retrieve(this.getProperties(catalog), entry.path);
     }
 
-    public void setProperties(Map<String, Object> properties) {
-        this.properties = this.type.serialiseOptions(this.type.parseOptions(properties));
+    public FileStoreType<T> getStoreType(ComponentCatalog catalog) {
+        return (FileStoreType<T>) catalog.getComponent(ComponentTypes.FILE_STORE_TYPE, this.type).orElseThrow();
+    }
+
+    public void setProperties(ComponentCatalog catalog, Map<String, Object> properties) {
+        FileStoreType<T> type = this.getStoreType(catalog);
+        this.properties = type.serialiseOptions(type.parseOptions(properties));
     }
 
     public static HashFunction getHashFunction(String algorithm) {
@@ -105,7 +115,7 @@ public class FileStore<T> {
         public void serialize(FileStore value, JsonGenerator gen, SerializationContext ctxt) throws JacksonException {
             gen.writeStartObject();
             gen.writeStringProperty("id", value.id.toString());
-            gen.writeStringProperty("type", this.componentCatalog.getId(ComponentTypes.FILE_STORE_TYPE, value.type).toString());
+            gen.writeStringProperty("type", value.type.toString());
             gen.writePOJOProperty("properties", value.properties);
             gen.writeEndObject();
         }
