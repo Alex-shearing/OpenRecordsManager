@@ -25,7 +25,7 @@ public class ComponentCatalog {
     public ComponentCatalog(PluginManager pluginManager, @Value("${workgroup.default_file_store}") UUID defaultStore) {
         this.loadCatalog(pluginManager);
 
-        if (pluginManager.checkStatus(this, defaultStore)) {
+        if (pluginManager.synchronizeWithServer(this, defaultStore)) {
             LOGGER.info("Plugin manager reported changes, reloading catalog");
             this.loadCatalog(pluginManager);
         }
