@@ -1,0 +1,10 @@
+rootProject.name = 'orm-server'
+
+// Include child projects
+include 'plugin-api'
+include 'plugins:auth-local'
+include 'plugins:auth-oidc'
+include 'plugins:defaults-aus-gov'
+include 'plugins:filestore-local'
+include 'plugins:filestore-s3'
+include 'server-core'

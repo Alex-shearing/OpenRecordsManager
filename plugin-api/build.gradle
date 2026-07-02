@@ -1,0 +1,14 @@
+plugins {
+    id 'java-library'
+}
+
+dependencies {
+    // Shared logging abstraction
+    api 'org.slf4j:slf4j-api:2.0.13'
+
+    // Google utilities (transitive across plugins and server)
+    api 'com.google.guava:guava:33.6.0-jre'
+
+    // Jackson 3.x ecosystem dependencies
+    api 'tools.jackson.core:jackson-databind:3.2.0'
+}

@@ -1,0 +1,20 @@
+plugins {
+    id 'java'
+}
+
+dependencies {
+    compileOnly project(':plugin-api')
+
+    implementation 'com.nimbusds:oauth2-oidc-sdk:11.37.2'
+}
+
+tasks.named('jar', Jar) {
+    from {
+        configurations.runtimeClasspath
+                .filter { file -> !file.path.contains("plugin-api") }
+                .collect { file -> file.isDirectory() ? file : zipTree(file) }
+    }
+
+    // Ensure duplicates are safely handled during extraction merging
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}

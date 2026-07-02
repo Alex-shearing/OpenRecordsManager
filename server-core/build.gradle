@@ -1,0 +1,87 @@
+plugins {
+    id 'org.springframework.boot' version '4.0.6'
+    id 'io.spring.dependency-management' version '1.1.7'
+    id 'java'
+}
+
+sourceSets {
+    test {
+        resources {
+            srcDir 'src/test/resources'
+        }
+    }
+}
+
+dependencies {
+    // Core Project API
+    implementation project(':plugin-api')
+
+    // Spring Boot Starter packs (Versions managed by the boot plugin matching 4.0.6)
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+
+    // Documentation
+    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:3.0.3'
+
+    // ORM Requirements
+    implementation 'jakarta.persistence:jakarta.persistence-api:3.2.0'
+    implementation 'org.hibernate.orm:hibernate-community-dialects:7.3.4.Final'
+
+    // Engine requirements
+    implementation 'org.semver4j:semver4j:6.0.0'
+    implementation 'dev.cel:cel:0.13.1'
+
+    // Database bundles
+    runtimeOnly 'org.xerial:sqlite-jdbc:3.53.1.0'
+    runtimeOnly 'com.microsoft.sqlserver:mssql-jdbc:13.4.0.jre11'
+
+    // Test Harnesses
+    testImplementation 'org.junit.jupiter:junit-jupiter:6.1.0'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+
+    // Dynamic plugin compilation triggers (Replaces 'provided' scope)
+    testRuntimeOnly 'com.h2database:h2'
+    compileOnly project(':plugins:auth-local')
+    compileOnly project(':plugins:auth-oidc')
+    compileOnly project(':plugins:defaults-aus-gov')
+    compileOnly project(':plugins:filestore-local')
+    compileOnly project(':plugins:filestore-s3')
+}
+
+// Target standard JUnit 5 Platform for tests
+tasks.named('test') {
+    useJUnitPlatform()
+}
+
+tasks.withType(ProcessResources).configureEach {
+    duplicatesStrategy = DuplicatesStrategy.INCLUDE
+}
+
+// Set runtime execution targets
+bootRun {
+    mainClass = 'com.openrecordsmanager.Main'
+    workingDir = file("${projectDir}")
+}
+
+// Task that gathers and isolates the custom internal subproject JAR files
+tasks.register('copyPlugins', Copy) {
+    def pluginProjects = [
+            project(':plugins:auth-local'),
+            project(':plugins:auth-oidc'),
+            project(':plugins:defaults-aus-gov'),
+            project(':plugins:filestore-local'),
+            project(':plugins:filestore-s3')
+    ]
+
+    // Ensure all plugin modules create their JARs first
+    dependsOn pluginProjects.collect { it.tasks.named('jar') }
+
+    // Harvest the actual built artifacts directly out of subproject compilation targets
+    from pluginProjects.collect { it.tasks.named('jar').map { jarTask -> jarTask.outputs.files } }
+    into file("${projectDir}/plugins")
+}
+
+// Automatically trigger plugin extraction whenever the app boots locally
+tasks.named('bootRun') {
+    dependsOn tasks.named('copyPlugins')
+}
