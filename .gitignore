@@ -4,6 +4,8 @@ target/
 !**/src/test/**/target/
 .kotlin
 server-core/plugins/
+server-core/logs/
+server-core/store/
 dependency-reduced-pom.xml
 *.db
 
