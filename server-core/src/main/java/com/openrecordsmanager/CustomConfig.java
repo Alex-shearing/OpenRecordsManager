@@ -1,6 +1,5 @@
 package com.openrecordsmanager;
 
-import com.openrecordsmanager.config.DatabaseConfigSource;
 import org.springframework.boot.context.properties.bind.Binder;
 import org.springframework.boot.jdbc.DataSourceBuilder;
 import org.springframework.boot.jdbc.autoconfigure.DataSourceProperties;
@@ -27,7 +26,7 @@ public class CustomConfig implements ApplicationContextInitializer<ConfigurableA
 
             JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
 
-            applicationContext.getEnvironment().getPropertySources().addLast(new DatabaseConfigSource(jdbcTemplate));
+//            applicationContext.getEnvironment().getPropertySources().addLast(new DatabaseConfigSource(jdbcTemplate));
         }
 
     }

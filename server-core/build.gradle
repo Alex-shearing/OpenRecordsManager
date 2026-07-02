@@ -49,7 +49,7 @@ dependencies {
 }
 
 // Target standard JUnit 5 Platform for tests
-tasks.named('test') {
+test {
     useJUnitPlatform()
 }
 

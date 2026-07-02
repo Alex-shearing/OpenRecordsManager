@@ -9,7 +9,7 @@ import java.util.Map;
 import java.util.UUID;
 
 @Entity
-@Table(name = "user")
+@Table(name = "user_details")
 public class User implements ObjectPropertyHolder<UserPropertyValue<?>> {
     @Id
     @JsonProperty

@@ -36,6 +36,7 @@ import java.util.jar.Manifest;
 public class PluginManager {
     private static final Logger LOGGER = LoggerFactory.getLogger(PluginManager.class);
 
+    @Nullable
     private final Path directory;
     private final PluginRepository pluginRepo;
     private final FileStoreRepository fileStoreRepo;
@@ -45,11 +46,11 @@ public class PluginManager {
 
     @Autowired
     public PluginManager(
-            @Value("${server.plugins.directory}") String pluginDirectory,
+            @Value("${server.plugins.directory:}") Optional<String> pluginDirectory,
             PluginRepository pluginRepo,
             FileStoreRepository fileStoreRepo
     ) {
-        this.directory = Path.of(pluginDirectory);
+        this.directory = pluginDirectory.map(Path::of).orElse(null);
         this.pluginRepo = pluginRepo;
         this.fileStoreRepo = fileStoreRepo;
 
@@ -57,6 +58,10 @@ public class PluginManager {
     }
 
     private LocalPluginInfo[] getLocalPlugins() {
+        if (this.directory == null) {
+            LOGGER.warn("Plugin directory not specified, plugins will not be loaded");
+            return new LocalPluginInfo[0];
+        }
         File loc = this.directory.toFile();
         if (!loc.exists() || !loc.isDirectory()) {
             LOGGER.warn("Plugin directory '{}' not found, plugins will not be loaded", this.directory);

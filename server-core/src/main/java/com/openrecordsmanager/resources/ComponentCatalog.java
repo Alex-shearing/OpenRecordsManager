@@ -22,10 +22,10 @@ public class ComponentCatalog {
 
     private Table<ComponentType<?, ?>, ResourceIdentifier, ? extends Component> components;
 
-    public ComponentCatalog(PluginManager pluginManager, @Value("${workgroup.default_file_store}") UUID defaultStore) {
+    public ComponentCatalog(PluginManager pluginManager, @Value("${workgroup.default_file_store:}") Optional<UUID> defaultStore) {
         this.loadCatalog(pluginManager);
 
-        if (pluginManager.synchronizeWithServer(this, defaultStore)) {
+        if (defaultStore.isPresent() && pluginManager.synchronizeWithServer(this, defaultStore.get())) {
             LOGGER.info("Plugin manager reported changes, reloading catalog");
             this.loadCatalog(pluginManager);
         }

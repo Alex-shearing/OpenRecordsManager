@@ -1,6 +1,5 @@
 package com.openrecordsmanager.model;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
@@ -11,7 +10,6 @@ import java.util.UUID;
 @Table(name = "user_property_value")
 public class UserPropertyValue<T> implements ObjectPropertyHolder.ObjectPropertyValue<T> {
     @Id
-    @JsonProperty
     public UUID id;
 
     @ManyToOne(optional = false)
@@ -22,9 +20,8 @@ public class UserPropertyValue<T> implements ObjectPropertyHolder.ObjectProperty
     @JoinColumn(nullable = false)
     public ObjectProperty<T> property;
 
-    @Column(nullable = false)
+    @Column(name = "property_value", nullable = false)
     @JdbcTypeCode(SqlTypes.JSON)
-    @JsonProperty
     public T value;
 
     @Deprecated

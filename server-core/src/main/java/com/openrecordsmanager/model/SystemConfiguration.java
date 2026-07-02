@@ -1,15 +1,15 @@
 package com.openrecordsmanager.model;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "system_configurations")
 public class SystemConfiguration {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
     @Column(name = "config_key", unique = true, nullable = false)
     public String configKey;
 

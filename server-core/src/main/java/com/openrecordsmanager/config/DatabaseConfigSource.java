@@ -14,6 +14,7 @@ public class DatabaseConfigSource extends EnumerablePropertySource<Object> {
     public DatabaseConfigSource(JdbcTemplate repository) {
         super("custom_config");
         this.repository = repository;
+        this.repository.execute("CREATE TABLE IF NOT EXISTS system_configurations (config_key VARCHAR(255) PRIMARY KEY, config_value VARCHAR(1000) NOT NULL);");
     }
 
     @Override

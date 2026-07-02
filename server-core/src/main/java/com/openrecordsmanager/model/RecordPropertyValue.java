@@ -28,7 +28,7 @@ public class RecordPropertyValue<T> implements ObjectPropertyHolder.ObjectProper
     @JoinColumn(nullable = false)
     public ObjectProperty<T> property;
 
-    @Column()
+    @Column(name = "property_value", nullable = false)
     @JdbcTypeCode(SqlTypes.JSON)
     public T value;
 
@@ -73,7 +73,7 @@ public class RecordPropertyValue<T> implements ObjectPropertyHolder.ObjectProper
         @Override
         public void serialize(RecordPropertyValue<?> value, JsonGenerator gen, SerializationContext ctxt) throws JacksonException {
             gen.writeStartObject();
-            
+
             gen.writePOJOProperty("type", value.property);
             gen.writePOJOProperty("value", value.getValue());
 
