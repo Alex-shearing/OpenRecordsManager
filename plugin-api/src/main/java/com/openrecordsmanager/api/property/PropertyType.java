@@ -2,7 +2,10 @@ package com.openrecordsmanager.api.property;
 
 import com.openrecordsmanager.api.list.IListElement;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 @SuppressWarnings("unused")
 public abstract class PropertyType<T> {
@@ -18,24 +21,21 @@ public abstract class PropertyType<T> {
     public static final PropertyType<String> STRING = new PropertyType<>("string") {
         @Override
         public String cast(Object value) {
-            return value instanceof String v ? v : null;
+            return value != null ? value.toString() : "";
         }
     };
 
     public static final PropertyType<Long> NUMBER = new PropertyType<>("number") {
         @Override
         public Long cast(Object value) {
-            if (value instanceof Long l) return l;
-            if (value instanceof Integer i) return i.longValue();
-
-            return null;
+            return value instanceof Number v ? v.longValue() : null;
         }
     };
 
     public static final PropertyType<Double> DECIMAL = new PropertyType<>("decimal") {
         @Override
         public Double cast(Object value) {
-            return value instanceof Double v ? v : null;
+            return value instanceof Number v ? v.doubleValue() : null;
         }
     };
 
@@ -53,20 +53,20 @@ public abstract class PropertyType<T> {
         }
     };
 
-    public static final PropertyType<List<IListElement>> LIST_MULTIPLE = new PropertyType<>("list_multiple") {
+    public static final PropertyType<Collection<IListElement>> LIST_MULTIPLE = new PropertyType<>("list_multiple") {
         @SuppressWarnings("unchecked")
         @Override
-        public List<IListElement> cast(Object value) {
-            if (value instanceof Set<?> v) {
+        public Collection<IListElement> cast(Object value) {
+            if (value instanceof Collection<?> v) {
                 if (v.isEmpty()) {
-                    return (List<IListElement>) v;
+                    return (Collection<IListElement>) v;
                 }
                 for (Object o : v) {
                     if (!(o instanceof IListElement)) {
                         return null;
                     }
                 }
-                return (List<IListElement>) v;
+                return (Collection<IListElement>) v;
             }
             return null;
         }

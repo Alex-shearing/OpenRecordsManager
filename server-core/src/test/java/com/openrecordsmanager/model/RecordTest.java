@@ -5,6 +5,7 @@ import com.openrecordsmanager.api.recordtype.SecurityFilterUsage;
 import com.openrecordsmanager.resources.ExpressionsService;
 import com.openrecordsmanager.resources.ResourceIdentifier;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -16,9 +17,12 @@ import java.util.UUID;
 class RecordTest {
 
     // Construct test user
-    private static final User TEST_USER = new User(UUID.randomUUID());
+    private User testUser;
 
-    static {
+    @BeforeEach
+    void setUp() {
+        this.testUser = new User(UUID.randomUUID());
+
         // Number property
         ObjectProperty<Long> numberProperty = new ObjectProperty<>(
                 ResourceIdentifier.valueOf("test:number_property"),
@@ -26,7 +30,7 @@ class RecordTest {
                 "Number property",
                 PropertyType.NUMBER
         );
-        TEST_USER.setProperty(numberProperty, 10L);
+        this.testUser.setProperty(numberProperty, 10L);
 
         // String property
         ObjectProperty<String> stringProperty = new ObjectProperty<>(
@@ -35,7 +39,7 @@ class RecordTest {
                 "String property",
                 PropertyType.STRING
         );
-        TEST_USER.setProperty(stringProperty, "test value");
+        this.testUser.setProperty(stringProperty, "test value");
     }
 
     @Autowired
@@ -65,11 +69,11 @@ class RecordTest {
         Record record = new Record("Record", recordType);
         record.setProperty(stringProperty, "test value");
 
-        Assertions.assertEquals(SecurityFilterUsage.SHOW_ALL, record.securityFilter(this.expressionsService, TEST_USER, record), "User should have access");
+        Assertions.assertEquals(SecurityFilterUsage.SHOW_ALL, record.securityFilter(this.expressionsService, this.testUser, record), "User should have access");
 
         record.setProperty(stringProperty, "other value");
 
-        Assertions.assertEquals(SecurityFilterUsage.HIDE_RECORD, record.securityFilter(this.expressionsService, TEST_USER, record), "User should not have access");
+        Assertions.assertEquals(SecurityFilterUsage.HIDE_RECORD, record.securityFilter(this.expressionsService, this.testUser, record), "User should not have access");
     }
 
     @Test
@@ -86,10 +90,10 @@ class RecordTest {
 
         Record record = new Record("Record", recordType);
 
-        Assertions.assertEquals(SecurityFilterUsage.HIDE_RECORD, record.securityFilter(this.expressionsService, TEST_USER, record), "User should not have access");
+        Assertions.assertEquals(SecurityFilterUsage.HIDE_RECORD, record.securityFilter(this.expressionsService, this.testUser, record), "User should not have access");
 
-        Assertions.assertNotEquals(SecurityFilterUsage.SHOW_ALL, record.securityFilter(this.expressionsService, TEST_USER, record), "User should not have access");
-        Assertions.assertNotEquals(SecurityFilterUsage.HIDE_FILES, record.securityFilter(this.expressionsService, TEST_USER, record), "User should not have access");
-        Assertions.assertNotEquals(SecurityFilterUsage.HIDE_METADATA_AND_FILES, record.securityFilter(this.expressionsService, TEST_USER, record), "User should not have access");
+        Assertions.assertNotEquals(SecurityFilterUsage.SHOW_ALL, record.securityFilter(this.expressionsService, this.testUser, record), "User should not have access");
+        Assertions.assertNotEquals(SecurityFilterUsage.HIDE_FILES, record.securityFilter(this.expressionsService, this.testUser, record), "User should not have access");
+        Assertions.assertNotEquals(SecurityFilterUsage.HIDE_METADATA_AND_FILES, record.securityFilter(this.expressionsService, this.testUser, record), "User should not have access");
     }
 }
