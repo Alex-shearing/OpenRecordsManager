@@ -2,7 +2,7 @@ package com.openrecordsmanager.plugin.defaults_aus_gov;
 
 import com.openrecordsmanager.api.BuiltinComponents;
 import com.openrecordsmanager.api.Plugin;
-import com.openrecordsmanager.api.PluginContext;
+import com.openrecordsmanager.api.RegistrationContext;
 import com.openrecordsmanager.api.recordtype.RecordTypeDefinition;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,7 +39,7 @@ public class DefaultsAusGovPlugin implements Plugin {
     }
 
     @Override
-    public void initialise(PluginContext registry) {
+    public void initialise(RegistrationContext registry) {
         LOGGER.info("Initializing plugin...");
 
         // Lists

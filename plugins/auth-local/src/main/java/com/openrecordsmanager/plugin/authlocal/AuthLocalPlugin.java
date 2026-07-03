@@ -1,7 +1,7 @@
 package com.openrecordsmanager.plugin.authlocal;
 
 import com.openrecordsmanager.api.Plugin;
-import com.openrecordsmanager.api.PluginContext;
+import com.openrecordsmanager.api.RegistrationContext;
 import com.openrecordsmanager.api.config.ConfigDefinition;
 import com.openrecordsmanager.api.config.ConfigValueType;
 import org.slf4j.Logger;
@@ -24,7 +24,7 @@ public class AuthLocalPlugin implements Plugin {
     }
 
     @Override
-    public void initialise(PluginContext registry) {
+    public void initialise(RegistrationContext registry) {
         LOGGER.info("Initializing plugin...");
 
         registry.registerConfig(CONFIG_ADMIN_ENABLED);

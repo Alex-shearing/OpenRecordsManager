@@ -1,4 +1,4 @@
-package com.openrecordsmanager.resources;
+package com.openrecordsmanager.api;
 
 import com.fasterxml.jackson.annotation.JsonValue;
 import org.jspecify.annotations.NonNull;

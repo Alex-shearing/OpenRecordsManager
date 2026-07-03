@@ -1,6 +1,6 @@
 package com.openrecordsmanager.model.util;
 
-import com.openrecordsmanager.resources.ResourceIdentifier;
+import com.openrecordsmanager.api.ResourceIdentifier;
 import org.hibernate.type.descriptor.WrapperOptions;
 import org.hibernate.type.descriptor.java.AbstractClassJavaType;
 import org.hibernate.type.descriptor.java.ImmutableMutabilityPlan;

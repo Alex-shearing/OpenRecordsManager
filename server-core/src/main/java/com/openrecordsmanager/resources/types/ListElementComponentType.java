@@ -1,19 +1,17 @@
 package com.openrecordsmanager.resources.types;
 
+import com.openrecordsmanager.api.ResourceIdentifier;
 import com.openrecordsmanager.api.list.ListElementDefinition;
+import com.openrecordsmanager.api.types.ComponentTypes;
 import com.openrecordsmanager.model.ListElement;
 import com.openrecordsmanager.model.ListType;
 import com.openrecordsmanager.model.repositories.DataRepository;
 import com.openrecordsmanager.resources.ComponentCatalog;
 import com.openrecordsmanager.resources.ExpressionsService;
-import com.openrecordsmanager.resources.ResourceIdentifier;
 
 import java.util.Optional;
 
-public class ListElementComponentType extends TemplateComponentType<ListElementDefinition, ListElement> {
-    public ListElementComponentType(String name) {
-        super(name, ListElementDefinition.class);
-    }
+public class ListElementComponentType extends ComponentBinding<ListElementDefinition, ListElement> {
 
     @Override
     public void register(DataRepository repository, ComponentCatalog catalog, ExpressionsService expressions, ResourceIdentifier id, ListElementDefinition definition) {

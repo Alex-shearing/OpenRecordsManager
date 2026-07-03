@@ -4,12 +4,13 @@ import com.google.common.collect.ImmutableTable;
 import com.google.common.collect.Table;
 import com.openrecordsmanager.api.Component;
 import com.openrecordsmanager.api.Plugin;
-import com.openrecordsmanager.api.PluginContext;
+import com.openrecordsmanager.api.RegistrationContext;
+import com.openrecordsmanager.api.ResourceIdentifier;
 import com.openrecordsmanager.api.list.ListDefinition;
+import com.openrecordsmanager.api.types.ComponentType;
+import com.openrecordsmanager.api.types.ComponentTypes;
 import com.openrecordsmanager.config.ConfigProperties;
 import com.openrecordsmanager.config.DynamicConfigService;
-import com.openrecordsmanager.resources.types.ComponentType;
-import com.openrecordsmanager.resources.types.ComponentTypes;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,7 +38,7 @@ public class ComponentCatalog {
         Builder builder = new Builder();
         for (Plugin plugin : pluginManager.getPlugins()) {
             LOGGER.info("Initializing plugin {}...", plugin.getName());
-            plugin.initialise(new PluginContextImpl(builder, plugin));
+            plugin.initialise(new RegistrationContextImpl(builder, plugin));
         }
 
         this.components = builder.table.buildOrThrow();
@@ -74,7 +75,7 @@ public class ComponentCatalog {
     private static class Builder {
         private final ImmutableTable.Builder<ComponentType<?>, ResourceIdentifier, Component> table = ImmutableTable.builder();
 
-        private void registerInstance(PluginContextImpl context, String id, Component component) {
+        private void registerInstance(RegistrationContextImpl context, String id, Component component) {
             ResourceIdentifier identifier = new ResourceIdentifier(context.plugin.getName(), id);
 
             ComponentType<? extends Component> type = ComponentTypes.fromObject(component);
@@ -94,7 +95,7 @@ public class ComponentCatalog {
         }
     }
 
-    private record PluginContextImpl(Builder builder, Plugin plugin) implements PluginContext {
+    private record RegistrationContextImpl(Builder builder, Plugin plugin) implements RegistrationContext {
         @Override
         public void registerComponent(String id, Component component) {
             this.builder.registerInstance(this, id, component);

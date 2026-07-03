@@ -2,6 +2,7 @@ package com.openrecordsmanager.controllers;
 
 import com.openrecordsmanager.api.auth.RedirectAuthProviderType;
 import com.openrecordsmanager.api.auth.UserDetails;
+import com.openrecordsmanager.api.types.ComponentTypes;
 import com.openrecordsmanager.controllers.repsonse.InternalServerErrorApiResponse;
 import com.openrecordsmanager.controllers.repsonse.NotFoundApiResponse;
 import com.openrecordsmanager.controllers.repsonse.errors.ApiError;
@@ -9,7 +10,6 @@ import com.openrecordsmanager.controllers.repsonse.errors.ApiResponseWrapper;
 import com.openrecordsmanager.model.AuthProvider;
 import com.openrecordsmanager.model.repositories.DataRepository;
 import com.openrecordsmanager.resources.ComponentCatalog;
-import com.openrecordsmanager.resources.types.ComponentTypes;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
@@ -75,7 +75,7 @@ public class AuthController {
     public ResponseEntity<Void> redirect(@PathVariable("auth_provider") UUID authProvider) {
         AuthProvider provider = this.repository.authProviderRepo.findById(authProvider)
                 .orElseThrow(() -> ApiError.notFound("authentication provider", authProvider.toString()));
-        RedirectAuthProviderType type = ComponentTypes.REDIRECT_AUTH_PROVIDER.getComponent(provider.providerType, this.catalog)
+        RedirectAuthProviderType type = this.catalog.getComponent(ComponentTypes.REDIRECT_AUTH_PROVIDER, provider.providerType)
                 .orElseThrow(() -> ApiError.serverError("authentication provider type {0} not found", provider.providerType));
 
         return ResponseEntity.status(HttpStatus.FOUND).location(type.getRedirectTo(provider)).build();
@@ -105,7 +105,7 @@ public class AuthController {
     public AuthenticationResponse callback(HttpServletRequest request, @PathVariable("auth_provider") UUID authProvider) throws URISyntaxException {
         AuthProvider provider = this.repository.authProviderRepo.findById(authProvider)
                 .orElseThrow(() -> ApiError.notFound("authentication provider", authProvider.toString()));
-        RedirectAuthProviderType type = ComponentTypes.REDIRECT_AUTH_PROVIDER.getComponent(provider.providerType, this.catalog)
+        RedirectAuthProviderType type = this.catalog.getComponent(ComponentTypes.REDIRECT_AUTH_PROVIDER, provider.providerType)
                 .orElseThrow(() -> ApiError.serverError("authentication provider type {0} not found", provider.providerType));
 
         URI fullUri = new URI(ServletUriComponentsBuilder.fromRequest(request).toUriString());

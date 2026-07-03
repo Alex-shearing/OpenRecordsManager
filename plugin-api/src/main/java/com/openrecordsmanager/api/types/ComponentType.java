@@ -1,11 +1,8 @@
-package com.openrecordsmanager.resources.types;
+package com.openrecordsmanager.api.types;
 
 import com.openrecordsmanager.api.Component;
-import com.openrecordsmanager.resources.ComponentCatalog;
-import com.openrecordsmanager.resources.ResourceIdentifier;
 
 import java.util.Objects;
-import java.util.Optional;
 
 public class ComponentType<T extends Component> {
 
@@ -19,10 +16,6 @@ public class ComponentType<T extends Component> {
 
     public <K extends Component> boolean is(K object) {
         return this.componentClass.isInstance(object);
-    }
-
-    public Optional<T> getComponent(ResourceIdentifier id, ComponentCatalog catalog) {
-        return catalog.getComponent(this, id);
     }
 
     @Override

@@ -1,19 +1,18 @@
 package com.openrecordsmanager.resources.types;
 
 import com.openrecordsmanager.api.Component;
+import com.openrecordsmanager.api.ResourceIdentifier;
+import com.openrecordsmanager.api.types.ComponentType;
+import com.openrecordsmanager.api.types.ComponentTypes;
 import com.openrecordsmanager.model.repositories.DataRepository;
 import com.openrecordsmanager.resources.ComponentCatalog;
 import com.openrecordsmanager.resources.ExpressionsService;
-import com.openrecordsmanager.resources.ResourceIdentifier;
 
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 
-public abstract class TemplateComponentType<T extends Component, D> extends ComponentType<T> {
-    public TemplateComponentType(String name, Class<T> componentClass) {
-        super(name, componentClass);
-    }
+public abstract class ComponentBinding<T extends Component, D> {
 
     /**
      * Register the component template to the database
@@ -35,13 +34,14 @@ public abstract class TemplateComponentType<T extends Component, D> extends Comp
     ) {
         if (includeDependencies) {
             for (Component dependency : definition.getDependencies()) {
-                TemplateComponentType<Component, ?> childType = ComponentTypes.registerableFromObject(dependency);
+                ComponentType<Component> childType = ComponentTypes.fromObject(dependency);
                 if (childType == null) {
                     throw new IllegalStateException("Cannot find child resource type for dependency " + dependency);
                 }
                 ResourceIdentifier dependencyId = catalog.getId(childType, dependency);
 
-                childType.register(repository, catalog, expressions, dependencyId, dependency, true);
+                ComponentBinding<Component, ?> binder = ComponentBinderRegistry.get(childType);
+                binder.register(repository, catalog, expressions, dependencyId, dependency, true);
             }
         }
 
@@ -78,21 +78,6 @@ public abstract class TemplateComponentType<T extends Component, D> extends Comp
     public abstract Optional<D> getRegistered(ResourceIdentifier id, DataRepository repo);
 
     /**
-     * Get the registered instance of the component from the database
-     *
-     * @param template the component template
-     * @param repo     the data repository
-     * @param catalog  the component catalog
-     * @return an optional instance of the registered component
-     */
-    public Optional<D> getRegistered(T template, DataRepository repo, ComponentCatalog catalog) {
-        ResourceIdentifier id = catalog.getId(this, template);
-        if (id == null) return Optional.empty();
-
-        return this.getRegistered(id, repo);
-    }
-
-    /**
      * Validates that all the dependencies of the component are registered, including the dependencies of dependencies.
      *
      * @param component  the component to confirm.
@@ -105,11 +90,15 @@ public abstract class TemplateComponentType<T extends Component, D> extends Comp
             ComponentCatalog catalog
     ) {
         for (Component dependency : collectDependencies(component, new HashSet<>())) {
-            TemplateComponentType<Component, ?> childType = ComponentTypes.registerableFromObject(dependency);
+            ComponentType<Component> childType = ComponentTypes.fromObject(dependency);
             if (childType == null) {
                 throw new IllegalStateException("Cannot find child resource type for dependency " + dependency);
             }
-            Optional<?> childComponent = childType.getRegistered(dependency, repository, catalog);
+
+            ComponentBinding<?, ?> binder = ComponentBinderRegistry.get(childType);
+            ResourceIdentifier dependencyId = catalog.getId(childType, dependency);
+            
+            Optional<?> childComponent = binder.getRegistered(dependencyId, repository);
             if (childComponent.isEmpty()) {
                 throw new IllegalStateException("Unregistered dependency " + catalog.getId(childType, dependency));
             }
@@ -132,5 +121,4 @@ public abstract class TemplateComponentType<T extends Component, D> extends Comp
         }
         return dependencies;
     }
-
 }

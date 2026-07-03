@@ -3,7 +3,7 @@ package com.openrecordsmanager.model;
 import com.openrecordsmanager.api.property.PropertyType;
 import com.openrecordsmanager.api.recordtype.SecurityFilterUsage;
 import com.openrecordsmanager.resources.ExpressionsService;
-import com.openrecordsmanager.resources.ResourceIdentifier;
+import com.openrecordsmanager.api.ResourceIdentifier;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

@@ -2,7 +2,7 @@ package com.openrecordsmanager.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.openrecordsmanager.api.recordtype.SecurityFilterUsage;
-import com.openrecordsmanager.resources.ResourceIdentifier;
+import com.openrecordsmanager.api.ResourceIdentifier;
 import jakarta.persistence.*;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;

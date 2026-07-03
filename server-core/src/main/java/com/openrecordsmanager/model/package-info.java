@@ -5,5 +5,5 @@
 package com.openrecordsmanager.model;
 
 import com.openrecordsmanager.model.util.ResourceIdentifierJavaType;
-import com.openrecordsmanager.resources.ResourceIdentifier;
+import com.openrecordsmanager.api.ResourceIdentifier;
 import org.hibernate.annotations.JavaTypeRegistration;

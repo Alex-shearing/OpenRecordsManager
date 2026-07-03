@@ -2,7 +2,7 @@ package com.openrecordsmanager.api;
 
 import com.openrecordsmanager.api.config.ConfigDefinition;
 
-public interface PluginContext {
+public interface RegistrationContext {
     void registerComponent(String id, Component component);
 
     default void registerConfig(ConfigDefinition<?> config) {

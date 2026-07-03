@@ -2,7 +2,7 @@ package com.openrecordsmanager.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import com.openrecordsmanager.resources.ResourceIdentifier;
+import com.openrecordsmanager.api.ResourceIdentifier;
 import jakarta.persistence.*;
 
 import java.util.ArrayList;

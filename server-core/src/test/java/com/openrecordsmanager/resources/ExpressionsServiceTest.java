@@ -1,5 +1,6 @@
 package com.openrecordsmanager.resources;
 
+import com.openrecordsmanager.api.ResourceIdentifier;
 import com.openrecordsmanager.api.list.IListElement;
 import com.openrecordsmanager.api.property.PropertyType;
 import com.openrecordsmanager.model.*;
@@ -42,28 +43,28 @@ class ExpressionsServiceTest {
 
         // Number property
         ObjectProperty<Long> numberProperty = new ObjectProperty<>(
-                ResourceIdentifier.valueOf("test:number_property"),
+                com.openrecordsmanager.api.ResourceIdentifier.valueOf("test:number_property"),
                 "Number property", "Number property", PropertyType.NUMBER
         );
         this.testUser.setProperty(numberProperty, 10L);
 
         // String property
         ObjectProperty<String> stringProperty = new ObjectProperty<>(
-                ResourceIdentifier.valueOf("test:string_property"),
+                com.openrecordsmanager.api.ResourceIdentifier.valueOf("test:string_property"),
                 "String property", "String property", PropertyType.STRING
         );
         this.testUser.setProperty(stringProperty, "test value");
 
         // List property
         ObjectProperty<IListElement> listProperty = new ObjectProperty<>(
-                ResourceIdentifier.valueOf("test:list_property"),
+                com.openrecordsmanager.api.ResourceIdentifier.valueOf("test:list_property"),
                 "List property", "List property", PropertyType.LIST_ITEM
         );
         this.testUser.setProperty(listProperty, LIST_ITEM_2);
 
         // List multiple property
         ObjectProperty<Collection<IListElement>> listMultiple = new ObjectProperty<>(
-                ResourceIdentifier.valueOf("test:list_multiple_property"),
+                com.openrecordsmanager.api.ResourceIdentifier.valueOf("test:list_multiple_property"),
                 "List multiple property", "List multiple property", PropertyType.LIST_MULTIPLE
         );
         this.testUser.setProperty(listMultiple, List.of(LIST_ITEM_1, LIST_ITEM_3));
@@ -115,7 +116,7 @@ class ExpressionsServiceTest {
 
     @Test
     void checkPropertyExpression_withRecord() {
-        ObjectProperty<Boolean> recordProperty = new ObjectProperty<>(ResourceIdentifier.valueOf("test:record_boolean"), "Record Boolean", "Record Boolean", PropertyType.BOOLEAN);
+        ObjectProperty<Boolean> recordProperty = new ObjectProperty<>(com.openrecordsmanager.api.ResourceIdentifier.valueOf("test:record_boolean"), "Record Boolean", "Record Boolean", PropertyType.BOOLEAN);
 
         Record record = new Record("Record title", null);
         record.setProperty(recordProperty, false);

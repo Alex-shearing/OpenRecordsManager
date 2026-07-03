@@ -1,13 +1,13 @@
 package com.openrecordsmanager.controllers;
 
+import com.openrecordsmanager.api.ResourceIdentifier;
+import com.openrecordsmanager.api.types.ComponentTypes;
 import com.openrecordsmanager.controllers.repsonse.InternalServerErrorApiResponse;
 import com.openrecordsmanager.controllers.repsonse.NotFoundApiResponse;
 import com.openrecordsmanager.controllers.repsonse.errors.ApiError;
 import com.openrecordsmanager.model.RecordType;
 import com.openrecordsmanager.model.repositories.DataRepository;
 import com.openrecordsmanager.resources.ExpressionsService;
-import com.openrecordsmanager.resources.ResourceIdentifier;
-import com.openrecordsmanager.resources.types.ComponentTypes;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import org.springframework.http.MediaType;

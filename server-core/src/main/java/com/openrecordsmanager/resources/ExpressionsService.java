@@ -2,11 +2,11 @@ package com.openrecordsmanager.resources;
 
 import com.google.common.collect.ImmutableMap;
 import com.openrecordsmanager.api.expression.ExpressionBuilder;
+import com.openrecordsmanager.api.types.ComponentTypes;
 import com.openrecordsmanager.model.ListElement;
 import com.openrecordsmanager.model.Record;
 import com.openrecordsmanager.model.User;
 import com.openrecordsmanager.model.repositories.ListElementRepository;
-import com.openrecordsmanager.resources.types.ComponentTypes;
 import dev.cel.common.CelAbstractSyntaxTree;
 import dev.cel.common.CelFunctionDecl;
 import dev.cel.common.CelOverloadDecl;
@@ -179,7 +179,7 @@ public class ExpressionsService {
                 CelFunctionBinding.from(
                         "get_list",
                         String.class,
-                        (id) -> listElementRepo.findById(ResourceIdentifier.valueOf(id)).orElse(null)
+                        (id) -> listElementRepo.findById(com.openrecordsmanager.api.ResourceIdentifier.valueOf(id)).orElse(null)
                 )
         );
     }

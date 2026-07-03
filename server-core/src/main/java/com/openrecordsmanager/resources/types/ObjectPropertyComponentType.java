@@ -1,20 +1,17 @@
 package com.openrecordsmanager.resources.types;
 
+import com.openrecordsmanager.api.ResourceIdentifier;
 import com.openrecordsmanager.api.property.PropertyDefinition;
+import com.openrecordsmanager.api.types.ComponentTypes;
 import com.openrecordsmanager.model.ListType;
 import com.openrecordsmanager.model.ObjectProperty;
 import com.openrecordsmanager.model.repositories.DataRepository;
 import com.openrecordsmanager.resources.ComponentCatalog;
 import com.openrecordsmanager.resources.ExpressionsService;
-import com.openrecordsmanager.resources.ResourceIdentifier;
 
 import java.util.Optional;
 
-public class ObjectPropertyComponentType extends TemplateComponentType<PropertyDefinition<?>, ObjectProperty<?>> {
-    @SuppressWarnings("unchecked")
-    public ObjectPropertyComponentType(String name) {
-        super(name, (Class<PropertyDefinition<?>>) (Class<?>) PropertyDefinition.class);
-    }
+public class ObjectPropertyComponentType extends ComponentBinding<PropertyDefinition<?>, ObjectProperty<?>> {
 
     @Override
     protected void register(
@@ -36,7 +33,9 @@ public class ObjectPropertyComponentType extends TemplateComponentType<PropertyD
     ) {
         ListType listType = null;
         if (definition.getType().allowsList() && definition.getListType() != null) {
-            listType = ComponentTypes.LIST.getRegistered(definition.getListType(), repository, catalog)
+            ResourceIdentifier childId = catalog.getId(ComponentTypes.LIST, definition.getListType());
+
+            listType = ComponentBinderRegistry.LIST.getRegistered(childId, repository)
                     .orElse(null);
         }
 

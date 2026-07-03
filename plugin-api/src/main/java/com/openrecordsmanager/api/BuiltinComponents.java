@@ -32,7 +32,7 @@ public class BuiltinComponents implements Plugin {
     }
 
     @Override
-    public void initialise(PluginContext registry) {
+    public void initialise(RegistrationContext registry) {
         registry.registerComponent("notes", NOTES);
         registry.registerComponent("date_registered", DATE_REGISTERED);
         registry.registerComponent("date_created", DATE_CREATED);

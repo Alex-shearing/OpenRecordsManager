@@ -1,6 +1,6 @@
 package com.openrecordsmanager.model;
 
-import com.openrecordsmanager.resources.ResourceIdentifier;
+import com.openrecordsmanager.api.ResourceIdentifier;
 
 import java.util.Map;
 import java.util.Objects;

@@ -1,6 +1,6 @@
 package com.openrecordsmanager.model.util;
 
-import com.openrecordsmanager.resources.ResourceIdentifier;
+import com.openrecordsmanager.api.ResourceIdentifier;
 import jakarta.persistence.AttributeConverter;
 import jakarta.persistence.Converter;
 

@@ -2,7 +2,7 @@ package com.openrecordsmanager.model;
 
 import com.openrecordsmanager.api.auth.AuthProviderInstance;
 import com.openrecordsmanager.model.util.ResourceIdentifierConverter;
-import com.openrecordsmanager.resources.ResourceIdentifier;
+import com.openrecordsmanager.api.ResourceIdentifier;
 import jakarta.persistence.*;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;

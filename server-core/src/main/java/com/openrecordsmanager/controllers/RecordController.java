@@ -1,5 +1,7 @@
 package com.openrecordsmanager.controllers;
 
+import com.openrecordsmanager.api.ResourceIdentifier;
+import com.openrecordsmanager.api.types.ComponentTypes;
 import com.openrecordsmanager.config.ConfigProperties;
 import com.openrecordsmanager.config.DynamicConfigService;
 import com.openrecordsmanager.controllers.repsonse.InternalServerErrorApiResponse;
@@ -9,8 +11,6 @@ import com.openrecordsmanager.model.*;
 import com.openrecordsmanager.model.Record;
 import com.openrecordsmanager.model.repositories.DataRepository;
 import com.openrecordsmanager.resources.ComponentCatalog;
-import com.openrecordsmanager.resources.ResourceIdentifier;
-import com.openrecordsmanager.resources.types.ComponentTypes;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import org.springframework.core.io.Resource;

@@ -1,5 +1,6 @@
 package com.openrecordsmanager.resources;
 
+import com.openrecordsmanager.api.ResourceIdentifier;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Component;
 

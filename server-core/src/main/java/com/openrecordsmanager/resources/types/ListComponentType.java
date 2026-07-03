@@ -1,18 +1,15 @@
 package com.openrecordsmanager.resources.types;
 
+import com.openrecordsmanager.api.ResourceIdentifier;
 import com.openrecordsmanager.api.list.ListDefinition;
 import com.openrecordsmanager.model.ListType;
 import com.openrecordsmanager.model.repositories.DataRepository;
 import com.openrecordsmanager.resources.ComponentCatalog;
 import com.openrecordsmanager.resources.ExpressionsService;
-import com.openrecordsmanager.resources.ResourceIdentifier;
 
 import java.util.Optional;
 
-public class ListComponentType extends TemplateComponentType<ListDefinition, ListType> {
-    public ListComponentType(String name) {
-        super(name, ListDefinition.class);
-    }
+public class ListComponentType extends ComponentBinding<ListDefinition, ListType> {
 
     @Override
     public void register(DataRepository repository, ComponentCatalog catalog, ExpressionsService expressions, ResourceIdentifier id, ListDefinition definition) {
@@ -21,7 +18,8 @@ public class ListComponentType extends TemplateComponentType<ListDefinition, Lis
 
         definition.defaultEntries.forEach((s, listItem) -> {
             ResourceIdentifier childId = new ResourceIdentifier(id.source(), s);
-            ComponentTypes.LIST_ELEMENT.register(repository, catalog, expressions, childId, listItem, false);
+
+            ComponentBinderRegistry.LIST_ELEMENT.register(repository, catalog, expressions, childId, listItem, false);
         });
 
     }
