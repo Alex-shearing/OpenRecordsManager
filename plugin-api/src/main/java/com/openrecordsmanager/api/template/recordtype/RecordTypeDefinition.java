@@ -1,12 +1,12 @@
-package com.openrecordsmanager.api.recordtype;
+package com.openrecordsmanager.api.template.recordtype;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonSetter;
 import com.openrecordsmanager.api.Component;
 import com.openrecordsmanager.api.ComponentReference;
-import com.openrecordsmanager.api.expression.ExpressionBuilder;
-import com.openrecordsmanager.api.property.PropertyDefinition;
+import com.openrecordsmanager.api.template.expression.ExpressionBuilder;
+import com.openrecordsmanager.api.template.property.PropertyDefinition;
 import org.jspecify.annotations.Nullable;
 import tools.jackson.databind.annotation.JsonDeserialize;
 import tools.jackson.databind.annotation.JsonPOJOBuilder;
@@ -148,7 +148,7 @@ public final class RecordTypeDefinition implements Component {
 
         @JsonIgnore
         public <T> Builder property(ComponentReference<PropertyDefinition<T>> property, T defaultValue) {
-            this.properties.put(property.map(def -> def), defaultValue);
+            this.properties.put(property.widen(def -> def), defaultValue);
             return this;
         }
 

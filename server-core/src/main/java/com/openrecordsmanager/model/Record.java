@@ -1,6 +1,6 @@
 package com.openrecordsmanager.model;
 
-import com.openrecordsmanager.api.recordtype.SecurityFilterUsage;
+import com.openrecordsmanager.api.template.recordtype.SecurityFilterUsage;
 import com.openrecordsmanager.resources.ExpressionsService;
 import jakarta.persistence.*;
 import org.jspecify.annotations.Nullable;

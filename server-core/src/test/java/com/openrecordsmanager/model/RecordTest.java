@@ -1,9 +1,9 @@
 package com.openrecordsmanager.model;
 
-import com.openrecordsmanager.api.property.PropertyType;
-import com.openrecordsmanager.api.recordtype.SecurityFilterUsage;
-import com.openrecordsmanager.resources.ExpressionsService;
 import com.openrecordsmanager.api.ResourceIdentifier;
+import com.openrecordsmanager.api.template.property.PropertyType;
+import com.openrecordsmanager.api.template.recordtype.SecurityFilterUsage;
+import com.openrecordsmanager.resources.ExpressionsService;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

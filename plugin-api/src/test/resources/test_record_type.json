@@ -8,6 +8,7 @@
     {
       "type": "object_properties",
       "id": "test:user_email_property"
-    }
+    },
+    "object_properties/test:user_email_property_2"
   ]
 }

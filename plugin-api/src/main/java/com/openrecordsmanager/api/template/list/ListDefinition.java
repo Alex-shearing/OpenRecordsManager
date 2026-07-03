@@ -1,4 +1,4 @@
-package com.openrecordsmanager.api.list;
+package com.openrecordsmanager.api.template.list;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.google.common.collect.ImmutableMap;

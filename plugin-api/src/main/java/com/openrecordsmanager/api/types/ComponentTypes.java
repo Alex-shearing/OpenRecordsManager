@@ -5,10 +5,10 @@ import com.openrecordsmanager.api.auth.InputAuthProviderType;
 import com.openrecordsmanager.api.auth.RedirectAuthProviderType;
 import com.openrecordsmanager.api.config.ConfigDefinition;
 import com.openrecordsmanager.api.filestore.FileStoreType;
-import com.openrecordsmanager.api.list.ListDefinition;
-import com.openrecordsmanager.api.list.ListElementDefinition;
-import com.openrecordsmanager.api.property.PropertyDefinition;
-import com.openrecordsmanager.api.recordtype.RecordTypeDefinition;
+import com.openrecordsmanager.api.template.list.ListDefinition;
+import com.openrecordsmanager.api.template.list.ListElementDefinition;
+import com.openrecordsmanager.api.template.property.PropertyDefinition;
+import com.openrecordsmanager.api.template.recordtype.RecordTypeDefinition;
 import org.jspecify.annotations.Nullable;
 
 import java.util.Objects;
@@ -42,11 +42,8 @@ public interface ComponentTypes {
     @SuppressWarnings("unchecked")
     static <K extends Component> ComponentType<K> fromObject(K object) {
         for (ComponentType<?> value : VALUES) {
-            if (value.is(object)) {
-                return (ComponentType<K>) value;
-            }
+            if (value.is(object)) return (ComponentType<K>) value;
         }
-
         return null;
     }
 }

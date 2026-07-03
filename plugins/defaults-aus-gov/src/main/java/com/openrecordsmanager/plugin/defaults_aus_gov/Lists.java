@@ -1,6 +1,6 @@
 package com.openrecordsmanager.plugin.defaults_aus_gov;
 
-import com.openrecordsmanager.api.list.ListDefinition;
+import com.openrecordsmanager.api.template.list.ListDefinition;
 
 import java.util.*;
 

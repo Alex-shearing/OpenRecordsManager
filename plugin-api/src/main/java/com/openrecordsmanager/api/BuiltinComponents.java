@@ -1,7 +1,7 @@
 package com.openrecordsmanager.api;
 
-import com.openrecordsmanager.api.property.PropertyDefinition;
-import com.openrecordsmanager.api.property.PropertyType;
+import com.openrecordsmanager.api.template.property.PropertyDefinition;
+import com.openrecordsmanager.api.template.property.PropertyType;
 
 import java.util.Date;
 

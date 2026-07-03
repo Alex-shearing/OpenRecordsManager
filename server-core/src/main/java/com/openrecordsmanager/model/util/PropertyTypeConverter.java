@@ -1,6 +1,6 @@
 package com.openrecordsmanager.model.util;
 
-import com.openrecordsmanager.api.property.PropertyType;
+import com.openrecordsmanager.api.template.property.PropertyType;
 import jakarta.persistence.AttributeConverter;
 import jakarta.persistence.Converter;
 

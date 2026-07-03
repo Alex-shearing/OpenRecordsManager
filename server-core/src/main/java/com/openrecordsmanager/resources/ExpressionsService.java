@@ -1,7 +1,7 @@
 package com.openrecordsmanager.resources;
 
 import com.google.common.collect.ImmutableMap;
-import com.openrecordsmanager.api.expression.ExpressionBuilder;
+import com.openrecordsmanager.api.template.expression.ExpressionBuilder;
 import com.openrecordsmanager.api.types.ComponentTypes;
 import com.openrecordsmanager.model.ListElement;
 import com.openrecordsmanager.model.Record;

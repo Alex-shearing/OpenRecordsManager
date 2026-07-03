@@ -1,4 +1,4 @@
-package com.openrecordsmanager.api.recordtype;
+package com.openrecordsmanager.api.template.recordtype;
 
 public enum SecurityFilterUsage {
     /**

@@ -1,7 +1,7 @@
 package com.openrecordsmanager.resources.types;
 
 import com.openrecordsmanager.api.ResourceIdentifier;
-import com.openrecordsmanager.api.list.ListElementDefinition;
+import com.openrecordsmanager.api.template.list.ListElementDefinition;
 import com.openrecordsmanager.model.ListElement;
 import com.openrecordsmanager.model.ListType;
 import com.openrecordsmanager.model.repositories.DataRepository;

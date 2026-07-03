@@ -2,8 +2,8 @@ package com.openrecordsmanager.resources.types;
 
 import com.openrecordsmanager.api.ComponentReference;
 import com.openrecordsmanager.api.ResourceIdentifier;
-import com.openrecordsmanager.api.property.PropertyDefinition;
-import com.openrecordsmanager.api.recordtype.RecordTypeDefinition;
+import com.openrecordsmanager.api.template.property.PropertyDefinition;
+import com.openrecordsmanager.api.template.recordtype.RecordTypeDefinition;
 import com.openrecordsmanager.model.ObjectProperty;
 import com.openrecordsmanager.model.RecordType;
 import com.openrecordsmanager.model.RecordTypeProperty;

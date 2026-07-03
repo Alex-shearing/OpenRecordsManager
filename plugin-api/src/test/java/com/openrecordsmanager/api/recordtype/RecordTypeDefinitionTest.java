@@ -3,6 +3,7 @@ package com.openrecordsmanager.api.recordtype;
 import com.openrecordsmanager.api.Component;
 import com.openrecordsmanager.api.ComponentReference;
 import com.openrecordsmanager.api.ResourceIdentifier;
+import com.openrecordsmanager.api.template.recordtype.RecordTypeDefinition;
 import com.openrecordsmanager.api.types.ComponentTypes;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -16,6 +17,7 @@ class RecordTypeDefinitionTest {
                 .description("Test record description")
                 .allowedContentTypes("application/json")
                 .property(ComponentReference.reference(ComponentTypes.PROPERTY, ResourceIdentifier.valueOf("test:user_email_property")))
+                .property(ComponentReference.reference(ComponentTypes.PROPERTY, ResourceIdentifier.valueOf("test:user_email_property_2")))
                 .build();
 
         Assertions.assertEquals(codeType.name(), type.name(), "Names should be equal");

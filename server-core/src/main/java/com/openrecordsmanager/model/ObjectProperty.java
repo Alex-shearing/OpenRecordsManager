@@ -1,9 +1,9 @@
 package com.openrecordsmanager.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.openrecordsmanager.api.property.PropertyType;
-import com.openrecordsmanager.model.util.PropertyTypeConverter;
 import com.openrecordsmanager.api.ResourceIdentifier;
+import com.openrecordsmanager.api.template.property.PropertyType;
+import com.openrecordsmanager.model.util.PropertyTypeConverter;
 import jakarta.persistence.*;
 import org.hibernate.annotations.JavaType;
 import org.hibernate.annotations.JdbcTypeCode;

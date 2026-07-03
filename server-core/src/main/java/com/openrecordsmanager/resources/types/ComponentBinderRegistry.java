@@ -1,10 +1,10 @@
 package com.openrecordsmanager.resources.types;
 
 import com.openrecordsmanager.api.Component;
-import com.openrecordsmanager.api.list.ListDefinition;
-import com.openrecordsmanager.api.list.ListElementDefinition;
-import com.openrecordsmanager.api.property.PropertyDefinition;
-import com.openrecordsmanager.api.recordtype.RecordTypeDefinition;
+import com.openrecordsmanager.api.template.list.ListDefinition;
+import com.openrecordsmanager.api.template.list.ListElementDefinition;
+import com.openrecordsmanager.api.template.property.PropertyDefinition;
+import com.openrecordsmanager.api.template.recordtype.RecordTypeDefinition;
 import com.openrecordsmanager.api.types.ComponentType;
 import com.openrecordsmanager.api.types.ComponentTypes;
 import com.openrecordsmanager.model.ListElement;

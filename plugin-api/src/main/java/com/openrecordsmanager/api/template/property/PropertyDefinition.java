@@ -1,11 +1,11 @@
-package com.openrecordsmanager.api.property;
+package com.openrecordsmanager.api.template.property;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.openrecordsmanager.api.Component;
 import com.openrecordsmanager.api.ComponentReference;
-import com.openrecordsmanager.api.expression.ExpressionBuilder;
-import com.openrecordsmanager.api.list.ListDefinition;
+import com.openrecordsmanager.api.template.expression.ExpressionBuilder;
+import com.openrecordsmanager.api.template.list.ListDefinition;
 import org.jspecify.annotations.Nullable;
 import tools.jackson.databind.annotation.JsonDeserialize;
 import tools.jackson.databind.annotation.JsonPOJOBuilder;
@@ -140,7 +140,7 @@ public class PropertyDefinition<T> implements Component {
             this.description = description;
             return this;
         }
-        
+
         public Builder<T> listType(ComponentReference<ListDefinition> listType) {
             if (!this.type.allowsList()) {
                 throw new IllegalArgumentException("listType can only be used for list or list item");

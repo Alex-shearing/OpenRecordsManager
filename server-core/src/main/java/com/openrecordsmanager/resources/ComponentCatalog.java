@@ -3,7 +3,7 @@ package com.openrecordsmanager.resources;
 import com.google.common.collect.ImmutableTable;
 import com.google.common.collect.Table;
 import com.openrecordsmanager.api.*;
-import com.openrecordsmanager.api.list.ListDefinition;
+import com.openrecordsmanager.api.template.list.ListDefinition;
 import com.openrecordsmanager.api.types.ComponentType;
 import com.openrecordsmanager.api.types.ComponentTypes;
 import com.openrecordsmanager.config.ConfigProperties;
@@ -87,7 +87,7 @@ public class ComponentCatalog implements ComponentAccess {
 
             // List specific registration to all list children
             if (component instanceof ListDefinition def) {
-                def.defaultEntries.forEach((elId, listItemDef) -> registerInstance(context, elId, listItemDef));
+                def.defaultEntries.forEach((eId, eDef) -> registerInstance(context, eId, eDef));
             }
         }
     }

@@ -15,22 +15,18 @@ public record ResourceIdentifier(String source, String item) implements Serializ
         this.item = validateIdentifier(item);
     }
 
+    public ResourceIdentifier(ResourceIdentifier identifier) {
+        this(identifier.source, identifier.item);
+    }
+
     @JsonCreator
-    public ResourceIdentifier(String identifier) {
+    public static ResourceIdentifier valueOf(String identifier) {
         String[] parts = identifier.split(":");
         if (parts.length != 2) {
             throw new IllegalArgumentException(String.format("Resource identifier '%s' is invalid. Could not split correctly", identifier));
         }
 
-        this(parts[0], parts[1]);
-    }
-
-    public ResourceIdentifier(ResourceIdentifier identifier) {
-        this(identifier.source, identifier.item);
-    }
-
-    public static ResourceIdentifier valueOf(String string) {
-        return new ResourceIdentifier(string);
+        return new ResourceIdentifier(parts[0], parts[1]);
     }
 
     @Override

@@ -1,4 +1,4 @@
-package com.openrecordsmanager.api.list;
+package com.openrecordsmanager.api.template.list;
 
 import com.openrecordsmanager.api.Component;
 import com.openrecordsmanager.api.ComponentReference;

@@ -3,7 +3,7 @@ package com.openrecordsmanager.plugin.defaults_aus_gov;
 import com.openrecordsmanager.api.BuiltinComponents;
 import com.openrecordsmanager.api.Plugin;
 import com.openrecordsmanager.api.RegistrationContext;
-import com.openrecordsmanager.api.recordtype.RecordTypeDefinition;
+import com.openrecordsmanager.api.template.recordtype.RecordTypeDefinition;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

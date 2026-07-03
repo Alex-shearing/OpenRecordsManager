@@ -1,7 +1,7 @@
-package com.openrecordsmanager.api.property;
+package com.openrecordsmanager.api.template.property;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.openrecordsmanager.api.list.IListElement;
+import com.openrecordsmanager.api.template.list.IListElement;
 
 import java.util.*;
 

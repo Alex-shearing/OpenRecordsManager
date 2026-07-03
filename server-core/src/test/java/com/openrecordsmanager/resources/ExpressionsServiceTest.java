@@ -1,8 +1,8 @@
 package com.openrecordsmanager.resources;
 
 import com.openrecordsmanager.api.ResourceIdentifier;
-import com.openrecordsmanager.api.list.IListElement;
-import com.openrecordsmanager.api.property.PropertyType;
+import com.openrecordsmanager.api.template.list.IListElement;
+import com.openrecordsmanager.api.template.property.PropertyType;
 import com.openrecordsmanager.model.*;
 import com.openrecordsmanager.model.Record;
 import org.junit.jupiter.api.Assertions;
