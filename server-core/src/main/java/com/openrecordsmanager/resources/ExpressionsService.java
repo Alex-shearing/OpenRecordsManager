@@ -26,7 +26,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.text.MessageFormat;
-import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
@@ -34,12 +33,12 @@ import java.util.UUID;
 public class ExpressionsService {
     private static final Logger LOGGER = LoggerFactory.getLogger(ExpressionsService.class);
 
-    private final ComponentCatalog registry;
+    private final ComponentCatalog catalog;
     private final CelCompiler celCompiler;
     private final CelRuntime celRuntime;
 
-    public ExpressionsService(ComponentCatalog registry, ListElementRepository listElementRepo) {
-        this.registry = registry;
+    public ExpressionsService(ComponentCatalog catalog, ListElementRepository listElementRepo) {
+        this.catalog = catalog;
         this.celCompiler = CelCompilerFactory.standardCelCompilerBuilder()
                 .addVar("value", SimpleType.DYN)
                 .addVar("principal", CelProtoTypes.createMap(CelProtoTypes.STRING, CelProtoTypes.DYN))
@@ -58,8 +57,8 @@ public class ExpressionsService {
         }
         return MessageFormat.format(
                 builder.filter(),
-                Arrays.stream(builder.dependencies())
-                        .map(property -> "'" + registry.getId(ComponentTypes.PROPERTY, property) + "'")
+                builder.dependencies().stream()
+                        .map(property -> "'" + catalog.getId(ComponentTypes.PROPERTY, property.getComponent(this.catalog)) + "'")
                         .toArray()
         );
     }

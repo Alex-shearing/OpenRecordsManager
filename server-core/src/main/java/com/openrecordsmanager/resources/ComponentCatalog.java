@@ -2,10 +2,7 @@ package com.openrecordsmanager.resources;
 
 import com.google.common.collect.ImmutableTable;
 import com.google.common.collect.Table;
-import com.openrecordsmanager.api.Component;
-import com.openrecordsmanager.api.Plugin;
-import com.openrecordsmanager.api.RegistrationContext;
-import com.openrecordsmanager.api.ResourceIdentifier;
+import com.openrecordsmanager.api.*;
 import com.openrecordsmanager.api.list.ListDefinition;
 import com.openrecordsmanager.api.types.ComponentType;
 import com.openrecordsmanager.api.types.ComponentTypes;
@@ -19,7 +16,7 @@ import org.springframework.stereotype.Service;
 import java.util.*;
 
 @Service
-public class ComponentCatalog {
+public class ComponentCatalog implements ComponentAccess {
     private static final Logger LOGGER = LoggerFactory.getLogger(ComponentCatalog.class);
 
     private Table<ComponentType<?>, ResourceIdentifier, ? extends Component> components;

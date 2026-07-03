@@ -10,8 +10,8 @@ import com.openrecordsmanager.controllers.repsonse.errors.ApiError;
 import com.openrecordsmanager.model.repositories.DataRepository;
 import com.openrecordsmanager.resources.ComponentCatalog;
 import com.openrecordsmanager.resources.ExpressionsService;
+import com.openrecordsmanager.resources.types.ComponentBinder;
 import com.openrecordsmanager.resources.types.ComponentBinderRegistry;
-import com.openrecordsmanager.resources.types.ComponentBinding;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import org.springframework.http.MediaType;
@@ -65,7 +65,7 @@ public class TemplateController {
         if (type == null) {
             throw ApiError.notFound("template type", typeName);
         }
-        ComponentBinding<?, ?> binding = ComponentBinderRegistry.get(type);
+        ComponentBinder<?, ?> binding = ComponentBinderRegistry.get(type);
 
         return binding.getRegistered(templateId, this.repository)
                 .orElseThrow(() -> ApiError.notFound(type, templateId));
@@ -83,7 +83,7 @@ public class TemplateController {
         if (type == null) {
             throw ApiError.notFound("template type", typeName);
         }
-        ComponentBinding<Component, ?> binding = ComponentBinderRegistry.get(type);
+        ComponentBinder<Component, ?> binding = ComponentBinderRegistry.get(type);
 
 
         Component template = this.catalog.getComponent(type, templateId)

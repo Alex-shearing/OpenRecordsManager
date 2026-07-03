@@ -30,6 +30,7 @@ public interface ComponentTypes {
     };
 
     @Nullable
+    @SuppressWarnings("unchecked")
     static ComponentType<Component> fromName(String name) {
         for (ComponentType<?> value : VALUES) {
             if (Objects.equals(value.name, name)) return (ComponentType<Component>) value;

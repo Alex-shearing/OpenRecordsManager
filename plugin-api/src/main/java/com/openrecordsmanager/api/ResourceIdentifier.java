@@ -1,5 +1,6 @@
 package com.openrecordsmanager.api;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import org.jspecify.annotations.NonNull;
 
@@ -14,6 +15,7 @@ public record ResourceIdentifier(String source, String item) implements Serializ
         this.item = validateIdentifier(item);
     }
 
+    @JsonCreator
     public ResourceIdentifier(String identifier) {
         String[] parts = identifier.split(":");
         if (parts.length != 2) {

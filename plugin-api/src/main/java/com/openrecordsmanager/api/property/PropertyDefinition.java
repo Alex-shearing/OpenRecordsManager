@@ -1,17 +1,16 @@
 package com.openrecordsmanager.api.property;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.openrecordsmanager.api.Component;
+import com.openrecordsmanager.api.ComponentReference;
 import com.openrecordsmanager.api.expression.ExpressionBuilder;
 import com.openrecordsmanager.api.list.ListDefinition;
 import org.jspecify.annotations.Nullable;
 import tools.jackson.databind.annotation.JsonDeserialize;
 import tools.jackson.databind.annotation.JsonPOJOBuilder;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 
 @JsonDeserialize(builder = PropertyDefinition.Builder.class)
 public class PropertyDefinition<T> implements Component {
@@ -19,7 +18,7 @@ public class PropertyDefinition<T> implements Component {
     private final String name;
     private final String description;
     @Nullable
-    private final ListDefinition listType;
+    private final ComponentReference<ListDefinition> listType;
     @Nullable
     private final ExpressionBuilder validator;
     @Nullable
@@ -27,17 +26,16 @@ public class PropertyDefinition<T> implements Component {
     @Nullable
     private final ExpressionBuilder securityFilter;
 
-    private final Set<Component> dependencies = new HashSet<>();
+    private final Set<ComponentReference<? extends Component>> dependencies = new HashSet<>();
 
     private PropertyDefinition(
             PropertyType<T> type,
             String name,
             String description,
-            @Nullable ListDefinition listType,
+            @Nullable ComponentReference<ListDefinition> listType,
             @Nullable ExpressionBuilder validator,
             @Nullable T defaultValue,
-            @Nullable ExpressionBuilder securityFilter,
-            Set<Component> additionalDependencies
+            @Nullable ExpressionBuilder securityFilter
     ) {
         Objects.requireNonNull(type, "Property 'type' must not be null");
         Objects.requireNonNull(name, "Property 'name' must not be null");
@@ -52,9 +50,8 @@ public class PropertyDefinition<T> implements Component {
         this.securityFilter = securityFilter;
 
         if (listType != null) this.dependencies.add(listType);
-        if (validator != null) this.dependencies.addAll(List.of(validator.dependencies()));
-        if (securityFilter != null) this.dependencies.addAll(List.of(securityFilter.dependencies()));
-        this.dependencies.addAll(additionalDependencies);
+        if (validator != null) this.dependencies.addAll(validator.dependencies());
+        if (securityFilter != null) this.dependencies.addAll(securityFilter.dependencies());
     }
 
     public PropertyType<T> getType() {
@@ -69,7 +66,7 @@ public class PropertyDefinition<T> implements Component {
         return description;
     }
 
-    public @Nullable ListDefinition getListType() {
+    public @Nullable ComponentReference<ListDefinition> getListType() {
         return listType;
     }
 
@@ -85,7 +82,7 @@ public class PropertyDefinition<T> implements Component {
         return securityFilter;
     }
 
-    public Set<Component> getDependencies() {
+    public Set<ComponentReference<? extends Component>> getDependencies() {
         return dependencies;
     }
 
@@ -115,18 +112,16 @@ public class PropertyDefinition<T> implements Component {
         private PropertyType<T> type;
         private String name;
         private String description = "";
-        private ListDefinition listType = null;
+        private ComponentReference<ListDefinition> listType = null;
         private ExpressionBuilder validator = null;
         private T defaultValue = null;
         private ExpressionBuilder securityFilter = null;
-
-        private final Set<Component> dependencies = new HashSet<>();
 
         private Builder(String name, PropertyType<T> type) {
             this.name = name;
             this.type = type;
         }
-        
+
         @JsonCreator
         private Builder() {
         }
@@ -145,8 +140,8 @@ public class PropertyDefinition<T> implements Component {
             this.description = description;
             return this;
         }
-
-        public Builder<T> listType(ListDefinition listType) {
+        
+        public Builder<T> listType(ComponentReference<ListDefinition> listType) {
             if (!this.type.allowsList()) {
                 throw new IllegalArgumentException("listType can only be used for list or list item");
             }
@@ -154,8 +149,17 @@ public class PropertyDefinition<T> implements Component {
             return this;
         }
 
+        @JsonIgnore
+        public Builder<T> listType(ListDefinition listType) {
+            return this.listType(ComponentReference.of(listType));
+        }
+
         public Builder<T> validator(String validator, PropertyDefinition<?>... definition) {
-            return this.validator(ExpressionBuilder.from(validator, definition));
+            List<ComponentReference<PropertyDefinition<?>>> deps = Arrays.stream(definition)
+                    .map(ComponentReference::<PropertyDefinition<?>>of)
+                    .toList();
+
+            return this.validator(new ExpressionBuilder(validator, deps));
         }
 
         public Builder<T> validator(ExpressionBuilder expression) {
@@ -174,12 +178,12 @@ public class PropertyDefinition<T> implements Component {
         }
 
         public Builder<T> securityFilter(String filter, PropertyDefinition<?>... definition) {
-            return this.securityFilter(ExpressionBuilder.from(filter, definition));
-        }
+            List<ComponentReference<PropertyDefinition<?>>> deps = new ArrayList<>(definition.length);
+            for (PropertyDefinition<?> propertyDefinition : definition) {
+                deps.add(ComponentReference.of(propertyDefinition));
+            }
 
-        public Builder<T> dependency(Component... component) {
-            this.dependencies.addAll(List.of(component));
-            return this;
+            return this.securityFilter(new ExpressionBuilder(filter, deps));
         }
 
         public PropertyDefinition<T> build() {
@@ -190,8 +194,7 @@ public class PropertyDefinition<T> implements Component {
                     this.listType,
                     this.validator,
                     this.defaultValue,
-                    this.securityFilter,
-                    this.dependencies
+                    this.securityFilter
             );
         }
     }

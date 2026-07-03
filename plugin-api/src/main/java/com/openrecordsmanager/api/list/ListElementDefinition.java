@@ -1,6 +1,7 @@
 package com.openrecordsmanager.api.list;
 
 import com.openrecordsmanager.api.Component;
+import com.openrecordsmanager.api.ComponentReference;
 import org.jspecify.annotations.Nullable;
 
 import java.util.Calendar;
@@ -14,11 +15,11 @@ public record ListElementDefinition(
         int index,
         @Nullable Date activeTo,
         Set<String> aliases,
-        ListDefinition parent
+        ComponentReference<ListDefinition> parent
 ) implements Component {
 
     @Override
-    public Set<Component> getDependencies() {
+    public Set<ComponentReference<? extends Component>> getDependencies() {
         return Set.of(this.parent);
     }
 
@@ -68,7 +69,7 @@ public record ListElementDefinition(
             return this.parentBuilder;
         }
 
-        public ListElementDefinition build(ListDefinition parent) {
+        public ListElementDefinition build(ComponentReference<ListDefinition> parent) {
             return new ListElementDefinition(
                     this.display,
                     this.description,

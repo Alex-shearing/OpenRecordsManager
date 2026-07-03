@@ -1,7 +1,10 @@
 package com.openrecordsmanager.api.recordtype;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonSetter;
 import com.openrecordsmanager.api.Component;
+import com.openrecordsmanager.api.ComponentReference;
 import com.openrecordsmanager.api.expression.ExpressionBuilder;
 import com.openrecordsmanager.api.property.PropertyDefinition;
 import org.jspecify.annotations.Nullable;
@@ -16,17 +19,17 @@ import java.util.*;
 public final class RecordTypeDefinition implements Component {
     private final String name;
     private final String description;
-    private final Map<PropertyDefinition<?>, ?> properties;
+    private final Map<ComponentReference<PropertyDefinition<?>>, ?> properties;
     private final @Nullable Set<String> allowedContentTypes;
     private final @Nullable ExpressionBuilder securityFilter;
     private final SecurityFilterUsage securityFilterUsage;
 
-    private final Set<Component> dependencies = new HashSet<>();
+    private final Set<ComponentReference<? extends Component>> dependencies = new HashSet<>();
 
     public RecordTypeDefinition(
             String name,
             String description,
-            Map<PropertyDefinition<?>, ?> properties,
+            Map<ComponentReference<PropertyDefinition<?>>, ?> properties,
             @Nullable Set<String> allowedContentTypes,
             @Nullable ExpressionBuilder securityFilter,
             SecurityFilterUsage securityFilterUsage
@@ -45,7 +48,7 @@ public final class RecordTypeDefinition implements Component {
 
         this.dependencies.addAll(this.properties.keySet());
 
-        if (securityFilter != null) this.dependencies.addAll(List.of(securityFilter.dependencies()));
+        if (securityFilter != null) this.dependencies.addAll(securityFilter.dependencies());
     }
 
     public static Builder builder(String name) {
@@ -60,7 +63,7 @@ public final class RecordTypeDefinition implements Component {
         return description;
     }
 
-    public Map<PropertyDefinition<?>, ?> properties() {
+    public Map<ComponentReference<PropertyDefinition<?>>, ?> properties() {
         return properties;
     }
 
@@ -77,7 +80,7 @@ public final class RecordTypeDefinition implements Component {
     }
 
     @Override
-    public Set<Component> getDependencies() {
+    public Set<ComponentReference<? extends Component>> getDependencies() {
         return dependencies;
     }
 
@@ -101,7 +104,7 @@ public final class RecordTypeDefinition implements Component {
     public static class Builder {
         private String name;
         private String description = "";
-        private final Map<PropertyDefinition<?>, Object> properties = new HashMap<>();
+        private final Map<ComponentReference<PropertyDefinition<?>>, Object> properties = new HashMap<>();
         private Set<String> allowedContentTypes = null;
         private ExpressionBuilder securityFilter = null;
         private SecurityFilterUsage securityFilterUsage = SecurityFilterUsage.HIDE_FILES;
@@ -124,18 +127,43 @@ public final class RecordTypeDefinition implements Component {
             return this;
         }
 
-        public Builder property(PropertyDefinition<?> property) {
+        @JsonSetter("properties")
+        public Builder properties(Set<ComponentReference<PropertyDefinition<?>>> properties) {
+            for (ComponentReference<PropertyDefinition<?>> property : properties) {
+                this.properties.put(property, null);
+            }
+            return this;
+        }
+
+        @JsonIgnore
+        public Builder property(ComponentReference<PropertyDefinition<?>> property) {
             this.properties.put(property, null);
             return this;
         }
 
-        public <T> Builder property(PropertyDefinition<T> property, T defaultValue) {
-            this.properties.put(property, defaultValue);
+        @JsonIgnore
+        public Builder property(PropertyDefinition<?> property) {
+            return this.property(ComponentReference.of(property));
+        }
+
+        @JsonIgnore
+        public <T> Builder property(ComponentReference<PropertyDefinition<T>> property, T defaultValue) {
+            this.properties.put(property.map(def -> def), defaultValue);
             return this;
         }
 
-        public Builder securityFilter(SecurityFilterUsage filterUsage, String filter, PropertyDefinition<?>... components) {
-            return this.securityFilter(filterUsage, ExpressionBuilder.from(filter, components));
+        @JsonIgnore
+        public <T> Builder property(PropertyDefinition<T> property, T defaultValue) {
+            return this.property(ComponentReference.of(property), defaultValue);
+        }
+
+        public Builder securityFilter(SecurityFilterUsage filterUsage, String filter, PropertyDefinition<?>... properties) {
+            List<ComponentReference<PropertyDefinition<?>>> deps = new ArrayList<>(properties.length);
+            for (PropertyDefinition<?> propertyDefinition : properties) {
+                deps.add(ComponentReference.of(propertyDefinition));
+            }
+
+            return this.securityFilter(filterUsage, new ExpressionBuilder(filter, deps));
         }
 
         public Builder securityFilter(SecurityFilterUsage filterUsage, ExpressionBuilder filter) {

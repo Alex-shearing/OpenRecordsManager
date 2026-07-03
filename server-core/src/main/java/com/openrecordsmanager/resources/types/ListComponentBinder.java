@@ -9,7 +9,7 @@ import com.openrecordsmanager.resources.ExpressionsService;
 
 import java.util.Optional;
 
-public class ListComponentType extends ComponentBinding<ListDefinition, ListType> {
+public class ListComponentBinder extends ComponentBinder<ListDefinition, ListType> {
 
     @Override
     public void register(DataRepository repository, ComponentCatalog catalog, ExpressionsService expressions, ResourceIdentifier id, ListDefinition definition) {

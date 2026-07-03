@@ -9,7 +9,7 @@ import java.util.Set;
 public interface Component {
     ObjectMapper MAPPER = new ObjectMapper();
 
-    default Set<Component> getDependencies() {
+    default Set<ComponentReference<? extends Component>> getDependencies() {
         return Set.of();
     }
 

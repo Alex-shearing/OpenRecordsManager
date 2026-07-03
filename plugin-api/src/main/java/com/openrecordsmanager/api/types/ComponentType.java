@@ -1,5 +1,6 @@
 package com.openrecordsmanager.api.types;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.openrecordsmanager.api.Component;
 
 import java.util.Objects;
@@ -38,5 +39,10 @@ public class ComponentType<T extends Component> {
     @SuppressWarnings("unchecked")
     public static <A extends Component, K extends A> ComponentType<K> of(String name, Class<A> componentClass) {
         return (ComponentType<K>) new ComponentType<>(name, componentClass);
+    }
+
+    @JsonCreator
+    private static ComponentType<Component> fromString(String name) {
+        return ComponentTypes.fromName(name);
     }
 }

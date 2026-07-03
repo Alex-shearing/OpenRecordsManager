@@ -3,5 +3,11 @@
   "description": "Test record description",
   "allowedContentTypes": [
     "application/json"
+  ],
+  "properties": [
+    {
+      "type": "object_properties",
+      "id": "test:user_email_property"
+    }
   ]
 }

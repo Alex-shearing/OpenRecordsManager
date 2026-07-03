@@ -2,7 +2,6 @@ package com.openrecordsmanager.resources.types;
 
 import com.openrecordsmanager.api.ResourceIdentifier;
 import com.openrecordsmanager.api.property.PropertyDefinition;
-import com.openrecordsmanager.api.types.ComponentTypes;
 import com.openrecordsmanager.model.ListType;
 import com.openrecordsmanager.model.ObjectProperty;
 import com.openrecordsmanager.model.repositories.DataRepository;
@@ -11,7 +10,7 @@ import com.openrecordsmanager.resources.ExpressionsService;
 
 import java.util.Optional;
 
-public class ObjectPropertyComponentType extends ComponentBinding<PropertyDefinition<?>, ObjectProperty<?>> {
+public class ObjectPropertyComponentBinder extends ComponentBinder<PropertyDefinition<?>, ObjectProperty<?>> {
 
     @Override
     protected void register(
@@ -33,9 +32,7 @@ public class ObjectPropertyComponentType extends ComponentBinding<PropertyDefini
     ) {
         ListType listType = null;
         if (definition.getType().allowsList() && definition.getListType() != null) {
-            ResourceIdentifier childId = catalog.getId(ComponentTypes.LIST, definition.getListType());
-
-            listType = ComponentBinderRegistry.LIST.getRegistered(childId, repository)
+            listType = ComponentBinderRegistry.LIST.getRegistered(definition.getListType(), catalog, repository)
                     .orElse(null);
         }
 

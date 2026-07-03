@@ -3,6 +3,7 @@ package com.openrecordsmanager.api.list;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.google.common.collect.ImmutableMap;
 import com.openrecordsmanager.api.Component;
+import com.openrecordsmanager.api.ComponentReference;
 import tools.jackson.databind.annotation.JsonDeserialize;
 import tools.jackson.databind.annotation.JsonPOJOBuilder;
 
@@ -66,8 +67,10 @@ public class ListDefinition implements Component {
         public ListDefinition build() {
             ListDefinition parent = new ListDefinition(this.name, new HashMap<>());
 
+            ComponentReference<ListDefinition> parentRef = ComponentReference.of(parent);
+
             ImmutableMap<String, ListElementDefinition> entries = this.defaultEntries.entrySet().stream()
-                    .map(builder -> Map.entry(builder.getKey(), builder.getValue().build(parent)))
+                    .map(builder -> Map.entry(builder.getKey(), builder.getValue().build(parentRef)))
                     .sorted(Comparator.comparingInt(o -> o.getValue().index()))
                     .collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue));
 

@@ -15,12 +15,12 @@ import com.openrecordsmanager.model.RecordType;
 import java.util.Map;
 
 public class ComponentBinderRegistry {
-    public static ComponentBinding<ListDefinition, ListType> LIST = new ListComponentType();
-    public static ComponentBinding<ListElementDefinition, ListElement> LIST_ELEMENT = new ListElementComponentType();
-    public static ComponentBinding<PropertyDefinition<?>, ObjectProperty<?>> PROPERTY = new ObjectPropertyComponentType();
-    public static ComponentBinding<RecordTypeDefinition, RecordType> RECORD_TYPE = new RecordTypeComponentType();
+    public static ComponentBinder<ListDefinition, ListType> LIST = new ListComponentBinder();
+    public static ComponentBinder<ListElementDefinition, ListElement> LIST_ELEMENT = new ListElementComponentBinder();
+    public static ComponentBinder<PropertyDefinition<?>, ObjectProperty<?>> PROPERTY = new ObjectPropertyComponentBinder();
+    public static ComponentBinder<RecordTypeDefinition, RecordType> RECORD_TYPE = new RecordTypeComponentBinder();
 
-    private static final Map<ComponentType<?>, ComponentBinding<?, ?>> ENTRIES = Map.ofEntries(
+    private static final Map<ComponentType<?>, ComponentBinder<?, ?>> ENTRIES = Map.ofEntries(
             binding(ComponentTypes.LIST, LIST),
             binding(ComponentTypes.LIST_ELEMENT, LIST_ELEMENT),
             binding(ComponentTypes.PROPERTY, PROPERTY),
@@ -28,13 +28,13 @@ public class ComponentBinderRegistry {
     );
 
     @SuppressWarnings("unchecked")
-    public static <T extends Component> ComponentBinding<T, ?> get(ComponentType<T> componentType) {
-        return (ComponentBinding<T, ?>) ENTRIES.get(componentType);
+    public static <T extends Component> ComponentBinder<T, ?> get(ComponentType<T> componentType) {
+        return (ComponentBinder<T, ?>) ENTRIES.get(componentType);
     }
 
-    private static <T extends Component> Map.Entry<ComponentType<T>, ComponentBinding<T, ?>> binding(
+    private static <T extends Component> Map.Entry<ComponentType<T>, ComponentBinder<T, ?>> binding(
             ComponentType<T> componentType,
-            ComponentBinding<T, ?> binding
+            ComponentBinder<T, ?> binding
     ) {
         return Map.entry(componentType, binding);
     }

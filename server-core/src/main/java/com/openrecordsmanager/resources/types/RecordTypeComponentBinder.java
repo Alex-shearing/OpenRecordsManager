@@ -1,9 +1,9 @@
 package com.openrecordsmanager.resources.types;
 
+import com.openrecordsmanager.api.ComponentReference;
 import com.openrecordsmanager.api.ResourceIdentifier;
 import com.openrecordsmanager.api.property.PropertyDefinition;
 import com.openrecordsmanager.api.recordtype.RecordTypeDefinition;
-import com.openrecordsmanager.api.types.ComponentTypes;
 import com.openrecordsmanager.model.ObjectProperty;
 import com.openrecordsmanager.model.RecordType;
 import com.openrecordsmanager.model.RecordTypeProperty;
@@ -16,7 +16,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-public class RecordTypeComponentType extends ComponentBinding<RecordTypeDefinition, RecordType> {
+public class RecordTypeComponentBinder extends ComponentBinder<RecordTypeDefinition, RecordType> {
 
     @Override
     public void register(DataRepository repository, ComponentCatalog catalog, ExpressionsService expressions, ResourceIdentifier id, RecordTypeDefinition definition) {
@@ -38,11 +38,14 @@ public class RecordTypeComponentType extends ComponentBinding<RecordTypeDefiniti
     }
 
     @SuppressWarnings("unchecked")
-    private static <T> RecordTypeProperty<T> createRecordTypeProperty(Map.Entry<PropertyDefinition<?>, ?> entry, ComponentCatalog catalog, DataRepository repository) {
-        ResourceIdentifier id = catalog.getId(ComponentTypes.PROPERTY, entry.getKey());
-        Optional<ObjectProperty<?>> property = ComponentBinderRegistry.PROPERTY.getRegistered(id, repository);
+    private static <T> RecordTypeProperty<T> createRecordTypeProperty(
+            Map.Entry<ComponentReference<PropertyDefinition<?>>, ?> entry,
+            ComponentCatalog catalog,
+            DataRepository repository
+    ) {
+        Optional<ObjectProperty<?>> property = ComponentBinderRegistry.PROPERTY.getRegistered(entry.getKey(), catalog, repository);
         if (property.isEmpty()) {
-            throw new IllegalArgumentException("Attempted to use property that was not registered: " + catalog.getId(ComponentTypes.PROPERTY, entry.getKey()));
+            throw new IllegalArgumentException("Attempted to use property that was not registered: " + entry.getKey().getId(catalog));
         }
 
         return new RecordTypeProperty<>((ObjectProperty<T>) property.get(), (T) entry.getValue());

@@ -1,6 +1,7 @@
 package com.openrecordsmanager.resources.types;
 
 import com.openrecordsmanager.api.Component;
+import com.openrecordsmanager.api.ComponentReference;
 import com.openrecordsmanager.api.ResourceIdentifier;
 import com.openrecordsmanager.api.types.ComponentType;
 import com.openrecordsmanager.api.types.ComponentTypes;
@@ -12,7 +13,7 @@ import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 
-public abstract class ComponentBinding<T extends Component, D> {
+public abstract class ComponentBinder<T extends Component, D> {
 
     /**
      * Register the component template to the database
@@ -33,14 +34,16 @@ public abstract class ComponentBinding<T extends Component, D> {
             boolean includeDependencies
     ) {
         if (includeDependencies) {
-            for (Component dependency : definition.getDependencies()) {
+            for (ComponentReference<? extends Component> dependencyRef : definition.getDependencies()) {
+                Component dependency = dependencyRef.getComponent(catalog);
+
                 ComponentType<Component> childType = ComponentTypes.fromObject(dependency);
                 if (childType == null) {
                     throw new IllegalStateException("Cannot find child resource type for dependency " + dependency);
                 }
                 ResourceIdentifier dependencyId = catalog.getId(childType, dependency);
 
-                ComponentBinding<Component, ?> binder = ComponentBinderRegistry.get(childType);
+                ComponentBinder<Component, ?> binder = ComponentBinderRegistry.get(childType);
                 binder.register(repository, catalog, expressions, dependencyId, dependency, true);
             }
         }
@@ -77,6 +80,10 @@ public abstract class ComponentBinding<T extends Component, D> {
      */
     public abstract Optional<D> getRegistered(ResourceIdentifier id, DataRepository repo);
 
+    public Optional<D> getRegistered(ComponentReference<T> reference, ComponentCatalog catalog, DataRepository repo) {
+        return this.getRegistered(reference.getId(catalog), repo);
+    }
+
     /**
      * Validates that all the dependencies of the component are registered, including the dependencies of dependencies.
      *
@@ -89,15 +96,15 @@ public abstract class ComponentBinding<T extends Component, D> {
             DataRepository repository,
             ComponentCatalog catalog
     ) {
-        for (Component dependency : collectDependencies(component, new HashSet<>())) {
+        for (Component dependency : collectDependencies(catalog, component, new HashSet<>())) {
             ComponentType<Component> childType = ComponentTypes.fromObject(dependency);
             if (childType == null) {
                 throw new IllegalStateException("Cannot find child resource type for dependency " + dependency);
             }
 
-            ComponentBinding<?, ?> binder = ComponentBinderRegistry.get(childType);
+            ComponentBinder<?, ?> binder = ComponentBinderRegistry.get(childType);
             ResourceIdentifier dependencyId = catalog.getId(childType, dependency);
-            
+
             Optional<?> childComponent = binder.getRegistered(dependencyId, repository);
             if (childComponent.isEmpty()) {
                 throw new IllegalStateException("Unregistered dependency " + catalog.getId(childType, dependency));
@@ -112,11 +119,13 @@ public abstract class ComponentBinding<T extends Component, D> {
      * @param dependencies the current list of dependencies
      * @return the input set, with new dependencies added
      */
-    private static Set<Component> collectDependencies(Component component, Set<Component> dependencies) {
-        for (Component dependency : component.getDependencies()) {
+    private static Set<Component> collectDependencies(ComponentCatalog catalog, Component component, Set<Component> dependencies) {
+        for (ComponentReference<? extends Component> dependencyRef : component.getDependencies()) {
+            Component dependency = dependencyRef.getComponent(catalog);
+
             if (!dependencies.contains(dependency)) {
                 dependencies.add(dependency);
-                dependencies.addAll(collectDependencies(dependency, dependencies));
+                dependencies.addAll(collectDependencies(catalog, dependency, dependencies));
             }
         }
         return dependencies;
