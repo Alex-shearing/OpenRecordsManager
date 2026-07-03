@@ -7,8 +7,6 @@ import org.springframework.context.ApplicationContextInitializer;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-import javax.sql.DataSource;
-
 public class DatabaseConfigContextInitializer implements ApplicationContextInitializer<ConfigurableApplicationContext> {
     @Override
     public void initialize(ConfigurableApplicationContext applicationContext) {
@@ -17,14 +15,16 @@ public class DatabaseConfigContextInitializer implements ApplicationContextIniti
                 .orElse(null);
 
         if (dsProps != null && dsProps.getUrl() != null) {
-            DataSource dataSource = DataSourceBuilder.create()
+            DataSourceBuilder<?> dataSource = DataSourceBuilder.create()
                     .url(dsProps.getUrl())
                     .username(dsProps.getUsername())
-                    .password(dsProps.getPassword())
-                    .driverClassName(dsProps.getDriverClassName())
-                    .build();
+                    .password(dsProps.getPassword());
 
-            JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
+            if (dsProps.getDriverClassName() != null) {
+                dataSource.driverClassName(dsProps.getDriverClassName());
+            }
+
+            JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource.build());
 
             applicationContext.getEnvironment().getPropertySources().addLast(new DatabaseConfigSource(jdbcTemplate));
         }

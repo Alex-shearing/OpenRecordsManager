@@ -21,7 +21,7 @@ public class ObjectPropertyComponentType extends TemplateComponentType<PropertyD
         this.registerInternal(repository, catalog, expressions, id, definition);
     }
 
-    private <T> ObjectProperty<?> registerInternal(DataRepository repository, ComponentCatalog catalog, ExpressionsService expressions, ResourceIdentifier id, PropertyDefinition<T> definition) {
+    private <T> void registerInternal(DataRepository repository, ComponentCatalog catalog, ExpressionsService expressions, ResourceIdentifier id, PropertyDefinition<T> definition) {
         ListType listType = null;
         if (definition.getType().allowsList() && definition.getListType() != null) {
             ResourceIdentifier listId = catalog.getId(ComponentTypes.LIST, definition.getListType());
@@ -42,7 +42,7 @@ public class ObjectPropertyComponentType extends TemplateComponentType<PropertyD
                 definition.getDefaultValue()
         );
 
-        return repository.objectPropertyRepo.saveAndFlush(type);
+        repository.objectPropertyRepo.saveAndFlush(type);
     }
 
     @Override

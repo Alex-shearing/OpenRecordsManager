@@ -35,8 +35,7 @@ import java.util.jar.Manifest;
 @Service
 public class PluginManager {
     private static final Logger LOGGER = LoggerFactory.getLogger(PluginManager.class);
-
-    @Nullable
+    
     private final Path directory;
     private final PluginRepository pluginRepo;
     private final FileStoreRepository fileStoreRepo;
