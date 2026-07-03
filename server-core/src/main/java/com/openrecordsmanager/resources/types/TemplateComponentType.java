@@ -104,9 +104,7 @@ public abstract class TemplateComponentType<T extends Component, D> extends Comp
             DataRepository repository,
             ComponentCatalog catalog
     ) {
-        Set<Component> dependencies = collectDependencies(component, new HashSet<>());
-
-        for (Component dependency : dependencies) {
+        for (Component dependency : collectDependencies(component, new HashSet<>())) {
             TemplateComponentType<Component, ?> childType = ComponentTypes.registerableFromObject(dependency);
             if (childType == null) {
                 throw new IllegalStateException("Cannot find child resource type for dependency " + dependency);

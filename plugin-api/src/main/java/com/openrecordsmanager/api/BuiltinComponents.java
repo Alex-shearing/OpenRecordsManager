@@ -11,7 +11,7 @@ public class BuiltinComponents implements Plugin {
             .build();
 
     public static final PropertyDefinition<Date> DATE_REGISTERED = PropertyDefinition.builder("Date Registered", PropertyType.DATE)
-            .description("Date the object was registered into the tool")
+            .description("Date the object was registered")
             .build();
 
     public static final PropertyDefinition<Date> DATE_CREATED = PropertyDefinition.builder("Date Created", PropertyType.DATE)
