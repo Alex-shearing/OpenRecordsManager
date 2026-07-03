@@ -35,7 +35,7 @@ public class ConfigController {
     @Operation(summary = "Get config values from the database")
     public Map<String, Optional<?>> getConfig() {
         return this.catalog.getComponents(ComponentTypes.CONFIG).stream()
-                .map(config -> Map.entry(config.id(), this.repository.configRepo.findByConfigKey(config.id())))
+                .map(config -> Map.entry(config.key(), this.repository.configRepo.findByConfigKey(config.key())))
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 
@@ -43,7 +43,7 @@ public class ConfigController {
     @Operation(summary = "Get the config values for this specific server")
     public Map<String, Optional<?>> getThisServerEnvironment() {
         return this.catalog.getComponents(ComponentTypes.CONFIG).stream()
-                .map(config -> Map.entry(config.id(), config.type().fromString(this.environment.getProperty(config.id()))))
+                .map(config -> Map.entry(config.key(), config.type().fromString(this.environment.getProperty(config.key()))))
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 

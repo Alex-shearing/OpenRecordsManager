@@ -1,6 +1,7 @@
 package com.openrecordsmanager.controllers;
 
 import com.openrecordsmanager.config.ConfigProperties;
+import com.openrecordsmanager.config.DynamicConfigService;
 import com.openrecordsmanager.controllers.repsonse.InternalServerErrorApiResponse;
 import com.openrecordsmanager.controllers.repsonse.NotFoundApiResponse;
 import com.openrecordsmanager.controllers.repsonse.errors.ApiError;
@@ -12,7 +13,6 @@ import com.openrecordsmanager.resources.ResourceIdentifier;
 import com.openrecordsmanager.resources.types.ComponentTypes;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import org.springframework.core.env.Environment;
 import org.springframework.core.io.Resource;
 import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpHeaders;
@@ -34,12 +34,12 @@ import java.util.UUID;
 public class RecordController {
 
     private final DataRepository repository;
-    private final Environment environment;
+    private final DynamicConfigService config;
     private final ComponentCatalog catalog;
 
-    public RecordController(DataRepository repository, Environment environment, ComponentCatalog catalog) {
+    public RecordController(DataRepository repository, DynamicConfigService config, ComponentCatalog catalog) {
         this.repository = repository;
-        this.environment = environment;
+        this.config = config;
         this.catalog = catalog;
     }
 
@@ -86,9 +86,9 @@ public class RecordController {
         Record record = this.repository.recordRepo.findById(id)
                 .orElseThrow(() -> ApiError.notFound("record", id.toString()));
 
-        UUID defaultStoreId = this.environment.getProperty(ConfigProperties.WORKGROUP_DEFAULT_FILE_STORE.id(), UUID.class);
+        UUID defaultStoreId = this.config.getProperty(ConfigProperties.WORKGROUP_DEFAULT_FILE_STORE);
         if (defaultStoreId == null) {
-            throw ApiError.serverError("There is no value set for the {0} configuration", ConfigProperties.WORKGROUP_DEFAULT_FILE_STORE.id());
+            throw ApiError.serverError("There is no value set for the {0} configuration", ConfigProperties.WORKGROUP_DEFAULT_FILE_STORE.key());
         }
 
         FileStore<?> fileStore = this.repository.fileStoreRepo.findById(defaultStoreId)

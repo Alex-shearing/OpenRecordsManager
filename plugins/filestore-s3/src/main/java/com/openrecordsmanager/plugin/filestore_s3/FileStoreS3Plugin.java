@@ -17,6 +17,6 @@ public class FileStoreS3Plugin implements Plugin {
 
     @Override
     public void initialise(PluginContext registry) {
-        registry.registerComponents(S3_FILE_STORE_TYPE);
+        registry.registerComponent("s3", S3_FILE_STORE_TYPE);
     }
 }

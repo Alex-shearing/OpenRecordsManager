@@ -6,28 +6,23 @@ import com.openrecordsmanager.api.property.PropertyType;
 import java.util.Date;
 
 public class BuiltinComponents implements Plugin {
-    public static final PropertyDefinition<String> NOTES = PropertyDefinition.builder("notes", PropertyType.STRING)
-            .name("Notes")
+    public static final PropertyDefinition<String> NOTES = PropertyDefinition.builder("Notes", PropertyType.STRING)
             .description("Notes on the object")
             .build();
 
-    public static final PropertyDefinition<Date> DATE_REGISTERED = PropertyDefinition.builder("date_registered", PropertyType.DATE)
-            .name("Date Registered")
+    public static final PropertyDefinition<Date> DATE_REGISTERED = PropertyDefinition.builder("Date Registered", PropertyType.DATE)
             .description("Date the object was registered into the tool")
             .build();
 
-    public static final PropertyDefinition<Date> DATE_CREATED = PropertyDefinition.builder("date_created", PropertyType.DATE)
-            .name("Date Created")
+    public static final PropertyDefinition<Date> DATE_CREATED = PropertyDefinition.builder("Date Created", PropertyType.DATE)
             .description("Date the record was created")
             .build();
 
-    public static final PropertyDefinition<String> KEYWORDS = PropertyDefinition.builder("keywords", PropertyType.STRING)
-            .name("Keywords")
+    public static final PropertyDefinition<String> KEYWORDS = PropertyDefinition.builder("Keywords", PropertyType.STRING)
             .description("Relevant keywords that can assist in searching")
             .build();
 
-    public static final PropertyDefinition<String> MIME_TYPE = PropertyDefinition.builder("mime_type", PropertyType.STRING)
-            .name("MIME Type")
+    public static final PropertyDefinition<String> MIME_TYPE = PropertyDefinition.builder("MIME Type", PropertyType.STRING)
             .description("Standardised internet types defining a file type")
             .build();
 
@@ -38,8 +33,10 @@ public class BuiltinComponents implements Plugin {
 
     @Override
     public void initialise(PluginContext registry) {
-        registry.registerComponents(
-                NOTES, DATE_REGISTERED, DATE_CREATED, KEYWORDS, MIME_TYPE
-        );
+        registry.registerComponent("notes", NOTES);
+        registry.registerComponent("date_registered", DATE_REGISTERED);
+        registry.registerComponent("date_created", DATE_CREATED);
+        registry.registerComponent("keywords", KEYWORDS);
+        registry.registerComponent("mime_type", MIME_TYPE);
     }
 }

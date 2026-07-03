@@ -16,7 +16,7 @@ public class DynamicConfigService implements ConfigStore {
 
     @Override
     public <T> T getProperty(ConfigDefinition<T> key) {
-        T value = this.environment.getProperty(key.id(), key.type().cType);
+        T value = this.environment.getProperty(key.key(), key.type().cType);
         return value != null ? value : key.defaultValue();
     }
 

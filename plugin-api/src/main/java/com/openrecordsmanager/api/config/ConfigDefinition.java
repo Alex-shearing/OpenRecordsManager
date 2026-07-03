@@ -1,89 +1,75 @@
 package com.openrecordsmanager.api.config;
 
 import com.openrecordsmanager.api.Component;
+import org.jspecify.annotations.NonNull;
 
-import java.util.Locale;
 import java.util.Objects;
 
 public final class ConfigDefinition<T> implements Component {
-    private final String id;
+    private final String key;
     private final ConfigValueType<T> type;
     private final String name;
     private final String description;
     private final T defaultValue;
-    private final String alias;
 
-    private ConfigDefinition(String id, ConfigValueType<T> type, String name, String description, T defaultValue, String alias) {
-        Objects.requireNonNull(id, "ID cannot be null");
+    private ConfigDefinition(
+            @NonNull String key,
+            @NonNull ConfigValueType<T> type,
+            @NonNull String name,
+            @NonNull String description,
+            T defaultValue
+    ) {
+        Objects.requireNonNull(key, "key cannot be null");
         Objects.requireNonNull(type, "type cannot be null");
         Objects.requireNonNull(name, "name cannot be null");
 
-        this.id = id;
+        this.key = key;
         this.name = name;
         this.type = type;
         this.description = description;
         this.defaultValue = defaultValue;
-        this.alias = alias;
     }
 
     public static <M> Builder<M> builder(String id, ConfigValueType<M> type) {
         return new Builder<>(id, type);
     }
 
-    public String id() {
-        return id;
-    }
-
-    public String getEnvName() {
-        return this.id.replace('.', '_').toUpperCase(Locale.ROOT);
+    public String key() {
+        return this.key;
     }
 
     public ConfigValueType<T> type() {
-        return type;
+        return this.type;
     }
 
     public String name() {
-        return name;
+        return this.name;
     }
 
     public String description() {
-        return description;
-    }
-
-    public String alias() {
-        return alias;
+        return this.description;
     }
 
     public T defaultValue() {
-        return defaultValue;
-    }
-
-    public boolean isKey(String id) {
-        return this.id.equals(id) || (this.alias != null && this.alias.equals(id));
+        return this.defaultValue;
     }
 
     @Override
     public String toString() {
-        return "ConfigProperty{" +
-                "id='" + id + '\'' +
-                ", type=" + type +
-                ", name='" + name + '\'' +
-                ", description='" + description + '\'' +
-                ", defaultValue=" + defaultValue +
-                '}';
+        return String.format("%s (%s) - default: %s", this.key, this.name, this.defaultValue);
     }
 
     public static class Builder<T> {
-        private final String id;
+        private final String key;
         private final ConfigValueType<T> type;
         private String name;
-        private String description;
-        private T defaultValue;
-        private String alias;
+        private String description = "";
+        private T defaultValue = null;
 
-        public Builder(String id, ConfigValueType<T> type) {
-            this.id = id;
+        public Builder(String key, ConfigValueType<T> type) {
+            this.key = key;
             this.type = type;
+            this.name = key;
         }
 
         public Builder<T> name(String name) {
@@ -101,13 +87,8 @@ public final class ConfigDefinition<T> implements Component {
             return this;
         }
 
-        public Builder<T> alias(String alias) {
-            this.alias = alias;
-            return this;
-        }
-
         public ConfigDefinition<T> build() {
-            return new ConfigDefinition<>(this.id, this.type, this.name, this.description, this.defaultValue, this.alias);
+            return new ConfigDefinition<>(this.key, this.type, this.name, this.description, this.defaultValue);
         }
     }
 }

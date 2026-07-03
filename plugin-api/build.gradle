@@ -12,3 +12,12 @@ dependencies {
     // Jackson 3.x ecosystem dependencies
     api 'tools.jackson.core:jackson-databind:3.2.0'
 }
+
+testing {
+    suites {
+        test {
+            // This automatically configures engine, launcher, and platform dependencies correctly
+            useJUnitJupiter('6.1.0')
+        }
+    }
+}

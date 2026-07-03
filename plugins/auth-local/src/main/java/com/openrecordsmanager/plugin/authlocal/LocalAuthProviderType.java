@@ -14,9 +14,4 @@ public class LocalAuthProviderType extends InputAuthProviderType {
         }
         return new UserDetails(instance, username, "");
     }
-
-    @Override
-    public String id() {
-        return "local_auth";
-    }
 }

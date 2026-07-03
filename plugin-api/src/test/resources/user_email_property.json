@@ -1,0 +1,7 @@
+{
+  "name": "User Email Address",
+  "type": "string",
+  "description": "An email address",
+  "defaultValue": "admin@company.com",
+  "validator": "true"
+}

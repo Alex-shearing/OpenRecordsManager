@@ -19,6 +19,6 @@ public class AuthOidcPlugin implements Plugin {
     public void initialise(PluginContext registry) {
         LOGGER.info("Initializing plugin...");
 
-        registry.registerComponents(OIDC_AUTH_PROVIDER_TYPE);
+        registry.registerComponent("oidc_auth", OIDC_AUTH_PROVIDER_TYPE);
     }
 }

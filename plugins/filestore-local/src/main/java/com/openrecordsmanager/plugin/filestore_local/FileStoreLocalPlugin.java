@@ -17,6 +17,6 @@ public class FileStoreLocalPlugin implements Plugin {
 
     @Override
     public void initialise(PluginContext registry) {
-        registry.registerComponents(LOCAL_FILE_STORE_TYPE);
+        registry.registerComponent("local", LOCAL_FILE_STORE_TYPE);
     }
 }

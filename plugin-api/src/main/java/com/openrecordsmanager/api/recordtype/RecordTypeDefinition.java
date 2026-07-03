@@ -1,16 +1,19 @@
 package com.openrecordsmanager.api.recordtype;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.openrecordsmanager.api.Component;
 import com.openrecordsmanager.api.expression.ExpressionBuilder;
 import com.openrecordsmanager.api.property.PropertyDefinition;
 import org.jspecify.annotations.Nullable;
+import tools.jackson.databind.annotation.JsonDeserialize;
+import tools.jackson.databind.annotation.JsonPOJOBuilder;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 
+@JsonDeserialize(builder = RecordTypeDefinition.Builder.class)
 public final class RecordTypeDefinition implements Component {
-    private final String id;
     private final String name;
     private final String description;
     private final Map<PropertyDefinition<?>, ?> properties;
@@ -20,10 +23,19 @@ public final class RecordTypeDefinition implements Component {
 
     private final Set<Component> dependencies = new HashSet<>();
 
-    public RecordTypeDefinition(String id, String name, String description, Map<PropertyDefinition<?>, ?> properties,
-                                @Nullable Set<String> allowedContentTypes, @Nullable ExpressionBuilder securityFilter,
-                                SecurityFilterUsage securityFilterUsage) {
-        this.id = id;
+    public RecordTypeDefinition(
+            String name,
+            String description,
+            Map<PropertyDefinition<?>, ?> properties,
+            @Nullable Set<String> allowedContentTypes,
+            @Nullable ExpressionBuilder securityFilter,
+            SecurityFilterUsage securityFilterUsage
+    ) {
+        Objects.requireNonNull(name, "Property 'name' must not be null");
+        Objects.requireNonNull(description, "Property 'description' must not be null");
+        Objects.requireNonNull(properties, "Property 'properties' must not be null");
+        Objects.requireNonNull(securityFilterUsage, "Property 'securityFilterUsage' must not be null");
+
         this.name = name;
         this.description = description;
         this.properties = properties;
@@ -36,13 +48,8 @@ public final class RecordTypeDefinition implements Component {
         if (securityFilter != null) this.dependencies.addAll(List.of(securityFilter.dependencies()));
     }
 
-    public static Builder builder(String id) {
-        return new Builder(id);
-    }
-
-    @Override
-    public String id() {
-        return id;
+    public static Builder builder(String name) {
+        return new Builder(name);
     }
 
     public String name() {
@@ -74,8 +81,24 @@ public final class RecordTypeDefinition implements Component {
         return dependencies;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (!(o instanceof RecordTypeDefinition that)) return false;
+        return Objects.equals(name, that.name) &&
+                Objects.equals(description, that.description) &&
+                Objects.equals(properties, that.properties) &&
+                Objects.equals(allowedContentTypes, that.allowedContentTypes) &&
+                Objects.equals(securityFilter, that.securityFilter) &&
+                securityFilterUsage == that.securityFilterUsage;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(name, description, properties, allowedContentTypes, securityFilter, securityFilterUsage);
+    }
+
+    @JsonPOJOBuilder(withPrefix = "")
     public static class Builder {
-        private final String id;
         private String name;
         private String description = "";
         private final Map<PropertyDefinition<?>, Object> properties = new HashMap<>();
@@ -84,8 +107,11 @@ public final class RecordTypeDefinition implements Component {
         private SecurityFilterUsage securityFilterUsage = SecurityFilterUsage.HIDE_FILES;
 
         private Builder(String id) {
-            this.id = id;
             this.name = id;
+        }
+
+        @JsonCreator
+        private Builder() {
         }
 
         public Builder name(String name) {
@@ -122,7 +148,7 @@ public final class RecordTypeDefinition implements Component {
          * This will be determined using the {@link Files#probeContentType(Path)} method.
          * Supports using asterisk (*) wildcard characters (i.e. `*`, `text/*`).
          */
-        public Builder supportsFile(String... allowedContentTypes) {
+        public Builder allowedContentTypes(String... allowedContentTypes) {
             if (this.allowedContentTypes == null) {
                 this.allowedContentTypes = new HashSet<>();
             }
@@ -131,13 +157,7 @@ public final class RecordTypeDefinition implements Component {
         }
 
         public RecordTypeDefinition build() {
-            Objects.requireNonNull(this.id, "Property 'id' must not be null");
-            Objects.requireNonNull(this.name, "Property 'name' must not be null");
-            Objects.requireNonNull(this.description, "Property 'description' must not be null");
-            Objects.requireNonNull(this.properties, "Property 'properties' must not be null");
-
             return new RecordTypeDefinition(
-                    this.id,
                     this.name,
                     this.description,
                     this.properties,

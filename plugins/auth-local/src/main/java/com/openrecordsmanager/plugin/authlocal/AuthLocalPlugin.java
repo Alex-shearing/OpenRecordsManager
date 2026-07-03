@@ -27,6 +27,7 @@ public class AuthLocalPlugin implements Plugin {
     public void initialise(PluginContext registry) {
         LOGGER.info("Initializing plugin...");
 
-        registry.registerComponents(CONFIG_ADMIN_ENABLED, LOCAL_AUTH_PROVIDER_TYPE);
+        registry.registerConfig(CONFIG_ADMIN_ENABLED);
+        registry.registerComponent("local_auth", LOCAL_AUTH_PROVIDER_TYPE);
     }
 }

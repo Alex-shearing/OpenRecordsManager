@@ -1,45 +1,57 @@
 package com.openrecordsmanager.api.list;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.google.common.collect.ImmutableMap;
 import com.openrecordsmanager.api.Component;
+import tools.jackson.databind.annotation.JsonDeserialize;
+import tools.jackson.databind.annotation.JsonPOJOBuilder;
 
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
-@SuppressWarnings("unused")
+@JsonDeserialize(builder = ListDefinition.Builder.class)
 public class ListDefinition implements Component {
-    public final String id;
     public final String display;
     public final Map<String, ListElementDefinition> defaultEntries;
 
-    private ListDefinition(String id, String display, Map<String, ListElementDefinition> defaultEntries) {
-        this.id = id;
+    private ListDefinition(String display, Map<String, ListElementDefinition> defaultEntries) {
         this.display = display;
         this.defaultEntries = defaultEntries;
     }
 
-    public static Builder builder(String id) {
-        return new Builder(id);
+    public static Builder builder(String name) {
+        return new Builder(name);
     }
 
     @Override
-    public String id() {
-        return this.id;
+    public boolean equals(Object o) {
+        if (!(o instanceof ListDefinition that)) return false;
+        return Objects.equals(display, that.display) &&
+                Objects.equals(defaultEntries.size(), that.defaultEntries.size());
     }
 
-    public static class Builder {
-        private final String id;
-        private final HashMap<String, ListElementDefinition.Builder> defaultEntries = new HashMap<>();
-        private String display;
+    @Override
+    public int hashCode() {
+        return Objects.hash(display, defaultEntries.size());
+    }
 
-        private Builder(String id) {
-            this.id = id;
-            this.display = id;
+    @JsonPOJOBuilder(withPrefix = "")
+    public static class Builder {
+        private final HashMap<String, ListElementDefinition.Builder> defaultEntries = new HashMap<>();
+        private String name;
+
+        private Builder(String name) {
+            this.name = name;
         }
 
-        public Builder display(String display) {
-            this.display = display;
+        @JsonCreator
+        private Builder() {
+        }
+
+        public Builder name(String name) {
+            this.name = name;
             return this;
         }
 
@@ -52,12 +64,13 @@ public class ListDefinition implements Component {
         }
 
         public ListDefinition build() {
-            ListDefinition parent = new ListDefinition(this.id, this.display, new HashMap<>());
+            ListDefinition parent = new ListDefinition(this.name, new HashMap<>());
 
             ImmutableMap<String, ListElementDefinition> entries = this.defaultEntries.entrySet().stream()
                     .map(builder -> Map.entry(builder.getKey(), builder.getValue().build(parent)))
                     .sorted(Comparator.comparingInt(o -> o.getValue().index()))
                     .collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue));
+
             parent.defaultEntries.putAll(entries);
 
             return parent;

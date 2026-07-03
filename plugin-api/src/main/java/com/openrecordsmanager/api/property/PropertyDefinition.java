@@ -1,18 +1,20 @@
 package com.openrecordsmanager.api.property;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.openrecordsmanager.api.Component;
 import com.openrecordsmanager.api.expression.ExpressionBuilder;
 import com.openrecordsmanager.api.list.ListDefinition;
 import org.jspecify.annotations.Nullable;
+import tools.jackson.databind.annotation.JsonDeserialize;
+import tools.jackson.databind.annotation.JsonPOJOBuilder;
 
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
-@SuppressWarnings("unused")
+@JsonDeserialize(builder = PropertyDefinition.Builder.class)
 public class PropertyDefinition<T> implements Component {
-    private final String id;
     private final PropertyType<T> type;
     private final String name;
     private final String description;
@@ -27,8 +29,20 @@ public class PropertyDefinition<T> implements Component {
 
     private final Set<Component> dependencies = new HashSet<>();
 
-    private PropertyDefinition(String id, PropertyType<T> type, String name, String description, @Nullable ListDefinition listType, @Nullable ExpressionBuilder validator, @Nullable T defaultValue, @Nullable ExpressionBuilder securityFilter) {
-        this.id = id;
+    private PropertyDefinition(
+            PropertyType<T> type,
+            String name,
+            String description,
+            @Nullable ListDefinition listType,
+            @Nullable ExpressionBuilder validator,
+            @Nullable T defaultValue,
+            @Nullable ExpressionBuilder securityFilter,
+            Set<Component> additionalDependencies
+    ) {
+        Objects.requireNonNull(type, "Property 'type' must not be null");
+        Objects.requireNonNull(name, "Property 'name' must not be null");
+        Objects.requireNonNull(description, "Property 'description' must not be null");
+
         this.type = type;
         this.name = name;
         this.description = description;
@@ -40,6 +54,7 @@ public class PropertyDefinition<T> implements Component {
         if (listType != null) this.dependencies.add(listType);
         if (validator != null) this.dependencies.addAll(List.of(validator.dependencies()));
         if (securityFilter != null) this.dependencies.addAll(List.of(securityFilter.dependencies()));
+        this.dependencies.addAll(additionalDependencies);
     }
 
     public PropertyType<T> getType() {
@@ -75,32 +90,50 @@ public class PropertyDefinition<T> implements Component {
     }
 
     @Override
-    public String id() {
-        return this.id;
+    public boolean equals(Object o) {
+        if (!(o instanceof PropertyDefinition<?> that)) return false;
+        return Objects.equals(type, that.type) &&
+                Objects.equals(name, that.name) &&
+                Objects.equals(description, that.description) &&
+                Objects.equals(listType, that.listType) &&
+                Objects.equals(validator, that.validator) &&
+                Objects.equals(defaultValue, that.defaultValue) &&
+                Objects.equals(securityFilter, that.securityFilter);
     }
 
-    public static <K> Builder<K> builder(String id, PropertyType<K> type) {
-        return new Builder<>(id, type);
+    @Override
+    public int hashCode() {
+        return Objects.hash(type, name, description, listType, validator, defaultValue, securityFilter);
     }
 
+    public static <K> Builder<K> builder(String name, PropertyType<K> type) {
+        return new Builder<>(name, type);
+    }
+
+    @JsonPOJOBuilder(withPrefix = "")
     public static class Builder<T> {
-        private final String id;
-        private final PropertyType<T> type;
+        private PropertyType<T> type;
         private String name;
-        private String description;
-        @Nullable
-        private ListDefinition listType;
-        @Nullable
-        private ExpressionBuilder validator;
-        private T defaultValue;
-        @Nullable
-        private ExpressionBuilder securityFilter;
+        private String description = "";
+        private ListDefinition listType = null;
+        private ExpressionBuilder validator = null;
+        private T defaultValue = null;
+        private ExpressionBuilder securityFilter = null;
 
-        private Builder(String id, PropertyType<T> type) {
-            this.id = id;
-            this.name = id;
-            this.description = "";
+        private final Set<Component> dependencies = new HashSet<>();
+
+        private Builder(String name, PropertyType<T> type) {
+            this.name = name;
             this.type = type;
+        }
+        
+        @JsonCreator
+        private Builder() {
+        }
+
+        public Builder<T> type(PropertyType<T> type) {
+            this.type = type;
+            return this;
         }
 
         public Builder<T> name(String name) {
@@ -122,7 +155,11 @@ public class PropertyDefinition<T> implements Component {
         }
 
         public Builder<T> validator(String validator, PropertyDefinition<?>... definition) {
-            this.validator = ExpressionBuilder.from(validator, definition);
+            return this.validator(ExpressionBuilder.from(validator, definition));
+        }
+
+        public Builder<T> validator(ExpressionBuilder expression) {
+            this.validator = expression;
             return this;
         }
 
@@ -131,17 +168,31 @@ public class PropertyDefinition<T> implements Component {
             return this;
         }
 
+        public Builder<T> securityFilter(ExpressionBuilder expression) {
+            this.securityFilter = expression;
+            return this;
+        }
+
         public Builder<T> securityFilter(String filter, PropertyDefinition<?>... definition) {
-            this.securityFilter = ExpressionBuilder.from(filter, definition);
+            return this.securityFilter(ExpressionBuilder.from(filter, definition));
+        }
+
+        public Builder<T> dependency(Component... component) {
+            this.dependencies.addAll(List.of(component));
             return this;
         }
 
         public PropertyDefinition<T> build() {
-            Objects.requireNonNull(this.id, "Property 'id' must not be null");
-            Objects.requireNonNull(this.type, "Property 'type' must not be null");
-            Objects.requireNonNull(this.name, "Property 'name' must not be null");
-            Objects.requireNonNull(this.description, "Property 'description' must not be null");
-            return new PropertyDefinition<>(this.id, this.type, this.name, this.description, this.listType, this.validator, this.defaultValue, this.securityFilter);
+            return new PropertyDefinition<>(
+                    this.type,
+                    this.name,
+                    this.description,
+                    this.listType,
+                    this.validator,
+                    this.defaultValue,
+                    this.securityFilter,
+                    this.dependencies
+            );
         }
     }
 }

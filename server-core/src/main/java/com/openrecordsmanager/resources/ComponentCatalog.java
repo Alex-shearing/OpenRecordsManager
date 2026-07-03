@@ -74,8 +74,8 @@ public class ComponentCatalog {
     private static class Builder {
         private final ImmutableTable.Builder<ComponentType<?>, ResourceIdentifier, Component> table = ImmutableTable.builder();
 
-        private void registerInstance(PluginContextImpl context, Component component) {
-            ResourceIdentifier identifier = new ResourceIdentifier(context.plugin.getName(), component.id());
+        private void registerInstance(PluginContextImpl context, String id, Component component) {
+            ResourceIdentifier identifier = new ResourceIdentifier(context.plugin.getName(), id);
 
             ComponentType<? extends Component> type = ComponentTypes.fromObject(component);
             if (type == null) {
@@ -89,17 +89,15 @@ public class ComponentCatalog {
 
             // List specific registration to all list children
             if (component instanceof ListDefinition def) {
-                def.defaultEntries.forEach((_, listItemDef) -> registerInstance(context, listItemDef));
+                def.defaultEntries.forEach((elId, listItemDef) -> registerInstance(context, elId, listItemDef));
             }
         }
     }
 
     private record PluginContextImpl(Builder builder, Plugin plugin) implements PluginContext {
         @Override
-        public void registerComponents(Component... types) {
-            for (Component type : types) {
-                this.builder.registerInstance(this, type);
-            }
+        public void registerComponent(String id, Component component) {
+            this.builder.registerInstance(this, id, component);
         }
     }
 }

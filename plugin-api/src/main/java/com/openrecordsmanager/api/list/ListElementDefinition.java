@@ -8,13 +8,14 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
-public record ListElementDefinition(String id, String display, String description, int index, @Nullable Date activeTo,
-                                    Set<String> aliases, ListDefinition parent) implements Component {
-
-    @Override
-    public String id() {
-        return this.id;
-    }
+public record ListElementDefinition(
+        String display,
+        String description,
+        int index,
+        @Nullable Date activeTo,
+        Set<String> aliases,
+        ListDefinition parent
+) implements Component {
 
     @Override
     public Set<Component> getDependencies() {
@@ -26,7 +27,7 @@ public record ListElementDefinition(String id, String display, String descriptio
         private final String id;
         private final String display;
         private final Set<String> aliases = new HashSet<>();
-        
+
         private String description = "";
         private int index = 0;
         private Date activeTo = null;
@@ -68,7 +69,14 @@ public record ListElementDefinition(String id, String display, String descriptio
         }
 
         public ListElementDefinition build(ListDefinition parent) {
-            return new ListElementDefinition(id, display, description, index, activeTo, aliases, parent);
+            return new ListElementDefinition(
+                    this.display,
+                    this.description,
+                    this.index,
+                    this.activeTo,
+                    this.aliases,
+                    parent
+            );
         }
     }
 }

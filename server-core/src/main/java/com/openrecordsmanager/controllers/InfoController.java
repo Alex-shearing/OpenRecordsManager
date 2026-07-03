@@ -30,9 +30,9 @@ public class InfoController {
     @Operation(summary = "Get basic details about the environment")
     public EnvironmentResponse getEnvironment() {
         return new EnvironmentResponse(
-                this.config.getProperty(ConfigProperties.WORKGROUP_NAME.id()),
+                this.config.getProperty(ConfigProperties.WORKGROUP_NAME.key()),
                 this.pluginManager.getPlugins().stream().map(Plugin::getName).toArray(String[]::new),
-                this.config.getProperty(ConfigProperties.WORKGROUP_DATABASE_URL.id())
+                this.config.getProperty(ConfigProperties.WORKGROUP_DATABASE_URL.key())
         );
     }
 

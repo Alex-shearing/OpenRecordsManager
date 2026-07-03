@@ -19,10 +19,9 @@ import org.slf4j.LoggerFactory;
 public class DefaultsAusGovPlugin implements Plugin {
     private static final Logger LOGGER = LoggerFactory.getLogger(DefaultsAusGovPlugin.class);
 
-    public static final RecordTypeDefinition EMAIL_RECORD_TYPE = RecordTypeDefinition.builder("email")
-            .name("Email Record")
+    public static final RecordTypeDefinition EMAIL_RECORD_TYPE = RecordTypeDefinition.builder("Email Record")
             .description("Use this to record email records.")
-            .supportsFile("text/plain", "text/html", "multipart/alternative", "multipart/mixed")
+            .allowedContentTypes("text/plain", "text/html", "multipart/alternative", "multipart/mixed")
             .property(BuiltinComponents.DATE_CREATED)
             .property(BuiltinComponents.DATE_REGISTERED)
             .property(BuiltinComponents.NOTES, "This is an email")
@@ -43,15 +42,26 @@ public class DefaultsAusGovPlugin implements Plugin {
     public void initialise(PluginContext registry) {
         LOGGER.info("Initializing plugin...");
 
-        registry.registerComponents(
-                Lists.SECURITY_CLASSIFICATION, Lists.SECURITY_CAVEAT, Lists.RELEASABILITY_CAVEAT, Lists.INFORMATION_MANAGEMENT_MARKER, Lists.RECORD_CATEGORY,
+        // Lists
+        registry.registerComponent("security_classification", Lists.SECURITY_CLASSIFICATION);
+        registry.registerComponent("security_caveat", Lists.SECURITY_CAVEAT);
+        registry.registerComponent("releasability_caveat", Lists.RELEASABILITY_CAVEAT);
+        registry.registerComponent("information_management_marker", Lists.INFORMATION_MANAGEMENT_MARKER);
+        registry.registerComponent("record_category", Lists.RECORD_CATEGORY);
 
-                RecordProperties.RECORD_SECURITY_CLASSIFICATION, RecordProperties.RECORD_SECURITY_CAVEAT, RecordProperties.RECORD_SECURITY_RELEASABILITY,
-                RecordProperties.RECORD_SECURITY_IMM, RecordProperties.RECORD_CATEGORY, RecordProperties.JURISDICTION,
+        // Record Properties
+        registry.registerComponent("record_security_classification", RecordProperties.RECORD_SECURITY_CLASSIFICATION);
+        registry.registerComponent("record_security_caveat", RecordProperties.RECORD_SECURITY_CAVEAT);
+        registry.registerComponent("record_security_releasability", RecordProperties.RECORD_SECURITY_RELEASABILITY);
+        registry.registerComponent("record_security_imm", RecordProperties.RECORD_SECURITY_IMM);
+        registry.registerComponent("record_category", RecordProperties.RECORD_CATEGORY);
+        registry.registerComponent("jurisdiction", RecordProperties.JURISDICTION);
 
-                UserProperties.USER_SECURITY_CLASSIFICATION, UserProperties.USER_SECURITY_CAVEAT,
+        // User Properties
+        registry.registerComponent("user_security_classification", UserProperties.USER_SECURITY_CLASSIFICATION);
+        registry.registerComponent("user_security_caveat", UserProperties.USER_SECURITY_CAVEAT);
 
-                EMAIL_RECORD_TYPE
-        );
+        // Record Types
+        registry.registerComponent("email_record_type", EMAIL_RECORD_TYPE);
     }
 }

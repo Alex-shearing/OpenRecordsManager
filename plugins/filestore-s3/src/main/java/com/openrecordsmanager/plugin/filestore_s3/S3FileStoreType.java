@@ -18,11 +18,6 @@ public class S3FileStoreType extends FileStoreType<S3FileStoreType.S3FileStoreSe
     }
 
     @Override
-    public String id() {
-        return "s3";
-    }
-
-    @Override
     public String save(S3FileStoreSettings properties, InputStream data) throws IOException {
         String bucket = properties.bucket;
         String endpoint = properties.endpoint;

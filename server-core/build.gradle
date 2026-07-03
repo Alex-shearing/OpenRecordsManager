@@ -35,12 +35,7 @@ dependencies {
     runtimeOnly 'org.xerial:sqlite-jdbc:3.53.1.0'
     runtimeOnly 'com.microsoft.sqlserver:mssql-jdbc:13.4.0.jre11'
 
-    // Test Harnesses
-    testImplementation 'org.junit.jupiter:junit-jupiter:6.1.0'
-    testImplementation 'org.springframework.boot:spring-boot-starter-test'
-
     // Dynamic plugin compilation triggers (Replaces 'provided' scope)
-    testRuntimeOnly 'com.h2database:h2'
     compileOnly project(':plugins:auth-local')
     compileOnly project(':plugins:auth-oidc')
     compileOnly project(':plugins:defaults-aus-gov')
@@ -48,9 +43,17 @@ dependencies {
     compileOnly project(':plugins:filestore-s3')
 }
 
-// Target standard JUnit 5 Platform for tests
-test {
-    useJUnitPlatform()
+testing {
+    suites {
+        test {
+            useJUnitJupiter('6.1.0')
+
+            dependencies {
+                runtimeOnly 'com.h2database:h2'
+                implementation 'org.springframework.boot:spring-boot-starter-test'
+            }
+        }
+    }
 }
 
 tasks.withType(ProcessResources).configureEach {
@@ -83,5 +86,8 @@ tasks.register('copyPlugins', Copy) {
 
 // Automatically trigger plugin extraction whenever the app boots locally
 tasks.named('bootRun') {
+    dependsOn tasks.named('copyPlugins')
+}
+tasks.named('test') {
     dependsOn tasks.named('copyPlugins')
 }

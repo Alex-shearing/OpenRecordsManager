@@ -27,12 +27,7 @@ import java.util.Map;
 
 public class OidcAuthProviderType extends RedirectAuthProviderType {
     private static final Logger LOGGER = LoggerFactory.getLogger(OidcAuthProviderType.class);
-
-    @Override
-    public String id() {
-        return "oidc_auth";
-    }
-
+    
     @Override
     public URI getRedirectTo(AuthProviderInstance instance) {
         try {

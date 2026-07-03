@@ -15,12 +15,7 @@ public class LocalFileStoreType extends FileStoreType<LocalFileStoreType.LocalFi
     public LocalFileStoreType() {
         super(LocalFileStoreSettings.class);
     }
-
-    @Override
-    public String id() {
-        return "local";
-    }
-
+    
     @Override
     public String save(LocalFileStoreSettings properties, InputStream data) throws IOException {
         Path destPath;

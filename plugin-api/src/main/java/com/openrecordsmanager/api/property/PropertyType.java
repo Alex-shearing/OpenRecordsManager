@@ -1,11 +1,9 @@
 package com.openrecordsmanager.api.property;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.openrecordsmanager.api.list.IListElement;
 
-import java.util.Collection;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 @SuppressWarnings("unused")
 public abstract class PropertyType<T> {
@@ -90,5 +88,25 @@ public abstract class PropertyType<T> {
 
     public boolean allowsList() {
         return this == LIST_ITEM || this == LIST_MULTIPLE;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (!(o instanceof PropertyType<?> that)) return false;
+        return Objects.equals(name, that.name);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(name);
+    }
+
+    @JsonCreator
+    private static PropertyType<?> fromString(String key) {
+        PropertyType<?> type = TYPES.get(key);
+        if (type == null) {
+            throw new IllegalArgumentException("Unknown PropertyType key: " + key);
+        }
+        return type;
     }
 }
