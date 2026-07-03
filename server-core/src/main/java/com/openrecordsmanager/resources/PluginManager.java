@@ -3,6 +3,8 @@ package com.openrecordsmanager.resources;
 import com.google.common.collect.ImmutableList;
 import com.openrecordsmanager.api.BuiltinComponents;
 import com.openrecordsmanager.api.Plugin;
+import com.openrecordsmanager.config.ConfigProperties;
+import com.openrecordsmanager.config.DynamicConfigService;
 import com.openrecordsmanager.controllers.repsonse.errors.ApiError;
 import com.openrecordsmanager.model.FileStore;
 import com.openrecordsmanager.model.PersistedPlugin;
@@ -13,8 +15,6 @@ import jakarta.annotation.PreDestroy;
 import org.semver4j.Semver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
@@ -44,13 +44,12 @@ public class PluginManager {
     private ImmutableList<Plugin> plugins;
     private URLClassLoader classLoader;
 
-    @Autowired
     public PluginManager(
-            @Value("${server.plugins.directory:}") Optional<String> pluginDirectory,
+            DynamicConfigService config,
             PluginRepository pluginRepo,
             FileStoreRepository fileStoreRepo
     ) {
-        this.directory = pluginDirectory.map(Path::of).orElse(null);
+        this.directory = Path.of(config.getPropertyOrThrow(ConfigProperties.PLUGIN_LOAD_DIRECTORY));
         this.pluginRepo = pluginRepo;
         this.fileStoreRepo = fileStoreRepo;
 

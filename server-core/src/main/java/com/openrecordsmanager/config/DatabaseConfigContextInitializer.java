@@ -1,4 +1,4 @@
-package com.openrecordsmanager;
+package com.openrecordsmanager.config;
 
 import org.springframework.boot.context.properties.bind.Binder;
 import org.springframework.boot.jdbc.DataSourceBuilder;
@@ -9,7 +9,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 
 import javax.sql.DataSource;
 
-public class CustomConfig implements ApplicationContextInitializer<ConfigurableApplicationContext> {
+public class DatabaseConfigContextInitializer implements ApplicationContextInitializer<ConfigurableApplicationContext> {
     @Override
     public void initialize(ConfigurableApplicationContext applicationContext) {
         DataSourceProperties dsProps = Binder.get(applicationContext.getEnvironment())
@@ -26,7 +26,7 @@ public class CustomConfig implements ApplicationContextInitializer<ConfigurableA
 
             JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
 
-//            applicationContext.getEnvironment().getPropertySources().addLast(new DatabaseConfigSource(jdbcTemplate));
+            applicationContext.getEnvironment().getPropertySources().addLast(new DatabaseConfigSource(jdbcTemplate));
         }
 
     }

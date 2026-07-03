@@ -6,12 +6,13 @@ import com.openrecordsmanager.api.Component;
 import com.openrecordsmanager.api.Plugin;
 import com.openrecordsmanager.api.PluginContext;
 import com.openrecordsmanager.api.list.ListDefinition;
+import com.openrecordsmanager.config.ConfigProperties;
+import com.openrecordsmanager.config.DynamicConfigService;
 import com.openrecordsmanager.resources.types.ComponentType;
 import com.openrecordsmanager.resources.types.ComponentTypes;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -22,10 +23,11 @@ public class ComponentCatalog {
 
     private Table<ComponentType<?, ?>, ResourceIdentifier, ? extends Component> components;
 
-    public ComponentCatalog(PluginManager pluginManager, @Value("${workgroup.default_file_store:}") Optional<UUID> defaultStore) {
+    public ComponentCatalog(PluginManager pluginManager, DynamicConfigService configService) {
         this.loadCatalog(pluginManager);
 
-        if (defaultStore.isPresent() && pluginManager.synchronizeWithServer(this, defaultStore.get())) {
+        UUID defaultStore = configService.getProperty(ConfigProperties.WORKGROUP_DEFAULT_FILE_STORE);
+        if (defaultStore != null && pluginManager.synchronizeWithServer(this, defaultStore)) {
             LOGGER.info("Plugin manager reported changes, reloading catalog");
             this.loadCatalog(pluginManager);
         }

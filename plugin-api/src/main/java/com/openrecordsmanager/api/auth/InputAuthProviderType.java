@@ -10,5 +10,10 @@ public abstract class InputAuthProviderType extends AuthProviderType {
      * @param password
      * @return the {@link UserDetails} or null if no user was authenticated
      */
-    public abstract UserDetails authenticate(ConfigStore config, AuthProviderInstance instance, String username, String password);
+    public abstract UserDetails authenticate(
+            ConfigStore config,
+            AuthProviderInstance instance,
+            String username,
+            String password
+    );
 }

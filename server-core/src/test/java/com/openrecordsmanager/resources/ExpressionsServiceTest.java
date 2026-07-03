@@ -74,8 +74,6 @@ class ExpressionsServiceTest {
 
     @Test
     void checkPropertyExpression_numberValue() {
-        System.out.println(testUser);
-        System.out.println(testUser.getProperty(ResourceIdentifier.valueOf("test:list_multiple_property")));
         // Check user and record comparisons
         Assertions.assertTrue(this.expressions.checkPropertyExpression(EMPTY_UUID, "principal['test:number_property'] == value", 10, this.testUser, null), "Number equals: User should have access");
         Assertions.assertTrue(this.expressions.checkPropertyExpression(EMPTY_UUID, "principal['test:number_property'] >= value", 5, this.testUser, null), "Number greater than: User should have access");
