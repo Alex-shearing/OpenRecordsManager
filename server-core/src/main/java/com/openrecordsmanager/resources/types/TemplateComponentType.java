@@ -78,7 +78,22 @@ public abstract class TemplateComponentType<T extends Component, D> extends Comp
     public abstract Optional<D> getRegistered(ResourceIdentifier id, DataRepository repo);
 
     /**
-     * Validates that all the dependencies of the component are registered, including the dependencies of the dependencies.
+     * Get the registered instance of the component from the database
+     *
+     * @param template the component template
+     * @param repo     the data repository
+     * @param catalog  the component catalog
+     * @return an optional instance of the registered component
+     */
+    public Optional<D> getRegistered(T template, DataRepository repo, ComponentCatalog catalog) {
+        ResourceIdentifier id = catalog.getId(this, template);
+        if (id == null) return Optional.empty();
+
+        return this.getRegistered(id, repo);
+    }
+
+    /**
+     * Validates that all the dependencies of the component are registered, including the dependencies of dependencies.
      *
      * @param component  the component to confirm.
      * @param repository data repository
@@ -96,11 +111,9 @@ public abstract class TemplateComponentType<T extends Component, D> extends Comp
             if (childType == null) {
                 throw new IllegalStateException("Cannot find child resource type for dependency " + dependency);
             }
-            ResourceIdentifier dependencyId = catalog.getId(childType, dependency);
-
-            Optional<?> childComponent = childType.getRegistered(dependencyId, repository);
+            Optional<?> childComponent = childType.getRegistered(dependency, repository, catalog);
             if (childComponent.isEmpty()) {
-                throw new IllegalStateException("Unregistered dependency " + dependencyId);
+                throw new IllegalStateException("Unregistered dependency " + catalog.getId(childType, dependency));
             }
         }
     }

@@ -41,14 +41,9 @@ public class RecordTypeComponentType extends TemplateComponentType<RecordTypeDef
 
     @SuppressWarnings("unchecked")
     private static <T> RecordTypeProperty<T> createRecordTypeProperty(Map.Entry<PropertyDefinition<?>, ?> entry, ComponentCatalog catalog, DataRepository repository) {
-        ResourceIdentifier propId = catalog.getId(ComponentTypes.PROPERTY, entry.getKey());
-        if (propId == null) {
-            throw new IllegalArgumentException("Attempted to use property that was not in catalog: " + entry.getKey().getName());
-        }
-
-        Optional<ObjectProperty<?>> property = ComponentTypes.PROPERTY.getRegistered(propId, repository);
+        Optional<ObjectProperty<?>> property = ComponentTypes.PROPERTY.getRegistered(entry.getKey(), repository, catalog);
         if (property.isEmpty()) {
-            throw new IllegalArgumentException("Attempted to use property that was not registered: " + propId);
+            throw new IllegalArgumentException("Attempted to use property that was not registered: " + catalog.getId(ComponentTypes.PROPERTY, entry.getKey()));
         }
 
         return new RecordTypeProperty<>((ObjectProperty<T>) property.get(), (T) entry.getValue());

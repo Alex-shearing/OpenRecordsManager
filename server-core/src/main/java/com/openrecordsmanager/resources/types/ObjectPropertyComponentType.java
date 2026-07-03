@@ -17,18 +17,27 @@ public class ObjectPropertyComponentType extends TemplateComponentType<PropertyD
     }
 
     @Override
-    protected void register(DataRepository repository, ComponentCatalog catalog, ExpressionsService expressions, ResourceIdentifier id, PropertyDefinition<?> definition) {
+    protected void register(
+            DataRepository repository,
+            ComponentCatalog catalog,
+            ExpressionsService expressions,
+            ResourceIdentifier id,
+            PropertyDefinition<?> definition
+    ) {
         this.registerInternal(repository, catalog, expressions, id, definition);
     }
 
-    private <T> void registerInternal(DataRepository repository, ComponentCatalog catalog, ExpressionsService expressions, ResourceIdentifier id, PropertyDefinition<T> definition) {
+    private <T> void registerInternal(
+            DataRepository repository,
+            ComponentCatalog catalog,
+            ExpressionsService expressions,
+            ResourceIdentifier id,
+            PropertyDefinition<T> definition
+    ) {
         ListType listType = null;
         if (definition.getType().allowsList() && definition.getListType() != null) {
-            ResourceIdentifier listId = catalog.getId(ComponentTypes.LIST, definition.getListType());
-            if (listId == null) {
-                throw new IllegalArgumentException("ListType " + definition.getListType().id() + " does not exist");
-            }
-            listType = repository.listTypeRepo.findById(listId).orElseThrow();
+            listType = ComponentTypes.LIST.getRegistered(definition.getListType(), repository, catalog)
+                    .orElse(null);
         }
 
         ObjectProperty<?> type = new ObjectProperty<>(
