@@ -15,13 +15,13 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-public class RecordTypeComponentType extends ComponentType<RecordTypeDefinition, RecordType> {
-    public RecordTypeComponentType() {
-        super("record_types", RecordTypeDefinition.class);
+public class RecordTypeComponentType extends TemplateComponentType<RecordTypeDefinition, RecordType> {
+    public RecordTypeComponentType(String name) {
+        super(name, RecordTypeDefinition.class);
     }
 
     @Override
-    public RecordType register(DataRepository repository, ComponentCatalog catalog, ExpressionsService expressions, ResourceIdentifier id, RecordTypeDefinition definition) {
+    public void register(DataRepository repository, ComponentCatalog catalog, ExpressionsService expressions, ResourceIdentifier id, RecordTypeDefinition definition) {
         Set<RecordTypeProperty<?>> properties = definition.properties().entrySet()
                 .stream()
                 .map(def -> createRecordTypeProperty(def, catalog, repository))
@@ -36,7 +36,7 @@ public class RecordTypeComponentType extends ComponentType<RecordTypeDefinition,
                 definition.securityFilterUsage(),
                 properties
         );
-        return repository.recordTypeRepo.saveAndFlush(type);
+        repository.recordTypeRepo.saveAndFlush(type);
     }
 
     @SuppressWarnings("unchecked")

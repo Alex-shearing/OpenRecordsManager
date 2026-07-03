@@ -9,13 +9,13 @@ import com.openrecordsmanager.resources.ResourceIdentifier;
 
 import java.util.Optional;
 
-public class ListComponentType extends ComponentType<ListDefinition, ListType> {
-    public ListComponentType() {
-        super("lists", ListDefinition.class);
+public class ListComponentType extends TemplateComponentType<ListDefinition, ListType> {
+    public ListComponentType(String name) {
+        super(name, ListDefinition.class);
     }
 
     @Override
-    public ListType register(DataRepository repository, ComponentCatalog catalog, ExpressionsService expressions, ResourceIdentifier id, ListDefinition definition) {
+    public void register(DataRepository repository, ComponentCatalog catalog, ExpressionsService expressions, ResourceIdentifier id, ListDefinition definition) {
         ListType type = new ListType(id, definition.display);
         repository.listTypeRepo.saveAndFlush(type);
 
@@ -24,7 +24,6 @@ public class ListComponentType extends ComponentType<ListDefinition, ListType> {
             ComponentTypes.LIST_ELEMENT.register(repository, catalog, expressions, childId, listItem, false);
         });
 
-        return type;
     }
 
     @Override

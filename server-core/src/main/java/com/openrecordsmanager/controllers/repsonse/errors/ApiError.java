@@ -2,6 +2,7 @@ package com.openrecordsmanager.controllers.repsonse.errors;
 
 import com.openrecordsmanager.resources.ResourceIdentifier;
 import com.openrecordsmanager.resources.types.ComponentType;
+import com.openrecordsmanager.resources.types.TemplateComponentType;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 
@@ -19,11 +20,11 @@ public class ApiError extends RuntimeException {
         return new NotFound(type, resource);
     }
 
-    public static ApiError notFound(ComponentType<?, ?> type, ResourceIdentifier resource) {
+    public static ApiError notFound(ComponentType<?> type, ResourceIdentifier resource) {
         return ApiError.notFound(type.toString(), resource.toString());
     }
 
-    public static ApiError templateNotFound(ComponentType<?, ?> type, ResourceIdentifier resource) {
+    public static ApiError templateNotFound(TemplateComponentType<?, ?> type, ResourceIdentifier resource) {
         return ApiError.notFound(type.toString() + " template", resource.toString());
     }
 

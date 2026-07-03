@@ -10,6 +10,7 @@ import com.openrecordsmanager.resources.ExpressionsService;
 import com.openrecordsmanager.resources.ResourceIdentifier;
 import com.openrecordsmanager.resources.types.ComponentType;
 import com.openrecordsmanager.resources.types.ComponentTypes;
+import com.openrecordsmanager.resources.types.TemplateComponentType;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import org.springframework.http.MediaType;
@@ -47,7 +48,7 @@ public class TemplateController {
     @Operation(summary = "List templates available for type")
     @NotFoundApiResponse
     public Set<ResourceIdentifier> getTemplatesForType(@PathVariable("type") String typeName) {
-        ComponentType<?, ?> type = ComponentTypes.fromName(typeName);
+        ComponentType<?> type = ComponentTypes.fromName(typeName);
         if (type == null) {
             throw ApiError.notFound("template type", typeName);
         }
@@ -58,32 +59,29 @@ public class TemplateController {
     @GetMapping(value = "/{type}/{template}", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Get template details")
     @NotFoundApiResponse
-    @SuppressWarnings("unchecked")
-    public <T> T getTemplatesForType(@PathVariable("type") String typeName, @PathVariable("template") ResourceIdentifier templateId) {
-        ComponentType<?, T> type = (ComponentType<?, T>) ComponentTypes.fromName(typeName);
+    public Object getTemplatesForType(@PathVariable("type") String typeName, @PathVariable("template") ResourceIdentifier templateId) {
+        TemplateComponentType<Component, ?> type = ComponentTypes.registerableFromName(typeName);
         if (type == null) {
             throw ApiError.notFound("template type", typeName);
         }
 
-        return type.getRegistered(templateId, this.repository)
-                .orElseThrow(() -> ApiError.notFound(type, templateId));
+        return type.getRegistered(templateId, this.repository).orElseThrow(() -> ApiError.notFound(type, templateId));
     }
 
-    @GetMapping(value = "/{type}/{template}/register", produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = "/{type}/{template}/register", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Register a template to the database")
     @NotFoundApiResponse
-    @SuppressWarnings("unchecked")
-    public <T extends Component> void registerTemplate(
+    public void registerTemplate(
             @PathVariable("type") String typeName,
             @PathVariable("template") ResourceIdentifier templateId,
             @RequestParam(value = "includeDependencies", required = false, defaultValue = "false") boolean includeDependencies
     ) {
-        ComponentType<T, ?> type = (ComponentType<T, ?>) ComponentTypes.fromName(typeName);
+        TemplateComponentType<Component, ?> type = ComponentTypes.registerableFromName(typeName);
         if (type == null) {
             throw ApiError.notFound("template type", typeName);
         }
 
-        T template = type.getComponent(templateId, this.catalog)
+        Component template = type.getComponent(templateId, this.catalog)
                 .orElseThrow(() -> ApiError.templateNotFound(ComponentTypes.RECORD_TYPE, templateId));
 
         type.register(this.repository, this.catalog, this.expressions, templateId, template, includeDependencies);

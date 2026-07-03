@@ -18,24 +18,27 @@ import org.jspecify.annotations.Nullable;
 import java.util.Objects;
 
 public class ComponentTypes {
-    @SuppressWarnings("unchecked")
-    public static final UnregisterableComponentType<ConfigDefinition<?>> CONFIG = new UnregisterableComponentType<>("configs", (Class<ConfigDefinition<?>>) (Class<?>) ConfigDefinition.class);
-    public static final ComponentType<ListDefinition, ListType> LIST = new ListComponentType();
-    public static final ComponentType<ListElementDefinition, ListElement> LIST_ELEMENT = new ListElementComponentType();
-    public static final ComponentType<PropertyDefinition<?>, ObjectProperty<?>> PROPERTY = new ObjectPropertyComponentType();
-    public static final ComponentType<RecordTypeDefinition, RecordType> RECORD_TYPE = new RecordTypeComponentType();
-    public static final UnregisterableComponentType<InputAuthProviderType> INPUT_AUTH_PROVIDER = new UnregisterableComponentType<>("input_auth_providers", InputAuthProviderType.class);
-    public static final UnregisterableComponentType<RedirectAuthProviderType> REDIRECT_AUTH_PROVIDER = new UnregisterableComponentType<>("redirect_auth_providers", RedirectAuthProviderType.class);
-    @SuppressWarnings("unchecked")
-    public static final UnregisterableComponentType<FileStoreType<?>> FILE_STORE_TYPE = new UnregisterableComponentType<>("file_store_types", (Class<FileStoreType<?>>) (Class<?>) FileStoreType.class);
+    public static final ComponentType<ConfigDefinition<?>> CONFIG = ComponentType.of("configs", ConfigDefinition.class);
+    public static final ComponentType<InputAuthProviderType> INPUT_AUTH_PROVIDER = ComponentType.of("input_auth_providers", InputAuthProviderType.class);
+    public static final ComponentType<RedirectAuthProviderType> REDIRECT_AUTH_PROVIDER = ComponentType.of("redirect_auth_providers", RedirectAuthProviderType.class);
+    public static final ComponentType<FileStoreType<?>> FILE_STORE_TYPE = ComponentType.of("file_store_types", FileStoreType.class);
 
-    public static final ComponentType<?, ?>[] VALUES = {
+    public static final TemplateComponentType<ListDefinition, ListType> LIST = new ListComponentType("lists");
+    public static final TemplateComponentType<ListElementDefinition, ListElement> LIST_ELEMENT = new ListElementComponentType("list_elements");
+    public static final TemplateComponentType<PropertyDefinition<?>, ObjectProperty<?>> PROPERTY = new ObjectPropertyComponentType("object_properties");
+    public static final TemplateComponentType<RecordTypeDefinition, RecordType> RECORD_TYPE = new RecordTypeComponentType("record_types");
+
+    public static final ComponentType<?>[] VALUES = {
             CONFIG, LIST, LIST_ELEMENT, PROPERTY, RECORD_TYPE, INPUT_AUTH_PROVIDER, REDIRECT_AUTH_PROVIDER, FILE_STORE_TYPE
     };
 
+    public static final TemplateComponentType<?, ?>[] REGISTERABLE_VALUES = {
+            LIST, LIST_ELEMENT, PROPERTY, RECORD_TYPE
+    };
+
     @Nullable
-    public static ComponentType<?, ?> fromName(String name) {
-        for (ComponentType<?, ?> value : VALUES) {
+    public static ComponentType<?> fromName(String name) {
+        for (ComponentType<?> value : VALUES) {
             if (Objects.equals(value.name, name)) return value;
         }
         return null;
@@ -43,11 +46,33 @@ public class ComponentTypes {
 
     @Nullable
     @SuppressWarnings("unchecked")
-    public static <K extends Component, D> ComponentType<K, D> fromObject(K object) {
-        for (ComponentType<?, ?> value : VALUES) {
+    public static <K extends Component> ComponentType<K> fromObject(K object) {
+        for (ComponentType<?> value : VALUES) {
             if (value.is(object)) {
-                return (ComponentType<K, D>) value;
+                return (ComponentType<K>) value;
             }
+        }
+
+        return null;
+    }
+
+    @Nullable
+    @SuppressWarnings("unchecked")
+    public static <K extends Component, D> TemplateComponentType<K, D> registerableFromObject(K object) {
+        for (TemplateComponentType<?, ?> value : REGISTERABLE_VALUES) {
+            if (value.is(object)) {
+                return (TemplateComponentType<K, D>) value;
+            }
+        }
+
+        return null;
+    }
+
+    @Nullable
+    @SuppressWarnings("unchecked")
+    public static TemplateComponentType<Component, ?> registerableFromName(String name) {
+        for (TemplateComponentType<? extends Component, ?> value : REGISTERABLE_VALUES) {
+            if (Objects.equals(value.name, name)) return (TemplateComponentType<Component, ?>) value;
         }
 
         return null;

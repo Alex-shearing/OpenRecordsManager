@@ -10,13 +10,13 @@ import com.openrecordsmanager.resources.ResourceIdentifier;
 
 import java.util.Optional;
 
-public class ListElementComponentType extends ComponentType<ListElementDefinition, ListElement> {
-    public ListElementComponentType() {
-        super("list_elements", ListElementDefinition.class);
+public class ListElementComponentType extends TemplateComponentType<ListElementDefinition, ListElement> {
+    public ListElementComponentType(String name) {
+        super(name, ListElementDefinition.class);
     }
 
     @Override
-    public ListElement register(DataRepository repository, ComponentCatalog catalog, ExpressionsService expressions, ResourceIdentifier id, ListElementDefinition definition) {
+    public void register(DataRepository repository, ComponentCatalog catalog, ExpressionsService expressions, ResourceIdentifier id, ListElementDefinition definition) {
         ResourceIdentifier parentId = catalog.getId(ComponentTypes.LIST, definition.parent());
         if (parentId == null) {
             throw new IllegalArgumentException("attempted to register list element to a parent that was not registered");
@@ -33,7 +33,7 @@ public class ListElementComponentType extends ComponentType<ListElementDefinitio
                 definition.activeTo(),
                 definition.aliases()
         );
-        return repository.listElementRepo.saveAndFlush(type);
+        repository.listElementRepo.saveAndFlush(type);
     }
 
     @Override

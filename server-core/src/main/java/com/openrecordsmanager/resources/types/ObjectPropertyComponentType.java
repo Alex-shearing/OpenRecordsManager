@@ -10,15 +10,15 @@ import com.openrecordsmanager.resources.ResourceIdentifier;
 
 import java.util.Optional;
 
-public class ObjectPropertyComponentType extends ComponentType<PropertyDefinition<?>, ObjectProperty<?>> {
+public class ObjectPropertyComponentType extends TemplateComponentType<PropertyDefinition<?>, ObjectProperty<?>> {
     @SuppressWarnings("unchecked")
-    public ObjectPropertyComponentType() {
-        super("object_properties", (Class<PropertyDefinition<?>>) (Class<?>) PropertyDefinition.class);
+    public ObjectPropertyComponentType(String name) {
+        super(name, (Class<PropertyDefinition<?>>) (Class<?>) PropertyDefinition.class);
     }
 
     @Override
-    protected ObjectProperty<?> register(DataRepository repository, ComponentCatalog catalog, ExpressionsService expressions, ResourceIdentifier id, PropertyDefinition<?> definition) {
-        return this.registerInternal(repository, catalog, expressions, id, definition);
+    protected void register(DataRepository repository, ComponentCatalog catalog, ExpressionsService expressions, ResourceIdentifier id, PropertyDefinition<?> definition) {
+        this.registerInternal(repository, catalog, expressions, id, definition);
     }
 
     private <T> ObjectProperty<?> registerInternal(DataRepository repository, ComponentCatalog catalog, ExpressionsService expressions, ResourceIdentifier id, PropertyDefinition<T> definition) {
