@@ -19,7 +19,13 @@ import java.util.stream.Collectors;
 public class RecordTypeComponentBinder extends ComponentBinder<RecordTypeDefinition, RecordType> {
 
     @Override
-    public void register(DataRepository repository, ComponentCatalog catalog, ExpressionsService expressions, ResourceIdentifier id, RecordTypeDefinition definition) {
+    public void register(
+            DataRepository repository,
+            ComponentCatalog catalog,
+            ExpressionsService expressions,
+            ResourceIdentifier id,
+            RecordTypeDefinition definition
+    ) {
         Set<RecordTypeProperty<?>> properties = definition.properties().entrySet()
                 .stream()
                 .map(def -> createRecordTypeProperty(def, catalog, repository))

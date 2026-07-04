@@ -12,7 +12,13 @@ import java.util.Optional;
 public class ListComponentBinder extends ComponentBinder<ListDefinition, ListType> {
 
     @Override
-    public void register(DataRepository repository, ComponentCatalog catalog, ExpressionsService expressions, ResourceIdentifier id, ListDefinition definition) {
+    public void register(
+            DataRepository repository,
+            ComponentCatalog catalog,
+            ExpressionsService expressions,
+            ResourceIdentifier id,
+            ListDefinition definition
+    ) {
         ListType type = new ListType(id, definition.name());
         repository.listTypeRepo.saveAndFlush(type);
 

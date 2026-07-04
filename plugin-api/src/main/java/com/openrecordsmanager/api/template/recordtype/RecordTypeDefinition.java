@@ -22,22 +22,14 @@ public record RecordTypeDefinition(
         Map<ComponentReference<PropertyDefinition<?>>, ?> properties,
         @Nullable Set<String> allowedContentTypes,
         @Nullable ExpressionBuilder securityFilter,
-        @Nullable SecurityFilterUsage securityFilterUsage
+        @JsonDeserialize(using = SecurityFilterUsage.Deserializer.class) SecurityFilterUsage securityFilterUsage
 ) implements Component {
 
     public RecordTypeDefinition {
-        if (securityFilterUsage == null) securityFilterUsage = SecurityFilterUsage.HIDE_FILES;
-
         Objects.requireNonNull(name, "Property 'name' must not be null");
         Objects.requireNonNull(description, "Property 'description' must not be null");
         Objects.requireNonNull(properties, "Property 'properties' must not be null");
         Objects.requireNonNull(securityFilterUsage, "Property 'securityFilterUsage' must not be null");
-    }
-
-    @Override
-    public SecurityFilterUsage securityFilterUsage() {
-        Objects.requireNonNull(this.securityFilterUsage, "Property 'securityFilterUsage' must not be null");
-        return this.securityFilterUsage;
     }
 
     public static Builder builder(String name) {

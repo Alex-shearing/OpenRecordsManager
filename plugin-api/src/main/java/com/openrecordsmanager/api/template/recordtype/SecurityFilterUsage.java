@@ -1,6 +1,9 @@
 package com.openrecordsmanager.api.template.recordtype;
 
-import com.fasterxml.jackson.annotation.JsonEnumDefaultValue;
+import tools.jackson.core.JacksonException;
+import tools.jackson.core.JsonParser;
+import tools.jackson.databind.DeserializationContext;
+import tools.jackson.databind.deser.std.StdDeserializer;
 
 public enum SecurityFilterUsage {
     /**
@@ -15,11 +18,27 @@ public enum SecurityFilterUsage {
     /**
      * Hides attached files for a user who does not pass the security filter.
      */
-    @JsonEnumDefaultValue
     HIDE_FILES,
     /**
      * Does not hide any aspect of the record for a user who does not pass the security filter.
      */
-    SHOW_ALL,
+    SHOW_ALL;
+
+    public static class Deserializer extends StdDeserializer<SecurityFilterUsage> {
+
+        public Deserializer() {
+            super(SecurityFilterUsage.class);
+        }
+
+        @Override
+        public SecurityFilterUsage deserialize(JsonParser p, DeserializationContext ctxt) throws JacksonException {
+            return SecurityFilterUsage.valueOf(p.getValueAsString().toUpperCase());
+        }
+
+        @Override
+        public Object getNullValue(DeserializationContext ctxt) {
+            return HIDE_FILES;
+        }
+    }
 
 }

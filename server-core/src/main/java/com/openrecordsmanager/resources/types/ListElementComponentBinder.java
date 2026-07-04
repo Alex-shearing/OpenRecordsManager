@@ -13,7 +13,13 @@ import java.util.Optional;
 public class ListElementComponentBinder extends ComponentBinder<ListElementDefinition, ListElement> {
 
     @Override
-    public void register(DataRepository repository, ComponentCatalog catalog, ExpressionsService expressions, ResourceIdentifier id, ListElementDefinition definition) {
+    public void register(
+            DataRepository repository,
+            ComponentCatalog catalog,
+            ExpressionsService expressions,
+            ResourceIdentifier id,
+            ListElementDefinition definition
+    ) {
         ResourceIdentifier parentId = definition.parent().getId(catalog);
         if (parentId == null) {
             throw new IllegalArgumentException("attempted to register list element to a parent that was not registered");
