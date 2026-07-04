@@ -14,7 +14,7 @@ import java.util.function.Function;
 
 public abstract class ComponentReference<T extends Component> {
 
-    abstract public T getComponent(ComponentAccess catalog);
+    public abstract T getComponent(ComponentAccess catalog);
 
     public abstract ResourceIdentifier getId(ComponentAccess catalog);
 
@@ -118,7 +118,7 @@ public abstract class ComponentReference<T extends Component> {
         }
     }
 
-    public static class ComponentReferenceKeyDeserializer extends KeyDeserializer {
+    public static class RefKeyDeserializer extends KeyDeserializer {
         @Override
         public Object deserializeKey(String key, DeserializationContext ctxt) {
             return ComponentReference.reference(key);

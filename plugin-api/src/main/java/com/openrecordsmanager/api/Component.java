@@ -11,7 +11,7 @@ import java.util.Set;
 public interface Component {
     ObjectMapper MAPPER = JsonMapper.builder()
             .addModule(new SimpleModule()
-                    .addKeyDeserializer(ComponentReference.class, new ComponentReference.ComponentReferenceKeyDeserializer())
+                    .addKeyDeserializer(ComponentReference.class, new ComponentReference.RefKeyDeserializer())
             )
             .build();
 

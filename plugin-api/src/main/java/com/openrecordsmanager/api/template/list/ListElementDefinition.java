@@ -26,6 +26,24 @@ public record ListElementDefinition(
         Objects.requireNonNull(parent, "Property 'parent' must not be null");
     }
 
+    /**
+     * The reference to the parent list is not considered for the equals operations.
+     */
+    @Override
+    public boolean equals(Object o) {
+        if (!(o instanceof ListElementDefinition that)) return false;
+        return index == that.index &&
+                Objects.equals(name, that.name) &&
+                Objects.equals(activeTo, that.activeTo) &&
+                Objects.equals(description, that.description) &&
+                Objects.equals(aliases, that.aliases);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(name, description, index, activeTo, aliases);
+    }
+
     @Override
     public Set<ComponentReference<? extends Component>> getDependencies() {
         return Set.of(this.parent);

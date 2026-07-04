@@ -4,6 +4,8 @@ import com.openrecordsmanager.api.Component;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import java.util.HashSet;
+
 class ListDefinitionTest {
 
     @Test
@@ -16,7 +18,7 @@ class ListDefinitionTest {
 
         Assertions.assertEquals(list.name(), codeList.name(), "Name should be equal");
         Assertions.assertEquals(list.defaultEntries().keySet(), codeList.defaultEntries().keySet(), "Default entry ids should be equal");
-        Assertions.assertEquals(list.defaultEntries().values(), codeList.defaultEntries().values(), "Default entry keys should be equal");
+        Assertions.assertEquals(new HashSet<>(list.defaultEntries().values()), new HashSet<>(codeList.defaultEntries().values()), "Default entry values should be equal");
 
         Assertions.assertEquals(list, codeList, "Object should be equal");
     }
