@@ -19,6 +19,11 @@ public class DatabaseConfigSource extends EnumerablePropertySource<Object> {
 
     @Override
     public @Nullable Object getProperty(String name) {
+        // Do not attempt to load server. configs from the database
+        if (name.startsWith("server.")) {
+            return null;
+        }
+
         List<String> vals = this.repository.query(
                 "SELECT config_value FROM system_configurations WHERE config_key = ?",
                 (rs, rowNum) -> rs.getString("config_value"),

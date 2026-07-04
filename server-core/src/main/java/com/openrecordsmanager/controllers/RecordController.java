@@ -1,8 +1,8 @@
 package com.openrecordsmanager.controllers;
 
 import com.openrecordsmanager.api.ResourceIdentifier;
+import com.openrecordsmanager.api.builtin.BuiltinConfigs;
 import com.openrecordsmanager.api.types.ComponentTypes;
-import com.openrecordsmanager.config.ConfigProperties;
 import com.openrecordsmanager.config.DynamicConfigService;
 import com.openrecordsmanager.controllers.repsonse.InternalServerErrorApiResponse;
 import com.openrecordsmanager.controllers.repsonse.NotFoundApiResponse;
@@ -88,10 +88,8 @@ public class RecordController {
         Record record = this.repository.recordRepo.findById(id)
                 .orElseThrow(() -> ApiError.notFound("record", id.toString()));
 
-        UUID defaultStoreId = this.config.getProperty(ConfigProperties.WORKGROUP_DEFAULT_FILE_STORE);
-        if (defaultStoreId == null) {
-            throw ApiError.serverError("There is no value set for the {0} configuration", ConfigProperties.WORKGROUP_DEFAULT_FILE_STORE.key());
-        }
+        UUID defaultStoreId = this.config.getOptional(BuiltinConfigs.DEFAULT_FILE_STORE)
+                .orElseThrow(() -> ApiError.serverError("There is no default file store set"));
 
         FileStore<?> fileStore = this.repository.fileStoreRepo.findById(defaultStoreId)
                 .orElseThrow(() -> ApiError.notFound("file store", defaultStoreId.toString()));

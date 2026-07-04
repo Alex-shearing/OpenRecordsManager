@@ -70,12 +70,18 @@ public class FileStoreMiddleware<T> {
 
     public static class Serializer extends ValueSerializer<FileStoreMiddleware<?>> {
 
+        private final ComponentCatalog catalog;
+
+        public Serializer(ComponentCatalog catalog) {
+            this.catalog = catalog;
+        }
+
         @Override
         public void serialize(FileStoreMiddleware value, JsonGenerator gen, SerializationContext ctxt) throws JacksonException {
             gen.writeStartObject();
             gen.writeStringProperty("id", value.id.toString());
             gen.writeStringProperty("type", value.type.toString());
-            gen.writePOJOProperty("properties", value.properties);
+            gen.writePOJOProperty("properties", value.getProperties(catalog));
             gen.writeEndObject();
         }
     }

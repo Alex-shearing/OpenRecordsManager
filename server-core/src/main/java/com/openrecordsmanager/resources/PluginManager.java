@@ -2,9 +2,9 @@ package com.openrecordsmanager.resources;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.hash.Hashing;
-import com.openrecordsmanager.api.BuiltinComponents;
 import com.openrecordsmanager.api.Plugin;
-import com.openrecordsmanager.config.ConfigProperties;
+import com.openrecordsmanager.api.builtin.BuiltinConfigs;
+import com.openrecordsmanager.api.builtin.BuiltinPlugin;
 import com.openrecordsmanager.config.DynamicConfigService;
 import com.openrecordsmanager.controllers.repsonse.errors.ApiError;
 import com.openrecordsmanager.model.FileStore;
@@ -49,7 +49,7 @@ public class PluginManager {
             PluginRepository pluginRepo,
             FileStoreRepository fileStoreRepo
     ) {
-        this.directory = Path.of(config.getPropertyOrThrow(ConfigProperties.PLUGIN_LOAD_DIRECTORY));
+        this.directory = Path.of(config.getOrThrow(BuiltinConfigs.PLUGINS_DIRECTORY));
         this.pluginRepo = pluginRepo;
         this.fileStoreRepo = fileStoreRepo;
 
@@ -97,7 +97,7 @@ public class PluginManager {
         ServiceLoader<Plugin> loader = ServiceLoader.load(Plugin.class, this.classLoader);
 
         List<Plugin> loadedPlugins = new ArrayList<>();
-        loadedPlugins.add(new BuiltinComponents());
+        loadedPlugins.add(new BuiltinPlugin());
 
         // Initialize all the plugins
         for (Plugin plugin : loader) {

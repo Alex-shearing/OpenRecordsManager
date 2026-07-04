@@ -2,16 +2,22 @@ package com.openrecordsmanager.api.config;
 
 import org.jspecify.annotations.Nullable;
 
-public interface ConfigStore {
-    <T> @Nullable T getProperty(ConfigDefinition<T> key);
+import java.util.Optional;
 
-    default <T> T getProperty(ConfigDefinition<T> key, T defaultValue) {
-        T value = this.getProperty(key);
+public interface ConfigStore {
+    <T> @Nullable T getValue(ConfigDefinition<T> key);
+
+    default <T> Optional<T> getOptional(ConfigDefinition<T> key) {
+        return Optional.ofNullable(this.getValue(key));
+    }
+
+    default <T> T getOrDefault(ConfigDefinition<T> key, T defaultValue) {
+        T value = this.getValue(key);
         return value != null ? value : defaultValue;
     }
 
-    default <T> T getPropertyOrThrow(ConfigDefinition<T> key) {
-        T value = this.getProperty(key);
+    default <T> T getOrThrow(ConfigDefinition<T> key) {
+        T value = this.getValue(key);
         if (value == null) {
             throw new IllegalStateException(String.format("No value found for key '%s'", key.name()));
         }

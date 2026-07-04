@@ -10,7 +10,7 @@ public class LocalAuthProviderType extends InputAuthProviderType {
 
     @Override
     public @Nullable UserDetails authenticate(ConfigStore config, AuthProviderInstance instance, String username, String password) {
-        if (!config.getProperty(AuthLocalPlugin.CONFIG_ADMIN_ENABLED, false)) {
+        if (!config.getOrDefault(AuthLocalPlugin.CONFIG_ADMIN_ENABLED, false)) {
             return null;
         }
         return new UserDetails(instance, username, "");

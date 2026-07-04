@@ -3,10 +3,10 @@ package com.openrecordsmanager.resources;
 import com.google.common.collect.ImmutableTable;
 import com.google.common.collect.Table;
 import com.openrecordsmanager.api.*;
+import com.openrecordsmanager.api.builtin.BuiltinConfigs;
 import com.openrecordsmanager.api.template.list.ListDefinition;
 import com.openrecordsmanager.api.types.ComponentType;
 import com.openrecordsmanager.api.types.ComponentTypes;
-import com.openrecordsmanager.config.ConfigProperties;
 import com.openrecordsmanager.config.DynamicConfigService;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
@@ -24,7 +24,7 @@ public class ComponentCatalog implements ComponentAccess {
     public ComponentCatalog(PluginManager pluginManager, DynamicConfigService configService) {
         this.loadCatalog(pluginManager);
 
-        UUID defaultStore = configService.getProperty(ConfigProperties.WORKGROUP_DEFAULT_FILE_STORE);
+        UUID defaultStore = configService.getValue(BuiltinConfigs.DEFAULT_FILE_STORE);
         if (defaultStore != null && pluginManager.synchronizeWithServer(this, defaultStore)) {
             LOGGER.info("Plugin manager reported changes, reloading catalog");
             this.loadCatalog(pluginManager);

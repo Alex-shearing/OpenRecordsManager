@@ -1,11 +1,12 @@
 package com.openrecordsmanager.model;
 
+import com.openrecordsmanager.api.ResourceIdentifier;
 import com.openrecordsmanager.api.auth.AuthProviderInstance;
 import com.openrecordsmanager.model.util.ResourceIdentifierConverter;
-import com.openrecordsmanager.api.ResourceIdentifier;
 import jakarta.persistence.*;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
+import org.jspecify.annotations.NonNull;
 
 import java.util.Map;
 import java.util.UUID;
@@ -29,17 +30,17 @@ public class AuthProvider implements AuthProviderInstance {
     public Map<String, Object> settings;
 
     @Override
-    public UUID getId() {
+    public @NonNull UUID getId() {
         return this.id;
     }
 
     @Override
-    public String getName() {
+    public @NonNull String getName() {
         return this.name;
     }
 
     @Override
-    public Map<String, Object> getSettings() {
+    public @NonNull Map<String, Object> getSettings() {
         return this.settings;
     }
 }

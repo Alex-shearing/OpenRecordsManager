@@ -5,18 +5,18 @@
 # It has the second-highest precedence when loading configuration options.
 # The order of precedence is: Environment Variables > Configuration File > Database.
 
-# Config that affects the whole workgroup
-workgroup:
-  # JDBC URL for the workgroup database
-  database: jdbc:sqlite:orm_system.db
-
 # Config that affects just the server that is reading the config
 server:
+  # JDBC URL for the workgroup database
+  database: jdbc:sqlite:orm_system.db
   plugins:
     # Define the directory to load plugins from
     directory: ./plugins
     # Skip the check during startup to ensure all plugins are required plugins are loaded
     skip_startup_check: false
+
+# Config that can be set on either the server or the database
+app:
   debug:
     # If enabled, detailed API error messages will be returned to the user
     detailed_errors: true

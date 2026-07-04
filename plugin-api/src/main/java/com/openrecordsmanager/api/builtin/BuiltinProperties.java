@@ -1,12 +1,11 @@
-package com.openrecordsmanager.api;
+package com.openrecordsmanager.api.builtin;
 
 import com.openrecordsmanager.api.template.property.PropertyDefinition;
 import com.openrecordsmanager.api.template.property.PropertyType;
 
 import java.util.Date;
 
-@SuppressWarnings("unused")
-public class BuiltinComponents implements Plugin {
+public class BuiltinProperties {
     public static final PropertyDefinition<String> NOTES = PropertyDefinition.builder("Notes", PropertyType.STRING)
             .description("Notes on the object")
             .build();
@@ -22,22 +21,8 @@ public class BuiltinComponents implements Plugin {
     public static final PropertyDefinition<String> KEYWORDS = PropertyDefinition.builder("Keywords", PropertyType.STRING)
             .description("Relevant keywords that can assist in searching")
             .build();
-
+    
     public static final PropertyDefinition<String> MIME_TYPE = PropertyDefinition.builder("MIME Type", PropertyType.STRING)
             .description("Standardised internet types defining a file type")
             .build();
-
-    @Override
-    public String getName() {
-        return "builtin";
-    }
-
-    @Override
-    public void initialise(RegistrationContext registry) {
-        registry.registerComponent("notes", NOTES);
-        registry.registerComponent("date_registered", DATE_REGISTERED);
-        registry.registerComponent("date_created", DATE_CREATED);
-        registry.registerComponent("keywords", KEYWORDS);
-        registry.registerComponent("mime_type", MIME_TYPE);
-    }
 }

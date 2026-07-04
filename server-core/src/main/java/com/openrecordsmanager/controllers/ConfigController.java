@@ -12,6 +12,7 @@ import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -22,12 +23,12 @@ import java.util.stream.Collectors;
 public class ConfigController {
 
     private final DataRepository repository;
-    private final DynamicConfigService environment;
+    private final DynamicConfigService config;
     private final ComponentCatalog catalog;
 
     public ConfigController(DataRepository repository, DynamicConfigService config, ComponentCatalog catalog) {
         this.repository = repository;
-        this.environment = config;
+        this.config = config;
         this.catalog = catalog;
     }
 
@@ -43,7 +44,12 @@ public class ConfigController {
     @Operation(summary = "Get the config values for this specific server")
     public Map<String, ?> getThisServerEnvironment() {
         return this.catalog.getComponents(ComponentTypes.CONFIG).stream()
-                .map(config -> Map.entry(config.key(), this.environment.getProperty(config)))
+                .map(config -> {
+                    Object value = this.config.getValue(config);
+                    if (value == null) return null;
+                    return Map.entry(config.key(), value);
+                })
+                .filter(Objects::nonNull)
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 

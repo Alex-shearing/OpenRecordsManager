@@ -1,30 +1,21 @@
 package com.openrecordsmanager.model;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Embeddable;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 
-@Entity
-@Table(name = "file_store_middlewares_usage")
+@Embeddable
 public class FileStoreMiddlewareUsage {
 
-    @EmbeddedId
-    public FileStoreMiddlewareUsageId id;
-
-    @ManyToOne()
-    @MapsId("fileStoreId")
-    @JoinColumn(name = "file_store_id")
-    public FileStore<?> fileStore;
-
-    @ManyToOne()
-    @MapsId("middlewareId")
+    @ManyToOne(targetEntity = FileStoreMiddleware.class, optional = false)
     @JoinColumn(name = "middleware_id")
     public FileStoreMiddleware<?> middleware;
 
     @Column(name = "application_order")
     public int applicationOrder;
 
-    public FileStoreMiddlewareUsage(FileStore<?> fileStore, FileStoreMiddleware<?> middleware, int order) {
-        this.id = new FileStoreMiddlewareUsageId(fileStore.id, middleware.id);
-        this.fileStore = fileStore;
+    public FileStoreMiddlewareUsage(FileStoreMiddleware<?> middleware, int order) {
         this.middleware = middleware;
         this.applicationOrder = order;
     }

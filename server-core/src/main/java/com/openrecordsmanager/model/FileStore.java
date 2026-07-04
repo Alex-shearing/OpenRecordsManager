@@ -19,10 +19,7 @@ import tools.jackson.databind.annotation.JsonSerialize;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 @Entity
 @Table(name = "file_store")
@@ -40,10 +37,13 @@ public class FileStore<T> {
     @JdbcTypeCode(SqlTypes.JSON)
     public Map<String, ?> properties;
 
-    @OneToMany(mappedBy = "fileStore", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(
+            name = "file_store_middleware_usage",
+            joinColumns = @JoinColumn(name = "file_store_id")
+    )
     @OrderBy("application_order ASC")
-    @MapKey(name = "applicationOrder")
-    public Map<Integer, FileStoreMiddlewareUsage> middlewares;
+    public List<FileStoreMiddlewareUsage> middlewares;
 
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "store")
     public Set<FileStoreEntry> files;
@@ -56,15 +56,15 @@ public class FileStore<T> {
         this.id = UUID.randomUUID();
         this.type = catalog.getId(ComponentTypes.FILE_STORE_TYPE, type);
         this.properties = properties;
-        this.middlewares = new HashMap<>();
+        this.middlewares = new ArrayList<>();
     }
 
     public void addMiddleware(FileStoreMiddleware<?> middleware) {
         if (this.middlewares == null) {
-            this.middlewares = new HashMap<>();
+            this.middlewares = new ArrayList<>();
         }
         int index = this.middlewares.size();
-        this.middlewares.put(index, new FileStoreMiddlewareUsage(this, middleware, index));
+        this.middlewares.add(new FileStoreMiddlewareUsage(middleware, index));
     }
 
     public FileStoreEntry newFile(ComponentCatalog catalog, InputStream file, String extension) {
@@ -74,7 +74,7 @@ public class FileStore<T> {
         HashingInputStream hashingStream = new HashingInputStream(hashFunction, countingStream);
 
         InputStream stream = hashingStream;
-        for (FileStoreMiddlewareUsage middleware : this.middlewares.values()) {
+        for (FileStoreMiddlewareUsage middleware : this.middlewares) {
             stream = middleware.middleware.duringSave(catalog, stream);
         }
 
@@ -103,7 +103,7 @@ public class FileStore<T> {
     public InputStream getFile(ComponentCatalog catalog, FileStoreEntry entry) throws IOException {
         InputStream stream = this.getStoreType(catalog).retrieve(this.getProperties(catalog), entry.path);
 
-        for (FileStoreMiddlewareUsage middleware : this.middlewares.values()) {
+        for (FileStoreMiddlewareUsage middleware : this.middlewares) {
             stream = middleware.middleware.duringRetrieve(catalog, stream);
         }
 
@@ -129,12 +129,18 @@ public class FileStore<T> {
 
     public static class Serializer extends ValueSerializer<FileStore<?>> {
 
+        private final ComponentCatalog catalog;
+
+        public Serializer(ComponentCatalog catalog) {
+            this.catalog = catalog;
+        }
+
         @Override
         public void serialize(FileStore value, JsonGenerator gen, SerializationContext ctxt) throws JacksonException {
             gen.writeStartObject();
             gen.writeStringProperty("id", value.id.toString());
             gen.writeStringProperty("type", value.type.toString());
-            gen.writePOJOProperty("properties", value.properties);
+            gen.writePOJOProperty("properties", value.getProperties(catalog));
             gen.writePOJOProperty("middlewares", value.middlewares);
             gen.writeEndObject();
         }

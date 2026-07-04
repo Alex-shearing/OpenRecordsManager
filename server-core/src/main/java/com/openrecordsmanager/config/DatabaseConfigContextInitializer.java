@@ -1,5 +1,6 @@
 package com.openrecordsmanager.config;
 
+import com.openrecordsmanager.api.builtin.BuiltinConfigs;
 import org.springframework.boot.context.properties.bind.Binder;
 import org.springframework.boot.jdbc.DataSourceBuilder;
 import org.springframework.boot.jdbc.autoconfigure.DataSourceProperties;
@@ -11,7 +12,7 @@ public class DatabaseConfigContextInitializer implements ApplicationContextIniti
     @Override
     public void initialize(ConfigurableApplicationContext applicationContext) {
         DataSourceProperties dsProps = Binder.get(applicationContext.getEnvironment())
-                .bind("spring.datasource", DataSourceProperties.class)
+                .bind(BuiltinConfigs.DATABASE_URL.key(), DataSourceProperties.class)
                 .orElse(null);
 
         if (dsProps != null && dsProps.getUrl() != null) {
@@ -28,6 +29,5 @@ public class DatabaseConfigContextInitializer implements ApplicationContextIniti
 
             applicationContext.getEnvironment().getPropertySources().addLast(new DatabaseConfigSource(jdbcTemplate));
         }
-
     }
 }

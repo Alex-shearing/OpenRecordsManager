@@ -1,6 +1,6 @@
 package com.openrecordsmanager.controllers.repsonse.errors;
 
-import com.openrecordsmanager.config.ConfigProperties;
+import com.openrecordsmanager.api.builtin.BuiltinConfigs;
 import com.openrecordsmanager.config.DynamicConfigService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,7 +25,7 @@ public class ExceptionController {
     @SuppressWarnings("unused")
     public ResponseEntity<ApiResponseWrapper<Void>> handleGeneralException(Exception ex) {
         HttpStatusCode httpStatusCode = ex instanceof ApiError apiError ? apiError.httpStatusCode : HttpStatus.INTERNAL_SERVER_ERROR;
-        String message = config.getPropertyOrThrow(ConfigProperties.DETAILED_ERRORS) ? ex.getMessage() :
+        String message = config.getOrThrow(BuiltinConfigs.DEBUG_DETAILED_ERRORS) ? ex.getMessage() :
                 ex instanceof ApiError error ? error.getUserMessage() : "Internal Server Error";
 
         if (!(ex instanceof ApiError.NotFound error) || error.shouldLog()) {

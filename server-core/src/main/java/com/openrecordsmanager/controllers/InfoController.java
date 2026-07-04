@@ -1,7 +1,7 @@
 package com.openrecordsmanager.controllers;
 
 import com.openrecordsmanager.api.Plugin;
-import com.openrecordsmanager.config.ConfigProperties;
+import com.openrecordsmanager.api.builtin.BuiltinConfigs;
 import com.openrecordsmanager.config.DynamicConfigService;
 import com.openrecordsmanager.controllers.repsonse.InternalServerErrorApiResponse;
 import com.openrecordsmanager.resources.PluginManager;
@@ -30,9 +30,9 @@ public class InfoController {
     @Operation(summary = "Get basic details about the environment")
     public EnvironmentResponse getEnvironment() {
         return new EnvironmentResponse(
-                this.config.getPropertyOrThrow(ConfigProperties.WORKGROUP_NAME),
+                this.config.getOrThrow(BuiltinConfigs.WORKGROUP_NAME),
                 this.pluginManager.getPlugins().stream().map(Plugin::getName).toArray(String[]::new),
-                this.config.getPropertyOrThrow(ConfigProperties.WORKGROUP_DATABASE_URL)
+                this.config.getOrThrow(BuiltinConfigs.DATABASE_URL)
         );
     }
 
