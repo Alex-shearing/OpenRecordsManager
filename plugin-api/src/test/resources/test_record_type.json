@@ -4,11 +4,8 @@
   "allowedContentTypes": [
     "application/json"
   ],
-  "properties": [
-    {
-      "type": "object_properties",
-      "id": "test:user_email_property"
-    },
-    "object_properties/test:user_email_property_2"
-  ]
+  "properties": {
+    "object_properties/test:user_email_property": null,
+    "object_properties/test:user_email_property_2": null
+  }
 }

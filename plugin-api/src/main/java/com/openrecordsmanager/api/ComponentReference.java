@@ -3,7 +3,9 @@ package com.openrecordsmanager.api;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.openrecordsmanager.api.types.ComponentType;
 import com.openrecordsmanager.api.types.ComponentTypes;
+import tools.jackson.databind.DeserializationContext;
 import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.KeyDeserializer;
 import tools.jackson.databind.node.ObjectNode;
 import tools.jackson.databind.node.StringNode;
 
@@ -113,6 +115,13 @@ public abstract class ComponentReference<T extends Component> {
         @Override
         public int hashCode() {
             return Objects.hashCode(value);
+        }
+    }
+
+    public static class ComponentReferenceKeyDeserializer extends KeyDeserializer {
+        @Override
+        public Object deserializeKey(String key, DeserializationContext ctxt) {
+            return ComponentReference.reference(key);
         }
     }
 }

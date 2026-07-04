@@ -12,6 +12,11 @@ import java.util.Objects;
 
 @JsonDeserialize
 public record ListDefinition(String name, Map<String, ListElementDefinition> defaultEntries) implements Component {
+    public ListDefinition {
+        Objects.requireNonNull(name, "Property 'name' must not be null");
+        Objects.requireNonNull(defaultEntries, "Property 'defaultEntries' must not be null");
+    }
+
     public static Builder builder(String name) {
         return new Builder(name);
     }

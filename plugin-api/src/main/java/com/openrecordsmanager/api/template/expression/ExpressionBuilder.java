@@ -5,8 +5,14 @@ import com.openrecordsmanager.api.ComponentReference;
 import com.openrecordsmanager.api.template.property.PropertyDefinition;
 
 import java.util.List;
+import java.util.Objects;
 
 public record ExpressionBuilder(String filter, List<ComponentReference<PropertyDefinition<?>>> dependencies) {
+
+    public ExpressionBuilder {
+        Objects.requireNonNull(filter, "Property 'filter' must not be null");
+        Objects.requireNonNull(dependencies, "Property 'dependencies' must not be null");
+    }
 
     @JsonCreator
     public static ExpressionBuilder from(String filter) {

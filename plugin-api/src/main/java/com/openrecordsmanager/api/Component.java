@@ -1,13 +1,19 @@
 package com.openrecordsmanager.api;
 
 import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.databind.module.SimpleModule;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Set;
 
 public interface Component {
-    ObjectMapper MAPPER = new ObjectMapper();
+    ObjectMapper MAPPER = JsonMapper.builder()
+            .addModule(new SimpleModule()
+                    .addKeyDeserializer(ComponentReference.class, new ComponentReference.ComponentReferenceKeyDeserializer())
+            )
+            .build();
 
     default Set<ComponentReference<? extends Component>> getDependencies() {
         return Set.of();
