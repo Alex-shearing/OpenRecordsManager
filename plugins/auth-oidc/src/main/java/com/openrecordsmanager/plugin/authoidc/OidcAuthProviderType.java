@@ -17,6 +17,7 @@ import com.nimbusds.openid.connect.sdk.op.OIDCProviderMetadata;
 import com.openrecordsmanager.api.auth.AuthProviderInstance;
 import com.openrecordsmanager.api.auth.RedirectAuthProviderType;
 import com.openrecordsmanager.api.auth.UserDetails;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,7 +28,7 @@ import java.util.Map;
 
 public class OidcAuthProviderType extends RedirectAuthProviderType {
     private static final Logger LOGGER = LoggerFactory.getLogger(OidcAuthProviderType.class);
-    
+
     @Override
     public URI getRedirectTo(AuthProviderInstance instance) {
         try {
@@ -59,7 +60,7 @@ public class OidcAuthProviderType extends RedirectAuthProviderType {
     }
 
     @Override
-    public UserDetails authenticateCallback(AuthProviderInstance instance, URI uri) {
+    public @Nullable UserDetails authenticateCallback(AuthProviderInstance instance, URI uri) {
         try {
             AuthenticationResponse response = AuthenticationResponseParser.parse(uri);
             OidcSettings settings = OidcSettings.parse(instance.getSettings());
