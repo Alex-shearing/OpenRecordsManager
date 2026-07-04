@@ -1,5 +1,7 @@
 package com.openrecordsmanager.api.template.recordtype;
 
+import com.fasterxml.jackson.annotation.JsonEnumDefaultValue;
+
 public enum SecurityFilterUsage {
     /**
      * Hides the fact the record exists at all from a user who does not pass the security filter.
@@ -13,6 +15,7 @@ public enum SecurityFilterUsage {
     /**
      * Hides attached files for a user who does not pass the security filter.
      */
+    @JsonEnumDefaultValue
     HIDE_FILES,
     /**
      * Does not hide any aspect of the record for a user who does not pass the security filter.

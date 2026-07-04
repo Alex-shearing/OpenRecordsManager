@@ -4,6 +4,7 @@ import com.openrecordsmanager.api.Component;
 import com.openrecordsmanager.api.ComponentReference;
 import com.openrecordsmanager.api.template.expression.ExpressionBuilder;
 import com.openrecordsmanager.api.template.property.PropertyDefinition;
+import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 import tools.jackson.databind.annotation.JsonDeserialize;
 
@@ -14,13 +15,14 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @JsonDeserialize
+@NullMarked
 public record RecordTypeDefinition(
         String name,
         String description,
         Map<ComponentReference<PropertyDefinition<?>>, ?> properties,
         @Nullable Set<String> allowedContentTypes,
         @Nullable ExpressionBuilder securityFilter,
-        SecurityFilterUsage securityFilterUsage
+        @Nullable SecurityFilterUsage securityFilterUsage
 ) implements Component {
 
     public RecordTypeDefinition {
@@ -30,6 +32,12 @@ public record RecordTypeDefinition(
         Objects.requireNonNull(description, "Property 'description' must not be null");
         Objects.requireNonNull(properties, "Property 'properties' must not be null");
         Objects.requireNonNull(securityFilterUsage, "Property 'securityFilterUsage' must not be null");
+    }
+
+    @Override
+    public SecurityFilterUsage securityFilterUsage() {
+        Objects.requireNonNull(this.securityFilterUsage, "Property 'securityFilterUsage' must not be null");
+        return this.securityFilterUsage;
     }
 
     public static Builder builder(String name) {
@@ -49,8 +57,10 @@ public record RecordTypeDefinition(
     public static class Builder {
         private String name;
         private String description = "";
-        private final Map<ComponentReference<PropertyDefinition<?>>, Object> properties = new HashMap<>();
+        private final Map<ComponentReference<PropertyDefinition<?>>, @Nullable Object> properties = new HashMap<>();
+        @Nullable
         private Set<String> allowedContentTypes = null;
+        @Nullable
         private ExpressionBuilder securityFilter = null;
         private SecurityFilterUsage securityFilterUsage = SecurityFilterUsage.HIDE_FILES;
 

@@ -1,22 +1,30 @@
 package com.openrecordsmanager.api.template.list;
 
+import com.fasterxml.jackson.annotation.JsonSetter;
+import com.fasterxml.jackson.annotation.Nulls;
 import com.openrecordsmanager.api.Component;
 import com.openrecordsmanager.api.ComponentReference;
+import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
-import java.util.Calendar;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
+@NullMarked
 public record ListElementDefinition(
         String name,
-        String description,
+        @JsonSetter(nulls = Nulls.AS_EMPTY) String description,
         int index,
         @Nullable Date activeTo,
-        Set<String> aliases,
+        @JsonSetter(nulls = Nulls.AS_EMPTY) Set<String> aliases,
         ComponentReference<ListDefinition> parent
 ) implements Component {
+
+    public ListElementDefinition {
+        Objects.requireNonNull(name, "Property 'name' must not be null");
+        Objects.requireNonNull(description, "Property 'description' must not be null");
+        Objects.requireNonNull(aliases, "Property 'aliases' must not be null");
+        Objects.requireNonNull(parent, "Property 'parent' must not be null");
+    }
 
     @Override
     public Set<ComponentReference<? extends Component>> getDependencies() {
@@ -31,6 +39,7 @@ public record ListElementDefinition(
 
         private String description = "";
         private int index = 0;
+        @Nullable
         private Date activeTo = null;
 
         public Builder(ListDefinition.Builder parentBuilder, String id, String name) {

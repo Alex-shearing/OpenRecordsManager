@@ -15,7 +15,8 @@ class ListDefinitionTest {
                 .build();
 
         Assertions.assertEquals(list.name(), codeList.name(), "Name should be equal");
-        Assertions.assertEquals(list.defaultEntries(), codeList.defaultEntries(), "Default entries should be equal");
+        Assertions.assertEquals(list.defaultEntries().keySet(), codeList.defaultEntries().keySet(), "Default entry ids should be equal");
+        Assertions.assertEquals(list.defaultEntries().values(), codeList.defaultEntries().values(), "Default entry keys should be equal");
 
         Assertions.assertEquals(list, codeList, "Object should be equal");
     }

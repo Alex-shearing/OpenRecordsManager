@@ -31,20 +31,20 @@ public class ObjectPropertyComponentBinder extends ComponentBinder<PropertyDefin
             PropertyDefinition<T> definition
     ) {
         ListType listType = null;
-        if (definition.getType().allowsList() && definition.getListType() != null) {
-            listType = ComponentBinderRegistry.LIST.getRegistered(definition.getListType(), catalog, repository)
+        if (definition.type().allowsList() && definition.listType() != null) {
+            listType = ComponentBinderRegistry.LIST.getRegistered(definition.listType(), catalog, repository)
                     .orElse(null);
         }
 
         ObjectProperty<?> type = new ObjectProperty<>(
                 id,
-                definition.getName(),
-                definition.getDescription(),
-                definition.getType(),
+                definition.name(),
+                definition.description(),
+                definition.type(),
                 listType,
-                expressions.buildExpression(definition.getValidator()),
-                expressions.buildExpression(definition.getSecurityFilter()),
-                definition.getDefaultValue()
+                expressions.buildExpression(definition.validator()),
+                expressions.buildExpression(definition.securityFilter()),
+                definition.defaultValue()
         );
 
         repository.objectPropertyRepo.saveAndFlush(type);

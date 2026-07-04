@@ -29,11 +29,10 @@ class PropertyDefinitionTest {
                     .validator("true")
                     .build();
 
-
-            Assertions.assertEquals(property.getName(), codeProperty.getName(), "Name should be equal");
-            Assertions.assertEquals(property.getDescription(), codeProperty.getDescription(), "Description should be equal");
-            Assertions.assertEquals(property.getDefaultValue(), codeProperty.getDefaultValue(), "Default should be equal");
-            Assertions.assertEquals(property.getValidator(), codeProperty.getValidator(), "Validator should be equal");
+            Assertions.assertEquals(property.name(), codeProperty.name(), "Name should be equal");
+            Assertions.assertEquals(property.description(), codeProperty.description(), "Description should be equal");
+            Assertions.assertEquals(property.defaultValue(), codeProperty.defaultValue(), "Default should be equal");
+            Assertions.assertEquals(property.validator(), codeProperty.validator(), "Validator should be equal");
 
             Assertions.assertEquals(property, codeProperty, "Object should be equal");
         } catch (IOException e) {
@@ -50,10 +49,10 @@ class PropertyDefinitionTest {
                 .validator("true")
                 .build();
 
-        Assertions.assertEquals(property.getName(), codeProperty.getName(), "Name should be equal");
-        Assertions.assertEquals(property.getDescription(), codeProperty.getDescription(), "Description should be equal");
-        Assertions.assertEquals(property.getDefaultValue(), codeProperty.getDefaultValue(), "Default should be equal");
-        Assertions.assertEquals(property.getValidator(), codeProperty.getValidator(), "Validator should be equal");
+        Assertions.assertEquals(property.name(), codeProperty.name(), "Name should be equal");
+        Assertions.assertEquals(property.description(), codeProperty.description(), "Description should be equal");
+        Assertions.assertEquals(property.defaultValue(), codeProperty.defaultValue(), "Default should be equal");
+        Assertions.assertEquals(property.validator(), codeProperty.validator(), "Validator should be equal");
 
         Assertions.assertEquals(property, codeProperty, "Object should be equal");
     }
