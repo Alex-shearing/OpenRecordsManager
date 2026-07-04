@@ -12,7 +12,7 @@ public class DatabaseConfigContextInitializer implements ApplicationContextIniti
     @Override
     public void initialize(ConfigurableApplicationContext applicationContext) {
         DataSourceProperties dsProps = Binder.get(applicationContext.getEnvironment())
-                .bind(BuiltinConfigs.DATABASE_URL.key(), DataSourceProperties.class)
+                .bind(BuiltinConfigs.DATABASE_PRIMARY.key(), DataSourceProperties.class)
                 .orElse(null);
 
         if (dsProps != null && dsProps.getUrl() != null) {

@@ -9,6 +9,7 @@ import com.openrecordsmanager.resources.ComponentCatalog;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import org.springframework.http.MediaType;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
@@ -34,6 +35,7 @@ public class ConfigController {
 
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Get config values from the database")
+    @Transactional(readOnly = true)
     public Map<String, Optional<?>> getConfig() {
         return this.catalog.getComponents(ComponentTypes.CONFIG).stream()
                 .map(config -> Map.entry(config.key(), this.repository.configRepo.findByConfigKey(config.key())))
@@ -42,6 +44,7 @@ public class ConfigController {
 
     @GetMapping(value = "/this_server", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Get the config values for this specific server")
+    @Transactional(readOnly = true)
     public Map<String, ?> getThisServerEnvironment() {
         return this.catalog.getComponents(ComponentTypes.CONFIG).stream()
                 .map(config -> {

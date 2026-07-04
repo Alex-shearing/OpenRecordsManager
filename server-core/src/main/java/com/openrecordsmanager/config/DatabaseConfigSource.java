@@ -26,7 +26,7 @@ public class DatabaseConfigSource extends EnumerablePropertySource<Object> {
 
         List<String> vals = this.repository.query(
                 "SELECT config_value FROM system_configurations WHERE config_key = ?",
-                (rs, rowNum) -> rs.getString("config_value"),
+                (rs, _) -> rs.getString("config_value"),
                 name
         );
         if (vals.size() != 1) {

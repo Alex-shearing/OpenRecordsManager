@@ -15,6 +15,7 @@ import com.openrecordsmanager.resources.types.ComponentBinderRegistry;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import org.springframework.http.MediaType;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Arrays;
@@ -39,6 +40,7 @@ public class TemplateController {
 
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "List templates types available")
+    @Transactional(readOnly = true)
     public Set<String> getTemplatesForType() {
         return Arrays.stream(ComponentTypes.VALUES)
                 .map(componentType -> componentType.name)
@@ -48,6 +50,7 @@ public class TemplateController {
     @GetMapping(value = "/{type}", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "List templates available for type")
     @NotFoundApiResponse
+    @Transactional(readOnly = true)
     public Set<ResourceIdentifier> getTemplatesForType(@PathVariable("type") String typeName) {
         ComponentType<?> type = ComponentTypes.fromName(typeName);
         if (type == null) {
@@ -60,6 +63,7 @@ public class TemplateController {
     @GetMapping(value = "/{type}/{template}", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Get template details")
     @NotFoundApiResponse
+    @Transactional(readOnly = true)
     public Object getTemplatesForType(@PathVariable("type") String typeName, @PathVariable("template") ResourceIdentifier templateId) {
         ComponentType<? extends Component> type = ComponentTypes.fromName(typeName);
         if (type == null) {

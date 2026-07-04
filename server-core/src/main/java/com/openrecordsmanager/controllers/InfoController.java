@@ -32,7 +32,7 @@ public class InfoController {
         return new EnvironmentResponse(
                 this.config.getOrThrow(BuiltinConfigs.WORKGROUP_NAME),
                 this.pluginManager.getPlugins().stream().map(Plugin::getName).toArray(String[]::new),
-                this.config.getOrThrow(BuiltinConfigs.DATABASE_URL)
+                this.config.getOrThrow(BuiltinConfigs.DATABASE_PRIMARY_URL)
         );
     }
 

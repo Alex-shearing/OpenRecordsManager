@@ -15,8 +15,7 @@ public record ApiResponseWrapper<T>(boolean success,
 
     // Convenience constructor for successful responses
     public static <T> ApiResponseWrapper<T> success(@Nullable T data) {
-        T typedData = data;
-        return new ApiResponseWrapper<>(true, typedData, null, Instant.now());
+        return new ApiResponseWrapper<>(true, data, null, Instant.now());
     }
 
     // Convenience constructor for error responses

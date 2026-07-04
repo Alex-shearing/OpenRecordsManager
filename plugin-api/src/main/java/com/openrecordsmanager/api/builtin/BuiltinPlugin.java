@@ -13,7 +13,9 @@ public class BuiltinPlugin implements Plugin {
     @Override
     public void initialise(RegistrationContext registry) {
         registry.registerConfig(
-                BuiltinConfigs.DATABASE_URL,
+                BuiltinConfigs.DATABASE_PRIMARY,
+                BuiltinConfigs.DATABASE_PRIMARY_URL,
+                BuiltinConfigs.DATABASE_READ_ONLY_URL,
                 BuiltinConfigs.WORKGROUP_NAME,
                 BuiltinConfigs.DEFAULT_FILE_STORE,
                 BuiltinConfigs.DEBUG_DETAILED_ERRORS,

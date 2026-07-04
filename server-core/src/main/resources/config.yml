@@ -8,7 +8,11 @@
 # Config that affects just the server that is reading the config
 server:
   # JDBC URL for the workgroup database
-  database: jdbc:sqlite:orm_system.db
+  database:
+    primary:
+      url: jdbc:sqlite:orm_system.db
+    read_only:
+      url: jdbc:sqlite:orm_system.db
   plugins:
     # Define the directory to load plugins from
     directory: ./plugins

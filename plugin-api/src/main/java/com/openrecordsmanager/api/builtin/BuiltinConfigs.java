@@ -9,10 +9,21 @@ public class BuiltinConfigs {
 
     // Server only settings
 
-    public static final ConfigDefinition<String> DATABASE_URL = ConfigDefinition.builder("server.database", ConfigValueType.STRING)
-            .name("Database URL")
-            .description("A JDBC URL to the database")
+    public static final ConfigDefinition<Object> DATABASE_PRIMARY = ConfigDefinition.builder("server.database.primary", ConfigValueType.OBJECT)
+            .name("Primary Database")
+            .description("The primary connection to the database, this connection will be used for read/write operations.")
             .build();
+
+    public static final ConfigDefinition<String> DATABASE_PRIMARY_URL = ConfigDefinition.builder("server.database.primary.url", ConfigValueType.STRING)
+            .name("Primary Database URL")
+            .description("A JDBC URL to the connect to the database, this connection will be used for read/write operations.")
+            .build();
+
+    public static final ConfigDefinition<String> DATABASE_READ_ONLY_URL = ConfigDefinition.builder("server.database.read-only.url", ConfigValueType.STRING)
+            .name("Read-Only Database URL")
+            .description("A JDBC URL to the connect to a replica of the database, this connection will only be used for read operations.")
+            .build();
+
 
     public static final ConfigDefinition<String> PLUGINS_DIRECTORY = ConfigDefinition.builder("server.plugins.directory", ConfigValueType.STRING)
             .name("Plugins Load Directory")

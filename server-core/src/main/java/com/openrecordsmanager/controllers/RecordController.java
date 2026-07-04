@@ -20,6 +20,7 @@ import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -66,6 +67,7 @@ public class RecordController {
     @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Get record details")
     @NotFoundApiResponse
+    @Transactional(readOnly = true)
     public Record getRecord(@PathVariable("id") UUID id) {
         return this.repository.recordRepo.findById(id)
                 .orElseThrow(() -> ApiError.notFound("record", id.toString()));
@@ -135,6 +137,7 @@ public class RecordController {
     @GetMapping(value = "/{id}/revisions", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "List all revisions for a record")
     @NotFoundApiResponse
+    @Transactional(readOnly = true)
     public double[] getRevisions(@PathVariable("id") UUID id) {
         return this.repository.recordRepo.getRevisions(id)
                 .orElseThrow(() -> ApiError.notFound("record", id.toString()));
@@ -143,6 +146,7 @@ public class RecordController {
     @GetMapping(value = "/{id}/revisions/{version}", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
     @Operation(summary = "Get record revision file")
     @NotFoundApiResponse
+    @Transactional(readOnly = true)
     public ResponseEntity<Resource> getRevision(@PathVariable("id") UUID id, @PathVariable("version") double version) {
         RecordRevision rev = this.repository.recordRepo.findByRecordId(id, version)
                 .orElseThrow(() -> ApiError.notFound("record revision", id + "/" + version));

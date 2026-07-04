@@ -6,6 +6,9 @@ import java.util.UUID;
 import java.util.function.Function;
 
 public class ConfigValueType<T> {
+    public static final ConfigValueType<Object> OBJECT = new ConfigValueType<>(Object.class, s -> {
+        throw new RuntimeException("not supported for objects");
+    });
     public static final ConfigValueType<String> STRING = new ConfigValueType<>(String.class, Function.identity());
     public static final ConfigValueType<Integer> INT = new ConfigValueType<>(Integer.class, Integer::valueOf);
     public static final ConfigValueType<Double> DOUBLE = new ConfigValueType<>(Double.class, Double::valueOf);
