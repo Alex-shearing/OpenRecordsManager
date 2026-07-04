@@ -2,7 +2,6 @@ plugins {
     id 'org.springframework.boot' version '4.0.6' apply false
     id 'io.spring.dependency-management' version '1.1.7' apply false
     id 'java'
-    id 'org.openrewrite.rewrite' version '7.36.0'
 }
 
 allprojects {
@@ -12,10 +11,6 @@ allprojects {
     repositories {
         mavenCentral()
     }
-}
-
-dependencies {
-    rewrite 'org.openrewrite.recipe:rewrite-static-analysis:2.19.0'
 }
 
 // Inject compilation target and Manifest headers into all subprojects
@@ -41,17 +36,39 @@ subprojects {
             )
         }
     }
-}
 
-tasks.register('applyNullMarked') {
-    group = 'formatting'
-    description = 'Automatically adds @NullMarked package-info.java files to all subpackages.'
+    tasks.register('applyNullMarked') {
+        group = 'formatting'
+        description = 'Automatically injects JSpecify @NullMarked package-info.java files into all package trees.'
 
-    dependsOn 'rewriteRun'
+        // Pure declaration of input/output layouts ensures 100% compatibility with Configuration Caching
+        def srcDir = file("src/main/java")
+        inputs.dir(srcDir).optional()
 
-    doFirst {
-        rewrite {
-            activeRecipe('org.openrewrite.java.search.AddNullMarkedToPackages')
+        doLast {
+            if (!srcDir.exists()) return
+
+            srcDir.eachDirRecurse { dir ->
+                // Look for directories that actually contain Java source files to avoid empty paths
+                boolean hasJavaFiles = dir.listFiles().any { it.name.endsWith('.java') && it.name != 'package-info.java' }
+
+                if (hasJavaFiles) {
+                    // Reconstruct the package name based on the filesystem layout
+                    def relativePath = srcDir.toPath().relativize(dir.toPath()).toString()
+                    def packageName = relativePath.replace(File.separator, '.')
+
+                    def packageInfoFile = new File(dir, 'package-info.java')
+
+                    if (!packageInfoFile.exists()) {
+                        packageInfoFile.text = """@NullMarked
+package ${packageName};
+
+import org.jspecify.annotations.NullMarked;
+"""
+                        logger.lifecycle("Created Missing Package Default: ${packageName}.package-info.java")
+                    }
+                }
+            }
         }
     }
 }

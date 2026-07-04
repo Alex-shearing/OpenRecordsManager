@@ -9,10 +9,6 @@ public class StringToProjectIdConverter implements Converter<String, ResourceIde
 
     @Override
     public ResourceIdentifier convert(String source) {
-        if (source == null || source.isBlank()) {
-            return null;
-        }
-
         return ResourceIdentifier.valueOf(source);
     }
 }

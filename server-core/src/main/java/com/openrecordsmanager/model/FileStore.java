@@ -84,6 +84,7 @@ public class FileStore<T> {
         return this.getStoreType(catalog).retrieve(this.getProperties(catalog), entry.path);
     }
 
+    @SuppressWarnings("unchecked")
     public FileStoreType<T> getStoreType(ComponentCatalog catalog) {
         return (FileStoreType<T>) catalog.getComponent(ComponentTypes.FILE_STORE_TYPE, this.type).orElseThrow();
     }

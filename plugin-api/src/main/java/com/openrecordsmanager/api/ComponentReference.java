@@ -16,6 +16,8 @@ public abstract class ComponentReference<T extends Component> {
 
     public abstract @Nullable ResourceIdentifier getId(ComponentAccess catalog);
 
+    public abstract ComponentType<T> getType();
+
     public static <K extends Component> ComponentReference<K> of(K value) {
         return new Value<>(value);
     }
@@ -60,6 +62,11 @@ public abstract class ComponentReference<T extends Component> {
         }
 
         @Override
+        public ComponentType<T> getType() {
+            return this.type;
+        }
+
+        @Override
         @SuppressWarnings("unchecked")
         public <K extends Component> ComponentReference<K> widen(Function<T, K> mapper) {
             return new Reference<>((ComponentType<K>) this.type, this.id);
@@ -74,6 +81,11 @@ public abstract class ComponentReference<T extends Component> {
         @Override
         public int hashCode() {
             return Objects.hash(type, id);
+        }
+
+        @Override
+        public String toString() {
+            return String.format("%s/%s", this.type.name, this.id);
         }
     }
 
@@ -91,7 +103,12 @@ public abstract class ComponentReference<T extends Component> {
 
         @Override
         public @Nullable ResourceIdentifier getId(ComponentAccess catalog) {
-            return catalog.getId(ComponentTypes.fromObject(this.value), this.value);
+            return catalog.getId(this.getType(), this.value);
+        }
+
+        @Override
+        public ComponentType<T> getType() {
+            return ComponentTypes.fromObject(this.value);
         }
 
         @Override
@@ -108,6 +125,11 @@ public abstract class ComponentReference<T extends Component> {
         @Override
         public int hashCode() {
             return Objects.hashCode(value);
+        }
+
+        @Override
+        public String toString() {
+            return String.format("Value[%s]", this.value);
         }
     }
 

@@ -13,23 +13,22 @@ public class SwaggerConfiguration {
 
     @Bean
     public GlobalOpenApiCustomizer customerGlobalResponseWrapper() {
-        return openApi -> {
-            openApi.getPaths().values().forEach(pathItem -> {
-                pathItem.readOperations().forEach(operation -> {
-                    operation.getResponses().forEach((statusCode, apiResponse) -> {
-                        Content content = apiResponse.getContent();
-                        if (content != null && content.containsKey("application/json")) {
-                            // Dynamically wrap the endpoint's raw schema inside a reusable master metadata template
-                            Schema<?> schema = ModelConverters.getInstance()
-                                    .readAllAsResolvedSchema(ApiResponseWrapper.class)
-                                    .schema;
-                            schema.getProperties().put("data", content.get("application/json").getSchema());
+        return openApi ->
+                openApi.getPaths().values().forEach(pathItem ->
+                        pathItem.readOperations().forEach(operation ->
+                                operation.getResponses().forEach((_, apiResponse) -> {
+                                    Content content = apiResponse.getContent();
+                                    if (content != null && content.containsKey("application/json")) {
+                                        // Dynamically wrap the endpoint's raw schema inside a reusable master metadata template
+                                        Schema<?> schema = ModelConverters.getInstance()
+                                                .readAllAsResolvedSchema(ApiResponseWrapper.class)
+                                                .schema;
+                                        schema.getProperties().put("data", content.get("application/json").getSchema());
 
-                            content.get("application/json").setSchema(schema);
-                        }
-                    });
-                });
-            });
-        };
+                                        content.get("application/json").setSchema(schema);
+                                    }
+                                })
+                        )
+                );
     }
 }

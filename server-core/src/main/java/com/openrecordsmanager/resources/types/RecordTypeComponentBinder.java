@@ -49,7 +49,11 @@ public class RecordTypeComponentBinder extends ComponentBinder<RecordTypeDefinit
             ComponentCatalog catalog,
             DataRepository repository
     ) {
-        Optional<ObjectProperty<?>> property = ComponentBinderRegistry.PROPERTY.getRegistered(entry.getKey(), catalog, repository);
+        ResourceIdentifier id = entry.getKey().getId(catalog);
+        if (id == null) {
+            throw new IllegalArgumentException("id " + entry.getKey() + " is not found");
+        }
+        Optional<ObjectProperty<?>> property = ComponentBinderRegistry.PROPERTY.getRegistered(id, repository);
         if (property.isEmpty()) {
             throw new IllegalArgumentException("Attempted to use property that was not registered: " + entry.getKey().getId(catalog));
         }

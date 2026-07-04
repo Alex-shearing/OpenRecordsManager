@@ -2,7 +2,6 @@ package com.openrecordsmanager.resources;
 
 import com.google.common.collect.ImmutableMap;
 import com.openrecordsmanager.api.template.ExpressionBuilder;
-import com.openrecordsmanager.api.types.ComponentTypes;
 import com.openrecordsmanager.model.ListElement;
 import com.openrecordsmanager.model.Record;
 import com.openrecordsmanager.model.User;
@@ -51,20 +50,20 @@ public class ExpressionsService {
                 .build();
     }
 
-    public String buildExpression(@Nullable ExpressionBuilder builder) {
+    public @Nullable String buildExpression(@Nullable ExpressionBuilder builder) {
         if (builder == null || builder.filter().isBlank()) {
             return null;
         }
         return MessageFormat.format(
                 builder.filter(),
                 builder.dependencies().stream()
-                        .map(property -> "'" + catalog.getId(ComponentTypes.PROPERTY, property.getComponent(this.catalog)) + "'")
+                        .map(property -> "'" + property.getId(catalog) + "'")
                         .toArray()
         );
     }
 
     public boolean checkPropertyExpression(UUID id, String filter, @Nullable Object value, User user, @Nullable Record record) {
-        if (filter == null || filter.isBlank()) {
+        if (filter.isBlank()) {
             LOGGER.trace("no filter provided for property: {}", id);
             return true;
         }

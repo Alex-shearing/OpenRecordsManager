@@ -32,8 +32,15 @@ public class ObjectPropertyComponentBinder extends ComponentBinder<PropertyDefin
     ) {
         ListType listType = null;
         if (definition.type().allowsList() && definition.listType() != null) {
-            listType = ComponentBinderRegistry.LIST.getRegistered(definition.listType(), catalog, repository)
+            ResourceIdentifier listId = definition.listType().getId(catalog);
+            if (listId == null) {
+                throw new IllegalArgumentException("listType " + definition.listType() + " does not exist");
+            }
+            listType = ComponentBinderRegistry.LIST.getRegistered(listId, repository)
                     .orElse(null);
+            if (listType == null) {
+                throw new IllegalArgumentException("listType " + definition.listType() + " is not registered");
+            }
         }
 
         ObjectProperty<?> type = new ObjectProperty<>(

@@ -15,10 +15,10 @@ import com.openrecordsmanager.model.RecordType;
 import java.util.Map;
 
 public class ComponentBinderRegistry {
-    public static ComponentBinder<ListDefinition, ListType> LIST = new ListComponentBinder();
-    public static ComponentBinder<ListElementDefinition, ListElement> LIST_ELEMENT = new ListElementComponentBinder();
-    public static ComponentBinder<PropertyDefinition<?>, ObjectProperty<?>> PROPERTY = new ObjectPropertyComponentBinder();
-    public static ComponentBinder<RecordTypeDefinition, RecordType> RECORD_TYPE = new RecordTypeComponentBinder();
+    public static final ComponentBinder<ListDefinition, ListType> LIST = new ListComponentBinder();
+    public static final ComponentBinder<ListElementDefinition, ListElement> LIST_ELEMENT = new ListElementComponentBinder();
+    public static final ComponentBinder<PropertyDefinition<?>, ObjectProperty<?>> PROPERTY = new ObjectPropertyComponentBinder();
+    public static final ComponentBinder<RecordTypeDefinition, RecordType> RECORD_TYPE = new RecordTypeComponentBinder();
 
     private static final Map<ComponentType<?>, ComponentBinder<?, ?>> ENTRIES = Map.ofEntries(
             binding(ComponentTypes.LIST, LIST),
@@ -29,7 +29,11 @@ public class ComponentBinderRegistry {
 
     @SuppressWarnings("unchecked")
     public static <T extends Component> ComponentBinder<T, ?> get(ComponentType<T> componentType) {
-        return (ComponentBinder<T, ?>) ENTRIES.get(componentType);
+        ComponentBinder<T, ?> binder = (ComponentBinder<T, ?>) ENTRIES.get(componentType);
+        if (binder == null) {
+            throw new IllegalArgumentException("Component type " + componentType + " does not have an associated binder");
+        }
+        return binder;
     }
 
     private static <T extends Component> Map.Entry<ComponentType<T>, ComponentBinder<T, ?>> binding(

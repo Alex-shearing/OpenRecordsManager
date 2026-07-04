@@ -1,13 +1,13 @@
 package com.openrecordsmanager.controllers;
 
 import com.openrecordsmanager.api.types.ComponentTypes;
+import com.openrecordsmanager.config.DynamicConfigService;
 import com.openrecordsmanager.controllers.repsonse.InternalServerErrorApiResponse;
 import com.openrecordsmanager.model.SystemConfiguration;
 import com.openrecordsmanager.model.repositories.DataRepository;
 import com.openrecordsmanager.resources.ComponentCatalog;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import org.springframework.core.env.Environment;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
@@ -22,10 +22,10 @@ import java.util.stream.Collectors;
 public class ConfigController {
 
     private final DataRepository repository;
-    private final Environment environment;
+    private final DynamicConfigService environment;
     private final ComponentCatalog catalog;
 
-    public ConfigController(DataRepository repository, Environment config, ComponentCatalog catalog) {
+    public ConfigController(DataRepository repository, DynamicConfigService config, ComponentCatalog catalog) {
         this.repository = repository;
         this.environment = config;
         this.catalog = catalog;
@@ -41,9 +41,9 @@ public class ConfigController {
 
     @GetMapping(value = "/this_server", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Get the config values for this specific server")
-    public Map<String, Optional<?>> getThisServerEnvironment() {
+    public Map<String, ?> getThisServerEnvironment() {
         return this.catalog.getComponents(ComponentTypes.CONFIG).stream()
-                .map(config -> Map.entry(config.key(), config.type().fromString(this.environment.getProperty(config.key()))))
+                .map(config -> Map.entry(config.key(), this.environment.getProperty(config)))
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 

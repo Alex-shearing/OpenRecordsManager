@@ -13,6 +13,7 @@ import com.openrecordsmanager.model.repositories.DataRepository;
 import com.openrecordsmanager.resources.ComponentCatalog;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import org.jspecify.annotations.Nullable;
 import org.springframework.core.io.Resource;
 import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpHeaders;
@@ -79,7 +80,7 @@ public class RecordController {
     public void newRevision(
             @PathVariable("id") UUID id,
             @PathVariable("version") double version,
-            @RequestHeader(value = HttpHeaders.CONTENT_DISPOSITION, required = false) String dispositionHeader,
+            @RequestHeader(value = HttpHeaders.CONTENT_DISPOSITION, required = false) @Nullable String dispositionHeader,
             @RequestParam(value = "ext", required = false, defaultValue = "") String fileExtension,
             InputStream file
     ) {
@@ -145,7 +146,7 @@ public class RecordController {
     @NotFoundApiResponse
     public ResponseEntity<Resource> getRevision(@PathVariable("id") UUID id, @PathVariable("version") double version) {
         RecordRevision rev = this.repository.recordRepo.findByRecordId(id, version)
-                .orElseThrow(() -> ApiError.notFound("record revision", id.toString() + "/" + version));
+                .orElseThrow(() -> ApiError.notFound("record revision", id + "/" + version));
 
         HttpHeaders headers = new HttpHeaders();
         headers.add(HttpHeaders.CONTENT_DISPOSITION, String.format("attachment; filename=\"%s\"", rev.file.getFileName(Double.toString(version))));

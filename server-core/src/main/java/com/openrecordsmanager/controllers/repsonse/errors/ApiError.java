@@ -24,7 +24,7 @@ public class ApiError extends RuntimeException {
     }
 
     public static ApiError templateNotFound(ComponentType<?> type, ResourceIdentifier resource) {
-        return ApiError.notFound(type.toString() + " template", resource.toString());
+        return ApiError.notFound(type + " template", resource.toString());
     }
 
     public static ApiError serverError(String pattern, Object... params) {

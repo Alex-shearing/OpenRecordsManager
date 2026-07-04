@@ -2,11 +2,11 @@ package com.openrecordsmanager.controllers;
 
 import com.openrecordsmanager.api.Plugin;
 import com.openrecordsmanager.config.ConfigProperties;
+import com.openrecordsmanager.config.DynamicConfigService;
 import com.openrecordsmanager.controllers.repsonse.InternalServerErrorApiResponse;
 import com.openrecordsmanager.resources.PluginManager;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import org.springframework.core.env.Environment;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -19,9 +19,9 @@ import org.springframework.web.bind.annotation.RestController;
 public class InfoController {
 
     private final PluginManager pluginManager;
-    private final Environment config;
+    private final DynamicConfigService config;
 
-    public InfoController(PluginManager pluginManager, Environment config) {
+    public InfoController(PluginManager pluginManager, DynamicConfigService config) {
         this.pluginManager = pluginManager;
         this.config = config;
     }
@@ -30,9 +30,9 @@ public class InfoController {
     @Operation(summary = "Get basic details about the environment")
     public EnvironmentResponse getEnvironment() {
         return new EnvironmentResponse(
-                this.config.getProperty(ConfigProperties.WORKGROUP_NAME.key()),
+                this.config.getPropertyOrThrow(ConfigProperties.WORKGROUP_NAME),
                 this.pluginManager.getPlugins().stream().map(Plugin::getName).toArray(String[]::new),
-                this.config.getProperty(ConfigProperties.WORKGROUP_DATABASE_URL.key())
+                this.config.getPropertyOrThrow(ConfigProperties.WORKGROUP_DATABASE_URL)
         );
     }
 

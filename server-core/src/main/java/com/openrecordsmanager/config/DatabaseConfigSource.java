@@ -1,6 +1,6 @@
 package com.openrecordsmanager.config;
 
-import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.springframework.core.env.EnumerablePropertySource;
 import org.springframework.jdbc.core.JdbcTemplate;
 
@@ -18,7 +18,7 @@ public class DatabaseConfigSource extends EnumerablePropertySource<Object> {
     }
 
     @Override
-    public Object getProperty(@NonNull String name) {
+    public @Nullable Object getProperty(String name) {
         List<String> vals = this.repository.query(
                 "SELECT config_value FROM system_configurations WHERE config_key = ?",
                 (rs, rowNum) -> rs.getString("config_value"),

@@ -1,6 +1,8 @@
 package com.openrecordsmanager.api.auth;
 
 
+import org.jspecify.annotations.Nullable;
+
 import java.net.URI;
 
 public abstract class RedirectAuthProviderType extends AuthProviderType {
@@ -13,5 +15,5 @@ public abstract class RedirectAuthProviderType extends AuthProviderType {
      * @param uri
      * @return either {{@link UserDetails}} or null if no user was authenticated
      */
-    public abstract UserDetails authenticateCallback(AuthProviderInstance instance, URI uri);
+    public abstract @Nullable UserDetails authenticateCallback(AuthProviderInstance instance, URI uri);
 }

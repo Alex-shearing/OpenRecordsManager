@@ -21,18 +21,17 @@ public class ResourceIdentifierJavaType extends AbstractClassJavaType<ResourceId
 
     @Override
     public String toString(ResourceIdentifier value) {
-        return value != null ? value.toString() : null;
+        return value.toString();
     }
 
     @Override
     public ResourceIdentifier fromString(CharSequence string) {
-        return string != null ? ResourceIdentifier.valueOf(string.toString()) : null;
+        return ResourceIdentifier.valueOf(string.toString());
     }
 
     @SuppressWarnings("unchecked")
     @Override
     public <X> X unwrap(ResourceIdentifier value, Class<X> type, WrapperOptions options) {
-        if (value == null) return null;
         if (type.isAssignableFrom(String.class)) return (X) value.toString();
         throw unknownUnwrap(type);
     }
@@ -40,7 +39,6 @@ public class ResourceIdentifierJavaType extends AbstractClassJavaType<ResourceId
     @Override
     public <X> ResourceIdentifier wrap(X value, WrapperOptions options) {
         return switch (value) {
-            case null -> null;
             case ResourceIdentifier identifier -> identifier;
             case String str -> ResourceIdentifier.valueOf(str);
             default -> throw unknownWrap(value.getClass());
