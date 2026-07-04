@@ -12,6 +12,7 @@ public class DataRepository {
     public final RecordTypeRepository recordTypeRepo;
     public final RecordRepository recordRepo;
     public final FileStoreRepository fileStoreRepo;
+    public final FileStoreMiddlewareRepository fileStoreMiddlewareRepo;
 
     public DataRepository(
             AuthProviderRepository authProviderRepo,
@@ -21,7 +22,8 @@ public class DataRepository {
             ObjectPropertyRepository objectPropertyRepo,
             RecordTypeRepository recordTypeRepo,
             RecordRepository recordRepo,
-            FileStoreRepository fileStoreRepo
+            FileStoreRepository fileStoreRepo,
+            FileStoreMiddlewareRepository fileStoreMiddlewareRepo
     ) {
         this.authProviderRepo = authProviderRepo;
         this.configRepo = configRepo;
@@ -31,5 +33,6 @@ public class DataRepository {
         this.recordTypeRepo = recordTypeRepo;
         this.recordRepo = recordRepo;
         this.fileStoreRepo = fileStoreRepo;
+        this.fileStoreMiddlewareRepo = fileStoreMiddlewareRepo;
     }
 }

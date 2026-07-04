@@ -41,6 +41,7 @@ dependencies {
     compileOnly project(':plugins:defaults-aus-gov')
     compileOnly project(':plugins:filestore-local')
     compileOnly project(':plugins:filestore-s3')
+    compileOnly project(':plugins:filestoremiddleware-encrypting')
 }
 
 testing {
@@ -73,7 +74,8 @@ tasks.register('copyPlugins', Copy) {
             project(':plugins:auth-oidc'),
             project(':plugins:defaults-aus-gov'),
             project(':plugins:filestore-local'),
-            project(':plugins:filestore-s3')
+            project(':plugins:filestore-s3'),
+            project(':plugins:filestoremiddleware-encrypting'),
     ]
 
     // Ensure all plugin modules create their JARs first
@@ -84,10 +86,12 @@ tasks.register('copyPlugins', Copy) {
     into file("${projectDir}/plugins")
 }
 
-// Automatically trigger plugin extraction whenever the app boots locally
-tasks.named('bootRun') {
+// Automatically trigger plugin extraction and boot the app
+tasks.register('pluginBootRun', Copy) {
     dependsOn tasks.named('copyPlugins')
+    dependsOn tasks.named('bootRun')
 }
+
 tasks.named('test') {
     dependsOn tasks.named('copyPlugins')
 }

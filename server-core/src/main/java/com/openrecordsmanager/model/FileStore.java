@@ -19,6 +19,7 @@ import tools.jackson.databind.annotation.JsonSerialize;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -37,7 +38,12 @@ public class FileStore<T> {
 
     @Column(nullable = false)
     @JdbcTypeCode(SqlTypes.JSON)
-    public Map<String, Object> properties;
+    public Map<String, ?> properties;
+
+    @OneToMany(mappedBy = "fileStore", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    @OrderBy("application_order ASC")
+    @MapKey(name = "applicationOrder")
+    public Map<Integer, FileStoreMiddlewareUsage> middlewares;
 
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "store")
     public Set<FileStoreEntry> files;
@@ -46,10 +52,19 @@ public class FileStore<T> {
     protected FileStore() {
     }
 
-    public FileStore(ComponentCatalog catalog, FileStoreType<T> type, Map<String, Object> properties) {
+    public FileStore(ComponentCatalog catalog, FileStoreType<T> type, Map<String, ?> properties) {
         this.id = UUID.randomUUID();
         this.type = catalog.getId(ComponentTypes.FILE_STORE_TYPE, type);
-        this.properties = type.serialiseOptions(type.parseOptions(properties));
+        this.properties = properties;
+        this.middlewares = new HashMap<>();
+    }
+
+    public void addMiddleware(FileStoreMiddleware<?> middleware) {
+        if (this.middlewares == null) {
+            this.middlewares = new HashMap<>();
+        }
+        int index = this.middlewares.size();
+        this.middlewares.put(index, new FileStoreMiddlewareUsage(this, middleware, index));
     }
 
     public FileStoreEntry newFile(ComponentCatalog catalog, InputStream file, String extension) {
@@ -58,10 +73,15 @@ public class FileStore<T> {
         CountingInputStream countingStream = new CountingInputStream(file);
         HashingInputStream hashingStream = new HashingInputStream(hashFunction, countingStream);
 
+        InputStream stream = hashingStream;
+        for (FileStoreMiddlewareUsage middleware : this.middlewares.values()) {
+            stream = middleware.middleware.duringSave(catalog, stream);
+        }
+
         // Save the file into the store
         String path;
         try {
-            path = this.getStoreType(catalog).save(this.getProperties(catalog), hashingStream);
+            path = this.getStoreType(catalog).save(this.getProperties(catalog), stream);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -77,11 +97,17 @@ public class FileStore<T> {
     }
 
     public T getProperties(ComponentCatalog catalog) {
-        return this.getStoreType(catalog).parseOptions(properties);
+        return this.getStoreType(catalog).parseOptions(this.properties);
     }
 
     public InputStream getFile(ComponentCatalog catalog, FileStoreEntry entry) throws IOException {
-        return this.getStoreType(catalog).retrieve(this.getProperties(catalog), entry.path);
+        InputStream stream = this.getStoreType(catalog).retrieve(this.getProperties(catalog), entry.path);
+
+        for (FileStoreMiddlewareUsage middleware : this.middlewares.values()) {
+            stream = middleware.middleware.duringRetrieve(catalog, stream);
+        }
+
+        return stream;
     }
 
     @SuppressWarnings("unchecked")
@@ -89,9 +115,8 @@ public class FileStore<T> {
         return (FileStoreType<T>) catalog.getComponent(ComponentTypes.FILE_STORE_TYPE, this.type).orElseThrow();
     }
 
-    public void setProperties(ComponentCatalog catalog, Map<String, Object> properties) {
-        FileStoreType<T> type = this.getStoreType(catalog);
-        this.properties = type.serialiseOptions(type.parseOptions(properties));
+    public void setProperties(Map<String, ?> properties) {
+        this.properties = properties;
     }
 
     public static HashFunction getHashFunction(String algorithm) {
@@ -110,6 +135,7 @@ public class FileStore<T> {
             gen.writeStringProperty("id", value.id.toString());
             gen.writeStringProperty("type", value.type.toString());
             gen.writePOJOProperty("properties", value.properties);
+            gen.writePOJOProperty("middlewares", value.middlewares);
             gen.writeEndObject();
         }
     }

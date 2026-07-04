@@ -5,7 +5,7 @@
     "application/json"
   ],
   "properties": {
-    "object_properties/test:user_email_property": null,
-    "object_properties/test:user_email_property_2": null
+    "object_property/test:user_email_property": null,
+    "object_property/test:user_email_property_2": null
   }
 }

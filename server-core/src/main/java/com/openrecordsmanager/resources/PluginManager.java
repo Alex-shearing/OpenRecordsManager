@@ -1,6 +1,7 @@
 package com.openrecordsmanager.resources;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.hash.Hashing;
 import com.openrecordsmanager.api.BuiltinComponents;
 import com.openrecordsmanager.api.Plugin;
 import com.openrecordsmanager.config.ConfigProperties;
@@ -178,7 +179,10 @@ public class PluginManager {
             if (localPlugin.version.isGreaterThan(persistedVersion)) {
                 LOGGER.info("This server has a newer version of the {} plugin than the database ({} > {}), it will be uploaded", localPlugin.name, localPlugin.version, optPersistedPlugin.get().version);
                 this.uploadPlugin(catalog, fileStore, persistedPlugin, localPlugin);
-            } else if (localPlugin.version.isLowerThan(persistedVersion)) {
+                continue;
+            }
+
+            if (localPlugin.version.isLowerThan(persistedVersion)) {
                 LOGGER.info("There is a newer version of the {} plugin in the database ({} > {}), it will be downloaded", persistedPlugin.name, persistedPlugin.version, localPlugin.version);
 
                 // Remove the old file
@@ -194,9 +198,28 @@ public class PluginManager {
 
                 // A new plugin was downloaded, so mark for reload
                 needsReload = true;
-            } else {
-                LOGGER.info("This server already has the same version of the {} plugin as the database {}", persistedPlugin.name, persistedPlugin.version);
+                continue;
             }
+
+            try {
+                String localHash = com.google.common.io.Files.asByteSource(localPlugin.file)
+                        .hash(Hashing.sha256())
+                        .toString();
+
+                if (!localHash.equals(persistedPlugin.file.hash)) {
+                    LOGGER.warn(
+                            "This server and the database both have {} version {}, but with a different hash ({} != {}). The local version will be reuploaded",
+                            persistedPlugin.name, persistedPlugin.version,
+                            localHash, persistedPlugin.file.hash
+                    );
+
+                    this.uploadPlugin(catalog, fileStore, persistedPlugin, localPlugin);
+                }
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+
+            LOGGER.info("This server already has the same version of the {} plugin as the database {}", persistedPlugin.name, persistedPlugin.version);
         }
 
         // Download any new plugins that don't exist locally

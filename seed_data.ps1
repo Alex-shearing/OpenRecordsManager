@@ -1,4 +1,4 @@
-Invoke-RestMethod -Method POST -Uri http://localhost:8080/api/v1/templates/record_types/defaults_aus_gov:email/apply?includeDependencies=true
+Invoke-RestMethod -Method POST -Uri http://localhost:8080/api/v1/templates/record_type/defaults_aus_gov:email/apply?includeDependencies=true
 
 $FileStoreBody = @{
     type = "filestore_local:local"
@@ -6,12 +6,12 @@ $FileStoreBody = @{
         "rootDir" = "./store"
     }
 }
-$FileStore = Invoke-RestMethod -Method POST -Uri http://localhost:8080/api/v1/file_stores -Body ($FileStoreBody | ConvertTo-Json -Compress) -ContentType application/json
+$FileStore = Invoke-RestMethod -Method POST -Uri http://localhost:8080/api/v1/file_store -Body ($FileStoreBody | ConvertTo-Json -Compress) -ContentType application/json
 
 Invoke-RestMethod -Method PUT -Uri "http://localhost:8080/api/v1/config/workgroup.default_file_store" -Body $FileStore.id
 
 $RecordBody = @{
-    type = "defaults_aus_gov:email"
+    type = "defaults_aus_gov:email_record_type"
     properties = @{
         "builtin:notes" = "Test"
     }

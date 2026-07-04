@@ -5,12 +5,13 @@ import tools.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Map;
 
 /**
  * Defines a type of file store (e.g., local storage, Amazon S3) that can be provided by plugins.
  */
 public abstract class FileStoreType<T> implements Component {
+    private static final ObjectMapper MAPPER = new ObjectMapper();
+
     private final Class<T> propertiesClass;
 
     protected FileStoreType(Class<T> propertiesClass) {
@@ -37,13 +38,7 @@ public abstract class FileStoreType<T> implements Component {
      */
     public abstract InputStream retrieve(T properties, String data) throws IOException;
 
-    public T parseOptions(Map<String, Object> properties) {
-        ObjectMapper mapper = new ObjectMapper();
-        return mapper.convertValue(properties, propertiesClass);
-    }
-
-    public Map<String, Object> serialiseOptions(T properties) {
-        ObjectMapper mapper = new ObjectMapper();
-        return mapper.convertValue(properties, Map.class);
+    public T parseOptions(Object properties) {
+        return MAPPER.convertValue(properties, propertiesClass);
     }
 }

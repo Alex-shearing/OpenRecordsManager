@@ -28,7 +28,7 @@ public class RecordPropertyValue<T> implements ObjectPropertyHolder.ObjectProper
     @JoinColumn(nullable = false)
     public ObjectProperty<T> property;
 
-    @Column(name = "property_value", nullable = false)
+    @Column(name = "property_value")
     @JdbcTypeCode(SqlTypes.JSON)
     public T value;
 

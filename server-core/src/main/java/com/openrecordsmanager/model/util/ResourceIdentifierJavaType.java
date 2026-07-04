@@ -1,6 +1,7 @@
 package com.openrecordsmanager.model.util;
 
 import com.openrecordsmanager.api.ResourceIdentifier;
+import jakarta.annotation.Nullable;
 import org.hibernate.type.descriptor.WrapperOptions;
 import org.hibernate.type.descriptor.java.AbstractClassJavaType;
 import org.hibernate.type.descriptor.java.ImmutableMutabilityPlan;
@@ -20,25 +21,27 @@ public class ResourceIdentifierJavaType extends AbstractClassJavaType<ResourceId
     }
 
     @Override
-    public String toString(ResourceIdentifier value) {
-        return value.toString();
+    public @Nullable String toString(@Nullable ResourceIdentifier value) {
+        return value != null ? value.toString() : null;
     }
 
     @Override
-    public ResourceIdentifier fromString(CharSequence string) {
-        return ResourceIdentifier.valueOf(string.toString());
+    public @Nullable ResourceIdentifier fromString(@Nullable CharSequence string) {
+        return string != null ? ResourceIdentifier.valueOf(string.toString()) : null;
     }
 
     @SuppressWarnings("unchecked")
     @Override
-    public <X> X unwrap(ResourceIdentifier value, Class<X> type, WrapperOptions options) {
+    public <X> @Nullable X unwrap(@Nullable ResourceIdentifier value, Class<X> type, WrapperOptions options) {
+        if (value == null) return null;
         if (type.isAssignableFrom(String.class)) return (X) value.toString();
         throw unknownUnwrap(type);
     }
 
     @Override
-    public <X> ResourceIdentifier wrap(X value, WrapperOptions options) {
+    public <X> @Nullable ResourceIdentifier wrap(@Nullable X value, WrapperOptions options) {
         return switch (value) {
+            case null -> null;
             case ResourceIdentifier identifier -> identifier;
             case String str -> ResourceIdentifier.valueOf(str);
             default -> throw unknownWrap(value.getClass());

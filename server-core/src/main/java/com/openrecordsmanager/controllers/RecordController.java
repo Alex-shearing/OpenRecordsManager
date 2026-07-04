@@ -14,6 +14,7 @@ import com.openrecordsmanager.resources.ComponentCatalog;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import org.jspecify.annotations.Nullable;
+import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpHeaders;
@@ -156,7 +157,7 @@ public class RecordController {
                 .headers(headers)
                 .contentLength(rev.file.sizeBytes)
                 .contentType(MediaType.APPLICATION_OCTET_STREAM)
-                .body(rev.file.getFile(this.catalog));
+                .body(new InputStreamResource(rev.file.getFile(this.catalog)));
     }
 
     private static <K> void setProperty(Record record, ObjectProperty<K> property, Object value) {

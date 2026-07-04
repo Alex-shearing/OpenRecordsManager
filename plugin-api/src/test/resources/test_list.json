@@ -4,13 +4,13 @@
     "entry_1": {
       "name": "Entry 1",
       "index": 1,
-      "parent": "lists/test:test_list"
+      "parent": "list/test:test_list"
     },
     "entry_2": {
       "name": "Entry 2",
       "index": 2,
       "description": "",
-      "parent": "lists/test:test_list"
+      "parent": "list/test:test_list"
     }
   }
 }

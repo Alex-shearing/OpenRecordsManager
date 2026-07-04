@@ -1,0 +1,9 @@
+plugins {
+    id 'java'
+}
+
+dependencies {
+    compileOnly project(':plugin-api')
+
+    implementation 'com.google.crypto.tink:tink:1.22.0'
+}

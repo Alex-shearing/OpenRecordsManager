@@ -14,12 +14,23 @@ public record ApiResponseWrapper<T>(boolean success,
                                     Instant timestamp) {
 
     // Convenience constructor for successful responses
-    public static <T> ApiResponseWrapper<T> success(T data) {
-        return new ApiResponseWrapper<>(true, data, null, Instant.now());
+    public static <T> ApiResponseWrapper<T> success(@Nullable T data) {
+        T typedData = data;
+        return new ApiResponseWrapper<>(true, typedData, null, Instant.now());
     }
 
     // Convenience constructor for error responses
     public static <T> ApiResponseWrapper<T> error(String error) {
         return new ApiResponseWrapper<>(false, null, error, Instant.now());
+    }
+
+    @Override
+    public String toString() {
+        return "ApiResponseWrapper{" +
+                "success=" + success +
+                ", data=" + data +
+                ", error='" + error + '\'' +
+                ", timestamp=" + timestamp +
+                '}';
     }
 }

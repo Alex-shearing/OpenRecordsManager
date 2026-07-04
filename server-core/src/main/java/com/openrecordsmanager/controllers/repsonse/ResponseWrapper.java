@@ -4,6 +4,7 @@ import com.openrecordsmanager.controllers.repsonse.errors.ApiResponseWrapper;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 import org.springframework.core.MethodParameter;
+import org.springframework.core.io.Resource;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageConverter;
@@ -27,9 +28,11 @@ public class ResponseWrapper implements ResponseBodyAdvice<Object> {
                                             ServerHttpRequest request, ServerHttpResponse response) {
 
         // If the endpoint already threw an error or explicitly returned an ApiResponse, pass it through
-        if (body instanceof ApiResponseWrapper || body == null || body instanceof ResponseEntity<?>) {
+        if (body instanceof ApiResponseWrapper || body instanceof ResponseEntity<?> || body instanceof Resource) {
             return body;
         }
+
+        // Do not attempt to transform the swagger endpoints
         String path = request.getURI().getPath();
         if (path.contains("/v3/api-docs") || path.contains("/swagger-ui")) {
             return body;
