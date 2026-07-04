@@ -2,6 +2,7 @@ package com.openrecordsmanager.api.types;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.openrecordsmanager.api.Component;
+import org.jspecify.annotations.Nullable;
 
 import java.util.Objects;
 
@@ -42,7 +43,7 @@ public class ComponentType<T extends Component> {
     }
 
     @JsonCreator
-    private static ComponentType<Component> fromString(String name) {
+    private static @Nullable ComponentType<Component> fromString(String name) {
         return ComponentTypes.fromName(name);
     }
 }

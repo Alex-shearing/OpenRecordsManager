@@ -10,7 +10,7 @@ import java.io.InputStream;
 
 class PropertyDefinitionTest {
 
-    static ObjectMapper MAPPER = new ObjectMapper();
+    static final ObjectMapper MAPPER = new ObjectMapper();
 
     @Test
     void testDeserialisation() {

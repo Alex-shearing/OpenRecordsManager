@@ -1,19 +1,15 @@
 package com.openrecordsmanager.api.config;
 
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 public interface ConfigStore {
-    @Nullable
-    <T> T getProperty(ConfigDefinition<T> key);
+    <T> @Nullable T getProperty(ConfigDefinition<T> key);
 
-    @NonNull
-    default <T> T getProperty(ConfigDefinition<T> key, @NonNull T defaultValue) {
+    default <T> T getProperty(ConfigDefinition<T> key, T defaultValue) {
         T value = this.getProperty(key);
         return value != null ? value : defaultValue;
     }
 
-    @NonNull
     default <T> T getPropertyOrThrow(ConfigDefinition<T> key) {
         T value = this.getProperty(key);
         if (value == null) {

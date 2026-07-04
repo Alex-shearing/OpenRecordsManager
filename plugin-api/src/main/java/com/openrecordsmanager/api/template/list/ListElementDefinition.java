@@ -4,12 +4,10 @@ import com.fasterxml.jackson.annotation.JsonSetter;
 import com.fasterxml.jackson.annotation.Nulls;
 import com.openrecordsmanager.api.Component;
 import com.openrecordsmanager.api.ComponentReference;
-import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 import java.util.*;
 
-@NullMarked
 public record ListElementDefinition(
         String name,
         @JsonSetter(nulls = Nulls.AS_EMPTY) String description,

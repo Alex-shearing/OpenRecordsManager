@@ -2,6 +2,7 @@ plugins {
     id 'org.springframework.boot' version '4.0.6' apply false
     id 'io.spring.dependency-management' version '1.1.7' apply false
     id 'java'
+    id 'org.openrewrite.rewrite' version '7.36.0'
 }
 
 allprojects {
@@ -11,6 +12,10 @@ allprojects {
     repositories {
         mavenCentral()
     }
+}
+
+dependencies {
+    rewrite 'org.openrewrite.recipe:rewrite-static-analysis:2.19.0'
 }
 
 // Inject compilation target and Manifest headers into all subprojects
@@ -34,6 +39,19 @@ subprojects {
                     'Plugin-Id': project.name,
                     'Plugin-Version': project.version
             )
+        }
+    }
+}
+
+tasks.register('applyNullMarked') {
+    group = 'formatting'
+    description = 'Automatically adds @NullMarked package-info.java files to all subpackages.'
+
+    dependsOn 'rewriteRun'
+
+    doFirst {
+        rewrite {
+            activeRecipe('org.openrewrite.java.search.AddNullMarkedToPackages')
         }
     }
 }

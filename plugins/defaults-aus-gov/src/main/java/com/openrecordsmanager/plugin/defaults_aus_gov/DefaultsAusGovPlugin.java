@@ -4,6 +4,7 @@ import com.openrecordsmanager.api.BuiltinComponents;
 import com.openrecordsmanager.api.Plugin;
 import com.openrecordsmanager.api.RegistrationContext;
 import com.openrecordsmanager.api.template.recordtype.RecordTypeDefinition;
+import org.jspecify.annotations.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,12 +35,12 @@ public class DefaultsAusGovPlugin implements Plugin {
             .build();
 
     @Override
-    public String getName() {
+    public @NonNull String getName() {
         return "defaults_aus_gov";
     }
 
     @Override
-    public void initialise(RegistrationContext registry) {
+    public void initialise(@NonNull RegistrationContext registry) {
         LOGGER.info("Initializing plugin...");
 
         // Lists

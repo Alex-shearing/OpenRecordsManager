@@ -4,6 +4,7 @@ import com.openrecordsmanager.api.Plugin;
 import com.openrecordsmanager.api.RegistrationContext;
 import com.openrecordsmanager.api.config.ConfigDefinition;
 import com.openrecordsmanager.api.config.ConfigValueType;
+import org.jspecify.annotations.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -19,12 +20,12 @@ public class AuthLocalPlugin implements Plugin {
             .build();
 
     @Override
-    public String getName() {
+    public @NonNull String getName() {
         return "auth_local";
     }
 
     @Override
-    public void initialise(RegistrationContext registry) {
+    public void initialise(@NonNull RegistrationContext registry) {
         LOGGER.info("Initializing plugin...");
 
         registry.registerConfig(CONFIG_ADMIN_ENABLED);

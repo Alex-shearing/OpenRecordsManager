@@ -1,12 +1,10 @@
 package com.openrecordsmanager.api.config;
 
 import com.openrecordsmanager.api.Component;
-import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 import java.util.Objects;
 
-@NullMarked
 public record ConfigDefinition<T>(
         String key,
         ConfigValueType<T> type,

@@ -2,16 +2,14 @@ package com.openrecordsmanager.api.template.property;
 
 import com.openrecordsmanager.api.Component;
 import com.openrecordsmanager.api.ComponentReference;
-import com.openrecordsmanager.api.template.expression.ExpressionBuilder;
+import com.openrecordsmanager.api.template.ExpressionBuilder;
 import com.openrecordsmanager.api.template.list.ListDefinition;
-import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 import tools.jackson.databind.annotation.JsonDeserialize;
 
 import java.util.*;
 
 @JsonDeserialize
-@NullMarked
 public record PropertyDefinition<T>(
         PropertyType<T> type,
         String name,

@@ -2,9 +2,8 @@ package com.openrecordsmanager.api.template.recordtype;
 
 import com.openrecordsmanager.api.Component;
 import com.openrecordsmanager.api.ComponentReference;
-import com.openrecordsmanager.api.template.expression.ExpressionBuilder;
+import com.openrecordsmanager.api.template.ExpressionBuilder;
 import com.openrecordsmanager.api.template.property.PropertyDefinition;
-import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 import tools.jackson.databind.annotation.JsonDeserialize;
 
@@ -15,7 +14,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @JsonDeserialize
-@NullMarked
 public record RecordTypeDefinition(
         String name,
         String description,

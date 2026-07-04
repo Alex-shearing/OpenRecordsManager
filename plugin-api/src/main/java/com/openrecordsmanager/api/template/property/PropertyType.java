@@ -2,6 +2,7 @@ package com.openrecordsmanager.api.template.property;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.openrecordsmanager.api.template.list.IListElement;
+import org.jspecify.annotations.Nullable;
 
 import java.util.*;
 
@@ -11,42 +12,42 @@ public abstract class PropertyType<T> {
 
     public static final PropertyType<String> CALCULATED = new PropertyType<>("calculated") {
         @Override
-        public String cast(Object value) {
+        public String cast(@Nullable Object value) {
             return "tba";
         }
     };
 
     public static final PropertyType<String> STRING = new PropertyType<>("string") {
         @Override
-        public String cast(Object value) {
+        public @Nullable String cast(@Nullable Object value) {
             return value != null ? value.toString() : "";
         }
     };
 
     public static final PropertyType<Long> NUMBER = new PropertyType<>("number") {
         @Override
-        public Long cast(Object value) {
+        public @Nullable Long cast(@Nullable Object value) {
             return value instanceof Number v ? v.longValue() : null;
         }
     };
 
     public static final PropertyType<Double> DECIMAL = new PropertyType<>("decimal") {
         @Override
-        public Double cast(Object value) {
+        public @Nullable Double cast(@Nullable Object value) {
             return value instanceof Number v ? v.doubleValue() : null;
         }
     };
 
     public static final PropertyType<Boolean> BOOLEAN = new PropertyType<>("boolean") {
         @Override
-        public Boolean cast(Object value) {
+        public @Nullable Boolean cast(@Nullable Object value) {
             return value instanceof Boolean v ? v : null;
         }
     };
 
     public static final PropertyType<IListElement> LIST_ITEM = new PropertyType<>("list_item") {
         @Override
-        public IListElement cast(Object value) {
+        public @Nullable IListElement cast(@Nullable Object value) {
             return value instanceof IListElement v ? v : null;
         }
     };
@@ -54,7 +55,7 @@ public abstract class PropertyType<T> {
     public static final PropertyType<Collection<IListElement>> LIST_MULTIPLE = new PropertyType<>("list_multiple") {
         @SuppressWarnings("unchecked")
         @Override
-        public Collection<IListElement> cast(Object value) {
+        public @Nullable Collection<IListElement> cast(@Nullable Object value) {
             if (value instanceof Collection<?> v) {
                 if (v.isEmpty()) {
                     return (Collection<IListElement>) v;
@@ -72,7 +73,7 @@ public abstract class PropertyType<T> {
 
     public static final PropertyType<Date> DATE = new PropertyType<>("date") {
         @Override
-        public Date cast(Object value) {
+        public @Nullable Date cast(@Nullable Object value) {
             return value instanceof Date v ? v : null;
         }
     };
@@ -84,7 +85,7 @@ public abstract class PropertyType<T> {
         TYPES.put(name, this);
     }
 
-    public abstract T cast(Object value);
+    public abstract @Nullable T cast(@Nullable Object value);
 
     public boolean allowsList() {
         return this == LIST_ITEM || this == LIST_MULTIPLE;

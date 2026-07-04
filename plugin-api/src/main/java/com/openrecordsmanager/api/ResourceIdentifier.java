@@ -2,7 +2,6 @@ package com.openrecordsmanager.api;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
-import org.jspecify.annotations.NonNull;
 
 import java.io.Serializable;
 import java.util.regex.Pattern;
@@ -31,13 +30,12 @@ public record ResourceIdentifier(String source, String item) implements Serializ
 
     @Override
     @JsonValue
-    @NonNull
     public String toString() {
         return this.source + ":" + this.item;
     }
 
     private static String validateIdentifier(String input) {
-        if (input == null || input.isEmpty()) {
+        if (input.isEmpty()) {
             throw new IllegalArgumentException(String.format("Invalid identifier '%s' must have length", input));
         }
 

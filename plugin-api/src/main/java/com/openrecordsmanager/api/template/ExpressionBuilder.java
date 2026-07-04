@@ -1,4 +1,4 @@
-package com.openrecordsmanager.api.template.expression;
+package com.openrecordsmanager.api.template;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.openrecordsmanager.api.ComponentReference;

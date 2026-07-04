@@ -2,6 +2,7 @@ package com.openrecordsmanager.plugin.authoidc;
 
 import com.openrecordsmanager.api.Plugin;
 import com.openrecordsmanager.api.RegistrationContext;
+import org.jspecify.annotations.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -11,12 +12,12 @@ public class AuthOidcPlugin implements Plugin {
     public static final OidcAuthProviderType OIDC_AUTH_PROVIDER_TYPE = new OidcAuthProviderType();
 
     @Override
-    public String getName() {
+    public @NonNull String getName() {
         return "auth_oidc";
     }
 
     @Override
-    public void initialise(RegistrationContext registry) {
+    public void initialise(@NonNull RegistrationContext registry) {
         LOGGER.info("Initializing plugin...");
 
         registry.registerComponent("oidc_auth", OIDC_AUTH_PROVIDER_TYPE);

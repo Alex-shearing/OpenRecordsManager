@@ -8,6 +8,7 @@ import com.openrecordsmanager.api.types.ComponentType;
 import com.openrecordsmanager.api.types.ComponentTypes;
 import com.openrecordsmanager.config.ConfigProperties;
 import com.openrecordsmanager.config.DynamicConfigService;
+import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,9 +42,8 @@ public class ComponentCatalog implements ComponentAccess {
         this.components = builder.table.buildOrThrow();
     }
 
-    @Nullable
     @SuppressWarnings("unchecked")
-    public <T extends Component> ResourceIdentifier getId(ComponentType<T> type, T definition) {
+    public <T extends Component> @Nullable ResourceIdentifier getId(@NonNull ComponentType<T> type, T definition) {
         Map<ResourceIdentifier, T> values = (Map<ResourceIdentifier, T>) this.components.row(type);
 
         for (Map.Entry<ResourceIdentifier, T> cell : values.entrySet()) {
@@ -65,7 +65,7 @@ public class ComponentCatalog implements ComponentAccess {
     }
 
     @SuppressWarnings("unchecked")
-    public <T extends Component> Optional<T> getComponent(ComponentType<T> type, ResourceIdentifier id) {
+    public <T extends Component> @NonNull Optional<T> getComponent(@NonNull ComponentType<T> type, @NonNull ResourceIdentifier id) {
         return Optional.ofNullable((T) this.components.get(type, id));
     }
 
@@ -76,10 +76,6 @@ public class ComponentCatalog implements ComponentAccess {
             ResourceIdentifier identifier = new ResourceIdentifier(context.plugin.getName(), id);
 
             ComponentType<? extends Component> type = ComponentTypes.fromObject(component);
-            if (type == null) {
-                LOGGER.error("Did not know how to register instance '{}' of type {}", identifier, component.getClass());
-                return;
-            }
 
             LOGGER.info("Registering plugin component '{}' as {}", identifier, type);
 
@@ -96,7 +92,7 @@ public class ComponentCatalog implements ComponentAccess {
 
     private record RegistrationContextImpl(Builder builder, Plugin plugin) implements RegistrationContext {
         @Override
-        public void registerComponent(String id, Component component) {
+        public void registerComponent(@NonNull String id, @NonNull Component component) {
             this.builder.registerInstance(this, id, component);
         }
     }

@@ -29,21 +29,19 @@ public interface ComponentTypes {
             CONFIG, LIST, LIST_ELEMENT, PROPERTY, RECORD_TYPE, INPUT_AUTH_PROVIDER, REDIRECT_AUTH_PROVIDER, FILE_STORE_TYPE
     };
 
-    @Nullable
     @SuppressWarnings("unchecked")
-    static ComponentType<Component> fromName(String name) {
+    static @Nullable ComponentType<Component> fromName(String name) {
         for (ComponentType<?> value : VALUES) {
             if (Objects.equals(value.name, name)) return (ComponentType<Component>) value;
         }
         return null;
     }
 
-    @Nullable
     @SuppressWarnings("unchecked")
     static <K extends Component> ComponentType<K> fromObject(K object) {
         for (ComponentType<?> value : VALUES) {
             if (value.is(object)) return (ComponentType<K>) value;
         }
-        return null;
+        throw new IllegalArgumentException("Unable to get component type from object: " + object.getClass());
     }
 }
