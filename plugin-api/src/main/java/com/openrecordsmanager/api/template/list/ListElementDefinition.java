@@ -10,7 +10,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 public record ListElementDefinition(
-        String display,
+        String name,
         String description,
         int index,
         @Nullable Date activeTo,
@@ -26,17 +26,17 @@ public record ListElementDefinition(
     public static class Builder {
         private final ListDefinition.Builder parentBuilder;
         private final String id;
-        private final String display;
+        private final String name;
         private final Set<String> aliases = new HashSet<>();
 
         private String description = "";
         private int index = 0;
         private Date activeTo = null;
 
-        public Builder(ListDefinition.Builder parentBuilder, String id, String display) {
+        public Builder(ListDefinition.Builder parentBuilder, String id, String name) {
             this.parentBuilder = parentBuilder;
             this.id = id;
-            this.display = display;
+            this.name = name;
         }
 
         public Builder description(String description) {
@@ -71,7 +71,7 @@ public record ListElementDefinition(
 
         public ListElementDefinition build(ComponentReference<ListDefinition> parent) {
             return new ListElementDefinition(
-                    this.display,
+                    this.name,
                     this.description,
                     this.index,
                     this.activeTo,

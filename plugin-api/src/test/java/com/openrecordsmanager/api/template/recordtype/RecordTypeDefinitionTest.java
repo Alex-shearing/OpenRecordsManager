@@ -1,9 +1,8 @@
-package com.openrecordsmanager.api.recordtype;
+package com.openrecordsmanager.api.template.recordtype;
 
 import com.openrecordsmanager.api.Component;
 import com.openrecordsmanager.api.ComponentReference;
 import com.openrecordsmanager.api.ResourceIdentifier;
-import com.openrecordsmanager.api.template.recordtype.RecordTypeDefinition;
 import com.openrecordsmanager.api.types.ComponentTypes;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;

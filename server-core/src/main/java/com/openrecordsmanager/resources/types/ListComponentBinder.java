@@ -13,10 +13,10 @@ public class ListComponentBinder extends ComponentBinder<ListDefinition, ListTyp
 
     @Override
     public void register(DataRepository repository, ComponentCatalog catalog, ExpressionsService expressions, ResourceIdentifier id, ListDefinition definition) {
-        ListType type = new ListType(id, definition.display);
+        ListType type = new ListType(id, definition.name());
         repository.listTypeRepo.saveAndFlush(type);
 
-        definition.defaultEntries.forEach((s, listItem) -> {
+        definition.defaultEntries().forEach((s, listItem) -> {
             ResourceIdentifier childId = new ResourceIdentifier(id.source(), s);
 
             ComponentBinderRegistry.LIST_ELEMENT.register(repository, catalog, expressions, childId, listItem, false);

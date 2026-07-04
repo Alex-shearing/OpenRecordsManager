@@ -1,0 +1,15 @@
+{
+  "name": "Test List",
+  "defaultEntries": {
+    "entry_1": {
+      "name": "Entry 1",
+      "index": 1,
+      "parent": "lists/test:test_list"
+    },
+    "entry_2": {
+      "name": "Entry 1",
+      "index": 1,
+      "parent": "lists/test:test_list"
+    }
+  }
+}

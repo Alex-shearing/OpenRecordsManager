@@ -87,7 +87,9 @@ public class ComponentCatalog implements ComponentAccess {
 
             // List specific registration to all list children
             if (component instanceof ListDefinition def) {
-                def.defaultEntries.forEach((eId, eDef) -> registerInstance(context, eId, eDef));
+                def.defaultEntries().forEach((eId, eDef) ->
+                        registerInstance(context, eId, eDef)
+                );
             }
         }
     }

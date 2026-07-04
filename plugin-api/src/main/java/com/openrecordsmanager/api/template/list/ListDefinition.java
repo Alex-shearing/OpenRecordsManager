@@ -1,54 +1,32 @@
 package com.openrecordsmanager.api.template.list;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
 import com.google.common.collect.ImmutableMap;
 import com.openrecordsmanager.api.Component;
 import com.openrecordsmanager.api.ComponentReference;
 import tools.jackson.databind.annotation.JsonDeserialize;
-import tools.jackson.databind.annotation.JsonPOJOBuilder;
 
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
-@JsonDeserialize(builder = ListDefinition.Builder.class)
-public class ListDefinition implements Component {
-    public final String display;
-    public final Map<String, ListElementDefinition> defaultEntries;
-
-    private ListDefinition(String display, Map<String, ListElementDefinition> defaultEntries) {
-        this.display = display;
-        this.defaultEntries = defaultEntries;
-    }
-
+@JsonDeserialize
+public record ListDefinition(String name, Map<String, ListElementDefinition> defaultEntries) implements Component {
     public static Builder builder(String name) {
         return new Builder(name);
     }
 
     @Override
-    public boolean equals(Object o) {
-        if (!(o instanceof ListDefinition that)) return false;
-        return Objects.equals(display, that.display) &&
-                Objects.equals(defaultEntries.size(), that.defaultEntries.size());
-    }
-
-    @Override
     public int hashCode() {
-        return Objects.hash(display, defaultEntries.size());
+        return Objects.hash(name, defaultEntries.size());
     }
 
-    @JsonPOJOBuilder(withPrefix = "")
     public static class Builder {
-        private final HashMap<String, ListElementDefinition.Builder> defaultEntries = new HashMap<>();
         private String name;
+        private final HashMap<String, ListElementDefinition.Builder> defaultEntries = new HashMap<>();
 
         private Builder(String name) {
             this.name = name;
-        }
-
-        @JsonCreator
-        private Builder() {
         }
 
         public Builder name(String name) {
@@ -56,8 +34,8 @@ public class ListDefinition implements Component {
             return this;
         }
 
-        public ListElementDefinition.Builder entry(String id, String display) {
-            return new ListElementDefinition.Builder(this, id, display);
+        public ListElementDefinition.Builder entry(String id, String name) {
+            return new ListElementDefinition.Builder(this, id, name);
         }
 
         protected void addEntry(String id, ListElementDefinition.Builder defaultEntry) {

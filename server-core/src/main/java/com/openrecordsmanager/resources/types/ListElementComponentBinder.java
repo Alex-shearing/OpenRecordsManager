@@ -24,7 +24,7 @@ public class ListElementComponentBinder extends ComponentBinder<ListElementDefin
         ListElement type = new ListElement(
                 id,
                 parent,
-                definition.display(),
+                definition.name(),
                 definition.description(),
                 definition.index(),
                 definition.activeTo(),

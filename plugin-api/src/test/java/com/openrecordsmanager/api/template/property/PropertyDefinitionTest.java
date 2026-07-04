@@ -1,8 +1,6 @@
-package com.openrecordsmanager.api.property;
+package com.openrecordsmanager.api.template.property;
 
 import com.openrecordsmanager.api.Component;
-import com.openrecordsmanager.api.template.property.PropertyDefinition;
-import com.openrecordsmanager.api.template.property.PropertyType;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import tools.jackson.databind.ObjectMapper;

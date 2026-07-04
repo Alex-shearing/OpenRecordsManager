@@ -15,7 +15,7 @@ import java.util.Set;
 
 @Entity
 @Table(name = "list_element")
-@JsonPropertyOrder({"id", "display", "parent", "description", "activeTo", "aliases"})
+@JsonPropertyOrder({"id", "name", "parent", "description", "activeTo", "aliases"})
 public class ListElement implements IListElement {
     @Id
     @JsonProperty

@@ -10,7 +10,7 @@ import java.util.List;
 
 @Entity
 @Table(name = "list_type")
-@JsonPropertyOrder({"id", "display"})
+@JsonPropertyOrder({"id", "name"})
 public class ListType {
     @Id
     @JsonProperty
