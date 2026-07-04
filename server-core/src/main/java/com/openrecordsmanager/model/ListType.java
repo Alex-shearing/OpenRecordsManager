@@ -18,7 +18,7 @@ public class ListType {
 
     @Column(nullable = false)
     @JsonProperty
-    public String display;
+    public String name;
 
     @OneToMany(mappedBy = "parent")
     @OrderBy("elementIndex ASC")
@@ -29,9 +29,9 @@ public class ListType {
     protected ListType() {
     }
 
-    public ListType(ResourceIdentifier id, String display) {
+    public ListType(ResourceIdentifier id, String name) {
         this.id = id;
-        this.display = display;
+        this.name = name;
         this.children = new ArrayList<>();
     }
 }

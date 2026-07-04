@@ -36,14 +36,14 @@ public class FileStoreController {
 
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Get all file stores")
-    public UUID[] list() {
+    public UUID[] fileStore_retrieveAll() {
         return this.repository.fileStoreRepo.findAllIds();
     }
 
     @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Get file store details")
     @NotFoundApiResponse
-    public FileStore<?> get(@PathVariable("id") UUID id) {
+    public FileStore<?> fileStore_retrieveOne(@PathVariable("id") UUID id) {
         return this.repository.fileStoreRepo.findById(id)
                 .orElseThrow(() -> ApiError.notFound("file store", id.toString()));
     }
@@ -51,7 +51,7 @@ public class FileStoreController {
     @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Create a new file store")
     @NotFoundApiResponse
-    public FileStore<?> newFileStore(@RequestBody NewFileStore input) {
+    public FileStore<?> fileStore_create(@RequestBody NewFileStore input) {
         FileStoreType<?> type = this.catalog.getComponent(ComponentTypes.FILE_STORE_TYPE, input.type)
                 .orElseThrow(() -> ApiError.notFound(ComponentTypes.FILE_STORE_TYPE, input.type));
 
@@ -73,7 +73,7 @@ public class FileStoreController {
     @PutMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Modify file store config")
     @NotFoundApiResponse
-    public FileStore<?> updateFileStore(@PathVariable("id") UUID id, @RequestBody Map<String, ?> properties) {
+    public FileStore<?> fileStore_update(@PathVariable("id") UUID id, @RequestBody Map<String, ?> properties) {
         FileStore<?> store = this.repository.fileStoreRepo.findById(id)
                 .orElseThrow(() -> ApiError.notFound("file store", id.toString()));
 
@@ -85,7 +85,7 @@ public class FileStoreController {
     @DeleteMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Delete a file store")
     @NotFoundApiResponse
-    public void deleteFileStore(@PathVariable("id") UUID id) {
+    public void fileStore_delete(@PathVariable("id") UUID id) {
         FileStore<?> store = this.repository.fileStoreRepo.findById(id)
                 .orElseThrow(() -> ApiError.notFound("file store", id.toString()));
 
@@ -94,14 +94,14 @@ public class FileStoreController {
 
     @GetMapping(value = "/middlewares", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Get all file store middlewares")
-    public UUID[] listMiddlewares() {
+    public UUID[] middleware_retrieveAll() {
         return this.repository.fileStoreMiddlewareRepo.findAllIds();
     }
 
     @GetMapping(value = "/middlewares/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Get file store middleware details")
     @NotFoundApiResponse
-    public FileStoreMiddleware<?> getMiddleware(@PathVariable("id") UUID id) {
+    public FileStoreMiddleware<?> middleware_retrieveOne(@PathVariable("id") UUID id) {
         return this.repository.fileStoreMiddlewareRepo.findById(id)
                 .orElseThrow(() -> ApiError.notFound("file store middleware", id.toString()));
     }
@@ -109,7 +109,7 @@ public class FileStoreController {
     @PostMapping(value = "/middlewares", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Create a new file store middleware")
     @NotFoundApiResponse
-    public FileStoreMiddleware<?> newFileStoreMiddleware(@RequestBody NewFileStoreMiddleware input) {
+    public FileStoreMiddleware<?> middleware_create(@RequestBody NewFileStoreMiddleware input) {
         FileStoreMiddlewareType<?> type = this.catalog.getComponent(ComponentTypes.FILE_STORE_MIDDLEWARE, input.type)
                 .orElseThrow(() -> ApiError.notFound(ComponentTypes.FILE_STORE_MIDDLEWARE, input.type));
 
@@ -124,7 +124,7 @@ public class FileStoreController {
     @PutMapping(value = "/middlewares/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Modify file store middleware config")
     @NotFoundApiResponse
-    public FileStoreMiddleware<?> updateFileStoreMiddleware(@PathVariable("id") UUID id, @RequestBody Map<String, ?> properties) {
+    public FileStoreMiddleware<?> middleware_update(@PathVariable("id") UUID id, @RequestBody Map<String, ?> properties) {
         FileStoreMiddleware<?> middleware = this.repository.fileStoreMiddlewareRepo.findById(id)
                 .orElseThrow(() -> ApiError.notFound("file store middleware", id.toString()));
 

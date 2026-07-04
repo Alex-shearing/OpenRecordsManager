@@ -89,7 +89,13 @@ public class Record implements ObjectPropertyHolder<RecordPropertyValue<?>> {
 
     public SecurityFilterUsage securityFilter(ExpressionsService expressions, User user, @Nullable Record record) {
         // Check record type filter
-        if (!expressions.checkPropertyExpression(this.id, this.type.securityFilter, null, user, record)) {
+        if (this.type.securityFilter != null && !expressions.checkPropertyExpression(
+                this.id,
+                this.type.securityFilter,
+                null,
+                user,
+                record)
+        ) {
             return this.type.securityFilterUsage;
         }
 

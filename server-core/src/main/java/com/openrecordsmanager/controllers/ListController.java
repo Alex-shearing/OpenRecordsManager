@@ -69,9 +69,7 @@ public class ListController {
         ListType type = this.repository.listTypeRepo.findById(listType)
                 .orElseThrow(() -> ApiError.notFound(ComponentTypes.LIST, listType));
 
-        return type.children.stream()
-                .filter(listElement1 -> listElement1.id.toString().contains(value))
-                .collect(Collectors.toSet());
+        return this.repository.listElementRepo.searchNameAndAlias(type, value);
     }
 
 }
