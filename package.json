@@ -1,0 +1,11 @@
+{
+  "name": "open-records-manager",
+  "scripts": {
+    "dev:frontend": "cd server-web && npm run dev",
+    "dev:backend": "(gradlew.bat bootRun || ./gradlew bootRun)",
+    "dev": "concurrently \"npm:dev:frontend\" \"npm:dev:backend\""
+  },
+  "devDependencies": {
+    "concurrently": "^10.0.3"
+  }
+}

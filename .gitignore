@@ -38,9 +38,30 @@ build/
 .vscode/
 
 ### Mac OS ###
+Thumbs.db
 .DS_Store
 # Ignore Gradle project-specific cache directory
 .gradle
 
 # Ignore Gradle build output directory
 build
+
+# Web server
+node_modules
+
+# Output
+.output
+.vercel
+.netlify
+.wrangler
+server-web/.svelte-kit
+
+# Env
+.env
+.env.*
+!.env.example
+!.env.test
+
+# Vite
+vite.config.js.timestamp-*
+vite.config.ts.timestamp-*
