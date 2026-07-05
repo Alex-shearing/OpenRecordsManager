@@ -16,5 +16,15 @@ export default defineConfig({
 				fallback: 'index.html'
 			})
 		})
-	]
+	],
+	// Used during development to proxy API requests to the Spring Boot backend.
+    server: {
+        proxy: {
+            '/api': {
+                target: 'http://localhost:8080', // Spring Boot server base url
+                changeOrigin: true,
+                secure: false,
+            }
+        }
+    }
 });
