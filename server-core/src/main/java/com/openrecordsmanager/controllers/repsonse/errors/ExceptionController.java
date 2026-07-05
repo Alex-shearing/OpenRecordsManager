@@ -2,6 +2,7 @@ package com.openrecordsmanager.controllers.repsonse.errors;
 
 import com.openrecordsmanager.api.builtin.BuiltinConfigs;
 import com.openrecordsmanager.config.DynamicConfigService;
+import com.openrecordsmanager.controllers.repsonse.ApiResponseWrapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;

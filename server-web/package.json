@@ -11,7 +11,7 @@
     "check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
     "lint": "prettier --check .",
     "format": "prettier --write .",
-    "generate-types": "openapi-typescript http://localhost:8080/api/v3/api-docs -o src/lib/types/schema.d.ts"
+    "generate-types": "openapi-typescript http://localhost:8080/v3/api-docs -o src/lib/types/schema.d.ts"
   },
   "devDependencies": {
     "@sveltejs/adapter-static": "^3.0.10",

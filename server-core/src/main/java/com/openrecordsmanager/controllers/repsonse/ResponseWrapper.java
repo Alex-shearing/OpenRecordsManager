@@ -1,6 +1,5 @@
 package com.openrecordsmanager.controllers.repsonse;
 
-import com.openrecordsmanager.controllers.repsonse.errors.ApiResponseWrapper;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 import org.springframework.core.MethodParameter;

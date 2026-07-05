@@ -4,7 +4,7 @@
  */
 
 export interface paths {
-    "/records/{id}/revisions/{version}": {
+    "/api/records/{id}/revisions/{version}": {
         parameters: {
             query?: never;
             header?: never;
@@ -22,7 +22,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/file_stores/{id}": {
+    "/api/file_stores/{id}": {
         parameters: {
             query?: never;
             header?: never;
@@ -41,7 +41,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/file_stores/middlewares/{id}": {
+    "/api/file_stores/middlewares/{id}": {
         parameters: {
             query?: never;
             header?: never;
@@ -59,7 +59,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/config/{id}": {
+    "/api/config/{id}": {
         parameters: {
             query?: never;
             header?: never;
@@ -77,7 +77,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/templates/{type}/{template}/register": {
+    "/api/templates/{type}/{template}/register": {
         parameters: {
             query?: never;
             header?: never;
@@ -94,7 +94,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/records": {
+    "/api/records": {
         parameters: {
             query?: never;
             header?: never;
@@ -111,7 +111,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/file_stores": {
+    "/api/file_stores": {
         parameters: {
             query?: never;
             header?: never;
@@ -129,7 +129,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/file_stores/middlewares": {
+    "/api/file_stores/middlewares": {
         parameters: {
             query?: never;
             header?: never;
@@ -147,7 +147,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/auth/login": {
+    "/api/auth/login": {
         parameters: {
             query?: never;
             header?: never;
@@ -164,7 +164,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/templates": {
+    "/api/templates": {
         parameters: {
             query?: never;
             header?: never;
@@ -181,7 +181,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/templates/{type}": {
+    "/api/templates/{type}": {
         parameters: {
             query?: never;
             header?: never;
@@ -198,7 +198,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/templates/{type}/{template}": {
+    "/api/templates/{type}/{template}": {
         parameters: {
             query?: never;
             header?: never;
@@ -215,7 +215,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/records/{id}": {
+    "/api/records/{id}": {
         parameters: {
             query?: never;
             header?: never;
@@ -232,7 +232,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/records/{id}/revisions": {
+    "/api/records/{id}/revisions": {
         parameters: {
             query?: never;
             header?: never;
@@ -249,7 +249,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/record_types": {
+    "/api/record_types": {
         parameters: {
             query?: never;
             header?: never;
@@ -266,7 +266,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/record_types/{id}": {
+    "/api/record_types/{id}": {
         parameters: {
             query?: never;
             header?: never;
@@ -283,7 +283,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/lists": {
+    "/api/lists": {
         parameters: {
             query?: never;
             header?: never;
@@ -300,7 +300,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/lists/{list}": {
+    "/api/lists/{list}": {
         parameters: {
             query?: never;
             header?: never;
@@ -317,7 +317,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/lists/{list}/{element}": {
+    "/api/lists/{list}/{element}": {
         parameters: {
             query?: never;
             header?: never;
@@ -334,7 +334,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/lists/{list}/search": {
+    "/api/lists/{list}/search": {
         parameters: {
             query?: never;
             header?: never;
@@ -351,7 +351,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/info": {
+    "/api/info": {
         parameters: {
             query?: never;
             header?: never;
@@ -368,7 +368,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/config": {
+    "/api/config": {
         parameters: {
             query?: never;
             header?: never;
@@ -385,7 +385,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/config/this_server": {
+    "/api/config/this_server": {
         parameters: {
             query?: never;
             header?: never;
@@ -402,7 +402,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/config/this_server/{id}": {
+    "/api/config/this_server/{id}": {
         parameters: {
             query?: never;
             header?: never;
@@ -419,7 +419,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/auth/redirect/{auth_provider}": {
+    "/api/auth/redirect/{auth_provider}": {
         parameters: {
             query?: never;
             header?: never;
@@ -436,7 +436,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/auth/callback/{auth_provider}": {
+    "/api/auth/callback/{auth_provider}": {
         parameters: {
             query?: never;
             header?: never;
@@ -458,10 +458,10 @@ export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
         ApiResponseWrapper: {
-            success?: boolean;
+            success: boolean;
             error?: string;
             /** Format: date-time */
-            timestamp?: string;
+            timestamp: string;
             data?: unknown;
         };
         FileStoreEntry: {
@@ -629,9 +629,10 @@ export interface operations {
                 content: {
                     "application/octet-stream": string;
                     "application/json": {
-                        success?: boolean;
+                        /** @enum {boolean} */
+                        success: true;
                         /** Format: date-time */
-                        timestamp?: string;
+                        timestamp: string;
                     };
                 };
             };
@@ -649,10 +650,11 @@ export interface operations {
                      *     }
                      */
                     "application/json": {
-                        success?: boolean;
+                        /** @enum {boolean} */
+                        success: false;
+                        error: string;
                         /** Format: date-time */
-                        timestamp?: string;
-                        data?: components["schemas"]["ApiResponseWrapper"];
+                        timestamp: string;
                     };
                 };
             };
@@ -670,10 +672,11 @@ export interface operations {
                      *     }
                      */
                     "application/json": {
-                        success?: boolean;
+                        /** @enum {boolean} */
+                        success: false;
+                        error: string;
                         /** Format: date-time */
-                        timestamp?: string;
-                        data?: components["schemas"]["ApiResponseWrapper"];
+                        timestamp: string;
                     };
                 };
             };
@@ -709,9 +712,10 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
-                        success?: boolean;
+                        /** @enum {boolean} */
+                        success: true;
                         /** Format: date-time */
-                        timestamp?: string;
+                        timestamp: string;
                     };
                 };
             };
@@ -729,10 +733,11 @@ export interface operations {
                      *     }
                      */
                     "application/json": {
-                        success?: boolean;
+                        /** @enum {boolean} */
+                        success: false;
+                        error: string;
                         /** Format: date-time */
-                        timestamp?: string;
-                        data?: components["schemas"]["ApiResponseWrapper"];
+                        timestamp: string;
                     };
                 };
             };
@@ -750,10 +755,11 @@ export interface operations {
                      *     }
                      */
                     "application/json": {
-                        success?: boolean;
+                        /** @enum {boolean} */
+                        success: false;
+                        error: string;
                         /** Format: date-time */
-                        timestamp?: string;
-                        data?: components["schemas"]["ApiResponseWrapper"];
+                        timestamp: string;
                     };
                 };
             };
@@ -777,10 +783,11 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
-                        success?: boolean;
+                        /** @enum {boolean} */
+                        success: true;
                         /** Format: date-time */
-                        timestamp?: string;
-                        data?: components["schemas"]["FileStoreObject"];
+                        timestamp: string;
+                        data: components["schemas"]["FileStoreObject"];
                     };
                 };
             };
@@ -798,10 +805,11 @@ export interface operations {
                      *     }
                      */
                     "application/json": {
-                        success?: boolean;
+                        /** @enum {boolean} */
+                        success: false;
+                        error: string;
                         /** Format: date-time */
-                        timestamp?: string;
-                        data?: components["schemas"]["ApiResponseWrapper"];
+                        timestamp: string;
                     };
                 };
             };
@@ -819,10 +827,11 @@ export interface operations {
                      *     }
                      */
                     "application/json": {
-                        success?: boolean;
+                        /** @enum {boolean} */
+                        success: false;
+                        error: string;
                         /** Format: date-time */
-                        timestamp?: string;
-                        data?: components["schemas"]["ApiResponseWrapper"];
+                        timestamp: string;
                     };
                 };
             };
@@ -852,10 +861,11 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
-                        success?: boolean;
+                        /** @enum {boolean} */
+                        success: true;
                         /** Format: date-time */
-                        timestamp?: string;
-                        data?: components["schemas"]["FileStoreObject"];
+                        timestamp: string;
+                        data: components["schemas"]["FileStoreObject"];
                     };
                 };
             };
@@ -873,10 +883,11 @@ export interface operations {
                      *     }
                      */
                     "application/json": {
-                        success?: boolean;
+                        /** @enum {boolean} */
+                        success: false;
+                        error: string;
                         /** Format: date-time */
-                        timestamp?: string;
-                        data?: components["schemas"]["ApiResponseWrapper"];
+                        timestamp: string;
                     };
                 };
             };
@@ -894,10 +905,11 @@ export interface operations {
                      *     }
                      */
                     "application/json": {
-                        success?: boolean;
+                        /** @enum {boolean} */
+                        success: false;
+                        error: string;
                         /** Format: date-time */
-                        timestamp?: string;
-                        data?: components["schemas"]["ApiResponseWrapper"];
+                        timestamp: string;
                     };
                 };
             };
@@ -921,9 +933,10 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
-                        success?: boolean;
+                        /** @enum {boolean} */
+                        success: true;
                         /** Format: date-time */
-                        timestamp?: string;
+                        timestamp: string;
                     };
                 };
             };
@@ -941,10 +954,11 @@ export interface operations {
                      *     }
                      */
                     "application/json": {
-                        success?: boolean;
+                        /** @enum {boolean} */
+                        success: false;
+                        error: string;
                         /** Format: date-time */
-                        timestamp?: string;
-                        data?: components["schemas"]["ApiResponseWrapper"];
+                        timestamp: string;
                     };
                 };
             };
@@ -962,10 +976,11 @@ export interface operations {
                      *     }
                      */
                     "application/json": {
-                        success?: boolean;
+                        /** @enum {boolean} */
+                        success: false;
+                        error: string;
                         /** Format: date-time */
-                        timestamp?: string;
-                        data?: components["schemas"]["ApiResponseWrapper"];
+                        timestamp: string;
                     };
                 };
             };
@@ -989,10 +1004,11 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
-                        success?: boolean;
+                        /** @enum {boolean} */
+                        success: true;
                         /** Format: date-time */
-                        timestamp?: string;
-                        data?: components["schemas"]["FileStoreMiddlewareObject"];
+                        timestamp: string;
+                        data: components["schemas"]["FileStoreMiddlewareObject"];
                     };
                 };
             };
@@ -1010,10 +1026,11 @@ export interface operations {
                      *     }
                      */
                     "application/json": {
-                        success?: boolean;
+                        /** @enum {boolean} */
+                        success: false;
+                        error: string;
                         /** Format: date-time */
-                        timestamp?: string;
-                        data?: components["schemas"]["ApiResponseWrapper"];
+                        timestamp: string;
                     };
                 };
             };
@@ -1031,10 +1048,11 @@ export interface operations {
                      *     }
                      */
                     "application/json": {
-                        success?: boolean;
+                        /** @enum {boolean} */
+                        success: false;
+                        error: string;
                         /** Format: date-time */
-                        timestamp?: string;
-                        data?: components["schemas"]["ApiResponseWrapper"];
+                        timestamp: string;
                     };
                 };
             };
@@ -1064,10 +1082,11 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
-                        success?: boolean;
+                        /** @enum {boolean} */
+                        success: true;
                         /** Format: date-time */
-                        timestamp?: string;
-                        data?: components["schemas"]["FileStoreMiddlewareObject"];
+                        timestamp: string;
+                        data: components["schemas"]["FileStoreMiddlewareObject"];
                     };
                 };
             };
@@ -1085,10 +1104,11 @@ export interface operations {
                      *     }
                      */
                     "application/json": {
-                        success?: boolean;
+                        /** @enum {boolean} */
+                        success: false;
+                        error: string;
                         /** Format: date-time */
-                        timestamp?: string;
-                        data?: components["schemas"]["ApiResponseWrapper"];
+                        timestamp: string;
                     };
                 };
             };
@@ -1106,10 +1126,11 @@ export interface operations {
                      *     }
                      */
                     "application/json": {
-                        success?: boolean;
+                        /** @enum {boolean} */
+                        success: false;
+                        error: string;
                         /** Format: date-time */
-                        timestamp?: string;
-                        data?: components["schemas"]["ApiResponseWrapper"];
+                        timestamp: string;
                     };
                 };
             };
@@ -1133,10 +1154,11 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
-                        success?: boolean;
+                        /** @enum {boolean} */
+                        success: true;
                         /** Format: date-time */
-                        timestamp?: string;
-                        data?: Record<string, never>;
+                        timestamp: string;
+                        data: Record<string, never>;
                     };
                 };
             };
@@ -1154,10 +1176,11 @@ export interface operations {
                      *     }
                      */
                     "application/json": {
-                        success?: boolean;
+                        /** @enum {boolean} */
+                        success: false;
+                        error: string;
                         /** Format: date-time */
-                        timestamp?: string;
-                        data?: components["schemas"]["ApiResponseWrapper"];
+                        timestamp: string;
                     };
                 };
             };
@@ -1185,10 +1208,11 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
-                        success?: boolean;
+                        /** @enum {boolean} */
+                        success: true;
                         /** Format: date-time */
-                        timestamp?: string;
-                        data?: components["schemas"]["SystemConfiguration"];
+                        timestamp: string;
+                        data: components["schemas"]["SystemConfiguration"];
                     };
                 };
             };
@@ -1206,10 +1230,11 @@ export interface operations {
                      *     }
                      */
                     "application/json": {
-                        success?: boolean;
+                        /** @enum {boolean} */
+                        success: false;
+                        error: string;
                         /** Format: date-time */
-                        timestamp?: string;
-                        data?: components["schemas"]["ApiResponseWrapper"];
+                        timestamp: string;
                     };
                 };
             };
@@ -1236,9 +1261,10 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
-                        success?: boolean;
+                        /** @enum {boolean} */
+                        success: true;
                         /** Format: date-time */
-                        timestamp?: string;
+                        timestamp: string;
                     };
                 };
             };
@@ -1256,10 +1282,11 @@ export interface operations {
                      *     }
                      */
                     "application/json": {
-                        success?: boolean;
+                        /** @enum {boolean} */
+                        success: false;
+                        error: string;
                         /** Format: date-time */
-                        timestamp?: string;
-                        data?: components["schemas"]["ApiResponseWrapper"];
+                        timestamp: string;
                     };
                 };
             };
@@ -1277,10 +1304,11 @@ export interface operations {
                      *     }
                      */
                     "application/json": {
-                        success?: boolean;
+                        /** @enum {boolean} */
+                        success: false;
+                        error: string;
                         /** Format: date-time */
-                        timestamp?: string;
-                        data?: components["schemas"]["ApiResponseWrapper"];
+                        timestamp: string;
                     };
                 };
             };
@@ -1306,10 +1334,11 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
-                        success?: boolean;
+                        /** @enum {boolean} */
+                        success: true;
                         /** Format: date-time */
-                        timestamp?: string;
-                        data?: components["schemas"]["Record"];
+                        timestamp: string;
+                        data: components["schemas"]["Record"];
                     };
                 };
             };
@@ -1327,10 +1356,11 @@ export interface operations {
                      *     }
                      */
                     "application/json": {
-                        success?: boolean;
+                        /** @enum {boolean} */
+                        success: false;
+                        error: string;
                         /** Format: date-time */
-                        timestamp?: string;
-                        data?: components["schemas"]["ApiResponseWrapper"];
+                        timestamp: string;
                     };
                 };
             };
@@ -1348,10 +1378,11 @@ export interface operations {
                      *     }
                      */
                     "application/json": {
-                        success?: boolean;
+                        /** @enum {boolean} */
+                        success: false;
+                        error: string;
                         /** Format: date-time */
-                        timestamp?: string;
-                        data?: components["schemas"]["ApiResponseWrapper"];
+                        timestamp: string;
                     };
                 };
             };
@@ -1373,10 +1404,11 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
-                        success?: boolean;
+                        /** @enum {boolean} */
+                        success: true;
                         /** Format: date-time */
-                        timestamp?: string;
-                        data?: string[];
+                        timestamp: string;
+                        data: string[];
                     };
                 };
             };
@@ -1394,10 +1426,11 @@ export interface operations {
                      *     }
                      */
                     "application/json": {
-                        success?: boolean;
+                        /** @enum {boolean} */
+                        success: false;
+                        error: string;
                         /** Format: date-time */
-                        timestamp?: string;
-                        data?: components["schemas"]["ApiResponseWrapper"];
+                        timestamp: string;
                     };
                 };
             };
@@ -1423,10 +1456,11 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
-                        success?: boolean;
+                        /** @enum {boolean} */
+                        success: true;
                         /** Format: date-time */
-                        timestamp?: string;
-                        data?: components["schemas"]["FileStoreObject"];
+                        timestamp: string;
+                        data: components["schemas"]["FileStoreObject"];
                     };
                 };
             };
@@ -1444,10 +1478,11 @@ export interface operations {
                      *     }
                      */
                     "application/json": {
-                        success?: boolean;
+                        /** @enum {boolean} */
+                        success: false;
+                        error: string;
                         /** Format: date-time */
-                        timestamp?: string;
-                        data?: components["schemas"]["ApiResponseWrapper"];
+                        timestamp: string;
                     };
                 };
             };
@@ -1465,10 +1500,11 @@ export interface operations {
                      *     }
                      */
                     "application/json": {
-                        success?: boolean;
+                        /** @enum {boolean} */
+                        success: false;
+                        error: string;
                         /** Format: date-time */
-                        timestamp?: string;
-                        data?: components["schemas"]["ApiResponseWrapper"];
+                        timestamp: string;
                     };
                 };
             };
@@ -1490,10 +1526,11 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
-                        success?: boolean;
+                        /** @enum {boolean} */
+                        success: true;
                         /** Format: date-time */
-                        timestamp?: string;
-                        data?: string[];
+                        timestamp: string;
+                        data: string[];
                     };
                 };
             };
@@ -1511,10 +1548,11 @@ export interface operations {
                      *     }
                      */
                     "application/json": {
-                        success?: boolean;
+                        /** @enum {boolean} */
+                        success: false;
+                        error: string;
                         /** Format: date-time */
-                        timestamp?: string;
-                        data?: components["schemas"]["ApiResponseWrapper"];
+                        timestamp: string;
                     };
                 };
             };
@@ -1540,10 +1578,11 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
-                        success?: boolean;
+                        /** @enum {boolean} */
+                        success: true;
                         /** Format: date-time */
-                        timestamp?: string;
-                        data?: components["schemas"]["FileStoreMiddlewareObject"];
+                        timestamp: string;
+                        data: components["schemas"]["FileStoreMiddlewareObject"];
                     };
                 };
             };
@@ -1561,10 +1600,11 @@ export interface operations {
                      *     }
                      */
                     "application/json": {
-                        success?: boolean;
+                        /** @enum {boolean} */
+                        success: false;
+                        error: string;
                         /** Format: date-time */
-                        timestamp?: string;
-                        data?: components["schemas"]["ApiResponseWrapper"];
+                        timestamp: string;
                     };
                 };
             };
@@ -1582,10 +1622,11 @@ export interface operations {
                      *     }
                      */
                     "application/json": {
-                        success?: boolean;
+                        /** @enum {boolean} */
+                        success: false;
+                        error: string;
                         /** Format: date-time */
-                        timestamp?: string;
-                        data?: components["schemas"]["ApiResponseWrapper"];
+                        timestamp: string;
                     };
                 };
             };
@@ -1613,10 +1654,11 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
-                        success?: boolean;
+                        /** @enum {boolean} */
+                        success: true;
                         /** Format: date-time */
-                        timestamp?: string;
-                        data?: string;
+                        timestamp: string;
+                        data: string;
                     };
                 };
             };
@@ -1634,10 +1676,11 @@ export interface operations {
                      *     }
                      */
                     "application/json": {
-                        success?: boolean;
+                        /** @enum {boolean} */
+                        success: false;
+                        error: string;
                         /** Format: date-time */
-                        timestamp?: string;
-                        data?: components["schemas"]["ApiResponseWrapper"];
+                        timestamp: string;
                     };
                 };
             };
@@ -1655,10 +1698,11 @@ export interface operations {
                      *     }
                      */
                     "application/json": {
-                        success?: boolean;
+                        /** @enum {boolean} */
+                        success: false;
+                        error: string;
                         /** Format: date-time */
-                        timestamp?: string;
-                        data?: components["schemas"]["ApiResponseWrapper"];
+                        timestamp: string;
                     };
                 };
             };
@@ -1676,10 +1720,11 @@ export interface operations {
                      *     }
                      */
                     "application/json": {
-                        success?: boolean;
+                        /** @enum {boolean} */
+                        success: false;
+                        error: string;
                         /** Format: date-time */
-                        timestamp?: string;
-                        data?: components["schemas"]["ApiResponseWrapper"];
+                        timestamp: string;
                     };
                 };
             };
@@ -1701,10 +1746,11 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
-                        success?: boolean;
+                        /** @enum {boolean} */
+                        success: true;
                         /** Format: date-time */
-                        timestamp?: string;
-                        data?: string[];
+                        timestamp: string;
+                        data: string[];
                     };
                 };
             };
@@ -1722,10 +1768,11 @@ export interface operations {
                      *     }
                      */
                     "application/json": {
-                        success?: boolean;
+                        /** @enum {boolean} */
+                        success: false;
+                        error: string;
                         /** Format: date-time */
-                        timestamp?: string;
-                        data?: components["schemas"]["ApiResponseWrapper"];
+                        timestamp: string;
                     };
                 };
             };
@@ -1749,10 +1796,11 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
-                        success?: boolean;
+                        /** @enum {boolean} */
+                        success: true;
                         /** Format: date-time */
-                        timestamp?: string;
-                        data?: string[];
+                        timestamp: string;
+                        data: string[];
                     };
                 };
             };
@@ -1770,10 +1818,11 @@ export interface operations {
                      *     }
                      */
                     "application/json": {
-                        success?: boolean;
+                        /** @enum {boolean} */
+                        success: false;
+                        error: string;
                         /** Format: date-time */
-                        timestamp?: string;
-                        data?: components["schemas"]["ApiResponseWrapper"];
+                        timestamp: string;
                     };
                 };
             };
@@ -1791,10 +1840,11 @@ export interface operations {
                      *     }
                      */
                     "application/json": {
-                        success?: boolean;
+                        /** @enum {boolean} */
+                        success: false;
+                        error: string;
                         /** Format: date-time */
-                        timestamp?: string;
-                        data?: components["schemas"]["ApiResponseWrapper"];
+                        timestamp: string;
                     };
                 };
             };
@@ -1819,10 +1869,11 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
-                        success?: boolean;
+                        /** @enum {boolean} */
+                        success: true;
                         /** Format: date-time */
-                        timestamp?: string;
-                        data?: Record<string, never>;
+                        timestamp: string;
+                        data: Record<string, never>;
                     };
                 };
             };
@@ -1840,10 +1891,11 @@ export interface operations {
                      *     }
                      */
                     "application/json": {
-                        success?: boolean;
+                        /** @enum {boolean} */
+                        success: false;
+                        error: string;
                         /** Format: date-time */
-                        timestamp?: string;
-                        data?: components["schemas"]["ApiResponseWrapper"];
+                        timestamp: string;
                     };
                 };
             };
@@ -1861,10 +1913,11 @@ export interface operations {
                      *     }
                      */
                     "application/json": {
-                        success?: boolean;
+                        /** @enum {boolean} */
+                        success: false;
+                        error: string;
                         /** Format: date-time */
-                        timestamp?: string;
-                        data?: components["schemas"]["ApiResponseWrapper"];
+                        timestamp: string;
                     };
                 };
             };
@@ -1888,10 +1941,11 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
-                        success?: boolean;
+                        /** @enum {boolean} */
+                        success: true;
                         /** Format: date-time */
-                        timestamp?: string;
-                        data?: components["schemas"]["Record"];
+                        timestamp: string;
+                        data: components["schemas"]["Record"];
                     };
                 };
             };
@@ -1909,10 +1963,11 @@ export interface operations {
                      *     }
                      */
                     "application/json": {
-                        success?: boolean;
+                        /** @enum {boolean} */
+                        success: false;
+                        error: string;
                         /** Format: date-time */
-                        timestamp?: string;
-                        data?: components["schemas"]["ApiResponseWrapper"];
+                        timestamp: string;
                     };
                 };
             };
@@ -1930,10 +1985,11 @@ export interface operations {
                      *     }
                      */
                     "application/json": {
-                        success?: boolean;
+                        /** @enum {boolean} */
+                        success: false;
+                        error: string;
                         /** Format: date-time */
-                        timestamp?: string;
-                        data?: components["schemas"]["ApiResponseWrapper"];
+                        timestamp: string;
                     };
                 };
             };
@@ -1957,10 +2013,11 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
-                        success?: boolean;
+                        /** @enum {boolean} */
+                        success: true;
                         /** Format: date-time */
-                        timestamp?: string;
-                        data?: number[];
+                        timestamp: string;
+                        data: number[];
                     };
                 };
             };
@@ -1978,10 +2035,11 @@ export interface operations {
                      *     }
                      */
                     "application/json": {
-                        success?: boolean;
+                        /** @enum {boolean} */
+                        success: false;
+                        error: string;
                         /** Format: date-time */
-                        timestamp?: string;
-                        data?: components["schemas"]["ApiResponseWrapper"];
+                        timestamp: string;
                     };
                 };
             };
@@ -1999,10 +2057,11 @@ export interface operations {
                      *     }
                      */
                     "application/json": {
-                        success?: boolean;
+                        /** @enum {boolean} */
+                        success: false;
+                        error: string;
                         /** Format: date-time */
-                        timestamp?: string;
-                        data?: components["schemas"]["ApiResponseWrapper"];
+                        timestamp: string;
                     };
                 };
             };
@@ -2024,10 +2083,11 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
-                        success?: boolean;
+                        /** @enum {boolean} */
+                        success: true;
                         /** Format: date-time */
-                        timestamp?: string;
-                        data?: string[];
+                        timestamp: string;
+                        data: string[];
                     };
                 };
             };
@@ -2045,10 +2105,11 @@ export interface operations {
                      *     }
                      */
                     "application/json": {
-                        success?: boolean;
+                        /** @enum {boolean} */
+                        success: false;
+                        error: string;
                         /** Format: date-time */
-                        timestamp?: string;
-                        data?: components["schemas"]["ApiResponseWrapper"];
+                        timestamp: string;
                     };
                 };
             };
@@ -2072,10 +2133,11 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
-                        success?: boolean;
+                        /** @enum {boolean} */
+                        success: true;
                         /** Format: date-time */
-                        timestamp?: string;
-                        data?: components["schemas"]["RecordType"];
+                        timestamp: string;
+                        data: components["schemas"]["RecordType"];
                     };
                 };
             };
@@ -2093,10 +2155,11 @@ export interface operations {
                      *     }
                      */
                     "application/json": {
-                        success?: boolean;
+                        /** @enum {boolean} */
+                        success: false;
+                        error: string;
                         /** Format: date-time */
-                        timestamp?: string;
-                        data?: components["schemas"]["ApiResponseWrapper"];
+                        timestamp: string;
                     };
                 };
             };
@@ -2114,10 +2177,11 @@ export interface operations {
                      *     }
                      */
                     "application/json": {
-                        success?: boolean;
+                        /** @enum {boolean} */
+                        success: false;
+                        error: string;
                         /** Format: date-time */
-                        timestamp?: string;
-                        data?: components["schemas"]["ApiResponseWrapper"];
+                        timestamp: string;
                     };
                 };
             };
@@ -2139,10 +2203,11 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
-                        success?: boolean;
+                        /** @enum {boolean} */
+                        success: true;
                         /** Format: date-time */
-                        timestamp?: string;
-                        data?: string[];
+                        timestamp: string;
+                        data: string[];
                     };
                 };
             };
@@ -2160,10 +2225,11 @@ export interface operations {
                      *     }
                      */
                     "application/json": {
-                        success?: boolean;
+                        /** @enum {boolean} */
+                        success: false;
+                        error: string;
                         /** Format: date-time */
-                        timestamp?: string;
-                        data?: components["schemas"]["ApiResponseWrapper"];
+                        timestamp: string;
                     };
                 };
             };
@@ -2187,10 +2253,11 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
-                        success?: boolean;
+                        /** @enum {boolean} */
+                        success: true;
                         /** Format: date-time */
-                        timestamp?: string;
-                        data?: components["schemas"]["ListType"];
+                        timestamp: string;
+                        data: components["schemas"]["ListType"];
                     };
                 };
             };
@@ -2208,10 +2275,11 @@ export interface operations {
                      *     }
                      */
                     "application/json": {
-                        success?: boolean;
+                        /** @enum {boolean} */
+                        success: false;
+                        error: string;
                         /** Format: date-time */
-                        timestamp?: string;
-                        data?: components["schemas"]["ApiResponseWrapper"];
+                        timestamp: string;
                     };
                 };
             };
@@ -2229,10 +2297,11 @@ export interface operations {
                      *     }
                      */
                     "application/json": {
-                        success?: boolean;
+                        /** @enum {boolean} */
+                        success: false;
+                        error: string;
                         /** Format: date-time */
-                        timestamp?: string;
-                        data?: components["schemas"]["ApiResponseWrapper"];
+                        timestamp: string;
                     };
                 };
             };
@@ -2257,10 +2326,11 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
-                        success?: boolean;
+                        /** @enum {boolean} */
+                        success: true;
                         /** Format: date-time */
-                        timestamp?: string;
-                        data?: components["schemas"]["ListElement"];
+                        timestamp: string;
+                        data: components["schemas"]["ListElement"];
                     };
                 };
             };
@@ -2278,10 +2348,11 @@ export interface operations {
                      *     }
                      */
                     "application/json": {
-                        success?: boolean;
+                        /** @enum {boolean} */
+                        success: false;
+                        error: string;
                         /** Format: date-time */
-                        timestamp?: string;
-                        data?: components["schemas"]["ApiResponseWrapper"];
+                        timestamp: string;
                     };
                 };
             };
@@ -2299,10 +2370,11 @@ export interface operations {
                      *     }
                      */
                     "application/json": {
-                        success?: boolean;
+                        /** @enum {boolean} */
+                        success: false;
+                        error: string;
                         /** Format: date-time */
-                        timestamp?: string;
-                        data?: components["schemas"]["ApiResponseWrapper"];
+                        timestamp: string;
                     };
                 };
             };
@@ -2328,10 +2400,11 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
-                        success?: boolean;
+                        /** @enum {boolean} */
+                        success: true;
                         /** Format: date-time */
-                        timestamp?: string;
-                        data?: components["schemas"]["ListElement"][];
+                        timestamp: string;
+                        data: components["schemas"]["ListElement"][];
                     };
                 };
             };
@@ -2349,10 +2422,11 @@ export interface operations {
                      *     }
                      */
                     "application/json": {
-                        success?: boolean;
+                        /** @enum {boolean} */
+                        success: false;
+                        error: string;
                         /** Format: date-time */
-                        timestamp?: string;
-                        data?: components["schemas"]["ApiResponseWrapper"];
+                        timestamp: string;
                     };
                 };
             };
@@ -2370,10 +2444,11 @@ export interface operations {
                      *     }
                      */
                     "application/json": {
-                        success?: boolean;
+                        /** @enum {boolean} */
+                        success: false;
+                        error: string;
                         /** Format: date-time */
-                        timestamp?: string;
-                        data?: components["schemas"]["ApiResponseWrapper"];
+                        timestamp: string;
                     };
                 };
             };
@@ -2395,10 +2470,11 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
-                        success?: boolean;
+                        /** @enum {boolean} */
+                        success: true;
                         /** Format: date-time */
-                        timestamp?: string;
-                        data?: components["schemas"]["EnvironmentResponse"];
+                        timestamp: string;
+                        data: components["schemas"]["EnvironmentResponse"];
                     };
                 };
             };
@@ -2416,10 +2492,11 @@ export interface operations {
                      *     }
                      */
                     "application/json": {
-                        success?: boolean;
+                        /** @enum {boolean} */
+                        success: false;
+                        error: string;
                         /** Format: date-time */
-                        timestamp?: string;
-                        data?: components["schemas"]["ApiResponseWrapper"];
+                        timestamp: string;
                     };
                 };
             };
@@ -2441,10 +2518,11 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
-                        success?: boolean;
+                        /** @enum {boolean} */
+                        success: true;
                         /** Format: date-time */
-                        timestamp?: string;
-                        data?: {
+                        timestamp: string;
+                        data: {
                             [key: string]: unknown;
                         };
                     };
@@ -2464,10 +2542,11 @@ export interface operations {
                      *     }
                      */
                     "application/json": {
-                        success?: boolean;
+                        /** @enum {boolean} */
+                        success: false;
+                        error: string;
                         /** Format: date-time */
-                        timestamp?: string;
-                        data?: components["schemas"]["ApiResponseWrapper"];
+                        timestamp: string;
                     };
                 };
             };
@@ -2489,10 +2568,11 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
-                        success?: boolean;
+                        /** @enum {boolean} */
+                        success: true;
                         /** Format: date-time */
-                        timestamp?: string;
-                        data?: {
+                        timestamp: string;
+                        data: {
                             [key: string]: unknown;
                         };
                     };
@@ -2512,10 +2592,11 @@ export interface operations {
                      *     }
                      */
                     "application/json": {
-                        success?: boolean;
+                        /** @enum {boolean} */
+                        success: false;
+                        error: string;
                         /** Format: date-time */
-                        timestamp?: string;
-                        data?: components["schemas"]["ApiResponseWrapper"];
+                        timestamp: string;
                     };
                 };
             };
@@ -2539,10 +2620,11 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
-                        success?: boolean;
+                        /** @enum {boolean} */
+                        success: true;
                         /** Format: date-time */
-                        timestamp?: string;
-                        data?: Record<string, never>;
+                        timestamp: string;
+                        data: Record<string, never>;
                     };
                 };
             };
@@ -2560,10 +2642,11 @@ export interface operations {
                      *     }
                      */
                     "application/json": {
-                        success?: boolean;
+                        /** @enum {boolean} */
+                        success: false;
+                        error: string;
                         /** Format: date-time */
-                        timestamp?: string;
-                        data?: components["schemas"]["ApiResponseWrapper"];
+                        timestamp: string;
                     };
                 };
             };
@@ -2587,9 +2670,10 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
-                        success?: boolean;
+                        /** @enum {boolean} */
+                        success: true;
                         /** Format: date-time */
-                        timestamp?: string;
+                        timestamp: string;
                     };
                 };
             };
@@ -2607,10 +2691,11 @@ export interface operations {
                      *     }
                      */
                     "application/json": {
-                        success?: boolean;
+                        /** @enum {boolean} */
+                        success: false;
+                        error: string;
                         /** Format: date-time */
-                        timestamp?: string;
-                        data?: components["schemas"]["ApiResponseWrapper"];
+                        timestamp: string;
                     };
                 };
             };
@@ -2628,10 +2713,11 @@ export interface operations {
                      *     }
                      */
                     "application/json": {
-                        success?: boolean;
+                        /** @enum {boolean} */
+                        success: false;
+                        error: string;
                         /** Format: date-time */
-                        timestamp?: string;
-                        data?: components["schemas"]["ApiResponseWrapper"];
+                        timestamp: string;
                     };
                 };
             };
@@ -2655,10 +2741,11 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
-                        success?: boolean;
+                        /** @enum {boolean} */
+                        success: true;
                         /** Format: date-time */
-                        timestamp?: string;
-                        data?: components["schemas"]["AuthenticationResponse"];
+                        timestamp: string;
+                        data: components["schemas"]["AuthenticationResponse"];
                     };
                 };
             };
@@ -2676,10 +2763,11 @@ export interface operations {
                      *     }
                      */
                     "application/json": {
-                        success?: boolean;
+                        /** @enum {boolean} */
+                        success: false;
+                        error: string;
                         /** Format: date-time */
-                        timestamp?: string;
-                        data?: components["schemas"]["ApiResponseWrapper"];
+                        timestamp: string;
                     };
                 };
             };
@@ -2697,10 +2785,11 @@ export interface operations {
                      *     }
                      */
                     "application/json": {
-                        success?: boolean;
+                        /** @enum {boolean} */
+                        success: false;
+                        error: string;
                         /** Format: date-time */
-                        timestamp?: string;
-                        data?: components["schemas"]["ApiResponseWrapper"];
+                        timestamp: string;
                     };
                 };
             };
@@ -2718,10 +2807,11 @@ export interface operations {
                      *     }
                      */
                     "application/json": {
-                        success?: boolean;
+                        /** @enum {boolean} */
+                        success: false;
+                        error: string;
                         /** Format: date-time */
-                        timestamp?: string;
-                        data?: components["schemas"]["ApiResponseWrapper"];
+                        timestamp: string;
                     };
                 };
             };

@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { client } from "$lib";
 
-	let server = client.GET('/config/this_server');
+	let server = client.GET('/api/config/this_server');
 </script>
 
 <h1>Welcome to SvelteKit</h1>

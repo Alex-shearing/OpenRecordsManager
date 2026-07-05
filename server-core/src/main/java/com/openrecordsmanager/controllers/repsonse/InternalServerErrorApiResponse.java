@@ -1,6 +1,5 @@
 package com.openrecordsmanager.controllers.repsonse;
 
-import com.openrecordsmanager.controllers.repsonse.errors.ApiResponseWrapper;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
