@@ -12,17 +12,9 @@ export default defineConfig({
 				runes: ({ filename }) =>
 					filename.split(/[/\\]/).includes('node_modules') ? undefined : true
 			},
-			adapter: adapter()
+			adapter: adapter({
+				fallback: 'index.html'
+			})
 		})
-	],
-    server: {
-        port: 5173, // The default port for the frontend
-        proxy: {
-            '/api': {
-                target: 'http://localhost:8080', // Your Spring Boot port
-                changeOrigin: true,
-                secure: false,
-            }
-        }
-    }
+	]
 });

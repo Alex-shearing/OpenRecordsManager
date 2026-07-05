@@ -20,7 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 @RestController
-@RequestMapping("/record_types")
+@RequestMapping("/api/record_types")
 @InternalServerErrorApiResponse
 @ApiResponse(responseCode = "200")
 public class RecordTypeController {

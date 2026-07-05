@@ -19,7 +19,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/lists")
+@RequestMapping("/api/lists")
 @InternalServerErrorApiResponse
 @ApiResponse(responseCode = "200")
 public class ListController {

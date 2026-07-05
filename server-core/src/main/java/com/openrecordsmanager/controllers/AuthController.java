@@ -28,7 +28,7 @@ import java.util.Map;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/auth")
+@RequestMapping("/api/auth")
 @InternalServerErrorApiResponse
 @ApiResponse(responseCode = "200")
 public class AuthController {

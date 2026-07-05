@@ -34,14 +34,6 @@ dependencies {
     // Database bundles
     runtimeOnly 'org.xerial:sqlite-jdbc:3.53.1.0'
     runtimeOnly 'com.microsoft.sqlserver:mssql-jdbc:13.4.0.jre11'
-
-    // Dynamic plugin compilation triggers (Replaces 'provided' scope)
-    compileOnly project(':plugins:auth-local')
-    compileOnly project(':plugins:auth-oidc')
-    compileOnly project(':plugins:defaults-aus-gov')
-    compileOnly project(':plugins:filestore-local')
-    compileOnly project(':plugins:filestore-s3')
-    compileOnly project(':plugins:filestoremiddleware-encrypting')
 }
 
 testing {
@@ -67,31 +59,11 @@ bootRun {
     workingDir = file("${projectDir}")
 }
 
-// Task that gathers and isolates the custom internal subproject JAR files
-tasks.register('copyPlugins', Copy) {
-    def pluginProjects = [
-            project(':plugins:auth-local'),
-            project(':plugins:auth-oidc'),
-            project(':plugins:defaults-aus-gov'),
-            project(':plugins:filestore-local'),
-            project(':plugins:filestore-s3'),
-            project(':plugins:filestoremiddleware-encrypting'),
-    ]
-
-    // Ensure all plugin modules create their JARs first
-    dependsOn pluginProjects.collect { it.tasks.named('jar') }
-
-    // Harvest the actual built artifacts directly out of subproject compilation targets
-    from pluginProjects.collect { it.tasks.named('jar').map { jarTask -> jarTask.outputs.files } }
-    into file("${projectDir}/plugins")
-}
-
-// Automatically trigger plugin extraction and boot the app
-tasks.register('pluginBootRun', Copy) {
-    dependsOn tasks.named('copyPlugins')
-    dependsOn tasks.named('bootRun')
+// Make sure to only start AFTER syncWebAssets task (if it is included)
+tasks.named('bootRun') {
+    mustRunAfter parent.tasks.named('syncWebAssets')
 }
 
 tasks.named('test') {
-    dependsOn tasks.named('copyPlugins')
+    dependsOn parent.tasks.named('copyPlugins')
 }

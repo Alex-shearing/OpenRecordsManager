@@ -20,7 +20,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/config")
+@RequestMapping("/api/config")
 @InternalServerErrorApiResponse
 @ApiResponse(responseCode = "200")
 public class ConfigController {

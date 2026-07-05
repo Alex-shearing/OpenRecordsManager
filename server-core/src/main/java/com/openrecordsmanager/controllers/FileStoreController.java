@@ -21,7 +21,7 @@ import java.util.Map;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/file_stores")
+@RequestMapping("/api/file_stores")
 @InternalServerErrorApiResponse
 @ApiResponse(responseCode = "200")
 public class FileStoreController {

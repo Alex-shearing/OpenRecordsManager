@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/info")
+@RequestMapping("/api/info")
 @InternalServerErrorApiResponse
 @ApiResponse(responseCode = "200")
 public class InfoController {

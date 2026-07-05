@@ -6,14 +6,49 @@ plugins {
 
 allprojects {
     group = 'com.openrecordsmanager'
-    version = '0.1.0' // Replaces ${revision}
+    version = '0.1.0'
 
     repositories {
         mavenCentral()
     }
 }
 
-// Inject compilation target and Manifest headers into all subprojects
+// Builds plugins and copies them to the server-core/plugin directory
+tasks.register('copyPlugins', Copy) {
+    group = "build"
+
+    def pluginProjects = subprojects.findAll { it.path.startsWith(':plugins:') }
+
+    // Ensure all plugin modules create their JARs first
+    dependsOn pluginProjects.collect { it.tasks.named('jar') }
+
+    // Harvest the actual built artifacts directly out of subproject compilation targets
+    from pluginProjects.collect { it.tasks.named('jar').map { jarTask -> jarTask.outputs.files } }
+    into file("${project(':server-core').projectDir}/plugins")
+}
+
+// Sync the website into the server
+tasks.register('syncWebAssets', Sync) {
+    group = "build"
+
+    dependsOn project(':server-web').tasks.named('buildWeb')
+
+    from project(':server-web').file('build')
+    into project(':server-core').file('build/resources/main/static')
+}
+
+// Primary run task, including all dependencies
+tasks.register('runApp') {
+    group = "application"
+
+    // Ensure all the dependencies are ran
+    dependsOn tasks.named('copyPlugins')
+    dependsOn tasks.named('syncWebAssets')
+
+    // Wire the execution of bootRun
+    dependsOn project(':server-core').tasks.named('bootRun')
+}
+
 subprojects {
     apply plugin: 'java'
 
@@ -23,17 +58,19 @@ subprojects {
         }
     }
 
-    tasks.withType(JavaCompile) {
+    tasks.withType(JavaCompile).configureEach {
         options.encoding = 'UTF-8'
     }
 
-    // Automatically inject Plugin headers into every built JAR file
-    tasks.named('jar', Jar) {
-        manifest {
-            attributes(
-                    'Plugin-Id': project.name,
-                    'Plugin-Version': project.version
-            )
+    // Automatically inject Plugin headers into plugin jar files
+    if (it.path.startsWith(':plugins:')) {
+        tasks.named('jar', Jar) {
+            manifest {
+                attributes(
+                        'Plugin-Id': project.name,
+                        'Plugin-Version': project.version
+                )
+            }
         }
     }
 

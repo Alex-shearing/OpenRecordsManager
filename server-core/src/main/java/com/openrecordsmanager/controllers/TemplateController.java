@@ -23,7 +23,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/templates")
+@RequestMapping("/api/templates")
 @InternalServerErrorApiResponse
 @ApiResponse(responseCode = "200")
 public class TemplateController {

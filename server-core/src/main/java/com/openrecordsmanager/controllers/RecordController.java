@@ -31,7 +31,7 @@ import java.util.Map;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/records")
+@RequestMapping("/api/records")
 @InternalServerErrorApiResponse
 @ApiResponse(responseCode = "200")
 public class RecordController {
