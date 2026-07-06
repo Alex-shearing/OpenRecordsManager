@@ -41,7 +41,9 @@ public class SwaggerConfiguration {
                                         return;
                                     }
 
-                                    Schema<?> oldSchema = content.containsKey("application/json") ? content.get("application/json").getSchema() : null;
+                                    Schema<?> oldSchema = content.containsKey("application/json")
+                                            ? content.get("application/json").getSchema()
+                                            : null;
 
                                     Schema<?> schema = ModelConverters.getInstance()
                                             .readAllAsResolvedSchema(ApiResponseWrapper.class)

@@ -2,6 +2,7 @@ plugins {
     id 'org.springframework.boot' version '4.0.6' apply false
     id 'io.spring.dependency-management' version '1.1.7' apply false
     id 'java'
+    id 'distribution'
 }
 
 allprojects {
@@ -27,14 +28,28 @@ tasks.register('copyPlugins', Copy) {
     into file("${project(':server-core').projectDir}/plugins")
 }
 
-// Sync the website into the server
-tasks.register('syncWebAssets', Sync) {
-    group = "build"
+evaluationDependsOn ':server-core'
+evaluationDependsOn ':server-web'
 
-    dependsOn project(':server-web').tasks.named('buildWeb')
+distributions {
+    main {
+        distributionBaseName = 'open-records-manager'
 
-    from project(':server-web').file('build')
-    into project(':server-core').file('build/resources/main/static')
+        contents {
+            // Copy the launch scripts
+            from 'scripts'
+            // Copy the executable jar
+            from project(':server-core').tasks.named('bootJar')
+            // Copy the frontend static files into a /static directory in the zip
+            into('static') {
+                from project(':server-web').tasks.named('buildWeb')
+            }
+        }
+    }
+}
+
+project(':server-core').tasks.named('bootRun').configure {
+    environment 'SERVER_WEB_DIRECTORY', project(':server-web').file('build')
 }
 
 // Primary run task, including all dependencies
@@ -43,7 +58,7 @@ tasks.register('runApp') {
 
     // Ensure all the dependencies are ran
     dependsOn tasks.named('copyPlugins')
-    dependsOn tasks.named('syncWebAssets')
+    dependsOn project(':server-web').tasks.named('buildWeb')
 
     // Wire the execution of bootRun
     dependsOn project(':server-core').tasks.named('bootRun')

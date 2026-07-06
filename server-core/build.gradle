@@ -53,11 +53,6 @@ tasks.withType(ProcessResources).configureEach {
     duplicatesStrategy = DuplicatesStrategy.INCLUDE
 }
 
-// Make sure to only start AFTER syncWebAssets task (if it is included)
-tasks.named('bootRun') {
-    mustRunAfter parent.tasks.named('syncWebAssets')
-}
-
 tasks.named('test') {
     dependsOn parent.tasks.named('copyPlugins')
 }

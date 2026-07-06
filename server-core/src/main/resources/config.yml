@@ -18,6 +18,8 @@ server:
     directory: ./plugins
     # Skip the check during startup to ensure all plugins are required plugins are loaded
     skip_startup_check: false
+  web:
+    directory: ./static
 
 # Config that can be set on either the server or the database
 app:

@@ -7,10 +7,13 @@ import com.openrecordsmanager.controllers.repsonse.InternalServerErrorApiRespons
 import com.openrecordsmanager.resources.PluginManager;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/info")
@@ -20,10 +23,12 @@ public class InfoController {
 
     private final PluginManager pluginManager;
     private final DynamicConfigService config;
+    private final ConfigurableEnvironment environment;
 
-    public InfoController(PluginManager pluginManager, DynamicConfigService config) {
+    public InfoController(PluginManager pluginManager, DynamicConfigService config, ConfigurableEnvironment environment) {
         this.pluginManager = pluginManager;
         this.config = config;
+        this.environment = environment;
     }
 
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
@@ -32,11 +37,13 @@ public class InfoController {
         return new EnvironmentResponse(
                 this.config.getOrThrow(BuiltinConfigs.WORKGROUP_NAME),
                 this.pluginManager.getPlugins().stream().map(Plugin::getName).toArray(String[]::new),
-                this.config.getOrThrow(BuiltinConfigs.DATABASE_PRIMARY_URL)
+                this.config.getOrThrow(BuiltinConfigs.DATABASE_PRIMARY_URL),
+                this.environment.getSystemEnvironment()
         );
     }
 
-    public record EnvironmentResponse(String workgroup, String[] plugins, String database) {
+    public record EnvironmentResponse(String workgroup, String[] plugins, String database,
+                                      Map<String, Object> environment) {
     }
 
 }
