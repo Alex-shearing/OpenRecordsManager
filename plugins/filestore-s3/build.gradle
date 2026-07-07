@@ -4,4 +4,6 @@ plugins {
 
 dependencies {
     compileOnly project(':plugin-api')
+    implementation platform('software.amazon.awssdk:bom:2.46.21')
+    implementation 'software.amazon.awssdk:s3'
 }

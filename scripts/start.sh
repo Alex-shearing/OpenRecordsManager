@@ -42,6 +42,9 @@ if [ -z "$JavaExe" ]; then
     exit 1
 fi
 
+# Ensure the application runs from the distribution root so config.yml is loaded from the same directory.
+cd "$SCRIPT_DIR"
+
 # Execute the Java process.
 # We expand custom JVM args first, followed by -jar and the target jar path.
 exec "$JavaExe" "${JVM_ARGS[@]}" -jar "$JarPath"

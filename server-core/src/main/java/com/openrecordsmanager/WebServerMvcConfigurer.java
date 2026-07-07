@@ -13,18 +13,18 @@ import java.nio.file.Paths;
 @Configuration
 public class WebServerMvcConfigurer implements WebMvcConfigurer {
 
-    private final String directory;
+    private final String webDir;
 
-    public WebServerMvcConfigurer(@Value("${server.web.directory}") String directory) {
-        this.directory = directory;
+    public WebServerMvcConfigurer(@Value("${server.web.directory}") String webDir) {
+        this.webDir = webDir;
     }
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        String currentDir = Paths.get(this.directory).toAbsolutePath().toUri().toString();
+        String webPathAbsolute = Paths.get(this.webDir).toAbsolutePath().toUri().toString();
 
         registry.addResourceHandler("/**")
-                .addResourceLocations(currentDir)
+                .addResourceLocations(webPathAbsolute)
                 .resourceChain(true)
                 .addResolver(new PathResourceResolver() {
                     @Override
@@ -36,10 +36,6 @@ public class WebServerMvcConfigurer implements WebMvcConfigurer {
                             return requestedResource;
                         }
 
-                        // Otherwise, route back to Svelte's index.html so Svelte's router can handle it
-                        // We must return a Resource object that points *inside* the file system handler
-                        // that is currently active for this registry (the one pointing to externalStaticPath).
-                        // It's safer to reference 'location' contextually here if possible, but for simplicity:
                         return location.createRelative("index.html");
                     }
                 });

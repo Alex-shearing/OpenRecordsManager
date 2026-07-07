@@ -1,13 +1,13 @@
 package com.openrecordsmanager.model.util;
 
 import com.openrecordsmanager.api.ResourceIdentifier;
-import jakarta.annotation.Nullable;
 import org.hibernate.type.descriptor.WrapperOptions;
 import org.hibernate.type.descriptor.java.AbstractClassJavaType;
 import org.hibernate.type.descriptor.java.ImmutableMutabilityPlan;
 import org.hibernate.type.descriptor.jdbc.JdbcType;
 import org.hibernate.type.descriptor.jdbc.JdbcTypeIndicators;
 import org.hibernate.type.descriptor.jdbc.VarcharJdbcType;
+import org.jspecify.annotations.Nullable;
 
 public class ResourceIdentifierJavaType extends AbstractClassJavaType<ResourceIdentifier> {
 

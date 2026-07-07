@@ -26,4 +26,4 @@ Write-Verbose "Using Java: $JavaExe"
 Write-Verbose "Starting application..."
 
 # Combine arguments cleanly, omitting extra spaces if $JvmArgs is empty
-Start-Process -FilePath $JavaExe -ArgumentList (("-jar", "`"$JarPath`"") + $JvmArgs) -NoNewWindow -Wait
+Start-Process -FilePath $JavaExe -ArgumentList (("-jar", "`"$JarPath`"") + $JvmArgs) -NoNewWindow -Wait -WorkingDirectory $PSScriptRoot

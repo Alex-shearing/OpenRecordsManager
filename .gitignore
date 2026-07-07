@@ -10,6 +10,7 @@ dependency-reduced-pom.xml
 *.db
 
 ### IntelliJ IDEA ###
+bin
 .idea/**
 *.iws
 *.iml

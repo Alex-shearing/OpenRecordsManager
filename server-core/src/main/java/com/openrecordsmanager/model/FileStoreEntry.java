@@ -1,8 +1,8 @@
 package com.openrecordsmanager.model;
 
 import com.openrecordsmanager.resources.ComponentCatalog;
-import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
+import org.jspecify.annotations.Nullable;
 
 import java.io.IOException;
 import java.io.InputStream;

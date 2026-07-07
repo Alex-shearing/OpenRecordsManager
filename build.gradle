@@ -28,8 +28,9 @@ tasks.register('copyPlugins', Copy) {
     into file("${project(':server-core').projectDir}/plugins")
 }
 
-evaluationDependsOn ':server-core'
-evaluationDependsOn ':server-web'
+subprojects.each { pluginProject ->
+    evaluationDependsOn pluginProject.path
+}
 
 distributions {
     main {
@@ -38,11 +39,18 @@ distributions {
         contents {
             // Copy the launch scripts
             from 'scripts'
+            // Copy the server-core default external config
+            from project(':server-core').file('config.yml')
             // Copy the executable jar
             from project(':server-core').tasks.named('bootJar')
             // Copy the frontend static files into a /static directory in the zip
             into('static') {
                 from project(':server-web').tasks.named('buildWeb')
+            }
+            into('plugins') {
+                def pluginProjects = subprojects.findAll { it.path.startsWith(':plugins:') }
+
+                from pluginProjects.collect { it.tasks.named('jar').map { jarTask -> jarTask.outputs.files } }
             }
         }
     }
