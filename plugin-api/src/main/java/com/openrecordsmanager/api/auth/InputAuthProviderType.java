@@ -3,18 +3,18 @@ package com.openrecordsmanager.api.auth;
 import com.openrecordsmanager.api.config.ConfigStore;
 import org.jspecify.annotations.Nullable;
 
-public abstract class InputAuthProviderType extends AuthProviderType {
+import java.util.Map;
+
+public abstract class InputAuthProviderType implements AuthProviderType {
     /**
      *
      * @param instance
-     * @param username
-     * @param password
-     * @return the {@link UserDetails} or null if no user was authenticated
+     * @param inputs
+     * @return the {@link UserAuthDetails} or null if no user was authenticated
      */
-    public abstract @Nullable UserDetails authenticate(
+    public abstract @Nullable UserAuthDetails authenticate(
             ConfigStore config,
             AuthProviderInstance instance,
-            String username,
-            String password
+            Map<String, String> inputs
     );
 }

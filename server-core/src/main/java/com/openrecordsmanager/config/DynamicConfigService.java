@@ -3,7 +3,7 @@ package com.openrecordsmanager.config;
 import com.openrecordsmanager.api.config.ConfigDefinition;
 import com.openrecordsmanager.api.config.ConfigStore;
 import com.openrecordsmanager.api.types.ComponentTypes;
-import com.openrecordsmanager.resources.ComponentCatalog;
+import com.openrecordsmanager.plugin.ComponentCatalog;
 import org.jspecify.annotations.Nullable;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;

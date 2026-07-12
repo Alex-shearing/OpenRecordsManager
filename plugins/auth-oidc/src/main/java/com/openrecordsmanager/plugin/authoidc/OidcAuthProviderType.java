@@ -16,7 +16,7 @@ import com.nimbusds.openid.connect.sdk.op.OIDCProviderConfigurationRequest;
 import com.nimbusds.openid.connect.sdk.op.OIDCProviderMetadata;
 import com.openrecordsmanager.api.auth.AuthProviderInstance;
 import com.openrecordsmanager.api.auth.RedirectAuthProviderType;
-import com.openrecordsmanager.api.auth.UserDetails;
+import com.openrecordsmanager.api.auth.UserAuthDetails;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -60,7 +60,7 @@ public class OidcAuthProviderType extends RedirectAuthProviderType {
     }
 
     @Override
-    public @Nullable UserDetails authenticateCallback(AuthProviderInstance instance, URI uri) {
+    public @Nullable UserAuthDetails authenticateCallback(AuthProviderInstance instance, URI uri) {
         try {
             AuthenticationResponse response = AuthenticationResponseParser.parse(uri);
             OidcSettings settings = OidcSettings.parse(instance.getSettings());
@@ -104,7 +104,7 @@ public class OidcAuthProviderType extends RedirectAuthProviderType {
 
             System.out.println(code);
 
-            return new UserDetails(instance, idToken.getJWTClaimsSet().getClaimAsString("name"), "admin");
+            return new UserAuthDetails(instance, idToken.getJWTClaimsSet().getClaimAsString("name"), "admin");
         } catch (ParseException e) {
             LOGGER.error("OIDC redirect URI parse error: {}", e.getMessage());
             return null;

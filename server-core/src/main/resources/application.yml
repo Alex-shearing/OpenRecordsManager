@@ -1,0 +1,50 @@
+#####################
+# ORM Configuration #
+#####################
+# This is the local configuration file for ORM.
+# It has the second-highest precedence when loading configuration options.
+# The order of precedence is: Environment Variables > Configuration File > Database.
+
+
+
+auth:
+  auth_local:
+    enable_default_admin: true
+
+# Config that affects just the server that is reading the config
+server:
+  # JDBC URL for the workgroup database
+  database:
+    primary:
+      url: jdbc:sqlite:orm_system.db
+    read_only:
+      url: jdbc:sqlite:orm_system.db
+  plugins:
+    # Define the directory to load plugins from
+    directory: ./plugins
+    # Skip the check during startup to ensure all plugins are required plugins are loaded
+    skip_startup_check: false
+  web:
+    directory: ./static
+# Config that can be set on either the server or the database
+app:
+  debug:
+    # If enabled, detailed API error messages will be returned to the user
+    detailed_errors: true
+    # If enabled, will print SQL statements to the log
+    show_sql: false
+  security:
+    secret-key: 3cfa76ef14937c1c0ea519f8fc057a80fcd04a7420f8e8bcd0a7567c272e007b
+    expiration-time: 3600000 # 1h in millisecond
+    cookie-name: ORM-Authentication # Use __Host-Authentication for a secure environment
+  logging:
+    # Define the minimum log level for writing to logs
+    level: INFO
+    # Define the path that logs should be stored
+    path: ./logs/openrecordsmanager.log
+    # Define a rolling log policy
+    rolling:
+      max-file-size: 10MB
+      max-history: 7
+      total-size-cap: 100MB
+      clean-history-on-start: false

@@ -598,7 +598,7 @@ export interface components {
             database?: string;
         };
         AuthenticationResponse: {
-            token?: string;
+            inputToken?: string;
         };
     };
     responses: never;

@@ -15,8 +15,8 @@ class RecordTypeDefinitionTest {
         RecordTypeDefinition codeType = RecordTypeDefinition.builder("Test record type")
                 .description("Test record description")
                 .allowedContentTypes("application/json")
-                .property(ComponentReference.reference(ComponentTypes.PROPERTY, ResourceIdentifier.valueOf("test:user_email_property")))
-                .property(ComponentReference.reference(ComponentTypes.PROPERTY, ResourceIdentifier.valueOf("test:user_email_property_2")))
+                .property(ComponentReference.of(ComponentTypes.PROPERTY, ResourceIdentifier.valueOf("test:user_email_property")))
+                .property(ComponentReference.of(ComponentTypes.PROPERTY, ResourceIdentifier.valueOf("test:user_email_property_2")))
                 .build();
 
         Assertions.assertEquals(codeType.name(), type.name(), "Names should be equal");

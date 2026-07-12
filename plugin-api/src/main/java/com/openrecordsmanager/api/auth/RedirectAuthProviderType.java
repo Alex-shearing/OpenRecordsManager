@@ -5,7 +5,7 @@ import org.jspecify.annotations.Nullable;
 
 import java.net.URI;
 
-public abstract class RedirectAuthProviderType extends AuthProviderType {
+public abstract class RedirectAuthProviderType implements AuthProviderType {
 
     public abstract URI getRedirectTo(AuthProviderInstance instance);
 
@@ -13,7 +13,7 @@ public abstract class RedirectAuthProviderType extends AuthProviderType {
      *
      * @param instance
      * @param uri
-     * @return either {{@link UserDetails}} or null if no user was authenticated
+     * @return either {{@link UserAuthDetails}} or null if no user was authenticated
      */
-    public abstract @Nullable UserDetails authenticateCallback(AuthProviderInstance instance, URI uri);
+    public abstract @Nullable UserAuthDetails authenticateCallback(AuthProviderInstance instance, URI uri);
 }

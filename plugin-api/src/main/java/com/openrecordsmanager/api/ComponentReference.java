@@ -3,18 +3,18 @@ package com.openrecordsmanager.api;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.openrecordsmanager.api.types.ComponentType;
 import com.openrecordsmanager.api.types.ComponentTypes;
-import org.jspecify.annotations.Nullable;
 import tools.jackson.databind.DeserializationContext;
 import tools.jackson.databind.KeyDeserializer;
 
 import java.util.Objects;
+import java.util.Optional;
 import java.util.function.Function;
 
 public abstract class ComponentReference<T extends Component> {
 
-    public abstract @Nullable T getComponent(ComponentAccess catalog);
+    public abstract Optional<T> getComponent(ComponentAccess catalog);
 
-    public abstract @Nullable ResourceIdentifier getId(ComponentAccess catalog);
+    public abstract Optional<ResourceIdentifier> getId(ComponentAccess catalog);
 
     public abstract ComponentType<T> getType();
 
@@ -22,12 +22,12 @@ public abstract class ComponentReference<T extends Component> {
         return new Value<>(value);
     }
 
-    public static <K extends Component> ComponentReference<K> reference(ComponentType<K> type, ResourceIdentifier id) {
+    public static <K extends Component> ComponentReference<K> of(ComponentType<K> type, ResourceIdentifier id) {
         return new Reference<>(type, id);
     }
 
     @JsonCreator
-    public static ComponentReference<Component> reference(String fqn) {
+    public static ComponentReference<Component> valueOf(String fqn) {
         String[] split = fqn.split("/");
         if (split.length != 2) {
             throw new IllegalArgumentException("Not a valid component reference string: " + fqn);
@@ -37,7 +37,7 @@ public abstract class ComponentReference<T extends Component> {
             throw new IllegalArgumentException("Not a valid component type: " + split[0]);
         }
 
-        return reference(componentType, ResourceIdentifier.valueOf(split[1]));
+        return of(componentType, ResourceIdentifier.valueOf(split[1]));
     }
 
     public abstract <K extends Component> ComponentReference<K> widen(Function<T, K> mapper);
@@ -52,13 +52,13 @@ public abstract class ComponentReference<T extends Component> {
         }
 
         @Override
-        public T getComponent(ComponentAccess catalog) {
-            return catalog.getComponent(this.type, this.id).orElse(null);
+        public Optional<T> getComponent(ComponentAccess catalog) {
+            return catalog.getComponent(this.type, this.id);
         }
 
         @Override
-        public ResourceIdentifier getId(ComponentAccess catalog) {
-            return this.id;
+        public Optional<ResourceIdentifier> getId(ComponentAccess catalog) {
+            return Optional.of(this.id);
         }
 
         @Override
@@ -97,12 +97,12 @@ public abstract class ComponentReference<T extends Component> {
         }
 
         @Override
-        public T getComponent(ComponentAccess catalog) {
-            return this.value;
+        public Optional<T> getComponent(ComponentAccess catalog) {
+            return Optional.of(this.value);
         }
 
         @Override
-        public @Nullable ResourceIdentifier getId(ComponentAccess catalog) {
+        public Optional<ResourceIdentifier> getId(ComponentAccess catalog) {
             return catalog.getId(this.getType(), this.value);
         }
 
@@ -136,7 +136,7 @@ public abstract class ComponentReference<T extends Component> {
     public static class RefKeyDeserializer extends KeyDeserializer {
         @Override
         public Object deserializeKey(String key, DeserializationContext ctxt) {
-            return ComponentReference.reference(key);
+            return ComponentReference.valueOf(key);
         }
     }
 }

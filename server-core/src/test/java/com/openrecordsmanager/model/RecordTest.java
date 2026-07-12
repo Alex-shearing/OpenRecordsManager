@@ -3,7 +3,12 @@ package com.openrecordsmanager.model;
 import com.openrecordsmanager.api.ResourceIdentifier;
 import com.openrecordsmanager.api.template.property.PropertyType;
 import com.openrecordsmanager.api.template.recordtype.SecurityFilterUsage;
-import com.openrecordsmanager.resources.ExpressionsService;
+import com.openrecordsmanager.plugin.ExpressionsService;
+import com.openrecordsmanager.property.ObjectProperty;
+import com.openrecordsmanager.record.Record;
+import com.openrecordsmanager.recordtype.RecordType;
+import com.openrecordsmanager.recordtype.RecordTypeProperty;
+import com.openrecordsmanager.user.User;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -66,7 +71,7 @@ class RecordTest {
         );
         recordType.properties.add(new RecordTypeProperty<>(stringProperty, null));
 
-        Record record = new Record("Record", recordType);
+        com.openrecordsmanager.record.Record record = new com.openrecordsmanager.record.Record("Record", recordType);
         record.setProperty(stringProperty, "test value");
 
         Assertions.assertEquals(SecurityFilterUsage.SHOW_ALL, record.securityFilter(this.expressionsService, this.testUser, record), "User should have access");
@@ -88,7 +93,7 @@ class RecordTest {
                 new HashSet<>()
         );
 
-        Record record = new Record("Record", recordType);
+        com.openrecordsmanager.record.Record record = new Record("Record", recordType);
 
         Assertions.assertEquals(SecurityFilterUsage.HIDE_RECORD, record.securityFilter(this.expressionsService, this.testUser, record), "User should not have access");
 
