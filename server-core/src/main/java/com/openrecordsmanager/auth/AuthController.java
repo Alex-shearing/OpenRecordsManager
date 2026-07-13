@@ -2,7 +2,7 @@ package com.openrecordsmanager.auth;
 
 import com.openrecordsmanager.api.ApiResponseV1;
 import com.openrecordsmanager.api.auth.RedirectAuthProviderType;
-import com.openrecordsmanager.api.errors.ApiError;
+import com.openrecordsmanager.api.errors.ResourceNotFoundException;
 import com.openrecordsmanager.api.swagger.InternalServerErrorApiResponse;
 import com.openrecordsmanager.api.swagger.NotFoundApiResponse;
 import com.openrecordsmanager.auth.dto.AuthProviderListResponse;
@@ -102,9 +102,9 @@ public class AuthController {
     @NotFoundApiResponse
     public ResponseEntity<Void> redirect(@PathVariable("auth_provider") UUID authProvider) {
         AuthProvider provider = this.repository.authProviderRepo.findById(authProvider)
-                .orElseThrow(() -> ApiError.notFound("authentication provider", authProvider.toString()));
+                .orElseThrow(() -> new ResourceNotFoundException("authentication provider", authProvider.toString()));
         RedirectAuthProviderType type = (RedirectAuthProviderType) provider.providerType.getComponent(this.catalog)
-                .orElseThrow(() -> ApiError.serverError("authentication provider type {0} not found", provider.providerType));
+                .orElseThrow(() -> new IllegalStateException(String.format("authentication provider type %s not found", provider.providerType)));
 
         return ResponseEntity.status(HttpStatus.FOUND).location(type.getRedirectTo(provider)).build();
     }

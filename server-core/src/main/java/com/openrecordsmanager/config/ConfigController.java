@@ -44,14 +44,8 @@ public class ConfigController {
     @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Get the value of the config from the database")
     @Transactional(readOnly = true)
-    public Object database_retrieveOne(@PathVariable("id") String id) {
-        ConfigDefinition<?> config = this.config.getConfigByKey(id)
-                .orElseThrow(() -> ApiError.notFound(ComponentTypes.CONFIG.name, id));
-
-        ConfigItem configItem = this.repository.configRepo.findByConfigKey(config.key())
-                .orElseThrow(() -> ApiError.notFound("config value", id));
-
-        return config.type().fromString(configItem.configValue);
+    public Optional<?> database_retrieveOne(@PathVariable("id") String id) {
+        return this.config.getDatabaseConfig(id);
     }
 
     @PutMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)

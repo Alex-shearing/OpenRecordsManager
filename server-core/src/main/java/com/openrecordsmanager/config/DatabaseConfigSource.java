@@ -12,7 +12,7 @@ public class DatabaseConfigSource extends EnumerablePropertySource<Object> {
     private final JdbcTemplate repository;
 
     public DatabaseConfigSource(JdbcTemplate repository) {
-        super("custom_config");
+        super("database_config_source");
         this.repository = repository;
         this.repository.execute("CREATE TABLE IF NOT EXISTS system_configurations (config_key VARCHAR(255) PRIMARY KEY, config_value VARCHAR(1000) NOT NULL);");
     }

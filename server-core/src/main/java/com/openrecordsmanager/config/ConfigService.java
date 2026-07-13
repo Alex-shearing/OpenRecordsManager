@@ -3,6 +3,7 @@ package com.openrecordsmanager.config;
 import com.openrecordsmanager.api.config.ConfigDefinition;
 import com.openrecordsmanager.api.config.ConfigStore;
 import com.openrecordsmanager.api.errors.ApiError;
+import com.openrecordsmanager.api.errors.ResourceNotFoundException;
 import com.openrecordsmanager.api.types.ComponentTypes;
 import com.openrecordsmanager.config.dto.ConfigResponse;
 import com.openrecordsmanager.database.DataRepository;
@@ -64,6 +65,16 @@ public class ConfigService implements ConfigStore {
         return this.catalog.getComponents(ComponentTypes.CONFIG).stream()
                 .map(def -> Map.entry(def.key(), this.getOptional(def)))
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+    }
+
+    public Optional<?> getDatabaseConfig(String id) {
+        ConfigDefinition<?> config = this.getConfigByKey(id)
+                .orElseThrow(() -> new ResourceNotFoundException(ComponentTypes.CONFIG.name, id));
+
+        ConfigItem configItem = this.repository.configRepo.findByConfigKey(config.key())
+                .orElseThrow(() -> new ResourceNotFoundException("config value", id));
+
+        return config.type().fromString(configItem.configValue);
     }
 
 }
