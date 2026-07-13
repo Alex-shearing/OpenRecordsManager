@@ -1,4 +1,6 @@
 package com.openrecordsmanager.user.dto;
 
-public record UserResponse(String username) {
+import jakarta.validation.constraints.NotBlank;
+
+public record UserResponse(@NotBlank String username) {
 }

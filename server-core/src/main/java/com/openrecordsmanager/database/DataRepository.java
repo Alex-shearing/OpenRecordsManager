@@ -3,8 +3,8 @@ package com.openrecordsmanager.database;
 import com.openrecordsmanager.auth.AuthProviderRepository;
 import com.openrecordsmanager.auth.entity.AuthTokenRepository;
 import com.openrecordsmanager.config.ConfigRepository;
-import com.openrecordsmanager.filestore.FileStoreMiddlewareRepository;
 import com.openrecordsmanager.filestore.FileStoreRepository;
+import com.openrecordsmanager.filestore.MiddlewareRepository;
 import com.openrecordsmanager.list.ListElementRepository;
 import com.openrecordsmanager.list.ListTypeRepository;
 import com.openrecordsmanager.property.ObjectPropertyRepository;
@@ -23,7 +23,7 @@ public class DataRepository {
     public final RecordTypeRepository recordTypeRepo;
     public final RecordRepository recordRepo;
     public final FileStoreRepository fileStoreRepo;
-    public final FileStoreMiddlewareRepository fileStoreMiddlewareRepo;
+    public final MiddlewareRepository fileStoreMiddlewareRepo;
     public final UserRepository userRepo;
     public final AuthTokenRepository authTokenRepo;
 
@@ -36,7 +36,7 @@ public class DataRepository {
             RecordTypeRepository recordTypeRepo,
             RecordRepository recordRepo,
             FileStoreRepository fileStoreRepo,
-            FileStoreMiddlewareRepository fileStoreMiddlewareRepo,
+            MiddlewareRepository fileStoreMiddlewareRepo,
             UserRepository userRepo,
             AuthTokenRepository authTokenRepo
     ) {

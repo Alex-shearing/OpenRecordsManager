@@ -5,7 +5,7 @@ import com.openrecordsmanager.api.auth.InputAuthProviderType;
 import com.openrecordsmanager.api.auth.RedirectAuthProviderType;
 import com.openrecordsmanager.api.auth.UserAuthDetails;
 import com.openrecordsmanager.auth.entity.AuthProvider;
-import com.openrecordsmanager.config.DynamicConfigService;
+import com.openrecordsmanager.config.ConfigService;
 import com.openrecordsmanager.database.DataRepository;
 import com.openrecordsmanager.plugin.ComponentCatalog;
 import com.openrecordsmanager.user.User;
@@ -24,9 +24,9 @@ import java.util.UUID;
 public class PluginAuthenticationProvider implements AuthenticationProvider {
     private final DataRepository repository;
     private final ComponentCatalog catalog;
-    private final DynamicConfigService config;
+    private final ConfigService config;
 
-    public PluginAuthenticationProvider(DataRepository repository, ComponentCatalog catalog, DynamicConfigService config) {
+    public PluginAuthenticationProvider(DataRepository repository, ComponentCatalog catalog, ConfigService config) {
         this.repository = repository;
         this.catalog = catalog;
         this.config = config;

@@ -22,8 +22,8 @@ import java.util.UUID;
 
 @Entity
 @Table(name = "file_store_middleware")
-@JsonSerialize(using = FileStoreMiddleware.Serializer.class)
-public class FileStoreMiddleware<T> {
+@JsonSerialize(using = Middleware.Serializer.class)
+public class Middleware<T> {
 
     @Id
     public UUID id;
@@ -36,10 +36,10 @@ public class FileStoreMiddleware<T> {
     public Map<String, ?> properties;
 
     @Deprecated
-    protected FileStoreMiddleware() {
+    protected Middleware() {
     }
 
-    public FileStoreMiddleware(ComponentCatalog catalog, FileStoreMiddlewareType<T> type, Map<String, ?> properties) {
+    public Middleware(ComponentCatalog catalog, FileStoreMiddlewareType<T> type, Map<String, ?> properties) {
         this.id = UUID.randomUUID();
         this.type = catalog.getId(ComponentTypes.FILE_STORE_MIDDLEWARE, type).orElseThrow();
         this.properties = properties;
@@ -68,7 +68,7 @@ public class FileStoreMiddleware<T> {
         this.properties = properties;
     }
 
-    public static class Serializer extends ValueSerializer<FileStoreMiddleware<?>> {
+    public static class Serializer extends ValueSerializer<Middleware<?>> {
 
         private final ComponentCatalog catalog;
 
@@ -77,7 +77,7 @@ public class FileStoreMiddleware<T> {
         }
 
         @Override
-        public void serialize(FileStoreMiddleware value, JsonGenerator gen, SerializationContext ctxt) throws JacksonException {
+        public void serialize(Middleware value, JsonGenerator gen, SerializationContext ctxt) throws JacksonException {
             gen.writeStartObject();
             gen.writeStringProperty("id", value.id.toString());
             gen.writeStringProperty("type", value.type.toString());

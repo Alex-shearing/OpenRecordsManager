@@ -7,7 +7,7 @@ import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "system_configurations")
-public class SystemConfiguration {
+public class ConfigItem {
 
     @Id
     @Column(name = "config_key", unique = true, nullable = false)
@@ -17,10 +17,10 @@ public class SystemConfiguration {
     public String configValue;
 
     @Deprecated
-    protected SystemConfiguration() {
+    protected ConfigItem() {
     }
 
-    public SystemConfiguration(String configKey, String configValue) {
+    public ConfigItem(String configKey, String configValue) {
         this.configKey = configKey;
         this.configValue = configValue;
     }

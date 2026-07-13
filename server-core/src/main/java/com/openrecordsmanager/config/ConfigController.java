@@ -2,8 +2,9 @@ package com.openrecordsmanager.config;
 
 import com.openrecordsmanager.api.config.ConfigDefinition;
 import com.openrecordsmanager.api.errors.ApiError;
-import com.openrecordsmanager.api.swagger.DefaultErrorResponses;
+import com.openrecordsmanager.api.swagger.DefaultApiResponses;
 import com.openrecordsmanager.api.types.ComponentTypes;
+import com.openrecordsmanager.config.dto.ConfigResponse;
 import com.openrecordsmanager.database.DataRepository;
 import com.openrecordsmanager.plugin.ComponentCatalog;
 import io.swagger.v3.oas.annotations.Operation;
@@ -19,15 +20,15 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/config")
-@DefaultErrorResponses
+@DefaultApiResponses
 @PreAuthorize("isAuthenticated()")
 public class ConfigController {
 
     private final DataRepository repository;
-    private final DynamicConfigService config;
+    private final ConfigService config;
     private final ComponentCatalog catalog;
 
-    public ConfigController(DataRepository repository, DynamicConfigService config, ComponentCatalog catalog) {
+    public ConfigController(DataRepository repository, ConfigService config, ComponentCatalog catalog) {
         this.repository = repository;
         this.config = config;
         this.catalog = catalog;
@@ -37,40 +38,26 @@ public class ConfigController {
     @Operation(summary = "Get config values from the database")
     @Transactional(readOnly = true)
     public Map<String, Optional<?>> database_retrieve() {
-        return this.repository.configRepo.findAll().stream()
-                .map(config -> {
-                    ConfigDefinition<?> type = this.config.getConfigByKey(config.configKey, this.catalog)
-                            .orElseThrow(() -> ApiError.notFound(ComponentTypes.CONFIG.name, config.configKey));
-
-                    return Map.entry(config.configKey, type.type().fromString(config.configValue));
-                })
-                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+        return this.config.getAllConfig();
     }
 
     @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Get the value of the config from the database")
     @Transactional(readOnly = true)
     public Object database_retrieveOne(@PathVariable("id") String id) {
-        ConfigDefinition<?> config = this.config.getConfigByKey(id, this.catalog)
+        ConfigDefinition<?> config = this.config.getConfigByKey(id)
                 .orElseThrow(() -> ApiError.notFound(ComponentTypes.CONFIG.name, id));
 
-        SystemConfiguration systemConfiguration = this.repository.configRepo.findByConfigKey(config.key())
+        ConfigItem configItem = this.repository.configRepo.findByConfigKey(config.key())
                 .orElseThrow(() -> ApiError.notFound("config value", id));
 
-        return config.type().fromString(systemConfiguration.configValue);
+        return config.type().fromString(configItem.configValue);
     }
 
     @PutMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Set a config value in the database")
-    public SystemConfiguration set(@PathVariable("id") String id, @RequestBody String value) {
-        this.config.getConfigByKey(id, this.catalog)
-                .orElseThrow(() -> ApiError.notFound(ComponentTypes.CONFIG.name, id));
-
-        SystemConfiguration config = this.repository.configRepo.findByConfigKey(id)
-                .orElseGet(() -> new SystemConfiguration(id, value));
-        config.configValue = value;
-
-        return this.repository.configRepo.saveAndFlush(config);
+    public ConfigResponse set(@PathVariable("id") String id, @RequestBody String value) {
+        return this.config.setConfig(id, value);
     }
 
     @GetMapping(value = "/this_server", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -91,7 +78,7 @@ public class ConfigController {
     @Operation(summary = "Get the effective value for the config this specific server")
     @Transactional(readOnly = true)
     public Object server_retrieveOne(@PathVariable("id") String id) {
-        ConfigDefinition<?> config = this.config.getConfigByKey(id, this.catalog)
+        ConfigDefinition<?> config = this.config.getConfigByKey(id)
                 .orElseThrow(() -> ApiError.notFound(ComponentTypes.CONFIG.name, id));
 
         return this.config.getOptional(config)

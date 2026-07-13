@@ -20,11 +20,11 @@ import java.util.Optional;
 public class DatabaseTokenAuthenticationFilter extends OncePerRequestFilter {
 
     private final AuthTokenRepository tokenRepository;
-    private final AuthServices authServices;
+    private final AuthService authService;
 
-    public DatabaseTokenAuthenticationFilter(AuthTokenRepository tokenRepository, AuthServices authServices) {
+    public DatabaseTokenAuthenticationFilter(AuthTokenRepository tokenRepository, AuthService authService) {
         this.tokenRepository = tokenRepository;
-        this.authServices = authServices;
+        this.authService = authService;
     }
 
     @Override
@@ -32,9 +32,8 @@ public class DatabaseTokenAuthenticationFilter extends OncePerRequestFilter {
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
 
-        String tokenValue = extractTokenFromRequest(request);
-        System.out.println(tokenValue);
-
+        String tokenValue = this.extractTokenFromRequest(request);
+        
         if (tokenValue != null) {
             this.tokenRepository.findById(tokenValue).ifPresent(userToken -> {
                 if (!userToken.isExpired()) {
@@ -44,7 +43,6 @@ public class DatabaseTokenAuthenticationFilter extends OncePerRequestFilter {
                             new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities());
 
                     authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-
 
                     // Establish security context for the current thread/session
                     SecurityContextHolder.getContext().setAuthentication(authentication);
@@ -61,7 +59,7 @@ public class DatabaseTokenAuthenticationFilter extends OncePerRequestFilter {
         Cookie[] cookies = request.getCookies();
         if (cookies != null) {
             Optional<Cookie> authCookie = Arrays.stream(cookies)
-                    .filter(cookie -> cookie.getName().equals(this.authServices.getCookieName()))
+                    .filter(cookie -> cookie.getName().equals(this.authService.getCookieName()))
                     .findFirst();
 
             if (authCookie.isPresent() && !authCookie.get().getValue().isBlank()) {

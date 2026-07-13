@@ -35,6 +35,10 @@ public class ApiError extends RuntimeException {
         return new AuthenticationError(error);
     }
 
+    public static ApiError clientError(String pattern, Object... params) {
+        return new ClientError(MessageFormat.format(pattern, params));
+    }
+
     public boolean shouldLog() {
         return true;
     }
@@ -68,6 +72,17 @@ public class ApiError extends RuntimeException {
     public static class AuthenticationError extends ApiError {
         public AuthenticationError(String message) {
             super(HttpStatus.UNAUTHORIZED, "Authentication failed: " + message);
+        }
+
+        @Override
+        public boolean shouldLog() {
+            return false;
+        }
+    }
+
+    public static class ClientError extends ApiError {
+        public ClientError(String message) {
+            super(HttpStatus.NOT_ACCEPTABLE, message);
         }
 
         @Override

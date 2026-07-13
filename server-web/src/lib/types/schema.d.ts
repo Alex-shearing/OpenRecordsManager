@@ -4,7 +4,7 @@
  */
 
 export interface paths {
-    "/api/records/{id}/revisions/{version}": {
+    "/api/records/{id}/{version}": {
         parameters: {
             query?: never;
             header?: never;
@@ -14,7 +14,7 @@ export interface paths {
         /** Get record revision file */
         get: operations["getRevision"];
         /** Upload new record revision */
-        put: operations["newRevision"];
+        put: operations["createRevision2"];
         post?: never;
         delete?: never;
         options?: never;
@@ -29,12 +29,12 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Get file store details */
+        /** Get stream store details */
         get: operations["fileStore_retrieveOne"];
-        /** Modify file store config */
+        /** Modify stream store config */
         put: operations["fileStore_update"];
         post?: never;
-        /** Delete a file store */
+        /** Delete a stream store */
         delete: operations["fileStore_delete"];
         options?: never;
         head?: never;
@@ -48,12 +48,13 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Get file store middleware details */
+        /** Get stream store middleware details */
         get: operations["middleware_retrieveOne"];
-        /** Modify file store middleware config */
+        /** Modify stream store middleware config */
         put: operations["middleware_update"];
         post?: never;
-        delete?: never;
+        /** Delete a stream store middleware */
+        delete: operations["middleware_delete"];
         options?: never;
         head?: never;
         patch?: never;
@@ -118,10 +119,10 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Get all file stores */
+        /** Get all stream stores */
         get: operations["fileStore_retrieveAll"];
         put?: never;
-        /** Create a new file store */
+        /** Create a new stream store */
         post: operations["fileStore_create"];
         delete?: never;
         options?: never;
@@ -136,10 +137,10 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Get all file store middlewares */
+        /** Get all stream store middlewares */
         get: operations["middleware_retrieveAll"];
         put?: never;
-        /** Create a new file store middleware */
+        /** Create a new stream store middleware */
         post: operations["middleware_create"];
         delete?: never;
         options?: never;
@@ -147,7 +148,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/auth/login": {
+    "/api/auth/signup": {
         parameters: {
             query?: never;
             header?: never;
@@ -156,8 +157,41 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Trigger a login from an authentication provider, implementations vary depending on the provider. */
+        /** Trigger a signup to an authentication provider, implementations vary depending on the provider. */
+        post: operations["signup"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/auth/login/{provider}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Trigger a login to an authentication provider, implementations vary depending on the provider. */
         post: operations["login"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/user/me": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["me"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -223,24 +257,7 @@ export interface paths {
             cookie?: never;
         };
         /** Get record details */
-        get: operations["getRecord"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/records/{id}/revisions": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** List all revisions for a record */
-        get: operations["getRevisions"];
+        get: operations["get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -351,23 +368,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/info": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Get basic details about the environment */
-        get: operations["getEnvironment"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/api/config": {
         parameters: {
             query?: never;
@@ -436,6 +436,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/auth/providers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List all supported authentication providers. */
+        get: operations["providers_listAll"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/auth/callback/{auth_provider}": {
         parameters: {
             query?: never;
@@ -457,56 +474,63 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
-        ApiResponseWrapper: {
+        ApiResponseV1: {
             success: boolean;
             error?: string;
             /** Format: date-time */
             timestamp: string;
             data?: unknown;
         };
-        FileStoreEntry: {
+        RecordResponse: {
             /** Format: uuid */
-            id?: string;
-            store?: components["schemas"]["FileStoreObject"];
-            path?: string;
-            hashAlgorithm?: string;
-            hash?: string;
+            id: string;
+            title: string;
+            type: string;
+            properties: {
+                [key: string]: unknown;
+            };
+            revisions: string[];
+        };
+        SimpleFileStoreResponse: {
+            /** Format: uuid */
+            id: string;
+            type: string;
+        };
+        ConfigResponse: {
+            key: string;
+            value: unknown;
+        };
+        NewRecord: {
+            type: string;
+            properties: {
+                [key: string]: unknown;
+            };
+        };
+        NewFileStore: {
+            type: string;
+            properties: {
+                [key: string]: unknown;
+            };
+            middlewares: string[];
+        };
+        NewFileStoreMiddleware: {
+            type: string;
+            properties: {
+                [key: string]: unknown;
+            };
+        };
+        SimpleMiddlewareResponse: {
+            /** Format: uuid */
+            id: string;
+            type: string;
+        };
+        LoginResponse: {
+            token: string;
             /** Format: int64 */
-            sizeBytes?: number;
-            extension?: string | null;
+            expiresIn: number;
         };
-        FileStoreMiddlewareObject: {
-            /** Format: uuid */
-            id?: string;
-            type?: string;
-            properties?: {
-                [key: string]: unknown;
-            };
-        };
-        FileStoreMiddlewareUsage: {
-            middleware?: components["schemas"]["FileStoreMiddlewareObject"];
-            /** Format: int32 */
-            applicationOrder?: number;
-        };
-        FileStoreObject: {
-            /** Format: uuid */
-            id?: string;
-            type?: string;
-            properties?: {
-                [key: string]: unknown;
-            };
-            middlewares?: components["schemas"]["FileStoreMiddlewareUsage"][];
-            files?: components["schemas"]["FileStoreEntry"][];
-        };
-        SystemConfiguration: {
-            configKey?: string;
-            configValue?: string;
-        };
-        NewRecordContent: {
-            type?: string;
-            properties?: {
-                [key: string]: unknown;
-            };
+        UserResponse: {
+            username: string;
         };
         ListElement: {
             id?: string;
@@ -537,41 +561,13 @@ export interface components {
         PropertyTypeObject: {
             name?: string;
         };
-        Record: {
-            /** Format: uuid */
-            id?: string;
-            title?: string;
-            type?: components["schemas"]["RecordType"];
-            revisions?: components["schemas"]["RecordRevision"][];
-            properties?: {
-                [key: string]: components["schemas"]["RecordPropertyValueObject"];
-            };
-        };
-        RecordPropertyValueObject: {
-            /** Format: uuid */
-            id?: string;
-            record?: components["schemas"]["Record"];
-            property?: components["schemas"]["ObjectPropertyObject"];
-            value?: unknown;
-            valueRaw?: unknown;
-        };
-        RecordRevision: {
-            /** Format: uuid */
-            id?: string;
-            /** Format: double */
-            version?: number;
-            /** Format: date-time */
-            createdDate?: string;
-            record?: components["schemas"]["Record"];
-            file?: components["schemas"]["FileStoreEntry"];
-        };
         RecordType: {
             id?: string;
             name?: string;
             description?: string;
             securityFilter?: string;
             /** @enum {string} */
-            securityFilterUsage?: "HIDE_RECORD" | "HIDE_METADATA_AND_FILES" | "HIDE_FILES" | "SHOW_ALL";
+            securityFilterUsage?: "HIDE_RECORD" | "HIDE_FILES" | "SHOW_ALL";
             contentTypes?: string[];
             properties?: components["schemas"]["RecordTypePropertyObject"][];
         };
@@ -579,26 +575,64 @@ export interface components {
             property?: components["schemas"]["ObjectPropertyObject"];
             default?: unknown;
         };
-        NewFileStore: {
+        SimpleListTypeResponse: {
+            id: string;
+            name: string;
+        };
+        ListElementResponse: {
+            type: string;
+            name: string;
+            description: string;
+            aliases: string[];
+            /** Format: int32 */
+            index: number;
+            /** Format: date-time */
+            activeTo: string;
+        };
+        ListTypeResponse: {
+            type?: string;
+            name?: string;
+            elements: components["schemas"]["ListElementResponse"][];
+        };
+        FileStoreResponse: {
+            /** Format: uuid */
+            id: string;
+            type: string;
+            properties: {
+                [key: string]: unknown;
+            };
+            middlewares: components["schemas"]["MiddlewareUsage"][];
+        };
+        MiddlewareObject: {
+            /** Format: uuid */
+            id?: string;
             type?: string;
             properties?: {
                 [key: string]: unknown;
             };
-            middlewares?: string[];
         };
-        NewFileStoreMiddleware: {
-            type?: string;
-            properties?: {
+        MiddlewareUsage: {
+            middleware?: components["schemas"]["MiddlewareObject"];
+            /** Format: int32 */
+            applicationOrder?: number;
+        };
+        MiddlewareResponse: {
+            /** Format: uuid */
+            id: string;
+            type: string;
+            properties: {
                 [key: string]: unknown;
             };
         };
-        EnvironmentResponse: {
-            workgroup?: string;
-            plugins?: string[];
-            database?: string;
-        };
-        AuthenticationResponse: {
-            inputToken?: string;
+        AuthProviderListResponse: {
+            /** Format: uuid */
+            id: string;
+            type: {
+                id: string;
+                type: string;
+            } & {
+                [key: string]: unknown;
+            };
         };
     };
     responses: never;
@@ -615,7 +649,7 @@ export interface operations {
             header?: never;
             path: {
                 id: string;
-                version: number;
+                version: string;
             };
             cookie?: never;
         };
@@ -628,12 +662,38 @@ export interface operations {
                 };
                 content: {
                     "application/octet-stream": string;
-                    "application/json": {
-                        /** @enum {boolean} */
-                        success: true;
-                        /** Format: date-time */
-                        timestamp: string;
-                    };
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "Unauthorized",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ApiResponseV1"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "Forbidden",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ApiResponseV1"];
                 };
             };
             /** @description Not Found */
@@ -649,13 +709,7 @@ export interface operations {
                      *       "timestamp": "2026-06-29T23:05:00Z"
                      *     }
                      */
-                    "application/json": {
-                        /** @enum {boolean} */
-                        success: false;
-                        error: string;
-                        /** Format: date-time */
-                        timestamp: string;
-                    };
+                    "application/json": components["schemas"]["ApiResponseV1"];
                 };
             };
             /** @description Internal Server error */
@@ -671,18 +725,12 @@ export interface operations {
                      *       "timestamp": "2026-06-29T23:05:00Z"
                      *     }
                      */
-                    "application/json": {
-                        /** @enum {boolean} */
-                        success: false;
-                        error: string;
-                        /** Format: date-time */
-                        timestamp: string;
-                    };
+                    "application/json": components["schemas"]["ApiResponseV1"];
                 };
             };
         };
     };
-    newRevision: {
+    createRevision2: {
         parameters: {
             query?: {
                 ext?: string;
@@ -692,7 +740,7 @@ export interface operations {
             };
             path: {
                 id: string;
-                version: number;
+                version: string;
             };
             cookie?: never;
         };
@@ -700,7 +748,7 @@ export interface operations {
             content: {
                 "multipart/form-data": {
                     /** Format: binary */
-                    file: string;
+                    stream: string;
                 };
             };
         };
@@ -712,10 +760,61 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
-                        /** @enum {boolean} */
+                        /** @constant */
                         success: true;
                         /** Format: date-time */
-                        timestamp: string;
+                        timestamp: unknown;
+                        data: {
+                            /** @constant */
+                            success: true;
+                            /** Format: date-time */
+                            timestamp: unknown;
+                            data: components["schemas"]["RecordResponse"];
+                        };
+                    };
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "Unauthorized",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                    };
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "Forbidden",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
                     };
                 };
             };
@@ -733,11 +832,11 @@ export interface operations {
                      *     }
                      */
                     "application/json": {
-                        /** @enum {boolean} */
+                        /** @constant */
                         success: false;
-                        error: string;
                         /** Format: date-time */
-                        timestamp: string;
+                        timestamp: unknown;
+                        error: string;
                     };
                 };
             };
@@ -755,11 +854,11 @@ export interface operations {
                      *     }
                      */
                     "application/json": {
-                        /** @enum {boolean} */
+                        /** @constant */
                         success: false;
-                        error: string;
                         /** Format: date-time */
-                        timestamp: string;
+                        timestamp: unknown;
+                        error: string;
                     };
                 };
             };
@@ -783,11 +882,55 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
-                        /** @enum {boolean} */
+                        /** @constant */
                         success: true;
                         /** Format: date-time */
-                        timestamp: string;
-                        data: components["schemas"]["FileStoreObject"];
+                        timestamp: unknown;
+                        data: components["schemas"]["FileStoreResponse"];
+                    };
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "Unauthorized",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                    };
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "Forbidden",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
                     };
                 };
             };
@@ -805,11 +948,11 @@ export interface operations {
                      *     }
                      */
                     "application/json": {
-                        /** @enum {boolean} */
+                        /** @constant */
                         success: false;
-                        error: string;
                         /** Format: date-time */
-                        timestamp: string;
+                        timestamp: unknown;
+                        error: string;
                     };
                 };
             };
@@ -827,11 +970,11 @@ export interface operations {
                      *     }
                      */
                     "application/json": {
-                        /** @enum {boolean} */
+                        /** @constant */
                         success: false;
-                        error: string;
                         /** Format: date-time */
-                        timestamp: string;
+                        timestamp: unknown;
+                        error: string;
                     };
                 };
             };
@@ -861,11 +1004,55 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
-                        /** @enum {boolean} */
+                        /** @constant */
                         success: true;
                         /** Format: date-time */
-                        timestamp: string;
-                        data: components["schemas"]["FileStoreObject"];
+                        timestamp: unknown;
+                        data: components["schemas"]["SimpleFileStoreResponse"];
+                    };
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "Unauthorized",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                    };
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "Forbidden",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
                     };
                 };
             };
@@ -883,11 +1070,11 @@ export interface operations {
                      *     }
                      */
                     "application/json": {
-                        /** @enum {boolean} */
+                        /** @constant */
                         success: false;
-                        error: string;
                         /** Format: date-time */
-                        timestamp: string;
+                        timestamp: unknown;
+                        error: string;
                     };
                 };
             };
@@ -905,11 +1092,11 @@ export interface operations {
                      *     }
                      */
                     "application/json": {
-                        /** @enum {boolean} */
+                        /** @constant */
                         success: false;
-                        error: string;
                         /** Format: date-time */
-                        timestamp: string;
+                        timestamp: unknown;
+                        error: string;
                     };
                 };
             };
@@ -933,10 +1120,54 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
-                        /** @enum {boolean} */
+                        /** @constant */
                         success: true;
                         /** Format: date-time */
-                        timestamp: string;
+                        timestamp: unknown;
+                    };
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "Unauthorized",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                    };
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "Forbidden",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
                     };
                 };
             };
@@ -954,11 +1185,33 @@ export interface operations {
                      *     }
                      */
                     "application/json": {
-                        /** @enum {boolean} */
+                        /** @constant */
                         success: false;
-                        error: string;
                         /** Format: date-time */
-                        timestamp: string;
+                        timestamp: unknown;
+                        error: string;
+                    };
+                };
+            };
+            /** @description Resource in use */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "Cannot delete a store that contains files",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
                     };
                 };
             };
@@ -976,11 +1229,11 @@ export interface operations {
                      *     }
                      */
                     "application/json": {
-                        /** @enum {boolean} */
+                        /** @constant */
                         success: false;
-                        error: string;
                         /** Format: date-time */
-                        timestamp: string;
+                        timestamp: unknown;
+                        error: string;
                     };
                 };
             };
@@ -1004,11 +1257,55 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
-                        /** @enum {boolean} */
+                        /** @constant */
                         success: true;
                         /** Format: date-time */
-                        timestamp: string;
-                        data: components["schemas"]["FileStoreMiddlewareObject"];
+                        timestamp: unknown;
+                        data: components["schemas"]["MiddlewareResponse"];
+                    };
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "Unauthorized",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                    };
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "Forbidden",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
                     };
                 };
             };
@@ -1026,11 +1323,11 @@ export interface operations {
                      *     }
                      */
                     "application/json": {
-                        /** @enum {boolean} */
+                        /** @constant */
                         success: false;
-                        error: string;
                         /** Format: date-time */
-                        timestamp: string;
+                        timestamp: unknown;
+                        error: string;
                     };
                 };
             };
@@ -1048,11 +1345,11 @@ export interface operations {
                      *     }
                      */
                     "application/json": {
-                        /** @enum {boolean} */
+                        /** @constant */
                         success: false;
-                        error: string;
                         /** Format: date-time */
-                        timestamp: string;
+                        timestamp: unknown;
+                        error: string;
                     };
                 };
             };
@@ -1082,11 +1379,55 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
-                        /** @enum {boolean} */
+                        /** @constant */
                         success: true;
                         /** Format: date-time */
-                        timestamp: string;
-                        data: components["schemas"]["FileStoreMiddlewareObject"];
+                        timestamp: unknown;
+                        data: components["schemas"]["SimpleFileStoreResponse"];
+                    };
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "Unauthorized",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                    };
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "Forbidden",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
                     };
                 };
             };
@@ -1104,11 +1445,11 @@ export interface operations {
                      *     }
                      */
                     "application/json": {
-                        /** @enum {boolean} */
+                        /** @constant */
                         success: false;
-                        error: string;
                         /** Format: date-time */
-                        timestamp: string;
+                        timestamp: unknown;
+                        error: string;
                     };
                 };
             };
@@ -1126,11 +1467,148 @@ export interface operations {
                      *     }
                      */
                     "application/json": {
-                        /** @enum {boolean} */
+                        /** @constant */
                         success: false;
-                        error: string;
                         /** Format: date-time */
-                        timestamp: string;
+                        timestamp: unknown;
+                        error: string;
+                    };
+                };
+            };
+        };
+    };
+    middleware_delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @constant */
+                        success: true;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                    };
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "Unauthorized",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                    };
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "Forbidden",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                    };
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "object {0} of type {1} not found",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                    };
+                };
+            };
+            /** @description Resource in use */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "Cannot delete a store that contains files",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                    };
+                };
+            };
+            /** @description Internal Server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "Internal Server Error",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
                     };
                 };
             };
@@ -1154,11 +1632,55 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
-                        /** @enum {boolean} */
+                        /** @constant */
                         success: true;
                         /** Format: date-time */
-                        timestamp: string;
+                        timestamp: unknown;
                         data: Record<string, never>;
+                    };
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "Unauthorized",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                    };
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "Forbidden",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
                     };
                 };
             };
@@ -1176,11 +1698,11 @@ export interface operations {
                      *     }
                      */
                     "application/json": {
-                        /** @enum {boolean} */
+                        /** @constant */
                         success: false;
-                        error: string;
                         /** Format: date-time */
-                        timestamp: string;
+                        timestamp: unknown;
+                        error: string;
                     };
                 };
             };
@@ -1208,11 +1730,55 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
-                        /** @enum {boolean} */
+                        /** @constant */
                         success: true;
                         /** Format: date-time */
-                        timestamp: string;
-                        data: components["schemas"]["SystemConfiguration"];
+                        timestamp: unknown;
+                        data: components["schemas"]["ConfigResponse"];
+                    };
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "Unauthorized",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                    };
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "Forbidden",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
                     };
                 };
             };
@@ -1230,11 +1796,11 @@ export interface operations {
                      *     }
                      */
                     "application/json": {
-                        /** @enum {boolean} */
+                        /** @constant */
                         success: false;
-                        error: string;
                         /** Format: date-time */
-                        timestamp: string;
+                        timestamp: unknown;
+                        error: string;
                     };
                 };
             };
@@ -1261,10 +1827,54 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
-                        /** @enum {boolean} */
+                        /** @constant */
                         success: true;
                         /** Format: date-time */
-                        timestamp: string;
+                        timestamp: unknown;
+                    };
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "Unauthorized",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                    };
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "Forbidden",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
                     };
                 };
             };
@@ -1282,11 +1892,11 @@ export interface operations {
                      *     }
                      */
                     "application/json": {
-                        /** @enum {boolean} */
+                        /** @constant */
                         success: false;
-                        error: string;
                         /** Format: date-time */
-                        timestamp: string;
+                        timestamp: unknown;
+                        error: string;
                     };
                 };
             };
@@ -1304,11 +1914,11 @@ export interface operations {
                      *     }
                      */
                     "application/json": {
-                        /** @enum {boolean} */
+                        /** @constant */
                         success: false;
-                        error: string;
                         /** Format: date-time */
-                        timestamp: string;
+                        timestamp: unknown;
+                        error: string;
                     };
                 };
             };
@@ -1323,7 +1933,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["NewRecordContent"];
+                "application/json": components["schemas"]["NewRecord"];
             };
         };
         responses: {
@@ -1334,11 +1944,55 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
-                        /** @enum {boolean} */
+                        /** @constant */
                         success: true;
                         /** Format: date-time */
-                        timestamp: string;
-                        data: components["schemas"]["Record"];
+                        timestamp: unknown;
+                        data: components["schemas"]["RecordResponse"];
+                    };
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "Unauthorized",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                    };
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "Forbidden",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
                     };
                 };
             };
@@ -1356,11 +2010,11 @@ export interface operations {
                      *     }
                      */
                     "application/json": {
-                        /** @enum {boolean} */
+                        /** @constant */
                         success: false;
-                        error: string;
                         /** Format: date-time */
-                        timestamp: string;
+                        timestamp: unknown;
+                        error: string;
                     };
                 };
             };
@@ -1378,11 +2032,11 @@ export interface operations {
                      *     }
                      */
                     "application/json": {
-                        /** @enum {boolean} */
+                        /** @constant */
                         success: false;
-                        error: string;
                         /** Format: date-time */
-                        timestamp: string;
+                        timestamp: unknown;
+                        error: string;
                     };
                 };
             };
@@ -1404,11 +2058,55 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
-                        /** @enum {boolean} */
+                        /** @constant */
                         success: true;
                         /** Format: date-time */
-                        timestamp: string;
-                        data: string[];
+                        timestamp: unknown;
+                        data: components["schemas"]["SimpleFileStoreResponse"][];
+                    };
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "Unauthorized",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                    };
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "Forbidden",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
                     };
                 };
             };
@@ -1426,11 +2124,11 @@ export interface operations {
                      *     }
                      */
                     "application/json": {
-                        /** @enum {boolean} */
+                        /** @constant */
                         success: false;
-                        error: string;
                         /** Format: date-time */
-                        timestamp: string;
+                        timestamp: unknown;
+                        error: string;
                     };
                 };
             };
@@ -1456,11 +2154,55 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
-                        /** @enum {boolean} */
+                        /** @constant */
                         success: true;
                         /** Format: date-time */
-                        timestamp: string;
-                        data: components["schemas"]["FileStoreObject"];
+                        timestamp: unknown;
+                        data: components["schemas"]["SimpleFileStoreResponse"];
+                    };
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "Unauthorized",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                    };
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "Forbidden",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
                     };
                 };
             };
@@ -1478,11 +2220,11 @@ export interface operations {
                      *     }
                      */
                     "application/json": {
-                        /** @enum {boolean} */
+                        /** @constant */
                         success: false;
-                        error: string;
                         /** Format: date-time */
-                        timestamp: string;
+                        timestamp: unknown;
+                        error: string;
                     };
                 };
             };
@@ -1500,11 +2242,11 @@ export interface operations {
                      *     }
                      */
                     "application/json": {
-                        /** @enum {boolean} */
+                        /** @constant */
                         success: false;
-                        error: string;
                         /** Format: date-time */
-                        timestamp: string;
+                        timestamp: unknown;
+                        error: string;
                     };
                 };
             };
@@ -1526,11 +2268,55 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
-                        /** @enum {boolean} */
+                        /** @constant */
                         success: true;
                         /** Format: date-time */
-                        timestamp: string;
-                        data: string[];
+                        timestamp: unknown;
+                        data: components["schemas"]["SimpleMiddlewareResponse"][];
+                    };
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "Unauthorized",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                    };
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "Forbidden",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
                     };
                 };
             };
@@ -1548,11 +2334,11 @@ export interface operations {
                      *     }
                      */
                     "application/json": {
-                        /** @enum {boolean} */
+                        /** @constant */
                         success: false;
-                        error: string;
                         /** Format: date-time */
-                        timestamp: string;
+                        timestamp: unknown;
+                        error: string;
                     };
                 };
             };
@@ -1578,11 +2364,55 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
-                        /** @enum {boolean} */
+                        /** @constant */
                         success: true;
                         /** Format: date-time */
-                        timestamp: string;
-                        data: components["schemas"]["FileStoreMiddlewareObject"];
+                        timestamp: unknown;
+                        data: components["schemas"]["SimpleMiddlewareResponse"];
+                    };
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "Unauthorized",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                    };
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "Forbidden",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
                     };
                 };
             };
@@ -1600,11 +2430,11 @@ export interface operations {
                      *     }
                      */
                     "application/json": {
-                        /** @enum {boolean} */
+                        /** @constant */
                         success: false;
-                        error: string;
                         /** Format: date-time */
-                        timestamp: string;
+                        timestamp: unknown;
+                        error: string;
                     };
                 };
             };
@@ -1622,17 +2452,17 @@ export interface operations {
                      *     }
                      */
                     "application/json": {
-                        /** @enum {boolean} */
+                        /** @constant */
                         success: false;
-                        error: string;
                         /** Format: date-time */
-                        timestamp: string;
+                        timestamp: unknown;
+                        error: string;
                     };
                 };
             };
         };
     };
-    login: {
+    signup: {
         parameters: {
             query?: never;
             header?: never;
@@ -1654,33 +2484,12 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
-                        /** @enum {boolean} */
+                        /** @constant */
                         success: true;
                         /** Format: date-time */
-                        timestamp: string;
+                        timestamp: unknown;
+                        /** Format: uuid */
                         data: string;
-                    };
-                };
-            };
-            /** @description Authentication Failed */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "success": false,
-                     *       "errorCode": "Username or password is incorrect",
-                     *       "timestamp": "2026-06-29T23:05:00Z"
-                     *     }
-                     */
-                    "application/json": {
-                        /** @enum {boolean} */
-                        success: false;
-                        error: string;
-                        /** Format: date-time */
-                        timestamp: string;
                     };
                 };
             };
@@ -1698,11 +2507,11 @@ export interface operations {
                      *     }
                      */
                     "application/json": {
-                        /** @enum {boolean} */
+                        /** @constant */
                         success: false;
-                        error: string;
                         /** Format: date-time */
-                        timestamp: string;
+                        timestamp: unknown;
+                        error: string;
                     };
                 };
             };
@@ -1720,11 +2529,203 @@ export interface operations {
                      *     }
                      */
                     "application/json": {
-                        /** @enum {boolean} */
+                        /** @constant */
                         success: false;
-                        error: string;
                         /** Format: date-time */
-                        timestamp: string;
+                        timestamp: unknown;
+                        error: string;
+                    };
+                };
+            };
+        };
+    };
+    login: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                provider: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    [key: string]: string;
+                };
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @constant */
+                        success: true;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        data: components["schemas"]["LoginResponse"];
+                    };
+                };
+            };
+            /** @description Authentication Failed */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "errorCode": "Username or password is incorrect",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                    };
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "object {0} of type {1} not found",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                    };
+                };
+            };
+            /** @description Internal Server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "Internal Server Error",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                    };
+                };
+            };
+        };
+    };
+    me: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["UserResponse"];
+                    "application/json": {
+                        /** @constant */
+                        success: true;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                    };
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "Unauthorized",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                    };
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "Forbidden",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                    };
+                };
+            };
+            /** @description Internal Server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "Internal Server Error",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
                     };
                 };
             };
@@ -1746,11 +2747,55 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
-                        /** @enum {boolean} */
+                        /** @constant */
                         success: true;
                         /** Format: date-time */
-                        timestamp: string;
+                        timestamp: unknown;
                         data: string[];
+                    };
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "Unauthorized",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                    };
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "Forbidden",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
                     };
                 };
             };
@@ -1768,11 +2813,11 @@ export interface operations {
                      *     }
                      */
                     "application/json": {
-                        /** @enum {boolean} */
+                        /** @constant */
                         success: false;
-                        error: string;
                         /** Format: date-time */
-                        timestamp: string;
+                        timestamp: unknown;
+                        error: string;
                     };
                 };
             };
@@ -1796,11 +2841,55 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
-                        /** @enum {boolean} */
+                        /** @constant */
                         success: true;
                         /** Format: date-time */
-                        timestamp: string;
+                        timestamp: unknown;
                         data: string[];
+                    };
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "Unauthorized",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                    };
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "Forbidden",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
                     };
                 };
             };
@@ -1818,11 +2907,11 @@ export interface operations {
                      *     }
                      */
                     "application/json": {
-                        /** @enum {boolean} */
+                        /** @constant */
                         success: false;
-                        error: string;
                         /** Format: date-time */
-                        timestamp: string;
+                        timestamp: unknown;
+                        error: string;
                     };
                 };
             };
@@ -1840,11 +2929,11 @@ export interface operations {
                      *     }
                      */
                     "application/json": {
-                        /** @enum {boolean} */
+                        /** @constant */
                         success: false;
-                        error: string;
                         /** Format: date-time */
-                        timestamp: string;
+                        timestamp: unknown;
+                        error: string;
                     };
                 };
             };
@@ -1869,14 +2958,58 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
-                        /** @enum {boolean} */
+                        /** @constant */
                         success: true;
                         /** Format: date-time */
-                        timestamp: string;
+                        timestamp: unknown;
                         data: Record<string, never>;
                     };
                 };
             };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "Unauthorized",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                    };
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "Forbidden",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                    };
+                };
+            };
             /** @description Not Found */
             404: {
                 headers: {
@@ -1891,11 +3024,11 @@ export interface operations {
                      *     }
                      */
                     "application/json": {
-                        /** @enum {boolean} */
+                        /** @constant */
                         success: false;
-                        error: string;
                         /** Format: date-time */
-                        timestamp: string;
+                        timestamp: unknown;
+                        error: string;
                     };
                 };
             };
@@ -1913,17 +3046,17 @@ export interface operations {
                      *     }
                      */
                     "application/json": {
-                        /** @enum {boolean} */
+                        /** @constant */
                         success: false;
-                        error: string;
                         /** Format: date-time */
-                        timestamp: string;
+                        timestamp: unknown;
+                        error: string;
                     };
                 };
             };
         };
     };
-    getRecord: {
+    get: {
         parameters: {
             query?: never;
             header?: never;
@@ -1941,11 +3074,55 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
-                        /** @enum {boolean} */
+                        /** @constant */
                         success: true;
                         /** Format: date-time */
-                        timestamp: string;
-                        data: components["schemas"]["Record"];
+                        timestamp: unknown;
+                        data: components["schemas"]["RecordResponse"];
+                    };
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "Unauthorized",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                    };
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "Forbidden",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
                     };
                 };
             };
@@ -1963,11 +3140,11 @@ export interface operations {
                      *     }
                      */
                     "application/json": {
-                        /** @enum {boolean} */
+                        /** @constant */
                         success: false;
-                        error: string;
                         /** Format: date-time */
-                        timestamp: string;
+                        timestamp: unknown;
+                        error: string;
                     };
                 };
             };
@@ -1985,83 +3162,11 @@ export interface operations {
                      *     }
                      */
                     "application/json": {
-                        /** @enum {boolean} */
+                        /** @constant */
                         success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
                         error: string;
-                        /** Format: date-time */
-                        timestamp: string;
-                    };
-                };
-            };
-        };
-    };
-    getRevisions: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": {
-                        /** @enum {boolean} */
-                        success: true;
-                        /** Format: date-time */
-                        timestamp: string;
-                        data: number[];
-                    };
-                };
-            };
-            /** @description Not Found */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "success": false,
-                     *       "error": "object {0} of type {1} not found",
-                     *       "timestamp": "2026-06-29T23:05:00Z"
-                     *     }
-                     */
-                    "application/json": {
-                        /** @enum {boolean} */
-                        success: false;
-                        error: string;
-                        /** Format: date-time */
-                        timestamp: string;
-                    };
-                };
-            };
-            /** @description Internal Server error */
-            500: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "success": false,
-                     *       "error": "Internal Server Error",
-                     *       "timestamp": "2026-06-29T23:05:00Z"
-                     *     }
-                     */
-                    "application/json": {
-                        /** @enum {boolean} */
-                        success: false;
-                        error: string;
-                        /** Format: date-time */
-                        timestamp: string;
                     };
                 };
             };
@@ -2083,11 +3188,55 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
-                        /** @enum {boolean} */
+                        /** @constant */
                         success: true;
                         /** Format: date-time */
-                        timestamp: string;
+                        timestamp: unknown;
                         data: string[];
+                    };
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "Unauthorized",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                    };
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "Forbidden",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
                     };
                 };
             };
@@ -2105,11 +3254,11 @@ export interface operations {
                      *     }
                      */
                     "application/json": {
-                        /** @enum {boolean} */
+                        /** @constant */
                         success: false;
-                        error: string;
                         /** Format: date-time */
-                        timestamp: string;
+                        timestamp: unknown;
+                        error: string;
                     };
                 };
             };
@@ -2133,11 +3282,55 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
-                        /** @enum {boolean} */
+                        /** @constant */
                         success: true;
                         /** Format: date-time */
-                        timestamp: string;
+                        timestamp: unknown;
                         data: components["schemas"]["RecordType"];
+                    };
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "Unauthorized",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                    };
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "Forbidden",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
                     };
                 };
             };
@@ -2155,11 +3348,11 @@ export interface operations {
                      *     }
                      */
                     "application/json": {
-                        /** @enum {boolean} */
+                        /** @constant */
                         success: false;
-                        error: string;
                         /** Format: date-time */
-                        timestamp: string;
+                        timestamp: unknown;
+                        error: string;
                     };
                 };
             };
@@ -2177,11 +3370,11 @@ export interface operations {
                      *     }
                      */
                     "application/json": {
-                        /** @enum {boolean} */
+                        /** @constant */
                         success: false;
-                        error: string;
                         /** Format: date-time */
-                        timestamp: string;
+                        timestamp: unknown;
+                        error: string;
                     };
                 };
             };
@@ -2203,11 +3396,55 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
-                        /** @enum {boolean} */
+                        /** @constant */
                         success: true;
                         /** Format: date-time */
-                        timestamp: string;
-                        data: string[];
+                        timestamp: unknown;
+                        data: components["schemas"]["SimpleListTypeResponse"][];
+                    };
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "Unauthorized",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                    };
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "Forbidden",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
                     };
                 };
             };
@@ -2225,11 +3462,11 @@ export interface operations {
                      *     }
                      */
                     "application/json": {
-                        /** @enum {boolean} */
+                        /** @constant */
                         success: false;
-                        error: string;
                         /** Format: date-time */
-                        timestamp: string;
+                        timestamp: unknown;
+                        error: string;
                     };
                 };
             };
@@ -2253,11 +3490,55 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
-                        /** @enum {boolean} */
+                        /** @constant */
                         success: true;
                         /** Format: date-time */
-                        timestamp: string;
-                        data: components["schemas"]["ListType"];
+                        timestamp: unknown;
+                        data: components["schemas"]["ListTypeResponse"];
+                    };
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "Unauthorized",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                    };
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "Forbidden",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
                     };
                 };
             };
@@ -2275,11 +3556,11 @@ export interface operations {
                      *     }
                      */
                     "application/json": {
-                        /** @enum {boolean} */
+                        /** @constant */
                         success: false;
-                        error: string;
                         /** Format: date-time */
-                        timestamp: string;
+                        timestamp: unknown;
+                        error: string;
                     };
                 };
             };
@@ -2297,11 +3578,11 @@ export interface operations {
                      *     }
                      */
                     "application/json": {
-                        /** @enum {boolean} */
+                        /** @constant */
                         success: false;
-                        error: string;
                         /** Format: date-time */
-                        timestamp: string;
+                        timestamp: unknown;
+                        error: string;
                     };
                 };
             };
@@ -2326,11 +3607,55 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
-                        /** @enum {boolean} */
+                        /** @constant */
                         success: true;
                         /** Format: date-time */
-                        timestamp: string;
-                        data: components["schemas"]["ListElement"];
+                        timestamp: unknown;
+                        data: components["schemas"]["ListElementResponse"];
+                    };
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "Unauthorized",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                    };
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "Forbidden",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
                     };
                 };
             };
@@ -2348,11 +3673,11 @@ export interface operations {
                      *     }
                      */
                     "application/json": {
-                        /** @enum {boolean} */
+                        /** @constant */
                         success: false;
-                        error: string;
                         /** Format: date-time */
-                        timestamp: string;
+                        timestamp: unknown;
+                        error: string;
                     };
                 };
             };
@@ -2370,11 +3695,11 @@ export interface operations {
                      *     }
                      */
                     "application/json": {
-                        /** @enum {boolean} */
+                        /** @constant */
                         success: false;
-                        error: string;
                         /** Format: date-time */
-                        timestamp: string;
+                        timestamp: unknown;
+                        error: string;
                     };
                 };
             };
@@ -2400,11 +3725,55 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
-                        /** @enum {boolean} */
+                        /** @constant */
                         success: true;
                         /** Format: date-time */
-                        timestamp: string;
-                        data: components["schemas"]["ListElement"][];
+                        timestamp: unknown;
+                        data: components["schemas"]["ListElementResponse"][];
+                    };
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "Unauthorized",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                    };
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "Forbidden",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
                     };
                 };
             };
@@ -2422,11 +3791,11 @@ export interface operations {
                      *     }
                      */
                     "application/json": {
-                        /** @enum {boolean} */
+                        /** @constant */
                         success: false;
-                        error: string;
                         /** Format: date-time */
-                        timestamp: string;
+                        timestamp: unknown;
+                        error: string;
                     };
                 };
             };
@@ -2444,59 +3813,11 @@ export interface operations {
                      *     }
                      */
                     "application/json": {
-                        /** @enum {boolean} */
+                        /** @constant */
                         success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
                         error: string;
-                        /** Format: date-time */
-                        timestamp: string;
-                    };
-                };
-            };
-        };
-    };
-    getEnvironment: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": {
-                        /** @enum {boolean} */
-                        success: true;
-                        /** Format: date-time */
-                        timestamp: string;
-                        data: components["schemas"]["EnvironmentResponse"];
-                    };
-                };
-            };
-            /** @description Internal Server error */
-            500: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "success": false,
-                     *       "error": "Internal Server Error",
-                     *       "timestamp": "2026-06-29T23:05:00Z"
-                     *     }
-                     */
-                    "application/json": {
-                        /** @enum {boolean} */
-                        success: false;
-                        error: string;
-                        /** Format: date-time */
-                        timestamp: string;
                     };
                 };
             };
@@ -2518,13 +3839,57 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
-                        /** @enum {boolean} */
+                        /** @constant */
                         success: true;
                         /** Format: date-time */
-                        timestamp: string;
+                        timestamp: unknown;
                         data: {
                             [key: string]: unknown;
                         };
+                    };
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "Unauthorized",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                    };
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "Forbidden",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
                     };
                 };
             };
@@ -2542,11 +3907,11 @@ export interface operations {
                      *     }
                      */
                     "application/json": {
-                        /** @enum {boolean} */
+                        /** @constant */
                         success: false;
-                        error: string;
                         /** Format: date-time */
-                        timestamp: string;
+                        timestamp: unknown;
+                        error: string;
                     };
                 };
             };
@@ -2568,13 +3933,57 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
-                        /** @enum {boolean} */
+                        /** @constant */
                         success: true;
                         /** Format: date-time */
-                        timestamp: string;
+                        timestamp: unknown;
                         data: {
                             [key: string]: unknown;
                         };
+                    };
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "Unauthorized",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                    };
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "Forbidden",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
                     };
                 };
             };
@@ -2592,11 +4001,11 @@ export interface operations {
                      *     }
                      */
                     "application/json": {
-                        /** @enum {boolean} */
+                        /** @constant */
                         success: false;
-                        error: string;
                         /** Format: date-time */
-                        timestamp: string;
+                        timestamp: unknown;
+                        error: string;
                     };
                 };
             };
@@ -2620,11 +4029,55 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
-                        /** @enum {boolean} */
+                        /** @constant */
                         success: true;
                         /** Format: date-time */
-                        timestamp: string;
+                        timestamp: unknown;
                         data: Record<string, never>;
+                    };
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "Unauthorized",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                    };
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "Forbidden",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
                     };
                 };
             };
@@ -2642,11 +4095,11 @@ export interface operations {
                      *     }
                      */
                     "application/json": {
-                        /** @enum {boolean} */
+                        /** @constant */
                         success: false;
-                        error: string;
                         /** Format: date-time */
-                        timestamp: string;
+                        timestamp: unknown;
+                        error: string;
                     };
                 };
             };
@@ -2668,14 +4121,7 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content: {
-                    "application/json": {
-                        /** @enum {boolean} */
-                        success: true;
-                        /** Format: date-time */
-                        timestamp: string;
-                    };
-                };
+                content?: never;
             };
             /** @description Not Found */
             404: {
@@ -2690,12 +4136,48 @@ export interface operations {
                      *       "timestamp": "2026-06-29T23:05:00Z"
                      *     }
                      */
+                    "application/json": components["schemas"]["ApiResponseV1"];
+                };
+            };
+            /** @description Internal Server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "Internal Server Error",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ApiResponseV1"];
+                };
+            };
+        };
+    };
+    providers_listAll: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
                     "application/json": {
-                        /** @enum {boolean} */
-                        success: false;
-                        error: string;
+                        /** @constant */
+                        success: true;
                         /** Format: date-time */
-                        timestamp: string;
+                        timestamp: unknown;
+                        data: components["schemas"]["AuthProviderListResponse"][];
                     };
                 };
             };
@@ -2713,11 +4195,11 @@ export interface operations {
                      *     }
                      */
                     "application/json": {
-                        /** @enum {boolean} */
+                        /** @constant */
                         success: false;
-                        error: string;
                         /** Format: date-time */
-                        timestamp: string;
+                        timestamp: unknown;
+                        error: string;
                     };
                 };
             };
@@ -2741,11 +4223,11 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
-                        /** @enum {boolean} */
+                        /** @constant */
                         success: true;
                         /** Format: date-time */
-                        timestamp: string;
-                        data: components["schemas"]["AuthenticationResponse"];
+                        timestamp: unknown;
+                        data: components["schemas"]["LoginResponse"];
                     };
                 };
             };
@@ -2763,11 +4245,11 @@ export interface operations {
                      *     }
                      */
                     "application/json": {
-                        /** @enum {boolean} */
+                        /** @constant */
                         success: false;
-                        error: string;
                         /** Format: date-time */
-                        timestamp: string;
+                        timestamp: unknown;
+                        error: string;
                     };
                 };
             };
@@ -2785,11 +4267,11 @@ export interface operations {
                      *     }
                      */
                     "application/json": {
-                        /** @enum {boolean} */
+                        /** @constant */
                         success: false;
-                        error: string;
                         /** Format: date-time */
-                        timestamp: string;
+                        timestamp: unknown;
+                        error: string;
                     };
                 };
             };
@@ -2807,11 +4289,11 @@ export interface operations {
                      *     }
                      */
                     "application/json": {
-                        /** @enum {boolean} */
+                        /** @constant */
                         success: false;
-                        error: string;
                         /** Format: date-time */
-                        timestamp: string;
+                        timestamp: unknown;
+                        error: string;
                     };
                 };
             };

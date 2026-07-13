@@ -2,29 +2,30 @@ package com.openrecordsmanager.api.errors;
 
 import com.openrecordsmanager.api.ApiResponseV1;
 import com.openrecordsmanager.api.builtin.BuiltinConfigs;
-import com.openrecordsmanager.config.DynamicConfigService;
+import com.openrecordsmanager.config.ConfigService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+@SuppressWarnings("unused")
 @RestControllerAdvice
 public class ExceptionController {
     private static final Logger LOGGER = LoggerFactory.getLogger(ExceptionController.class);
 
-    private final DynamicConfigService config;
+    private final ConfigService config;
 
-    public ExceptionController(DynamicConfigService config) {
+    public ExceptionController(ConfigService config) {
         this.config = config;
     }
 
     @ExceptionHandler(Exception.class)
-    @SuppressWarnings("unused")
     public ResponseEntity<ApiResponseV1<Void>> handleGeneralException(Exception ex) {
         HttpStatusCode httpStatusCode = ex instanceof ApiError apiError ? apiError.httpStatusCode : HttpStatus.INTERNAL_SERVER_ERROR;
         String message = config.getOrThrow(BuiltinConfigs.DEBUG_DETAILED_ERRORS) ? ex.getMessage() :
@@ -40,12 +41,25 @@ public class ExceptionController {
     }
 
     @ExceptionHandler(AuthenticationException.class)
-    @SuppressWarnings("unused")
-    public ResponseEntity<ApiResponseV1<Void>> handleAuthException(AuthenticationException ex) {
+    public ResponseEntity<ApiResponseV1<Void>> handleAuth(AuthenticationException ex) {
         String message = config.getOrThrow(BuiltinConfigs.DEBUG_DETAILED_ERRORS) ? ex.getMessage() : "Authentication Failed";
 
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(ApiResponseV1.error(message));
+    }
+
+    @ExceptionHandler(ResourceInUseException.class)
+    public ResponseEntity<ApiResponseV1<Void>> inUse(ResourceNotFoundException ex) {
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(ApiResponseV1.error(ex.getMessage()));
+    }
+
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<ApiResponseV1<Void>> accessDenied(AccessDeniedException ex) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(ApiResponseV1.error(ex.getMessage()));
     }
 }

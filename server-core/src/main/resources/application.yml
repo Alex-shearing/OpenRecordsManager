@@ -1,7 +1,7 @@
 #####################
 # ORM Configuration #
 #####################
-# This is the local configuration file for ORM.
+# This is the local configuration stream for ORM.
 # It has the second-highest precedence when loading configuration options.
 # The order of precedence is: Environment Variables > Configuration File > Database.
 

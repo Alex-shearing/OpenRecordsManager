@@ -1,13 +1,15 @@
-package com.openrecordsmanager.plugin;
+package com.openrecordsmanager.plugin.template;
 
 import com.openrecordsmanager.api.Component;
 import com.openrecordsmanager.api.ResourceIdentifier;
 import com.openrecordsmanager.api.errors.ApiError;
-import com.openrecordsmanager.api.swagger.DefaultErrorResponses;
+import com.openrecordsmanager.api.swagger.DefaultApiResponses;
 import com.openrecordsmanager.api.swagger.NotFoundApiResponse;
 import com.openrecordsmanager.api.types.ComponentType;
 import com.openrecordsmanager.api.types.ComponentTypes;
 import com.openrecordsmanager.database.DataRepository;
+import com.openrecordsmanager.plugin.ComponentCatalog;
+import com.openrecordsmanager.plugin.ExpressionsService;
 import com.openrecordsmanager.plugin.types.ComponentBinder;
 import com.openrecordsmanager.plugin.types.ComponentBinderRegistry;
 import io.swagger.v3.oas.annotations.Operation;
@@ -22,7 +24,7 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/templates")
-@DefaultErrorResponses
+@DefaultApiResponses
 @PreAuthorize("isAuthenticated()")
 public class TemplateController {
 

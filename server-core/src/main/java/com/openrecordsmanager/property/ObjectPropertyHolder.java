@@ -1,6 +1,7 @@
 package com.openrecordsmanager.property;
 
 import com.openrecordsmanager.api.ResourceIdentifier;
+import org.jspecify.annotations.Nullable;
 
 import java.util.Map;
 import java.util.Objects;
@@ -15,12 +16,12 @@ public interface ObjectPropertyHolder<T extends ObjectPropertyHolder.ObjectPrope
         return this.getProperties().entrySet().stream().map(el -> Map.entry(el.getKey().id.toString(), el.getValue().getValue())).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 
-    default Object getProperty(ResourceIdentifier id) {
+    default @Nullable Object getProperty(ResourceIdentifier id) {
         Optional<ObjectProperty<?>> property = this.getProperties().keySet().stream().filter(prop -> Objects.equals(prop.id, id)).findFirst();
         return property.map(this::getProperty).orElse(null);
     }
 
-    default <K> K getProperty(ObjectProperty<K> property) {
+    default <K> @Nullable K getProperty(ObjectProperty<K> property) {
         return property.type.cast(this.getProperties().get(property).getValue());
     }
 

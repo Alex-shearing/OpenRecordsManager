@@ -26,7 +26,7 @@ class RecordTest {
 
     @BeforeEach
     void setUp() {
-        this.testUser = new User(UUID.randomUUID());
+        this.testUser = new User(UUID.randomUUID(), "test_user");
 
         // Number property
         ObjectProperty<Long> numberProperty = new ObjectProperty<>(
@@ -99,6 +99,5 @@ class RecordTest {
 
         Assertions.assertNotEquals(SecurityFilterUsage.SHOW_ALL, record.securityFilter(this.expressionsService, this.testUser, record), "User should not have access");
         Assertions.assertNotEquals(SecurityFilterUsage.HIDE_FILES, record.securityFilter(this.expressionsService, this.testUser, record), "User should not have access");
-        Assertions.assertNotEquals(SecurityFilterUsage.HIDE_METADATA_AND_FILES, record.securityFilter(this.expressionsService, this.testUser, record), "User should not have access");
     }
 }

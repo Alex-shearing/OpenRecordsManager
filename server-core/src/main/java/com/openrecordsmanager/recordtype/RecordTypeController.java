@@ -2,7 +2,7 @@ package com.openrecordsmanager.recordtype;
 
 import com.openrecordsmanager.api.ResourceIdentifier;
 import com.openrecordsmanager.api.errors.ApiError;
-import com.openrecordsmanager.api.swagger.DefaultErrorResponses;
+import com.openrecordsmanager.api.swagger.DefaultApiResponses;
 import com.openrecordsmanager.api.swagger.NotFoundApiResponse;
 import com.openrecordsmanager.api.types.ComponentTypes;
 import com.openrecordsmanager.database.DataRepository;
@@ -20,7 +20,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/record_types")
-@DefaultErrorResponses
+@DefaultApiResponses
 @PreAuthorize("isAuthenticated()")
 public class RecordTypeController {
 

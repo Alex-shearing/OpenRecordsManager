@@ -6,21 +6,21 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 
 @Embeddable
-public class FileStoreMiddlewareUsage {
+public class MiddlewareUsage {
 
-    @ManyToOne(targetEntity = FileStoreMiddleware.class, optional = false)
+    @ManyToOne(targetEntity = Middleware.class, optional = false)
     @JoinColumn(name = "middleware_id")
-    public FileStoreMiddleware<?> middleware;
+    public Middleware<?> middleware;
 
     @Column(name = "application_order")
     public int applicationOrder;
 
-    public FileStoreMiddlewareUsage(FileStoreMiddleware<?> middleware, int order) {
+    public MiddlewareUsage(Middleware<?> middleware, int order) {
         this.middleware = middleware;
         this.applicationOrder = order;
     }
 
     @Deprecated
-    protected FileStoreMiddlewareUsage() {
+    protected MiddlewareUsage() {
     }
 }

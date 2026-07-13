@@ -11,11 +11,6 @@ public enum SecurityFilterUsage {
      */
     HIDE_RECORD,
     /**
-     * Allows the user to see that a record exists, but does not show them any record metadata or
-     * view any attached files for a user who does not pass the security filter.
-     */
-    HIDE_METADATA_AND_FILES,
-    /**
      * Hides attached files for a user who does not pass the security filter.
      */
     HIDE_FILES,
@@ -23,6 +18,14 @@ public enum SecurityFilterUsage {
      * Does not hide any aspect of the record for a user who does not pass the security filter.
      */
     SHOW_ALL;
+
+    public boolean canSeeMetadata() {
+        return this != HIDE_RECORD;
+    }
+
+    public boolean canSeeFiles() {
+        return this != HIDE_RECORD && this != HIDE_FILES;
+    }
 
     public static class Deserializer extends StdDeserializer<SecurityFilterUsage> {
 

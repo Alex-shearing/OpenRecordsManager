@@ -28,21 +28,21 @@ import java.util.function.Supplier;
 @EnableMethodSecurity
 public class SecurityConfiguration {
     private final DataRepository repository;
-    private final AuthServices authServices;
+    private final AuthService authService;
 
     public SecurityConfiguration(
             DataRepository repository,
-            AuthServices authServices
+            AuthService authService
     ) {
         this.repository = repository;
-        this.authServices = authServices;
+        this.authService = authService;
     }
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
 
-        configuration.setAllowedOrigins(List.of("http://localhost:8080", "null"));
+        configuration.setAllowedOrigins(List.of("http://localhost:5173"));
         configuration.setAllowedMethods(List.of("GET", "POST"));
         configuration.setAllowedHeaders(List.of("Authorization", "Content-Type"));
         configuration.setAllowCredentials(true);
@@ -55,7 +55,7 @@ public class SecurityConfiguration {
     }
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) {
         http
                 .securityMatcher("/api/**")
                 .cors(cors -> cors.configurationSource(this.corsConfigurationSource()))
@@ -63,12 +63,9 @@ public class SecurityConfiguration {
                         // Only enable CSRF protection when using cookie authentication, not when using the header
                         .ignoringRequestMatchers(request -> {
                             String authHeader = request.getHeader("Authorization");
-                            if (authHeader != null && authHeader.startsWith("Bearer ")) {
-                                return true;
-                            }
-
-                            return request.getRequestURI().startsWith("/api/auth/");
+                            return authHeader != null && authHeader.startsWith("Bearer ");
                         })
+                        .ignoringRequestMatchers("/api/auth/**", "/v3/api-docs/**")
                         .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
                         .csrfTokenRequestHandler(new CsrfTokenRequestAttributeHandler() {
                             @Override
@@ -78,20 +75,19 @@ public class SecurityConfiguration {
                             }
                         })
                 )
+                .sessionManagement(session ->
+                        session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
+                )
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/**", "/v3/api-docs/**").permitAll()
                         .anyRequest().authenticated()
                 )
-                .sessionManagement(session ->
-                        session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
-                )
-                .addFilterBefore(new DatabaseTokenAuthenticationFilter(this.repository.authTokenRepo, this.authServices), UsernamePasswordAuthenticationFilter.class)
-                .authenticationProvider(this.authServices.authenticationProvider())
+                .addFilterBefore(new DatabaseTokenAuthenticationFilter(this.repository.authTokenRepo, this.authService), UsernamePasswordAuthenticationFilter.class)
+                .authenticationProvider(this.authService.authenticationProvider())
                 .exceptionHandling(exception -> exception
                         // Force 401 Unauthorized for unauthenticated requests
                         .authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED))
                 );
-        ;
 
         return http.build();
     }

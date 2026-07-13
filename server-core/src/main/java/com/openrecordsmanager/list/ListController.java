@@ -1,73 +1,55 @@
 package com.openrecordsmanager.list;
 
 import com.openrecordsmanager.api.ResourceIdentifier;
-import com.openrecordsmanager.api.errors.ApiError;
-import com.openrecordsmanager.api.swagger.DefaultErrorResponses;
+import com.openrecordsmanager.api.swagger.DefaultApiResponses;
 import com.openrecordsmanager.api.swagger.NotFoundApiResponse;
-import com.openrecordsmanager.api.types.ComponentTypes;
-import com.openrecordsmanager.database.DataRepository;
+import com.openrecordsmanager.list.dto.ListElementResponse;
+import com.openrecordsmanager.list.dto.ListTypeResponse;
+import com.openrecordsmanager.list.dto.SimpleListTypeResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Objects;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/lists")
-@DefaultErrorResponses
+@DefaultApiResponses
 @PreAuthorize("isAuthenticated()")
 public class ListController {
 
-    private final DataRepository repository;
+    private final ListService service;
 
-    public ListController(DataRepository repository) {
-        this.repository = repository;
+    public ListController(ListService service) {
+        this.service = service;
     }
 
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Get all list type identifiers")
-    @Transactional(readOnly = true)
-    public Set<ResourceIdentifier> getLists() {
-        return this.repository.listTypeRepo.findAll().stream()
-                .map(listType -> listType.id).collect(Collectors.toSet());
+    public Set<SimpleListTypeResponse> getLists() {
+        return this.service.getAll();
     }
 
     @GetMapping(value = "/{list}", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Get list details")
     @NotFoundApiResponse
-    @Transactional(readOnly = true)
-    public ListType getList(@PathVariable("list") ResourceIdentifier listType) {
-        return this.repository.listTypeRepo.findById(listType)
-                .orElseThrow(() -> ApiError.notFound(ComponentTypes.LIST, listType));
+    public ListTypeResponse getList(@PathVariable("list") ResourceIdentifier listType) {
+        return this.service.get(listType);
     }
 
     @GetMapping(value = "/{list}/{element}", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Get list element details")
     @NotFoundApiResponse
-    @Transactional(readOnly = true)
-    public ListElement getListElement(@PathVariable("list") ResourceIdentifier listType, @PathVariable("element") ResourceIdentifier listElement) {
-        ListType type = this.repository.listTypeRepo.findById(listType)
-                .orElseThrow(() -> ApiError.notFound(ComponentTypes.LIST, listType));
-
-        return type.children.stream()
-                .filter(listElement1 -> Objects.equals(listElement1.id, listElement))
-                .findFirst()
-                .orElseThrow(() -> ApiError.notFound(ComponentTypes.LIST_ELEMENT, listElement));
+    public ListElementResponse getListElement(@PathVariable("list") ResourceIdentifier list, @PathVariable("element") ResourceIdentifier element) {
+        return this.service.getElement(element, element);
     }
 
     @GetMapping(value = "/{list}/search", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Search for list elements in a list")
     @NotFoundApiResponse
-    @Transactional(readOnly = true)
-    public Set<ListElement> searchListElement(@PathVariable("list") ResourceIdentifier listType, @RequestParam("value") String value) {
-        ListType type = this.repository.listTypeRepo.findById(listType)
-                .orElseThrow(() -> ApiError.notFound(ComponentTypes.LIST, listType));
-
-        return this.repository.listElementRepo.searchNameAndAlias(type, value);
+    public Set<ListElementResponse> searchListElement(@PathVariable("list") ResourceIdentifier list, @RequestParam("value") String value) {
+        return this.service.searchElement(list, value);
     }
 
 }

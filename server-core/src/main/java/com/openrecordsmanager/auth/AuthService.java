@@ -2,11 +2,12 @@ package com.openrecordsmanager.auth;
 
 import com.openrecordsmanager.auth.dto.LoginResponse;
 import com.openrecordsmanager.auth.entity.AuthToken;
-import com.openrecordsmanager.config.DynamicConfigService;
+import com.openrecordsmanager.config.ConfigService;
 import com.openrecordsmanager.database.DataRepository;
 import com.openrecordsmanager.plugin.ComponentCatalog;
 import com.openrecordsmanager.user.User;
 import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -26,21 +27,20 @@ import java.time.LocalDateTime;
 import java.util.Base64;
 
 @Service
-public class AuthServices {
+public class AuthService {
     private static final SecureRandom RANDOM = new SecureRandom();
     private static final Base64.Encoder ENCODER = Base64.getUrlEncoder().withoutPadding();
 
     private final DataRepository repository;
     private final ComponentCatalog catalog;
-    private final DynamicConfigService config;
+    private final ConfigService config;
     private final String cookieName;
     private final long tokenDuration;
 
-
-    public AuthServices(
+    public AuthService(
             DataRepository repository,
             ComponentCatalog catalog,
-            DynamicConfigService config,
+            ConfigService config,
             @Value("${app.security.cookie-name}") String cookieName,
             @Value("${app.security.expiration-time}") long tokenDuration
     ) {
@@ -62,8 +62,10 @@ public class AuthServices {
         return new PluginAuthenticationProvider(this.repository, this.catalog, this.config);
     }
 
-    public LoginResponse login(PluginAuthenticationProvider.AbstractPluginToken token, HttpServletResponse response)
-            throws AuthenticationException {
+    public LoginResponse login(
+            PluginAuthenticationProvider.AbstractPluginToken token,
+            HttpServletRequest request,
+            HttpServletResponse response) throws AuthenticationException {
         Authentication authenticatedUser = this.authenticationProvider().authenticate(token);
         if (authenticatedUser == null || !authenticatedUser.isAuthenticated() || authenticatedUser.getDetails() == null) {
             throw new BadCredentialsException("Username or password is incorrect");
@@ -71,14 +73,16 @@ public class AuthServices {
 
         AuthToken persistedToken = this.generateToken((User) authenticatedUser.getDetails());
 
-        // Add the token as a cookie
-        Cookie cookie = new Cookie(this.getCookieName(), persistedToken.getToken());
-        cookie.setMaxAge((int) this.tokenDuration);
-        cookie.setHttpOnly(true);
-        cookie.setSecure(true);
-        cookie.setPath("/");
-        cookie.setAttribute("SameSite", "None");
-        response.addCookie(cookie);
+        // Add the token as a cookie if the request has come from the web client
+        if ("Web-Client".equals(request.getHeader("X-Client-Platform"))) {
+            Cookie cookie = new Cookie(this.getCookieName(), persistedToken.getToken());
+            cookie.setMaxAge((int) this.tokenDuration);
+            cookie.setHttpOnly(true);
+            cookie.setSecure(true);
+            cookie.setPath("/");
+            cookie.setAttribute("SameSite", "None");
+            response.addCookie(cookie);
+        }
 
         return new LoginResponse(persistedToken.getToken(), this.tokenDuration);
     }

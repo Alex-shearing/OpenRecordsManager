@@ -1,6 +1,5 @@
 package com.openrecordsmanager.api;
 
-import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 import org.springframework.core.MethodParameter;
 import org.springframework.core.io.Resource;
@@ -13,7 +12,6 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseBodyAdvice;
 
 @RestControllerAdvice
-@NullMarked
 public class ResponseWrapper implements ResponseBodyAdvice<Object> {
 
     @Override

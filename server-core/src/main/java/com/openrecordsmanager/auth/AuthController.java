@@ -36,12 +36,12 @@ public class AuthController {
 
     private final ComponentCatalog catalog;
     private final DataRepository repository;
-    private final AuthServices authServices;
+    private final AuthService authService;
 
-    public AuthController(ComponentCatalog catalog, DataRepository repository, AuthServices authServices) {
+    public AuthController(ComponentCatalog catalog, DataRepository repository, AuthService authService) {
         this.catalog = catalog;
         this.repository = repository;
-        this.authServices = authServices;
+        this.authService = authService;
     }
 
     @GetMapping(value = "/providers", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -78,10 +78,11 @@ public class AuthController {
     public LoginResponse login(
             @PathVariable("provider") UUID provider,
             @RequestBody Map<String, String> inputs,
+            HttpServletRequest request,
             HttpServletResponse response
     ) {
         PluginAuthenticationProvider.InputToken auth = new PluginAuthenticationProvider.InputToken(provider, inputs);
-        return this.authServices.login(auth, response);
+        return this.authService.login(auth, request, response);
     }
 
     @PostMapping(value = "/signup", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -130,11 +131,11 @@ public class AuthController {
             )
     )
     public LoginResponse callback(
-            HttpServletRequest request,
             @PathVariable("auth_provider") UUID provider,
+            HttpServletRequest request,
             HttpServletResponse response
     ) {
         PluginAuthenticationProvider.AbstractPluginToken auth = new PluginAuthenticationProvider.RedirectToken(provider, URI.create(request.getRequestURI()));
-        return this.authServices.login(auth, response);
+        return this.authService.login(auth, request, response);
     }
 }

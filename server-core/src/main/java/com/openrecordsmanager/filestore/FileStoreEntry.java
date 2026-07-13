@@ -55,11 +55,4 @@ public class FileStoreEntry {
             throw new RuntimeException(e);
         }
     }
-
-    public String getFileName(String name) {
-        if (this.extension != null) {
-            name += "." + this.extension;
-        }
-        return name;
-    }
 }

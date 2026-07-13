@@ -3,10 +3,8 @@ package com.openrecordsmanager.plugin;
 import com.google.common.collect.ImmutableList;
 import com.google.common.hash.Hashing;
 import com.openrecordsmanager.api.Plugin;
-import com.openrecordsmanager.api.builtin.BuiltinConfigs;
 import com.openrecordsmanager.api.builtin.BuiltinPlugin;
 import com.openrecordsmanager.api.errors.ApiError;
-import com.openrecordsmanager.config.DynamicConfigService;
 import com.openrecordsmanager.filestore.FileStore;
 import com.openrecordsmanager.filestore.FileStoreRepository;
 import jakarta.annotation.PreDestroy;
@@ -14,6 +12,7 @@ import org.jspecify.annotations.Nullable;
 import org.semver4j.Semver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
@@ -43,11 +42,11 @@ public class PluginManager {
     private @Nullable URLClassLoader classLoader;
 
     public PluginManager(
-            DynamicConfigService config,
+            @Value("${server.plugins.directory}") String pluginDirectory,
             PluginRepository pluginRepo,
             FileStoreRepository fileStoreRepo
     ) {
-        this.directory = Path.of(config.getOrThrow(BuiltinConfigs.PLUGINS_DIRECTORY));
+        this.directory = Path.of(pluginDirectory);
         this.pluginRepo = pluginRepo;
         this.fileStoreRepo = fileStoreRepo;
 
@@ -83,7 +82,7 @@ public class PluginManager {
             try {
                 urls[i] = jarList[i].file.toURI().toURL();
             } catch (MalformedURLException e) {
-                LOGGER.error("Failed to load URL for plugin file {}", jarList[i].file.getName());
+                LOGGER.error("Failed to load URL for plugin stream {}", jarList[i].file.getName());
             }
         }
 
@@ -150,7 +149,7 @@ public class PluginManager {
         LocalPluginInfo[] localPluginInfos = this.getLocalPlugins();
 
         FileStore<?> fileStore = this.fileStoreRepo.findById(defaultStore)
-                .orElseThrow(() -> ApiError.notFound("file store", defaultStore.toString()));
+                .orElseThrow(() -> ApiError.notFound("stream store", defaultStore.toString()));
 
         List<PersistedPlugin> missingPlugins = this.pluginRepo.findAll();
 
@@ -183,15 +182,15 @@ public class PluginManager {
             if (localPlugin.version.isLowerThan(persistedVersion)) {
                 LOGGER.info("There is a newer version of the {} plugin in the database ({} > {}), it will be downloaded", persistedPlugin.name, persistedPlugin.version, localPlugin.version);
 
-                // Remove the old file
+                // Remove the old stream
                 this.close();
                 try {
                     Files.deleteIfExists(localPlugin.file.toPath());
                 } catch (IOException e) {
-                    LOGGER.error("Failed to delete old plugin file {}", localPlugin.file.getPath(), e);
+                    LOGGER.error("Failed to delete old plugin stream {}", localPlugin.file.getPath(), e);
                 }
 
-                // Download new file
+                // Download new stream
                 this.downloadPlugin(catalog, fileStore, persistedPlugin);
 
                 // A new plugin was downloaded, so mark for reload
@@ -244,7 +243,7 @@ public class PluginManager {
             persistedPlugin.file = fileStore.newFile(catalog, new FileInputStream(localPlugin.file), "jar");
             LOGGER.info("{} has been uploaded from {}", localPlugin.name, localPlugin.file.getPath());
         } catch (IOException e) {
-            LOGGER.error("Failed to upload file {}", localPlugin.file.getPath(), e);
+            LOGGER.error("Failed to upload stream {}", localPlugin.file.getPath(), e);
         }
         this.pluginRepo.save(persistedPlugin);
     }
@@ -263,7 +262,7 @@ public class PluginManager {
 
             LOGGER.info("{} has been downloaded to {}", persistedPlugin.name, destFile);
         } catch (IOException e) {
-            LOGGER.error("Failed to download plugin {} to file {}", persistedPlugin.name, destFile, e);
+            LOGGER.error("Failed to download plugin {} to stream {}", persistedPlugin.name, destFile, e);
         }
     }
 

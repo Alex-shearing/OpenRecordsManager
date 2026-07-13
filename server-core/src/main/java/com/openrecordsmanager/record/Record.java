@@ -10,18 +10,15 @@ import com.openrecordsmanager.recordtype.RecordTypeProperty;
 import com.openrecordsmanager.user.User;
 import jakarta.persistence.*;
 import org.jspecify.annotations.Nullable;
-import tools.jackson.core.JacksonException;
-import tools.jackson.core.JsonGenerator;
-import tools.jackson.databind.SerializationContext;
-import tools.jackson.databind.ValueSerializer;
-import tools.jackson.databind.annotation.JsonSerialize;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Entity
 @Table(name = "record")
-@JsonSerialize(using = Record.Serializer.class)
 public class Record implements ObjectPropertyHolder<RecordPropertyValue<?>> {
     @Id
     public UUID id;
@@ -49,13 +46,9 @@ public class Record implements ObjectPropertyHolder<RecordPropertyValue<?>> {
         this.title = title;
         this.type = type;
         this.revisions = new ArrayList<>();
-        if (this.type != null) {
-            this.properties = type.properties.stream()
-                    .map(prop -> Map.entry(prop.property, newProperty(prop)))
-                    .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-        } else {
-            this.properties = new HashMap<>();
-        }
+        this.properties = type.properties.stream()
+                .map(prop -> Map.entry(prop.property, newProperty(prop)))
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 
     public RecordType getType() {
@@ -75,17 +68,17 @@ public class Record implements ObjectPropertyHolder<RecordPropertyValue<?>> {
     }
 
     private <T> RecordPropertyValue<T> newProperty(RecordTypeProperty<T> property) {
-        RecordPropertyValue<?> oldValue = this.properties != null ? this.properties.get(property.property) : null;
+        RecordPropertyValue<?> oldValue = this.properties.get(property.property);
 
         // Either get the previous value (if exists) or the property default
-        T newValue = oldValue != null && oldValue.value != null ? property.property.type.cast(oldValue.value) : property.getDefault();
+        T newValue = oldValue != null ? property.property.type.cast(oldValue.value) : property.getDefault();
 
         return this.createProperty(property.property, newValue);
     }
 
     @Override
     public boolean canSetProperty(ObjectProperty<?> property) {
-        return this.type == null || this.properties.containsKey(property);
+        return this.properties.containsKey(property);
     }
 
     @Override
@@ -115,28 +108,10 @@ public class Record implements ObjectPropertyHolder<RecordPropertyValue<?>> {
         return SecurityFilterUsage.SHOW_ALL;
     }
 
-    public void addRevision(double version, FileStoreEntry file) {
-        if (this.revisions.stream().anyMatch(rev -> rev.version == version)) {
+    public void addRevision(String version, FileStoreEntry file) {
+        if (this.revisions.stream().anyMatch(rev -> rev.version.equals(version))) {
             throw new IllegalArgumentException("Revision already exists");
         }
         this.revisions.add(new RecordRevision(version, this, file));
-    }
-
-    public static class Serializer extends ValueSerializer<Record> {
-        @Override
-        public void serialize(Record value, JsonGenerator gen, SerializationContext ctxt) throws JacksonException {
-            gen.writeStartObject();
-            gen.writeStringProperty("id", value.id.toString());
-            gen.writeStringProperty("title", value.title);
-            gen.writeStringProperty("type", value.type.id.toString());
-
-            gen.writeObjectPropertyStart("properties");
-            value.properties.forEach((objectProperty, val) ->
-                    gen.writePOJOProperty(objectProperty.id.toString(), val.getValue())
-            );
-            gen.writeEndObject();
-
-            gen.writeEndObject();
-        }
     }
 }

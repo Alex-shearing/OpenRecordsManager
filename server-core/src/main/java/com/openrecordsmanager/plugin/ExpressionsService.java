@@ -1,6 +1,7 @@
 package com.openrecordsmanager.plugin;
 
 import com.google.common.collect.ImmutableMap;
+import com.openrecordsmanager.api.ResourceIdentifier;
 import com.openrecordsmanager.api.template.ExpressionBuilder;
 import com.openrecordsmanager.list.ListElement;
 import com.openrecordsmanager.list.ListElementRepository;
@@ -178,7 +179,7 @@ public class ExpressionsService {
                 CelFunctionBinding.from(
                         "get_list",
                         String.class,
-                        (id) -> listElementRepo.findById(com.openrecordsmanager.api.ResourceIdentifier.valueOf(id)).orElse(null)
+                        (id) -> listElementRepo.findById(ResourceIdentifier.valueOf(id)).orElse(null)
                 )
         );
     }

@@ -1,133 +1,99 @@
 package com.openrecordsmanager.filestore;
 
-import com.openrecordsmanager.api.ResourceIdentifier;
-import com.openrecordsmanager.api.errors.ApiError;
-import com.openrecordsmanager.api.filestore.FileStoreMiddlewareType;
-import com.openrecordsmanager.api.filestore.FileStoreType;
-import com.openrecordsmanager.api.swagger.DefaultErrorResponses;
+import com.openrecordsmanager.api.swagger.ConflictApiResponse;
+import com.openrecordsmanager.api.swagger.DefaultApiResponses;
 import com.openrecordsmanager.api.swagger.NotFoundApiResponse;
-import com.openrecordsmanager.api.types.ComponentTypes;
-import com.openrecordsmanager.database.DataRepository;
-import com.openrecordsmanager.plugin.ComponentCatalog;
+import com.openrecordsmanager.filestore.dto.*;
 import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/file_stores")
-@DefaultErrorResponses
+@DefaultApiResponses
 @PreAuthorize("isAuthenticated()")
 public class FileStoreController {
 
-    private final DataRepository repository;
-    private final ComponentCatalog catalog;
+    private final FileStoreService storeService;
+    private final MiddlewareService middlewareService;
 
-    public FileStoreController(DataRepository repository, ComponentCatalog catalog) {
-        this.repository = repository;
-        this.catalog = catalog;
+    public FileStoreController(FileStoreService storeService, MiddlewareService middlewareService) {
+        this.storeService = storeService;
+        this.middlewareService = middlewareService;
     }
 
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(summary = "Get all file stores")
-    public UUID[] fileStore_retrieveAll() {
-        return this.repository.fileStoreRepo.findAllIds();
+    @Operation(summary = "Get all stream stores")
+    public Set<SimpleFileStoreResponse> fileStore_retrieveAll() {
+        return this.storeService.getAll();
     }
 
     @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(summary = "Get file store details")
+    @Operation(summary = "Get stream store details")
     @NotFoundApiResponse
-    public FileStore<?> fileStore_retrieveOne(@PathVariable("id") UUID id) {
-        return this.repository.fileStoreRepo.findById(id)
-                .orElseThrow(() -> ApiError.notFound("file store", id.toString()));
+    public FileStoreResponse fileStore_retrieveOne(@PathVariable("id") UUID id) {
+        return this.storeService.get(id);
     }
 
     @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(summary = "Create a new file store")
+    @Operation(summary = "Create a new stream store")
     @NotFoundApiResponse
-    public FileStore<?> fileStore_create(@RequestBody NewFileStore input) {
-        FileStoreType<?> type = this.catalog.getComponent(ComponentTypes.FILE_STORE_TYPE, input.type)
-                .orElseThrow(() -> ApiError.notFound(ComponentTypes.FILE_STORE_TYPE, input.type));
-
-        FileStore<?> store = new FileStore<>(this.catalog, type, input.properties);
-
-        for (UUID middleware : input.middlewares) {
-            FileStoreMiddleware<?> mw = this.repository.fileStoreMiddlewareRepo.findById(middleware)
-                    .orElseThrow(() -> ApiError.notFound("file store middleware", middleware.toString()));
-
-            store.addMiddleware(mw);
-        }
-
-        return this.repository.fileStoreRepo.saveAndFlush(store);
-    }
-
-    public record NewFileStore(ResourceIdentifier type, Map<String, ?> properties, List<UUID> middlewares) {
+    public SimpleFileStoreResponse fileStore_create(@RequestBody NewFileStore input) {
+        return this.storeService.create(input);
     }
 
     @PutMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(summary = "Modify file store config")
+    @Operation(summary = "Modify stream store config")
     @NotFoundApiResponse
-    public FileStore<?> fileStore_update(@PathVariable("id") UUID id, @RequestBody Map<String, ?> properties) {
-        FileStore<?> store = this.repository.fileStoreRepo.findById(id)
-                .orElseThrow(() -> ApiError.notFound("file store", id.toString()));
-
-        store.setProperties(properties);
-
-        return this.repository.fileStoreRepo.saveAndFlush(store);
+    public SimpleFileStoreResponse fileStore_update(@PathVariable("id") UUID id, @RequestBody Map<String, ?> properties) {
+        return this.storeService.update(id, properties);
     }
 
     @DeleteMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(summary = "Delete a file store")
+    @Operation(summary = "Delete a stream store")
     @NotFoundApiResponse
+    @ConflictApiResponse
     public void fileStore_delete(@PathVariable("id") UUID id) {
-        FileStore<?> store = this.repository.fileStoreRepo.findById(id)
-                .orElseThrow(() -> ApiError.notFound("file store", id.toString()));
-
-        this.repository.fileStoreRepo.delete(store);
+        this.storeService.delete(id);
     }
 
     @GetMapping(value = "/middlewares", produces = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(summary = "Get all file store middlewares")
-    public UUID[] middleware_retrieveAll() {
-        return this.repository.fileStoreMiddlewareRepo.findAllIds();
+    @Operation(summary = "Get all stream store middlewares")
+    public Set<SimpleMiddlewareResponse> middleware_retrieveAll() {
+        return this.middlewareService.getAll();
     }
 
     @GetMapping(value = "/middlewares/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(summary = "Get file store middleware details")
+    @Operation(summary = "Get stream store middleware details")
     @NotFoundApiResponse
-    public FileStoreMiddleware<?> middleware_retrieveOne(@PathVariable("id") UUID id) {
-        return this.repository.fileStoreMiddlewareRepo.findById(id)
-                .orElseThrow(() -> ApiError.notFound("file store middleware", id.toString()));
+    public MiddlewareResponse middleware_retrieveOne(@PathVariable("id") UUID id) {
+        return this.middlewareService.get(id);
     }
 
     @PostMapping(value = "/middlewares", produces = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(summary = "Create a new file store middleware")
+    @Operation(summary = "Create a new stream store middleware")
     @NotFoundApiResponse
-    public FileStoreMiddleware<?> middleware_create(@RequestBody NewFileStoreMiddleware input) {
-        FileStoreMiddlewareType<?> type = this.catalog.getComponent(ComponentTypes.FILE_STORE_MIDDLEWARE, input.type)
-                .orElseThrow(() -> ApiError.notFound(ComponentTypes.FILE_STORE_MIDDLEWARE, input.type));
-
-        FileStoreMiddleware<?> middleware = new FileStoreMiddleware<>(this.catalog, type, input.properties);
-
-        return this.repository.fileStoreMiddlewareRepo.saveAndFlush(middleware);
-    }
-
-    public record NewFileStoreMiddleware(ResourceIdentifier type, Map<String, ?> properties) {
+    public SimpleMiddlewareResponse middleware_create(@RequestBody NewFileStoreMiddleware input) {
+        return this.middlewareService.create(input);
     }
 
     @PutMapping(value = "/middlewares/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(summary = "Modify file store middleware config")
+    @Operation(summary = "Modify stream store middleware config")
     @NotFoundApiResponse
-    public FileStoreMiddleware<?> middleware_update(@PathVariable("id") UUID id, @RequestBody Map<String, ?> properties) {
-        FileStoreMiddleware<?> middleware = this.repository.fileStoreMiddlewareRepo.findById(id)
-                .orElseThrow(() -> ApiError.notFound("file store middleware", id.toString()));
+    public SimpleFileStoreResponse middleware_update(@PathVariable("id") UUID id, @RequestBody Map<String, ?> properties) {
+        return this.middlewareService.update(id, properties);
+    }
 
-        middleware.setProperties(properties);
-
-        return this.repository.fileStoreMiddlewareRepo.saveAndFlush(middleware);
+    @DeleteMapping(value = "/middlewares/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(summary = "Delete a stream store middleware")
+    @NotFoundApiResponse
+    @ConflictApiResponse
+    public void middleware_delete(@PathVariable("id") UUID id) {
+        this.middlewareService.delete(id);
     }
 }

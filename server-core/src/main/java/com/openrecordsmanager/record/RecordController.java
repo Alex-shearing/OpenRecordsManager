@@ -1,19 +1,13 @@
 package com.openrecordsmanager.record;
 
-import com.openrecordsmanager.api.ResourceIdentifier;
-import com.openrecordsmanager.api.builtin.BuiltinConfigs;
-import com.openrecordsmanager.api.errors.ApiError;
-import com.openrecordsmanager.api.swagger.DefaultErrorResponses;
+import com.openrecordsmanager.api.swagger.DefaultApiResponses;
 import com.openrecordsmanager.api.swagger.NotFoundApiResponse;
-import com.openrecordsmanager.api.types.ComponentTypes;
-import com.openrecordsmanager.config.DynamicConfigService;
-import com.openrecordsmanager.database.DataRepository;
-import com.openrecordsmanager.filestore.FileStore;
-import com.openrecordsmanager.plugin.ComponentCatalog;
-import com.openrecordsmanager.property.ObjectProperty;
-import com.openrecordsmanager.recordtype.RecordType;
+import com.openrecordsmanager.record.dto.NewRecord;
+import com.openrecordsmanager.record.dto.RecordResponse;
+import com.openrecordsmanager.record.dto.RecordRevisionResponse;
 import com.openrecordsmanager.user.User;
 import io.swagger.v3.oas.annotations.Operation;
+import jakarta.validation.constraints.Pattern;
 import org.jspecify.annotations.Nullable;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
@@ -23,86 +17,56 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Locale;
-import java.util.Map;
 import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/records")
-@DefaultErrorResponses
+@DefaultApiResponses
 @PreAuthorize("isAuthenticated()")
 public class RecordController {
 
-    private final DataRepository repository;
-    private final DynamicConfigService config;
-    private final ComponentCatalog catalog;
+    private final RecordService service;
 
-    public RecordController(DataRepository repository, DynamicConfigService config, ComponentCatalog catalog) {
-        this.repository = repository;
-        this.config = config;
-        this.catalog = catalog;
-    }
-
-    @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-    @NotFoundApiResponse
-    @Operation(summary = "Create a new record")
-    public Record newRecord(@RequestBody NewRecordContent input) {
-        RecordType type = this.repository.recordTypeRepo.findById(input.type())
-                .orElseThrow(() -> ApiError.notFound(ComponentTypes.RECORD_TYPE, input.type()));
-
-        Record record = new Record("tba", type);
-        input.properties.forEach((identifier, o) -> {
-            ObjectProperty<?> property = this.repository.objectPropertyRepo.findById(identifier)
-                    .orElseThrow(() -> ApiError.notFound(ComponentTypes.PROPERTY, identifier));
-
-            setProperty(record, property, o);
-        });
-
-        return this.repository.recordRepo.saveAndFlush(record);
+    public RecordController(RecordService service) {
+        this.service = service;
     }
 
     @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Get record details")
     @NotFoundApiResponse
-    @Transactional(readOnly = true)
-    public Record getRecord(
-            @PathVariable("id") UUID id,
-            @AuthenticationPrincipal User user
-    ) {
-        return this.repository.recordRepo.findById(id)
-                .orElseThrow(() -> ApiError.notFound("record", id.toString()));
+    public RecordResponse get(@AuthenticationPrincipal User user, @PathVariable("id") UUID id) {
+        return this.service.get(user, id);
+    }
+
+    @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(summary = "Create a new record")
+    @NotFoundApiResponse
+    public RecordResponse newRecord(@RequestBody NewRecord input) {
+        return this.service.create(input);
     }
 
     @PutMapping(
-            value = "/{id}/revisions/{version}",
+            value = "/{id}/{version}",
             consumes = MediaType.APPLICATION_OCTET_STREAM_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE
     )
     @Operation(summary = "Upload new record revision")
     @NotFoundApiResponse
-    public void newRevision(
+    public RecordResponse createRevision(
+            @AuthenticationPrincipal User user,
             @PathVariable("id") UUID id,
-            @PathVariable("version") double version,
+            @Pattern(regexp = "^[0-9]+(\\.[0-9]+)*$", message = "Version path parameter must be numbers and decimals only")
+            @PathVariable("version") String version,
             @RequestHeader(value = HttpHeaders.CONTENT_DISPOSITION, required = false) @Nullable String dispositionHeader,
             @RequestParam(value = "ext", required = false, defaultValue = "") String fileExtension,
             InputStream file
     ) {
-        Record record = this.repository.recordRepo.findById(id)
-                .orElseThrow(() -> ApiError.notFound("record", id.toString()));
-
-        UUID defaultStoreId = this.config.getOptional(BuiltinConfigs.DEFAULT_FILE_STORE)
-                .orElseThrow(() -> ApiError.serverError("There is no default file store set"));
-
-        FileStore<?> fileStore = this.repository.fileStoreRepo.findById(defaultStoreId)
-                .orElseThrow(() -> ApiError.notFound("file store", defaultStoreId.toString()));
-
-        // if no explicit file extension is supplied, attempt to extract it from the content disposition header
+        // if no explicit stream extension is supplied, attempt to extract it from the content disposition header
         if (fileExtension.isBlank() && dispositionHeader != null) {
             ContentDisposition disposition = ContentDisposition.parse(dispositionHeader);
             String filename = disposition.getFilename();
@@ -111,70 +75,60 @@ public class RecordController {
             }
         }
 
-        record.addRevision(version, fileStore.newFile(this.catalog, file, fileExtension));
-
-        this.repository.recordRepo.saveAndFlush(record);
+        return this.service.createRevision(user, id, version, fileExtension, file);
     }
 
     @PutMapping(
-            value = "/{id}/revisions/{version}",
+            value = "/{id}/{version}",
             consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE
     )
     @Operation(summary = "Upload new record revision")
     @NotFoundApiResponse
-    public void newRevision(
+    public RecordResponse createRevision2(
+            @AuthenticationPrincipal User user,
             @PathVariable("id") UUID id,
-            @PathVariable("version") double version,
-            @RequestPart("file") MultipartFile file
+            @Pattern(regexp = "^[0-9]+(\\.[0-9]+)*$", message = "Version path parameter must be numbers and decimals only")
+            @PathVariable("version") String version,
+            @RequestPart("stream") MultipartFile file
     ) throws IOException {
         String extension = "";
         if (file.getOriginalFilename() != null && file.getOriginalFilename().contains(".")) {
             extension = getExtensionFromFile(file.getOriginalFilename());
         }
 
-        this.newRevision(id, version, null, extension, file.getInputStream());
+        return this.service.createRevision(user, id, version, extension, file.getInputStream());
     }
 
     private String getExtensionFromFile(String fileName) {
         return fileName.substring(fileName.lastIndexOf("."));
     }
 
-    @GetMapping(value = "/{id}/revisions", produces = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(summary = "List all revisions for a record")
-    @NotFoundApiResponse
-    @Transactional(readOnly = true)
-    public double[] getRevisions(@PathVariable("id") UUID id) {
-        return this.repository.recordRepo.getRevisions(id)
-                .orElseThrow(() -> ApiError.notFound("record", id.toString()));
-    }
-
-    @GetMapping(value = "/{id}/revisions/{version}", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
+    @GetMapping(value = "/{id}/{version}", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
     @Operation(summary = "Get record revision file")
     @NotFoundApiResponse
-    @Transactional(readOnly = true)
-    public ResponseEntity<Resource> getRevision(@PathVariable("id") UUID id, @PathVariable("version") double version) {
-        RecordRevision rev = this.repository.recordRepo.findByRecordId(id, version)
-                .orElseThrow(() -> ApiError.notFound("record revision", id + "/" + version));
+    public ResponseEntity<Resource> getRevision(
+            @AuthenticationPrincipal User user,
+            @PathVariable("id") UUID id,
+            @Pattern(regexp = "^[0-9]+(\\.[0-9]+)*$", message = "Version path parameter must be numbers and decimals only")
+            @PathVariable("version") String version
+    ) {
+        RecordRevisionResponse rev = this.service.getRevision(user, id, version);
 
-        HttpHeaders headers = new HttpHeaders();
-        headers.add(HttpHeaders.CONTENT_DISPOSITION, String.format("attachment; filename=\"%s\"", rev.file.getFileName(Double.toString(version))));
-        headers.add("Content-Digest", String.format("%s=:%s:", rev.file.hashAlgorithm.toLowerCase(Locale.ROOT), rev.file.hash));
+        InputStreamResource streamResource = new InputStreamResource(rev.stream()) {
+            @Override
+            public long contentLength() {
+                return rev.sizeBytes();
+            }
+        };
 
         return ResponseEntity.ok()
-                .headers(headers)
-                .contentLength(rev.file.sizeBytes)
+                .headers(headers -> {
+                    headers.setContentDisposition(rev.dispositionHeader());
+                    headers.add("Content-Digest", rev.digestHeader());
+                })
+                .contentLength(rev.sizeBytes())
                 .contentType(MediaType.APPLICATION_OCTET_STREAM)
-                .body(new InputStreamResource(rev.file.getFile(this.catalog)));
-    }
-
-    private static <K> void setProperty(Record record, ObjectProperty<K> property, Object value) {
-        record.setProperty(property, property.type.cast(value));
-    }
-
-    public record NewRecordContent(
-            ResourceIdentifier type,
-            Map<ResourceIdentifier, Object> properties
-    ) {
+                .body(streamResource);
     }
 }

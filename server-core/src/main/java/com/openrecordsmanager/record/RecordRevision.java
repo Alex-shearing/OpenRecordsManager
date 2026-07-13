@@ -2,6 +2,7 @@ package com.openrecordsmanager.record;
 
 import com.openrecordsmanager.filestore.FileStoreEntry;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Pattern;
 
 import java.time.Instant;
 import java.util.UUID;
@@ -21,7 +22,11 @@ public class RecordRevision {
     public UUID id;
 
     @Column(nullable = false)
-    public double version;
+    @Pattern(
+            regexp = "^[0-9.]+$",
+            message = "Version must only contain numeric digits and decimals"
+    )
+    public String version;
 
     @Column(nullable = false)
     public Instant createdDate;
@@ -38,7 +43,7 @@ public class RecordRevision {
     protected RecordRevision() {
     }
 
-    public RecordRevision(double version, Record record, FileStoreEntry file) {
+    public RecordRevision(String version, Record record, FileStoreEntry file) {
         this.id = UUID.randomUUID();
         this.version = version;
         this.record = record;

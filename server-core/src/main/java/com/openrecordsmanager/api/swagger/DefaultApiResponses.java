@@ -11,5 +11,5 @@ import java.lang.annotation.*;
 @ForbiddenApiResponse
 @UnauthorizedApiResponse
 @ApiResponse(responseCode = "200")
-public @interface DefaultErrorResponses {
+public @interface DefaultApiResponses {
 }

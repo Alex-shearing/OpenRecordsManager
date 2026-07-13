@@ -43,7 +43,7 @@ public class FileStore<T> {
             joinColumns = @JoinColumn(name = "file_store_id")
     )
     @OrderBy("application_order ASC")
-    public List<FileStoreMiddlewareUsage> middlewares;
+    public List<MiddlewareUsage> middlewares;
 
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "store")
     public Set<FileStoreEntry> files;
@@ -59,12 +59,12 @@ public class FileStore<T> {
         this.middlewares = new ArrayList<>();
     }
 
-    public void addMiddleware(FileStoreMiddleware<?> middleware) {
+    public void addMiddleware(Middleware<?> middleware) {
         if (this.middlewares == null) {
             this.middlewares = new ArrayList<>();
         }
         int index = this.middlewares.size();
-        this.middlewares.add(new FileStoreMiddlewareUsage(middleware, index));
+        this.middlewares.add(new MiddlewareUsage(middleware, index));
     }
 
     public FileStoreEntry newFile(ComponentCatalog catalog, InputStream file, String extension) {
@@ -74,11 +74,11 @@ public class FileStore<T> {
         HashingInputStream hashingStream = new HashingInputStream(hashFunction, countingStream);
 
         InputStream stream = hashingStream;
-        for (FileStoreMiddlewareUsage middleware : this.middlewares) {
+        for (MiddlewareUsage middleware : this.middlewares) {
             stream = middleware.middleware.duringSave(catalog, stream);
         }
 
-        // Save the file into the store
+        // Save the stream into the store
         String path;
         try {
             path = this.getStoreType(catalog).save(this.getProperties(catalog), stream);
@@ -103,7 +103,7 @@ public class FileStore<T> {
     public InputStream getFile(ComponentCatalog catalog, FileStoreEntry entry) throws IOException {
         InputStream stream = this.getStoreType(catalog).retrieve(this.getProperties(catalog), entry.path);
 
-        for (FileStoreMiddlewareUsage middleware : this.middlewares) {
+        for (MiddlewareUsage middleware : this.middlewares) {
             stream = middleware.middleware.duringRetrieve(catalog, stream);
         }
 
