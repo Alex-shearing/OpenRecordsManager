@@ -1,11 +1,8 @@
 package com.openrecordsmanager.property;
 
-import com.openrecordsmanager.api.ResourceIdentifier;
 import org.jspecify.annotations.Nullable;
 
 import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 public interface ObjectPropertyHolder<T extends ObjectPropertyHolder.ObjectPropertyValue<?>> {
@@ -13,12 +10,11 @@ public interface ObjectPropertyHolder<T extends ObjectPropertyHolder.ObjectPrope
     Map<ObjectProperty<?>, T> getProperties();
 
     default Map<String, Object> toPropertyMap() {
-        return this.getProperties().entrySet().stream().map(el -> Map.entry(el.getKey().id.toString(), el.getValue().getValue())).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-    }
-
-    default @Nullable Object getProperty(ResourceIdentifier id) {
-        Optional<ObjectProperty<?>> property = this.getProperties().keySet().stream().filter(prop -> Objects.equals(prop.id, id)).findFirst();
-        return property.map(this::getProperty).orElse(null);
+        return this.getProperties().entrySet().stream()
+                .collect(Collectors.toMap(
+                        el -> el.getKey().id.toString(),
+                        el -> el.getValue().getValue()
+                ));
     }
 
     default <K> @Nullable K getProperty(ObjectProperty<K> property) {
@@ -52,9 +48,9 @@ public interface ObjectPropertyHolder<T extends ObjectPropertyHolder.ObjectPrope
     interface ObjectPropertyValue<T> {
         ObjectProperty<T> getProperty();
 
-        T getValue();
+        @Nullable T getValue();
 
-        void setValue(T value);
+        void setValue(@Nullable T value);
 
         default void setValueRaw(Object value) {
             this.setValue(getProperty().type.cast(value));

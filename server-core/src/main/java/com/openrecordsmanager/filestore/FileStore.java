@@ -43,10 +43,10 @@ public class FileStore<T> {
             joinColumns = @JoinColumn(name = "file_store_id")
     )
     @OrderBy("application_order ASC")
-    public List<MiddlewareUsage> middlewares;
+    public List<MiddlewareUsage> middlewares = new ArrayList<>();
 
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "store")
-    public Set<FileStoreEntry> files;
+    public Set<FileStoreEntry> files = new HashSet<>();
 
     @Deprecated
     protected FileStore() {
@@ -60,9 +60,6 @@ public class FileStore<T> {
     }
 
     public void addMiddleware(Middleware<?> middleware) {
-        if (this.middlewares == null) {
-            this.middlewares = new ArrayList<>();
-        }
         int index = this.middlewares.size();
         this.middlewares.add(new MiddlewareUsage(middleware, index));
     }

@@ -7,7 +7,6 @@ import com.openrecordsmanager.database.util.ComponentReferenceConverter;
 import jakarta.persistence.*;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
-import org.jspecify.annotations.NonNull;
 
 import java.util.Map;
 import java.util.UUID;
@@ -31,17 +30,17 @@ public class AuthProvider implements AuthProviderInstance {
     public Map<String, Object> settings;
 
     @Override
-    public @NonNull UUID getId() {
+    public UUID getId() {
         return this.id;
     }
 
     @Override
-    public @NonNull String getName() {
+    public String getName() {
         return this.name;
     }
 
     @Override
-    public @NonNull Map<String, Object> getSettings() {
+    public Map<String, Object> getSettings() {
         return this.settings;
     }
 }

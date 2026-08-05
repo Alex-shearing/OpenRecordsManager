@@ -6,8 +6,6 @@ import com.openrecordsmanager.api.swagger.DefaultApiResponses;
 import com.openrecordsmanager.api.swagger.NotFoundApiResponse;
 import com.openrecordsmanager.api.types.ComponentType;
 import com.openrecordsmanager.api.types.ComponentTypes;
-import com.openrecordsmanager.database.DataRepository;
-import com.openrecordsmanager.plugin.ExpressionsService;
 import com.openrecordsmanager.plugin.registry.ComponentCatalog;
 import com.openrecordsmanager.plugin.registry.TemplateComponentRegistry;
 import io.swagger.v3.oas.annotations.Operation;
@@ -26,14 +24,10 @@ import java.util.stream.Collectors;
 public class TemplateController {
 
     private final ComponentCatalog catalog;
-    private final ExpressionsService expressions;
-    private final DataRepository repository;
     private final TemplateService service;
 
-    public TemplateController(ComponentCatalog catalog, ExpressionsService expressions, DataRepository repository, TemplateService service) {
+    public TemplateController(ComponentCatalog catalog, TemplateService service) {
         this.catalog = catalog;
-        this.expressions = expressions;
-        this.repository = repository;
         this.service = service;
     }
 

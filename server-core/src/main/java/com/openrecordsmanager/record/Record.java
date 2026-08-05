@@ -11,10 +11,7 @@ import com.openrecordsmanager.user.User;
 import jakarta.persistence.*;
 import org.jspecify.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Entity
@@ -31,11 +28,11 @@ public class Record implements ObjectPropertyHolder<RecordPropertyValue<?>> {
     private RecordType type;
 
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "record", fetch = FetchType.LAZY)
-    public List<RecordRevision> revisions;
+    public List<RecordRevision> revisions = new ArrayList<>();
 
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "record", fetch = FetchType.EAGER)
     @MapKey(name = "property")
-    private Map<ObjectProperty<?>, RecordPropertyValue<?>> properties;
+    private Map<ObjectProperty<?>, RecordPropertyValue<?>> properties = new HashMap<>();
 
     @Deprecated
     protected Record() {

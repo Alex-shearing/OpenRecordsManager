@@ -4,7 +4,6 @@ import com.openrecordsmanager.auth.entity.AuthProvider;
 import com.openrecordsmanager.property.ObjectProperty;
 import com.openrecordsmanager.property.ObjectPropertyHolder;
 import jakarta.persistence.*;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -58,7 +57,6 @@ public class User implements ObjectPropertyHolder<UserPropertyValue<?>>, UserDet
     }
 
     @Override
-    @NonNull
     @Transient
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return List.of();
@@ -70,7 +68,6 @@ public class User implements ObjectPropertyHolder<UserPropertyValue<?>>, UserDet
     }
 
     @Override
-    @NonNull
     public String getUsername() {
         return this.username;
     }

@@ -4,7 +4,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.hash.Hashing;
 import com.openrecordsmanager.api.Plugin;
 import com.openrecordsmanager.api.builtin.BuiltinPlugin;
-import com.openrecordsmanager.api.errors.ApiError;
+import com.openrecordsmanager.api.errors.ResourceNotFoundException;
 import com.openrecordsmanager.filestore.FileStore;
 import com.openrecordsmanager.filestore.FileStoreRepository;
 import com.openrecordsmanager.plugin.registry.ComponentCatalog;
@@ -150,7 +150,7 @@ public class PluginManager {
         LocalPluginInfo[] localPluginInfos = this.getLocalPlugins();
 
         FileStore<?> fileStore = this.fileStoreRepo.findById(defaultStore)
-                .orElseThrow(() -> ApiError.notFound("stream store", defaultStore.toString()));
+                .orElseThrow(() -> new ResourceNotFoundException("default store", defaultStore.toString()));
 
         List<PersistedPlugin> missingPlugins = this.pluginRepo.findAll();
 

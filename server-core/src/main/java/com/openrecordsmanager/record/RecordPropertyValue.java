@@ -48,9 +48,6 @@ public class RecordPropertyValue<T> implements ObjectPropertyHolder.ObjectProper
     }
 
     public boolean securityFilter(ExpressionsService expressions, User user, @Nullable Record record) {
-        if (this.property == null) {
-            return false;
-        }
         if (this.property.securityFilter == null) {
             return true;
         }
@@ -64,12 +61,12 @@ public class RecordPropertyValue<T> implements ObjectPropertyHolder.ObjectProper
     }
 
     @Override
-    public T getValue() {
+    public @Nullable T getValue() {
         return this.value;
     }
 
     @Override
-    public void setValue(T value) {
+    public void setValue(@Nullable T value) {
         this.value = value;
     }
 

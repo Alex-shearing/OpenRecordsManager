@@ -1,11 +1,10 @@
 package com.openrecordsmanager.config;
 
 import com.openrecordsmanager.api.config.ConfigType;
-import com.openrecordsmanager.api.errors.ApiError;
+import com.openrecordsmanager.api.errors.ResourceNotFoundException;
 import com.openrecordsmanager.api.swagger.DefaultApiResponses;
 import com.openrecordsmanager.api.types.ComponentTypes;
 import com.openrecordsmanager.config.dto.ConfigResponse;
-import com.openrecordsmanager.database.DataRepository;
 import com.openrecordsmanager.plugin.registry.ComponentCatalog;
 import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.http.MediaType;
@@ -24,12 +23,10 @@ import java.util.stream.Collectors;
 @PreAuthorize("isAuthenticated()")
 public class ConfigController {
 
-    private final DataRepository repository;
     private final ConfigService config;
     private final ComponentCatalog catalog;
 
-    public ConfigController(DataRepository repository, ConfigService config, ComponentCatalog catalog) {
-        this.repository = repository;
+    public ConfigController(ConfigService config, ComponentCatalog catalog) {
         this.config = config;
         this.catalog = catalog;
     }
@@ -73,10 +70,10 @@ public class ConfigController {
     @Transactional(readOnly = true)
     public Object server_retrieveOne(@PathVariable("id") String id) {
         ConfigType<?> config = this.config.getConfigByKey(id)
-                .orElseThrow(() -> ApiError.notFound(ComponentTypes.CONFIG.name, id));
+                .orElseThrow(() -> new ResourceNotFoundException(ComponentTypes.CONFIG.name, id));
 
         return this.config.getOptional(config)
-                .orElseThrow(() -> ApiError.notFound("config value", id));
+                .orElseThrow(() -> new ResourceNotFoundException("config value", id));
     }
 
 }

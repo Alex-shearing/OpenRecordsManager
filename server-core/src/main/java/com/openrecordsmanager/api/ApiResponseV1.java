@@ -9,13 +9,14 @@ import java.time.Instant;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({"success", "error", "timestamp", "data"})
-public record ApiResponseV1<T>(@Schema(requiredMode = Schema.RequiredMode.REQUIRED) boolean success,
-                               @Nullable T data,
-                               @Nullable String error,
-                               @Schema(requiredMode = Schema.RequiredMode.REQUIRED) Instant timestamp) {
+public record ApiResponseV1<T extends @Nullable Object>(
+        @Schema(requiredMode = Schema.RequiredMode.REQUIRED) boolean success,
+        @Nullable T data,
+        @Nullable String error,
+        @Schema(requiredMode = Schema.RequiredMode.REQUIRED) Instant timestamp) {
 
     // Convenience constructor for successful responses
-    public static <T> ApiResponseV1<T> success(@Nullable T data) {
+    public static <T extends @Nullable Object> ApiResponseV1<T> success(@Nullable T data) {
         return new ApiResponseV1<>(true, data, null, Instant.now());
     }
 

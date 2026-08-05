@@ -77,7 +77,7 @@ public class ObjectProperty<T> {
     }
 
     @Override
-    public boolean equals(Object o) {
+    public boolean equals(@Nullable Object o) {
         if (o == null || getClass() != o.getClass()) return false;
         ObjectProperty<?> that = (ObjectProperty<?>) o;
         return Objects.equals(id, that.id);

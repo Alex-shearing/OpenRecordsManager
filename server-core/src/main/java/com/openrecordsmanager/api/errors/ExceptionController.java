@@ -14,7 +14,6 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-@SuppressWarnings("unused")
 @RestControllerAdvice
 public class ExceptionController {
     private static final Logger LOGGER = LoggerFactory.getLogger(ExceptionController.class);
@@ -27,13 +26,10 @@ public class ExceptionController {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiResponseV1<Void>> handleGeneralException(Exception ex) {
-        HttpStatusCode httpStatusCode = ex instanceof ApiError apiError ? apiError.httpStatusCode : HttpStatus.INTERNAL_SERVER_ERROR;
-        String message = config.getOrThrow(BuiltinConfigs.DEBUG_DETAILED_ERRORS) ? ex.getMessage() :
-                ex instanceof ApiError error ? error.getUserMessage() : "Internal Server Error";
+        HttpStatusCode httpStatusCode = HttpStatus.INTERNAL_SERVER_ERROR;
+        String message = this.config.getOrThrow(BuiltinConfigs.DEBUG_DETAILED_ERRORS) ? ex.getMessage() : "Internal Server Error";
 
-        if (!(ex instanceof ApiError.NotFound error) || error.shouldLog()) {
-            LOGGER.error("Unexpected error encountered while processing request", ex);
-        }
+        LOGGER.error("Unexpected error encountered while processing request", ex);
 
         return ResponseEntity.status(httpStatusCode)
                 .contentType(MediaType.APPLICATION_JSON)

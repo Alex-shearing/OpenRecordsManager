@@ -1,7 +1,7 @@
 package com.openrecordsmanager.recordtype;
 
 import com.openrecordsmanager.api.ResourceIdentifier;
-import com.openrecordsmanager.api.errors.ApiError;
+import com.openrecordsmanager.api.errors.ResourceNotFoundException;
 import com.openrecordsmanager.api.swagger.DefaultApiResponses;
 import com.openrecordsmanager.api.swagger.NotFoundApiResponse;
 import com.openrecordsmanager.api.types.ComponentTypes;
@@ -45,7 +45,7 @@ public class RecordTypeController {
     @Transactional(readOnly = true)
     public RecordType getRecordType(@PathVariable("id") ResourceIdentifier id) {
         return this.repository.recordTypeRepo.findById(id)
-                .orElseThrow(() -> ApiError.notFound(ComponentTypes.RECORD_TYPE, id));
+                .orElseThrow(() -> new ResourceNotFoundException(ComponentTypes.RECORD_TYPE, id));
     }
 
 }

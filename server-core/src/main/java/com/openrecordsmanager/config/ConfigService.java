@@ -2,7 +2,6 @@ package com.openrecordsmanager.config;
 
 import com.openrecordsmanager.api.config.ConfigStore;
 import com.openrecordsmanager.api.config.ConfigType;
-import com.openrecordsmanager.api.errors.ApiError;
 import com.openrecordsmanager.api.errors.ResourceNotFoundException;
 import com.openrecordsmanager.api.types.ComponentTypes;
 import com.openrecordsmanager.config.dto.ConfigResponse;
@@ -13,6 +12,7 @@ import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.text.MessageFormat;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -33,12 +33,13 @@ public class ConfigService implements ConfigStore {
     @Transactional
     public ConfigResponse setConfig(String id, String value) {
         ConfigType<?> key = this.getConfigByKey(id)
-                .orElseThrow(() -> ApiError.notFound(ComponentTypes.CONFIG.name, id));
+                .orElseThrow(() -> new ResourceNotFoundException(ComponentTypes.CONFIG.name, id));
+
         Object parsedValue = key.type().fromString(value)
-                .orElseThrow(() -> ApiError.clientError(
+                .orElseThrow(() -> new IllegalArgumentException(MessageFormat.format(
                         "Unable to parse configuration value as {0}",
                         key.type().toString()
-                ));
+                )));
 
         ConfigItem config = this.repository.configRepo.findByConfigKey(id)
                 .orElseGet(() -> new ConfigItem(id, value));
