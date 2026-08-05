@@ -5,6 +5,7 @@ import com.openrecordsmanager.api.Component;
 import org.jspecify.annotations.Nullable;
 
 import java.util.Objects;
+import java.util.Optional;
 
 public class ComponentType<T extends Component> {
 
@@ -16,8 +17,11 @@ public class ComponentType<T extends Component> {
         this.componentClass = componentClass;
     }
 
-    public <K extends Component> boolean is(K object) {
-        return this.componentClass.isInstance(object);
+    public <K extends Component> Optional<T> get(K object) {
+        if (this.componentClass.isInstance(object)) {
+            return Optional.of(this.componentClass.cast(object));
+        }
+        return Optional.empty();
     }
 
     @Override
@@ -43,7 +47,7 @@ public class ComponentType<T extends Component> {
     }
 
     @JsonCreator
-    private static @Nullable ComponentType<Component> fromString(String name) {
+    private static @Nullable ComponentType<?> fromString(String name) {
         return ComponentTypes.fromName(name);
     }
 }

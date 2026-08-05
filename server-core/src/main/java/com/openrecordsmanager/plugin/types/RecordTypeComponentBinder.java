@@ -4,6 +4,7 @@ import com.openrecordsmanager.api.ComponentReference;
 import com.openrecordsmanager.api.ResourceIdentifier;
 import com.openrecordsmanager.api.template.property.PropertyDefinition;
 import com.openrecordsmanager.api.template.recordtype.RecordTypeDefinition;
+import com.openrecordsmanager.api.types.ComponentTypes;
 import com.openrecordsmanager.database.DataRepository;
 import com.openrecordsmanager.plugin.ComponentCatalog;
 import com.openrecordsmanager.plugin.ExpressionsService;
@@ -51,7 +52,7 @@ public class RecordTypeComponentBinder extends ComponentBinder<RecordTypeDefinit
     ) {
         ResourceIdentifier id = entry.getKey().getId(catalog)
                 .orElseThrow(() -> new IllegalArgumentException("id " + entry.getKey() + " is not found"));
-        ObjectProperty<?> property = ComponentBinderRegistry.PROPERTY.getRegistered(id, repository)
+        ObjectProperty<?> property = (ObjectProperty<?>) catalog.getTemplateRegistry(ComponentTypes.PROPERTY).getRegistered(id, repository)
                 .orElseThrow(() -> new IllegalArgumentException("Attempted to use property that was not registered: " + entry.getKey().getId(catalog)));
 
         return new RecordTypeProperty<>((ObjectProperty<T>) property, (T) entry.getValue());

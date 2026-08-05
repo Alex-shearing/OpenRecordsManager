@@ -3,10 +3,13 @@ package com.openrecordsmanager.plugin;
 import com.openrecordsmanager.api.ResourceIdentifier;
 import com.openrecordsmanager.api.template.list.IListElement;
 import com.openrecordsmanager.api.template.property.PropertyType;
+import com.openrecordsmanager.api.template.recordtype.SecurityFilterUsage;
 import com.openrecordsmanager.list.ListElement;
 import com.openrecordsmanager.list.ListType;
 import com.openrecordsmanager.property.ObjectProperty;
 import com.openrecordsmanager.record.Record;
+import com.openrecordsmanager.recordtype.RecordType;
+import com.openrecordsmanager.recordtype.RecordTypeProperty;
 import com.openrecordsmanager.user.User;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
@@ -15,10 +18,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 @SpringBootTest
 class ExpressionsServiceTest {
@@ -42,7 +42,7 @@ class ExpressionsServiceTest {
 
     @BeforeEach
     void setUp() {
-        this.testUser = new User(UUID.randomUUID());
+        this.testUser = new User(UUID.randomUUID(), "test");
 
         // Number property
         ObjectProperty<Long> numberProperty = new ObjectProperty<>(
@@ -119,9 +119,20 @@ class ExpressionsServiceTest {
 
     @Test
     void checkPropertyExpression_withRecord() {
-        ObjectProperty<Boolean> recordProperty = new ObjectProperty<>(com.openrecordsmanager.api.ResourceIdentifier.valueOf("test:record_boolean"), "Record Boolean", "Record Boolean", PropertyType.BOOLEAN);
+        ObjectProperty<Boolean> recordProperty = new ObjectProperty<>(ResourceIdentifier.valueOf("test:record_boolean"), "Record Boolean", "Record Boolean", PropertyType.BOOLEAN);
 
-        Record record = new Record("Record title", null);
+        RecordType recordType = new RecordType(
+                ResourceIdentifier.valueOf("test:record_type"),
+                "Record type",
+                "Record type",
+                null,
+                null,
+                SecurityFilterUsage.HIDE_RECORD,
+                new HashSet<>()
+        );
+        recordType.properties.add(new RecordTypeProperty<>(recordProperty, false));
+        
+        Record record = new Record("Record title", recordType);
         record.setProperty(recordProperty, false);
 
         // Check user has all required items

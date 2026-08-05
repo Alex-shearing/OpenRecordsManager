@@ -47,7 +47,7 @@ public class Record implements ObjectPropertyHolder<RecordPropertyValue<?>> {
         this.type = type;
         this.revisions = new ArrayList<>();
         this.properties = type.properties.stream()
-                .map(prop -> Map.entry(prop.property, newProperty(prop)))
+                .map(prop -> Map.entry(prop.property, newProperty(prop, null)))
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 
@@ -58,7 +58,7 @@ public class Record implements ObjectPropertyHolder<RecordPropertyValue<?>> {
     public void setType(RecordType type) {
         this.type = type;
         this.properties = type.properties.stream()
-                .map(prop -> Map.entry(prop.property, newProperty(prop)))
+                .map(prop -> Map.entry(prop.property, newProperty(prop, this.properties.get(prop.property))))
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 
@@ -67,9 +67,7 @@ public class Record implements ObjectPropertyHolder<RecordPropertyValue<?>> {
         return new RecordPropertyValue<>(this, property, value);
     }
 
-    private <T> RecordPropertyValue<T> newProperty(RecordTypeProperty<T> property) {
-        RecordPropertyValue<?> oldValue = this.properties.get(property.property);
-
+    private <T> RecordPropertyValue<T> newProperty(RecordTypeProperty<T> property, @Nullable RecordPropertyValue<?> oldValue) {
         // Either get the previous value (if exists) or the property default
         T newValue = oldValue != null ? property.property.type.cast(oldValue.value) : property.getDefault();
 

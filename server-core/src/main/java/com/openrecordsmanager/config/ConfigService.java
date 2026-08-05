@@ -56,13 +56,13 @@ public class ConfigService implements ConfigStore {
     }
 
     public Optional<ConfigDefinition<?>> getConfigByKey(String key) {
-        return catalog.getComponents(ComponentTypes.CONFIG).stream()
+        return this.catalog.getRegistry(ComponentTypes.CONFIG).stream()
                 .filter(configDefinition -> configDefinition.key().equals(key))
                 .findFirst();
     }
 
     public Map<String, Optional<?>> getAllConfig() {
-        return this.catalog.getComponents(ComponentTypes.CONFIG).stream()
+        return this.catalog.getRegistry(ComponentTypes.CONFIG).stream()
                 .map(def -> Map.entry(def.key(), this.getOptional(def)))
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     }

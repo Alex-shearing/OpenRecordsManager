@@ -58,7 +58,7 @@ public class ConfigController {
     @Operation(summary = "Get the effective config values for this specific server")
     @Transactional(readOnly = true)
     public Map<String, ?> server_retrieveAll() {
-        return this.catalog.getComponents(ComponentTypes.CONFIG).stream()
+        return this.catalog.getRegistry(ComponentTypes.CONFIG).stream()
                 .map(config -> {
                     Object value = this.config.getValue(config);
                     if (value == null) return null;

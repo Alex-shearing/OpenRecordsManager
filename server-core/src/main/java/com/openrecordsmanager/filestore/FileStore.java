@@ -54,7 +54,7 @@ public class FileStore<T> {
 
     public FileStore(ComponentCatalog catalog, FileStoreType<T> type, Map<String, ?> properties) {
         this.id = UUID.randomUUID();
-        this.type = catalog.getId(ComponentTypes.FILE_STORE_TYPE, type).orElseThrow();
+        this.type = catalog.getId(ComponentTypes.FILE_STORE, type).orElseThrow();
         this.properties = properties;
         this.middlewares = new ArrayList<>();
     }
@@ -112,7 +112,7 @@ public class FileStore<T> {
 
     @SuppressWarnings("unchecked")
     public FileStoreType<T> getStoreType(ComponentCatalog catalog) {
-        return (FileStoreType<T>) catalog.getComponent(ComponentTypes.FILE_STORE_TYPE, this.type).orElseThrow();
+        return (FileStoreType<T>) catalog.getComponent(ComponentTypes.FILE_STORE, this.type).orElseThrow();
     }
 
     public void setProperties(Map<String, ?> properties) {

@@ -11,6 +11,6 @@ tasks.register('buildWeb', Exec) {
     if (System.getProperty('os.name').toLowerCase().contains('windows')) {
         commandLine 'cmd', '/c', 'npm install --legacy-peer-deps && npm run build'
     } else {
-        commandLine 'npm', 'install', '--legacy-peer-deps', '&&', 'npm', 'run', 'build'
+        commandLine 'sh', '-c', 'npm install --legacy-peer-deps && npm run build'
     }
 }

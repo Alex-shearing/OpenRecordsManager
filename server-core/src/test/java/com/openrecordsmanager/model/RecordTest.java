@@ -71,7 +71,7 @@ class RecordTest {
         );
         recordType.properties.add(new RecordTypeProperty<>(stringProperty, null));
 
-        com.openrecordsmanager.record.Record record = new com.openrecordsmanager.record.Record("Record", recordType);
+        Record record = new Record("Record", recordType);
         record.setProperty(stringProperty, "test value");
 
         Assertions.assertEquals(SecurityFilterUsage.SHOW_ALL, record.securityFilter(this.expressionsService, this.testUser, record), "User should have access");

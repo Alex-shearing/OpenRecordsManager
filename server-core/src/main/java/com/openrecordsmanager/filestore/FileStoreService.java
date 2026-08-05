@@ -48,8 +48,8 @@ public class FileStoreService {
 
     @Transactional
     public SimpleFileStoreResponse create(NewFileStore input) throws ResourceNotFoundException {
-        FileStoreType<?> type = this.catalog.getComponent(ComponentTypes.FILE_STORE_TYPE, input.type())
-                .orElseThrow(() -> new ResourceNotFoundException(ComponentTypes.FILE_STORE_TYPE, input.type()));
+        FileStoreType<?> type = this.catalog.getComponent(ComponentTypes.FILE_STORE, input.type())
+                .orElseThrow(() -> new ResourceNotFoundException(ComponentTypes.FILE_STORE, input.type()));
 
         FileStore<?> store = new FileStore<>(this.catalog, type, input.properties());
 

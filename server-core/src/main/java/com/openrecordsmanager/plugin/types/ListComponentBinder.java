@@ -2,6 +2,7 @@ package com.openrecordsmanager.plugin.types;
 
 import com.openrecordsmanager.api.ResourceIdentifier;
 import com.openrecordsmanager.api.template.list.ListDefinition;
+import com.openrecordsmanager.api.types.ComponentTypes;
 import com.openrecordsmanager.database.DataRepository;
 import com.openrecordsmanager.list.ListType;
 import com.openrecordsmanager.plugin.ComponentCatalog;
@@ -25,7 +26,8 @@ public class ListComponentBinder extends ComponentBinder<ListDefinition, ListTyp
         definition.defaultEntries().forEach((s, listItem) -> {
             ResourceIdentifier childId = new ResourceIdentifier(id.source(), s);
 
-            ComponentBinderRegistry.LIST_ELEMENT.register(repository, catalog, expressions, childId, listItem, false);
+            catalog.getTemplateRegistry(ComponentTypes.LIST_ELEMENT)
+                    .register(repository, catalog, expressions, childId, listItem, false);
         });
 
     }

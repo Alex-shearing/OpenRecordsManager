@@ -27,12 +27,12 @@ public abstract class ComponentReference<T extends Component> {
     }
 
     @JsonCreator
-    public static ComponentReference<Component> valueOf(String fqn) {
+    public static ComponentReference<? extends Component> valueOf(String fqn) {
         String[] split = fqn.split("/");
         if (split.length != 2) {
             throw new IllegalArgumentException("Not a valid component reference string: " + fqn);
         }
-        ComponentType<Component> componentType = ComponentTypes.fromName(split[0]);
+        ComponentType<? extends Component> componentType = ComponentTypes.fromName(split[0]);
         if (componentType == null) {
             throw new IllegalArgumentException("Not a valid component type: " + split[0]);
         }

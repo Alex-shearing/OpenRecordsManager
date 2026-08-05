@@ -14,20 +14,20 @@ import org.jspecify.annotations.Nullable;
 
 import java.util.Objects;
 
-public interface ComponentTypes {
-    ComponentType<ConfigDefinition<?>> CONFIG = ComponentType.of("config", ConfigDefinition.class);
-    ComponentType<InputAuthProviderType> INPUT_AUTH_PROVIDER = ComponentType.of("input_auth_provider", InputAuthProviderType.class);
-    ComponentType<RedirectAuthProviderType> REDIRECT_AUTH_PROVIDER = ComponentType.of("redirect_auth_provider", RedirectAuthProviderType.class);
-    ComponentType<FileStoreType<?>> FILE_STORE_TYPE = ComponentType.of("file_store_type", FileStoreType.class);
-    ComponentType<FileStoreMiddlewareType<?>> FILE_STORE_MIDDLEWARE = ComponentType.of("file_store_middleware", FileStoreMiddlewareType.class);
+public class ComponentTypes {
+    public static final ComponentType<ConfigDefinition<?>> CONFIG = ComponentType.of("config", ConfigDefinition.class);
+    public static final ComponentType<InputAuthProviderType> INPUT_AUTH_PROVIDER = ComponentType.of("input_auth_provider", InputAuthProviderType.class);
+    public static final ComponentType<RedirectAuthProviderType> REDIRECT_AUTH_PROVIDER = ComponentType.of("redirect_auth_provider", RedirectAuthProviderType.class);
+    public static final ComponentType<FileStoreType<?>> FILE_STORE = ComponentType.of("file_store", FileStoreType.class);
+    public static final ComponentType<FileStoreMiddlewareType<?>> FILE_STORE_MIDDLEWARE = ComponentType.of("file_store_middleware", FileStoreMiddlewareType.class);
 
     // Registerable components
-    ComponentType<ListDefinition> LIST = ComponentType.of("list", ListDefinition.class);
-    ComponentType<ListElementDefinition> LIST_ELEMENT = ComponentType.of("list_element", ListElementDefinition.class);
-    ComponentType<PropertyDefinition<?>> PROPERTY = ComponentType.of("object_property", PropertyDefinition.class);
-    ComponentType<RecordTypeDefinition> RECORD_TYPE = ComponentType.of("record_type", RecordTypeDefinition.class);
+    public static final ComponentType<ListDefinition> LIST = ComponentType.of("list", ListDefinition.class);
+    public static final ComponentType<ListElementDefinition> LIST_ELEMENT = ComponentType.of("list_element", ListElementDefinition.class);
+    public static final ComponentType<PropertyDefinition<?>> PROPERTY = ComponentType.of("object_property", PropertyDefinition.class);
+    public static final ComponentType<RecordTypeDefinition> RECORD_TYPE = ComponentType.of("record_type", RecordTypeDefinition.class);
 
-    ComponentType<?>[] VALUES = {
+    private static final ComponentType<?>[] VALUES = {
             CONFIG,
             LIST,
             LIST_ELEMENT,
@@ -35,22 +35,21 @@ public interface ComponentTypes {
             RECORD_TYPE,
             INPUT_AUTH_PROVIDER,
             REDIRECT_AUTH_PROVIDER,
-            FILE_STORE_TYPE,
+            FILE_STORE,
             FILE_STORE_MIDDLEWARE
     };
 
-    @SuppressWarnings("unchecked")
-    static @Nullable ComponentType<Component> fromName(String name) {
+    public static @Nullable ComponentType<?> fromName(String name) {
         for (ComponentType<?> value : VALUES) {
-            if (Objects.equals(value.name, name)) return (ComponentType<Component>) value;
+            if (Objects.equals(value.name, name)) return value;
         }
         return null;
     }
 
     @SuppressWarnings("unchecked")
-    static <K extends Component> ComponentType<K> fromObject(K object) {
+    public static <K extends Component> ComponentType<K> fromObject(K object) {
         for (ComponentType<?> value : VALUES) {
-            if (value.is(object)) return (ComponentType<K>) value;
+            if (value.get(object).isPresent()) return (ComponentType<K>) value;
         }
         throw new IllegalArgumentException("Unable to get component type from object: " + object.getClass());
     }

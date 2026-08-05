@@ -2,6 +2,7 @@ package com.openrecordsmanager.plugin.types;
 
 import com.openrecordsmanager.api.ResourceIdentifier;
 import com.openrecordsmanager.api.template.property.PropertyDefinition;
+import com.openrecordsmanager.api.types.ComponentTypes;
 import com.openrecordsmanager.database.DataRepository;
 import com.openrecordsmanager.list.ListType;
 import com.openrecordsmanager.plugin.ComponentCatalog;
@@ -35,12 +36,8 @@ public class ObjectPropertyComponentBinder extends ComponentBinder<PropertyDefin
             ResourceIdentifier listId = definition.listType().getId(catalog)
                     .orElseThrow(() -> new RuntimeException("listType " + definition.listType() + " does not exist"));
 
-            listType = ComponentBinderRegistry.LIST.getRegistered(listId, repository)
-                    .orElse(null);
-
-            if (listType == null) {
-                throw new IllegalArgumentException("listType " + definition.listType() + " is not registered");
-            }
+            listType = (ListType) catalog.getTemplateRegistry(ComponentTypes.LIST).getRegistered(listId, repository)
+                    .orElseThrow(() -> new IllegalArgumentException("listType " + definition.listType() + " is not registered"));
         }
 
         ObjectProperty<?> type = new ObjectProperty<>(

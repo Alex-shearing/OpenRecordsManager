@@ -1,23 +1,52 @@
 package com.openrecordsmanager.plugin;
 
-import com.google.common.collect.ImmutableTable;
-import com.google.common.collect.Table;
 import com.openrecordsmanager.api.*;
 import com.openrecordsmanager.api.template.list.ListDefinition;
 import com.openrecordsmanager.api.types.ComponentType;
 import com.openrecordsmanager.api.types.ComponentTypes;
+import com.openrecordsmanager.plugin.types.ListComponentBinder;
+import com.openrecordsmanager.plugin.types.ListElementComponentBinder;
+import com.openrecordsmanager.plugin.types.ObjectPropertyComponentBinder;
+import com.openrecordsmanager.plugin.types.RecordTypeComponentBinder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 public class ComponentCatalog implements ComponentAccess {
     private static final Logger LOGGER = LoggerFactory.getLogger(ComponentCatalog.class);
 
-    private Table<ComponentType<?>, ResourceIdentifier, ? extends Component> components;
+    // Static
+    private final Map<ComponentType<?>, ComponentRegistry<?>> staticRegistries = Map.of(
+            ComponentTypes.CONFIG, new ComponentRegistry<>(),
+            ComponentTypes.INPUT_AUTH_PROVIDER, new ComponentRegistry<>(),
+            ComponentTypes.REDIRECT_AUTH_PROVIDER, new ComponentRegistry<>(),
+            ComponentTypes.FILE_STORE, new ComponentRegistry<>(),
+            ComponentTypes.FILE_STORE_MIDDLEWARE, new ComponentRegistry<>()
+    );
+
+    // Templates
+    private final Map<ComponentType<?>, TemplateComponentRegistry<?, ?>> templateRegistries = Map.of(
+            ComponentTypes.LIST, new TemplateComponentRegistry<>(new ListComponentBinder()),
+            ComponentTypes.LIST_ELEMENT, new TemplateComponentRegistry<>(new ListElementComponentBinder()),
+            ComponentTypes.PROPERTY, new TemplateComponentRegistry<>(new ObjectPropertyComponentBinder()),
+            ComponentTypes.RECORD_TYPE, new TemplateComponentRegistry<>(new RecordTypeComponentBinder())
+    );
+
+    // Combined
+    private final Map<ComponentType<?>, ComponentRegistry<?>> componentsMap = Stream.concat(
+                    staticRegistries.entrySet().stream(),
+                    templateRegistries.entrySet().stream()
+            )
+            .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 
     public ComponentCatalog(
             PluginManager pluginManager,
@@ -31,54 +60,55 @@ public class ComponentCatalog implements ComponentAccess {
         }
     }
 
+    @SuppressWarnings("unchecked")
+    public <K extends Component> ComponentRegistry<K> getRegistry(ComponentType<K> type) {
+        return (ComponentRegistry<K>) this.componentsMap.get(type);
+    }
+
+    @SuppressWarnings("unchecked")
+    public <K extends Component> TemplateComponentRegistry<K, ?> getTemplateRegistry(ComponentType<K> type) {
+        return (TemplateComponentRegistry<K, ?>) this.templateRegistries.get(type);
+    }
+
+    public Set<ComponentType<?>> getRegisterableKeys() {
+        return this.templateRegistries.keySet();
+    }
+
     private void loadCatalog(PluginManager pluginManager) {
         Builder builder = new Builder();
         for (Plugin plugin : pluginManager.getPlugins()) {
             LOGGER.info("Initializing plugin {}...", plugin.getName());
             plugin.initialise(new RegistrationContextImpl(builder, plugin));
         }
-
-        this.components = builder.table.buildOrThrow();
+        builder.build();
     }
 
-    @SuppressWarnings("unchecked")
+    @Override
     public <T extends Component> Optional<ResourceIdentifier> getId(ComponentType<T> type, T definition) {
-        Map<ResourceIdentifier, T> values = (Map<ResourceIdentifier, T>) this.components.row(type);
-
-        for (Map.Entry<ResourceIdentifier, T> cell : values.entrySet()) {
-            if (Objects.equals(cell.getValue(), definition)) {
-                return Optional.of(cell.getKey());
-            }
-        }
-
-        return Optional.empty();
+        return this.getRegistry(type).getId(definition);
     }
 
-    public Set<ResourceIdentifier> getIds(ComponentType<?> type) {
-        return this.components.row(type).keySet();
-    }
-
-    @SuppressWarnings("unchecked")
-    public <T extends Component> Collection<T> getComponents(ComponentType<T> type) {
-        return (Collection<T>) this.components.row(type).values();
-    }
-
-    @SuppressWarnings("unchecked")
+    @Override
     public <T extends Component> Optional<T> getComponent(ComponentType<T> type, ResourceIdentifier id) {
-        return Optional.ofNullable((T) this.components.get(type, id));
+        return this.getRegistry(type).getComponent(id);
     }
 
-    private static class Builder {
-        private final ImmutableTable.Builder<ComponentType<?>, ResourceIdentifier, Component> table = ImmutableTable.builder();
+    private class Builder {
+        private final Map<ComponentType<?>, ComponentRegistry<?>.Builder> builder = ComponentCatalog.this.componentsMap
+                .entrySet().stream()
+                .map(a -> Map.entry(a.getKey(), a.getValue().builder()))
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 
-        private void registerInstance(RegistrationContextImpl context, String id, Component component) {
+        @SuppressWarnings("unchecked")
+        private <T extends Component> void registerInstance(RegistrationContextImpl context, String id, T component) {
             ResourceIdentifier identifier = new ResourceIdentifier(context.plugin.getName(), id);
 
-            ComponentType<? extends Component> type = ComponentTypes.fromObject(component);
+            ComponentType<T> type = ComponentTypes.fromObject(component);
+            ComponentRegistry<T>.Builder typeBuilder = (ComponentRegistry<T>.Builder) this.builder.get(type);
 
             LOGGER.info("Registering plugin component '{}' as {}", identifier, type);
 
-            this.table.put(type, identifier, component);
+            typeBuilder.register(identifier, component);
 
             // List specific registration to all list children
             if (component instanceof ListDefinition def) {
@@ -86,6 +116,10 @@ public class ComponentCatalog implements ComponentAccess {
                         registerInstance(context, eId, eDef)
                 );
             }
+        }
+
+        public void build() {
+            this.builder.forEach((_, b) -> b.build());
         }
     }
 

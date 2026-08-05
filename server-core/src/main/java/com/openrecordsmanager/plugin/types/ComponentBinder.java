@@ -7,6 +7,7 @@ import com.openrecordsmanager.api.types.ComponentTypes;
 import com.openrecordsmanager.database.DataRepository;
 import com.openrecordsmanager.plugin.ComponentCatalog;
 import com.openrecordsmanager.plugin.ExpressionsService;
+import com.openrecordsmanager.plugin.TemplateComponentRegistry;
 
 import java.util.HashSet;
 import java.util.Optional;
@@ -40,8 +41,8 @@ public abstract class ComponentBinder<T extends Component, D> {
                 ResourceIdentifier dependencyId = dependencyRef.getId(catalog)
                         .orElseThrow(() -> new IllegalStateException("Cannot find dependency " + dependencyRef));
 
-                ComponentBinder<Component, ?> binder = ComponentBinderRegistry.get(ComponentTypes.fromObject(dependency));
-                binder.register(repository, catalog, expressions, dependencyId, dependency, true);
+                TemplateComponentRegistry<Component, ?> registry = catalog.getTemplateRegistry(ComponentTypes.fromObject(dependency));
+                registry.register(repository, catalog, expressions, dependencyId, dependency, true);
             }
         }
 
@@ -93,8 +94,9 @@ public abstract class ComponentBinder<T extends Component, D> {
             ResourceIdentifier dependencyId = dependency.getId(catalog)
                     .orElseThrow(() -> new IllegalStateException("Cannot find dependency " + dependency));
 
-            ComponentBinder<?, ?> binder = ComponentBinderRegistry.get(dependency.getType());
-            Optional<?> childComponent = binder.getRegistered(dependencyId, repository);
+            TemplateComponentRegistry<?, ?> registry = catalog.getTemplateRegistry(dependency.getType());
+
+            Optional<?> childComponent = registry.getRegistered(dependencyId, repository);
             if (childComponent.isEmpty()) {
                 throw new IllegalStateException("Unregistered dependency " + dependencyId);
             }
