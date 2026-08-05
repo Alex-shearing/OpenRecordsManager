@@ -7,6 +7,7 @@ import com.openrecordsmanager.api.builtin.BuiltinPlugin;
 import com.openrecordsmanager.api.errors.ApiError;
 import com.openrecordsmanager.filestore.FileStore;
 import com.openrecordsmanager.filestore.FileStoreRepository;
+import com.openrecordsmanager.plugin.registry.ComponentCatalog;
 import jakarta.annotation.PreDestroy;
 import org.jspecify.annotations.Nullable;
 import org.semver4j.Semver;

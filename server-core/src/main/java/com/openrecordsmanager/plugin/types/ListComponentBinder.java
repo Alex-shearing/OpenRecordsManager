@@ -1,16 +1,16 @@
 package com.openrecordsmanager.plugin.types;
 
 import com.openrecordsmanager.api.ResourceIdentifier;
-import com.openrecordsmanager.api.template.list.ListDefinition;
+import com.openrecordsmanager.api.template.list.ListTemplate;
 import com.openrecordsmanager.api.types.ComponentTypes;
 import com.openrecordsmanager.database.DataRepository;
 import com.openrecordsmanager.list.ListType;
-import com.openrecordsmanager.plugin.ComponentCatalog;
 import com.openrecordsmanager.plugin.ExpressionsService;
+import com.openrecordsmanager.plugin.registry.ComponentCatalog;
 
 import java.util.Optional;
 
-public class ListComponentBinder extends ComponentBinder<ListDefinition, ListType> {
+public class ListComponentBinder extends ComponentBinder<ListTemplate, ListType> {
 
     @Override
     public void register(
@@ -18,7 +18,7 @@ public class ListComponentBinder extends ComponentBinder<ListDefinition, ListTyp
             ComponentCatalog catalog,
             ExpressionsService expressions,
             ResourceIdentifier id,
-            ListDefinition definition
+            ListTemplate definition
     ) {
         ListType type = new ListType(id, definition.name());
         repository.listTypeRepo.saveAndFlush(type);

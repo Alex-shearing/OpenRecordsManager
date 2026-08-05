@@ -33,13 +33,14 @@ public class RecordPropertyValue<T> implements ObjectPropertyHolder.ObjectProper
 
     @Column(name = "property_value")
     @JdbcTypeCode(SqlTypes.JSON)
+    @Nullable
     public T value;
 
     @Deprecated
     protected RecordPropertyValue() {
     }
 
-    public RecordPropertyValue(Record record, ObjectProperty<T> property, T value) {
+    public RecordPropertyValue(Record record, ObjectProperty<T> property, @Nullable T value) {
         this.id = UUID.randomUUID();
         this.record = record;
         this.property = property;

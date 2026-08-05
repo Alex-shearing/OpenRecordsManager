@@ -5,7 +5,7 @@ import org.jspecify.annotations.Nullable;
 
 import java.util.Objects;
 
-public record ConfigDefinition<T>(
+public record ConfigType<T>(
         String key,
         ConfigValueType<T> type,
         String name,
@@ -13,7 +13,7 @@ public record ConfigDefinition<T>(
         @Nullable T defaultValue
 ) implements Component {
 
-    public ConfigDefinition {
+    public ConfigType {
         Objects.requireNonNull(key, "Property 'key' must not be null");
         Objects.requireNonNull(type, "Property 'type' must not be null");
         Objects.requireNonNull(name, "Property 'name' must not be null");
@@ -57,9 +57,9 @@ public record ConfigDefinition<T>(
             return this;
         }
 
-        public ConfigDefinition<T> build() {
+        public ConfigType<T> build() {
             T typedDefault = this.defaultValue;
-            return new ConfigDefinition<>(this.key, this.type, this.name, this.description, typedDefault);
+            return new ConfigType<>(this.key, this.type, this.name, this.description, typedDefault);
         }
     }
 }

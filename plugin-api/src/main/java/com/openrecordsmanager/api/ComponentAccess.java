@@ -5,7 +5,12 @@ import com.openrecordsmanager.api.types.ComponentType;
 import java.util.Optional;
 
 public interface ComponentAccess {
-    <T extends Component> Optional<T> getComponent(ComponentType<T> type, ResourceIdentifier id);
 
-    <T extends Component> Optional<ResourceIdentifier> getId(ComponentType<T> type, T definition);
+    <T extends Component> RegistryAccess<T> getRegistry(ComponentType<T> type);
+
+    interface RegistryAccess<T extends Component> {
+        Optional<T> get(ResourceIdentifier id);
+
+        Optional<ResourceIdentifier> getId(T definition);
+    }
 }

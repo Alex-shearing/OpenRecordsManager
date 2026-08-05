@@ -1,12 +1,12 @@
 package com.openrecordsmanager.config;
 
-import com.openrecordsmanager.api.config.ConfigDefinition;
+import com.openrecordsmanager.api.config.ConfigType;
 import com.openrecordsmanager.api.errors.ApiError;
 import com.openrecordsmanager.api.swagger.DefaultApiResponses;
 import com.openrecordsmanager.api.types.ComponentTypes;
 import com.openrecordsmanager.config.dto.ConfigResponse;
 import com.openrecordsmanager.database.DataRepository;
-import com.openrecordsmanager.plugin.ComponentCatalog;
+import com.openrecordsmanager.plugin.registry.ComponentCatalog;
 import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -72,7 +72,7 @@ public class ConfigController {
     @Operation(summary = "Get the effective value for the config this specific server")
     @Transactional(readOnly = true)
     public Object server_retrieveOne(@PathVariable("id") String id) {
-        ConfigDefinition<?> config = this.config.getConfigByKey(id)
+        ConfigType<?> config = this.config.getConfigByKey(id)
                 .orElseThrow(() -> ApiError.notFound(ComponentTypes.CONFIG.name, id));
 
         return this.config.getOptional(config)

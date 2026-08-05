@@ -5,6 +5,7 @@ import com.openrecordsmanager.api.ResourceIdentifier;
 import com.openrecordsmanager.api.template.ExpressionBuilder;
 import com.openrecordsmanager.list.ListElement;
 import com.openrecordsmanager.list.ListElementRepository;
+import com.openrecordsmanager.plugin.registry.ComponentCatalog;
 import com.openrecordsmanager.record.Record;
 import com.openrecordsmanager.user.User;
 import dev.cel.common.CelAbstractSyntaxTree;

@@ -25,7 +25,7 @@ public class ComponentType<T extends Component> {
     }
 
     @Override
-    public boolean equals(Object o) {
+    public boolean equals(@Nullable Object o) {
         if (o == null || getClass() != o.getClass()) return false;
         ComponentType<?> that = (ComponentType<?>) o;
         return Objects.equals(componentClass, that.componentClass);
@@ -47,6 +47,7 @@ public class ComponentType<T extends Component> {
     }
 
     @JsonCreator
+    @SuppressWarnings("unused")
     private static @Nullable ComponentType<?> fromString(String name) {
         return ComponentTypes.fromName(name);
     }

@@ -53,7 +53,7 @@ public abstract class ComponentReference<T extends Component> {
 
         @Override
         public Optional<T> getComponent(ComponentAccess catalog) {
-            return catalog.getComponent(this.type, this.id);
+            return catalog.getRegistry(this.type).get(this.id);
         }
 
         @Override
@@ -103,7 +103,7 @@ public abstract class ComponentReference<T extends Component> {
 
         @Override
         public Optional<ResourceIdentifier> getId(ComponentAccess catalog) {
-            return catalog.getId(this.getType(), this.value);
+            return catalog.getRegistry(this.getType()).getId(this.value);
         }
 
         @Override

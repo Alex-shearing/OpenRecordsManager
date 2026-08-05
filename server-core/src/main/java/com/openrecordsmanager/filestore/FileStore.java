@@ -7,7 +7,7 @@ import com.google.common.io.CountingInputStream;
 import com.openrecordsmanager.api.ResourceIdentifier;
 import com.openrecordsmanager.api.filestore.FileStoreType;
 import com.openrecordsmanager.api.types.ComponentTypes;
-import com.openrecordsmanager.plugin.ComponentCatalog;
+import com.openrecordsmanager.plugin.registry.ComponentCatalog;
 import jakarta.persistence.*;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
@@ -54,7 +54,7 @@ public class FileStore<T> {
 
     public FileStore(ComponentCatalog catalog, FileStoreType<T> type, Map<String, ?> properties) {
         this.id = UUID.randomUUID();
-        this.type = catalog.getId(ComponentTypes.FILE_STORE, type).orElseThrow();
+        this.type = catalog.getRegistry(ComponentTypes.FILE_STORE).getId(type).orElseThrow();
         this.properties = properties;
         this.middlewares = new ArrayList<>();
     }
@@ -112,7 +112,7 @@ public class FileStore<T> {
 
     @SuppressWarnings("unchecked")
     public FileStoreType<T> getStoreType(ComponentCatalog catalog) {
-        return (FileStoreType<T>) catalog.getComponent(ComponentTypes.FILE_STORE, this.type).orElseThrow();
+        return (FileStoreType<T>) catalog.getRegistry(ComponentTypes.FILE_STORE).get(this.type).orElseThrow();
     }
 
     public void setProperties(Map<String, ?> properties) {

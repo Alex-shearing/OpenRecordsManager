@@ -5,9 +5,9 @@ import com.openrecordsmanager.api.ComponentReference;
 import com.openrecordsmanager.api.ResourceIdentifier;
 import com.openrecordsmanager.api.types.ComponentTypes;
 import com.openrecordsmanager.database.DataRepository;
-import com.openrecordsmanager.plugin.ComponentCatalog;
 import com.openrecordsmanager.plugin.ExpressionsService;
-import com.openrecordsmanager.plugin.TemplateComponentRegistry;
+import com.openrecordsmanager.plugin.registry.ComponentCatalog;
+import com.openrecordsmanager.plugin.registry.TemplateComponentRegistry;
 
 import java.util.HashSet;
 import java.util.Optional;

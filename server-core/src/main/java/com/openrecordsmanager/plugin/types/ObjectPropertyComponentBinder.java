@@ -1,17 +1,17 @@
 package com.openrecordsmanager.plugin.types;
 
 import com.openrecordsmanager.api.ResourceIdentifier;
-import com.openrecordsmanager.api.template.property.PropertyDefinition;
+import com.openrecordsmanager.api.template.property.ObjectPropertyTemplate;
 import com.openrecordsmanager.api.types.ComponentTypes;
 import com.openrecordsmanager.database.DataRepository;
 import com.openrecordsmanager.list.ListType;
-import com.openrecordsmanager.plugin.ComponentCatalog;
 import com.openrecordsmanager.plugin.ExpressionsService;
+import com.openrecordsmanager.plugin.registry.ComponentCatalog;
 import com.openrecordsmanager.property.ObjectProperty;
 
 import java.util.Optional;
 
-public class ObjectPropertyComponentBinder extends ComponentBinder<PropertyDefinition<?>, ObjectProperty<?>> {
+public class ObjectPropertyComponentBinder extends ComponentBinder<ObjectPropertyTemplate<?>, ObjectProperty<?>> {
 
     @Override
     protected void register(
@@ -19,7 +19,7 @@ public class ObjectPropertyComponentBinder extends ComponentBinder<PropertyDefin
             ComponentCatalog catalog,
             ExpressionsService expressions,
             ResourceIdentifier id,
-            PropertyDefinition<?> definition
+            ObjectPropertyTemplate<?> definition
     ) {
         this.registerInternal(repository, catalog, expressions, id, definition);
     }
@@ -29,7 +29,7 @@ public class ObjectPropertyComponentBinder extends ComponentBinder<PropertyDefin
             ComponentCatalog catalog,
             ExpressionsService expressions,
             ResourceIdentifier id,
-            PropertyDefinition<T> definition
+            ObjectPropertyTemplate<T> definition
     ) {
         ListType listType = null;
         if (definition.type().allowsList() && definition.listType() != null) {

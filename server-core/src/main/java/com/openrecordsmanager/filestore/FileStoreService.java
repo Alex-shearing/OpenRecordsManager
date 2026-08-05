@@ -8,7 +8,7 @@ import com.openrecordsmanager.database.DataRepository;
 import com.openrecordsmanager.filestore.dto.FileStoreResponse;
 import com.openrecordsmanager.filestore.dto.NewFileStore;
 import com.openrecordsmanager.filestore.dto.SimpleFileStoreResponse;
-import com.openrecordsmanager.plugin.ComponentCatalog;
+import com.openrecordsmanager.plugin.registry.ComponentCatalog;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -48,7 +48,7 @@ public class FileStoreService {
 
     @Transactional
     public SimpleFileStoreResponse create(NewFileStore input) throws ResourceNotFoundException {
-        FileStoreType<?> type = this.catalog.getComponent(ComponentTypes.FILE_STORE, input.type())
+        FileStoreType<?> type = this.catalog.getRegistry(ComponentTypes.FILE_STORE).get(input.type())
                 .orElseThrow(() -> new ResourceNotFoundException(ComponentTypes.FILE_STORE, input.type()));
 
         FileStore<?> store = new FileStore<>(this.catalog, type, input.properties());

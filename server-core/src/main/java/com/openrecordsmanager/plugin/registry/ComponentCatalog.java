@@ -1,9 +1,9 @@
-package com.openrecordsmanager.plugin;
+package com.openrecordsmanager.plugin.registry;
 
 import com.openrecordsmanager.api.*;
-import com.openrecordsmanager.api.template.list.ListDefinition;
 import com.openrecordsmanager.api.types.ComponentType;
 import com.openrecordsmanager.api.types.ComponentTypes;
+import com.openrecordsmanager.plugin.PluginManager;
 import com.openrecordsmanager.plugin.types.ListComponentBinder;
 import com.openrecordsmanager.plugin.types.ListElementComponentBinder;
 import com.openrecordsmanager.plugin.types.ObjectPropertyComponentBinder;
@@ -37,7 +37,7 @@ public class ComponentCatalog implements ComponentAccess {
     private final Map<ComponentType<?>, TemplateComponentRegistry<?, ?>> templateRegistries = Map.of(
             ComponentTypes.LIST, new TemplateComponentRegistry<>(new ListComponentBinder()),
             ComponentTypes.LIST_ELEMENT, new TemplateComponentRegistry<>(new ListElementComponentBinder()),
-            ComponentTypes.PROPERTY, new TemplateComponentRegistry<>(new ObjectPropertyComponentBinder()),
+            ComponentTypes.OBJECT_PROPERTY, new TemplateComponentRegistry<>(new ObjectPropertyComponentBinder()),
             ComponentTypes.RECORD_TYPE, new TemplateComponentRegistry<>(new RecordTypeComponentBinder())
     );
 
@@ -70,7 +70,7 @@ public class ComponentCatalog implements ComponentAccess {
         return (TemplateComponentRegistry<K, ?>) this.templateRegistries.get(type);
     }
 
-    public Set<ComponentType<?>> getRegisterableKeys() {
+    public Set<ComponentType<?>> getTemplateTypes() {
         return this.templateRegistries.keySet();
     }
 
@@ -81,16 +81,6 @@ public class ComponentCatalog implements ComponentAccess {
             plugin.initialise(new RegistrationContextImpl(builder, plugin));
         }
         builder.build();
-    }
-
-    @Override
-    public <T extends Component> Optional<ResourceIdentifier> getId(ComponentType<T> type, T definition) {
-        return this.getRegistry(type).getId(definition);
-    }
-
-    @Override
-    public <T extends Component> Optional<T> getComponent(ComponentType<T> type, ResourceIdentifier id) {
-        return this.getRegistry(type).getComponent(id);
     }
 
     private class Builder {
@@ -109,13 +99,6 @@ public class ComponentCatalog implements ComponentAccess {
             LOGGER.info("Registering plugin component '{}' as {}", identifier, type);
 
             typeBuilder.register(identifier, component);
-
-            // List specific registration to all list children
-            if (component instanceof ListDefinition def) {
-                def.defaultEntries().forEach((eId, eDef) ->
-                        registerInstance(context, eId, eDef)
-                );
-            }
         }
 
         public void build() {

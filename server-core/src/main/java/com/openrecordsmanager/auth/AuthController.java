@@ -9,7 +9,7 @@ import com.openrecordsmanager.auth.dto.AuthProviderListResponse;
 import com.openrecordsmanager.auth.dto.LoginResponse;
 import com.openrecordsmanager.auth.entity.AuthProvider;
 import com.openrecordsmanager.database.DataRepository;
-import com.openrecordsmanager.plugin.ComponentCatalog;
+import com.openrecordsmanager.plugin.registry.ComponentCatalog;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;

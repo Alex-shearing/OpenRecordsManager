@@ -9,7 +9,7 @@ import com.openrecordsmanager.filestore.dto.MiddlewareResponse;
 import com.openrecordsmanager.filestore.dto.NewFileStoreMiddleware;
 import com.openrecordsmanager.filestore.dto.SimpleFileStoreResponse;
 import com.openrecordsmanager.filestore.dto.SimpleMiddlewareResponse;
-import com.openrecordsmanager.plugin.ComponentCatalog;
+import com.openrecordsmanager.plugin.registry.ComponentCatalog;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -48,7 +48,7 @@ public class MiddlewareService {
 
     @Transactional
     public SimpleMiddlewareResponse create(NewFileStoreMiddleware input) throws ResourceNotFoundException {
-        FileStoreMiddlewareType<?> type = this.catalog.getComponent(ComponentTypes.FILE_STORE_MIDDLEWARE, input.type())
+        FileStoreMiddlewareType<?> type = this.catalog.getRegistry(ComponentTypes.FILE_STORE_MIDDLEWARE).get(input.type())
                 .orElseThrow(() -> new ResourceNotFoundException(ComponentTypes.FILE_STORE_MIDDLEWARE, input.type()));
 
         Middleware<?> middleware = new Middleware<>(this.catalog, type, input.properties());

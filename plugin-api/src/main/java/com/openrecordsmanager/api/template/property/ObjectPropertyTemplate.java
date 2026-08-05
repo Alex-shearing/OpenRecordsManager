@@ -3,24 +3,24 @@ package com.openrecordsmanager.api.template.property;
 import com.openrecordsmanager.api.Component;
 import com.openrecordsmanager.api.ComponentReference;
 import com.openrecordsmanager.api.template.ExpressionBuilder;
-import com.openrecordsmanager.api.template.list.ListDefinition;
+import com.openrecordsmanager.api.template.list.ListTemplate;
 import org.jspecify.annotations.Nullable;
 import tools.jackson.databind.annotation.JsonDeserialize;
 
 import java.util.*;
 
 @JsonDeserialize
-public record PropertyDefinition<T>(
+public record ObjectPropertyTemplate<T>(
         PropertyType<T> type,
         String name,
         String description,
-        @Nullable ComponentReference<ListDefinition> listType,
+        @Nullable ComponentReference<ListTemplate> listType,
         @Nullable ExpressionBuilder validator,
         @Nullable T defaultValue,
         @Nullable ExpressionBuilder securityFilter
 ) implements Component {
 
-    public PropertyDefinition {
+    public ObjectPropertyTemplate {
         Objects.requireNonNull(type, "Property 'type' must not be null");
         Objects.requireNonNull(name, "Property 'name' must not be null");
         Objects.requireNonNull(description, "Property 'description' must not be null");
@@ -44,7 +44,7 @@ public record PropertyDefinition<T>(
         private String name;
         private String description = "";
         @Nullable
-        private ComponentReference<ListDefinition> listType = null;
+        private ComponentReference<ListTemplate> listType = null;
         @Nullable
         private ExpressionBuilder validator = null;
         @Nullable
@@ -72,7 +72,7 @@ public record PropertyDefinition<T>(
             return this;
         }
 
-        public Builder<T> listType(ComponentReference<ListDefinition> listType) {
+        public Builder<T> listType(ComponentReference<ListTemplate> listType) {
             if (!this.type.allowsList()) {
                 throw new IllegalArgumentException("listType can only be used for list or list item");
             }
@@ -80,13 +80,13 @@ public record PropertyDefinition<T>(
             return this;
         }
 
-        public Builder<T> listType(ListDefinition listType) {
+        public Builder<T> listType(ListTemplate listType) {
             return this.listType(ComponentReference.of(listType));
         }
 
-        public Builder<T> validator(String validator, PropertyDefinition<?>... definition) {
-            List<ComponentReference<PropertyDefinition<?>>> deps = Arrays.stream(definition)
-                    .map(ComponentReference::<PropertyDefinition<?>>of)
+        public Builder<T> validator(String validator, ObjectPropertyTemplate<?>... definition) {
+            List<ComponentReference<ObjectPropertyTemplate<?>>> deps = Arrays.stream(definition)
+                    .map(ComponentReference::<ObjectPropertyTemplate<?>>of)
                     .toList();
 
             return this.validator(new ExpressionBuilder(validator, deps));
@@ -107,19 +107,19 @@ public record PropertyDefinition<T>(
             return this;
         }
 
-        public Builder<T> securityFilter(String filter, PropertyDefinition<?>... definition) {
-            List<ComponentReference<PropertyDefinition<?>>> deps = new ArrayList<>(definition.length);
-            for (PropertyDefinition<?> propertyDefinition : definition) {
-                deps.add(ComponentReference.of(propertyDefinition));
+        public Builder<T> securityFilter(String filter, ObjectPropertyTemplate<?>... definition) {
+            List<ComponentReference<ObjectPropertyTemplate<?>>> deps = new ArrayList<>(definition.length);
+            for (ObjectPropertyTemplate<?> objectPropertyTemplate : definition) {
+                deps.add(ComponentReference.of(objectPropertyTemplate));
             }
 
             return this.securityFilter(new ExpressionBuilder(filter, deps));
         }
 
-        public PropertyDefinition<T> build() {
+        public ObjectPropertyTemplate<T> build() {
             T typedDefaultValue = this.defaultValue;
 
-            return new PropertyDefinition<>(
+            return new ObjectPropertyTemplate<>(
                     this.type,
                     this.name,
                     this.description,

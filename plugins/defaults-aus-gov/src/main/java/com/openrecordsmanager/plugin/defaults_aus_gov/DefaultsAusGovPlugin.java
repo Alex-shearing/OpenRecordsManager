@@ -3,7 +3,7 @@ package com.openrecordsmanager.plugin.defaults_aus_gov;
 import com.openrecordsmanager.api.Plugin;
 import com.openrecordsmanager.api.RegistrationContext;
 import com.openrecordsmanager.api.builtin.BuiltinProperties;
-import com.openrecordsmanager.api.template.recordtype.RecordTypeDefinition;
+import com.openrecordsmanager.api.template.recordtype.RecordTypeTemplate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -19,7 +19,7 @@ import org.slf4j.LoggerFactory;
 public class DefaultsAusGovPlugin implements Plugin {
     private static final Logger LOGGER = LoggerFactory.getLogger(DefaultsAusGovPlugin.class);
 
-    public static final RecordTypeDefinition EMAIL_RECORD_TYPE = RecordTypeDefinition.builder("Email Record")
+    public static final RecordTypeTemplate EMAIL_RECORD_TYPE = RecordTypeTemplate.builder("Email Record")
             .description("Use this to record email records.")
             .allowedContentTypes("text/plain", "text/html", "multipart/alternative", "multipart/mixed")
             .property(BuiltinProperties.DATE_CREATED)

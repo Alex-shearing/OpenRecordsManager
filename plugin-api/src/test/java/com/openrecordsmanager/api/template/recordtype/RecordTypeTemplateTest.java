@@ -7,16 +7,16 @@ import com.openrecordsmanager.api.types.ComponentTypes;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-class RecordTypeDefinitionTest {
+class RecordTypeTemplateTest {
 
     @Test
     void testDeserialization() {
-        RecordTypeDefinition type = Component.fromJson("test_record_type.json", RecordTypeDefinition.class);
-        RecordTypeDefinition codeType = RecordTypeDefinition.builder("Test record type")
+        RecordTypeTemplate type = Component.fromJson("test_record_type.json", RecordTypeTemplate.class);
+        RecordTypeTemplate codeType = RecordTypeTemplate.builder("Test record type")
                 .description("Test record description")
                 .allowedContentTypes("application/json")
-                .property(ComponentReference.of(ComponentTypes.PROPERTY, ResourceIdentifier.valueOf("test:user_email_property")))
-                .property(ComponentReference.of(ComponentTypes.PROPERTY, ResourceIdentifier.valueOf("test:user_email_property_2")))
+                .property(ComponentReference.of(ComponentTypes.OBJECT_PROPERTY, ResourceIdentifier.valueOf("test:user_email_property")))
+                .property(ComponentReference.of(ComponentTypes.OBJECT_PROPERTY, ResourceIdentifier.valueOf("test:user_email_property_2")))
                 .build();
 
         Assertions.assertEquals(codeType.name(), type.name(), "Names should be equal");
@@ -25,7 +25,7 @@ class RecordTypeDefinitionTest {
         Assertions.assertEquals(codeType.properties(), type.properties(), "Properties should be equal");
         Assertions.assertEquals(codeType, type, "Objects should be equal");
 
-        RecordTypeDefinition otherType = RecordTypeDefinition.builder("Not the test record type")
+        RecordTypeTemplate otherType = RecordTypeTemplate.builder("Not the test record type")
                 .description("Test record description")
                 .build();
 

@@ -8,16 +8,16 @@ import org.jspecify.annotations.Nullable;
 
 import java.util.*;
 
-public record ListElementDefinition(
+public record ListElementTemplate(
         String name,
         @JsonSetter(nulls = Nulls.AS_EMPTY) String description,
         int index,
         @Nullable Date activeTo,
         @JsonSetter(nulls = Nulls.AS_EMPTY) Set<String> aliases,
-        ComponentReference<ListDefinition> parent
+        ComponentReference<ListTemplate> parent
 ) implements Component {
 
-    public ListElementDefinition {
+    public ListElementTemplate {
         Objects.requireNonNull(name, "Property 'name' must not be null");
         Objects.requireNonNull(description, "Property 'description' must not be null");
         Objects.requireNonNull(aliases, "Property 'aliases' must not be null");
@@ -29,7 +29,7 @@ public record ListElementDefinition(
      */
     @Override
     public boolean equals(Object o) {
-        if (!(o instanceof ListElementDefinition that)) return false;
+        if (!(o instanceof ListElementTemplate that)) return false;
         return index == that.index &&
                 Objects.equals(name, that.name) &&
                 Objects.equals(activeTo, that.activeTo) &&
@@ -48,7 +48,7 @@ public record ListElementDefinition(
     }
 
     public static class Builder {
-        private final ListDefinition.Builder parentBuilder;
+        private final ListTemplate.Builder parentBuilder;
         private final String id;
         private final String name;
         private final Set<String> aliases = new HashSet<>();
@@ -58,7 +58,7 @@ public record ListElementDefinition(
         @Nullable
         private Date activeTo = null;
 
-        public Builder(ListDefinition.Builder parentBuilder, String id, String name) {
+        public Builder(ListTemplate.Builder parentBuilder, String id, String name) {
             this.parentBuilder = parentBuilder;
             this.id = id;
             this.name = name;
@@ -89,13 +89,13 @@ public record ListElementDefinition(
             return this;
         }
 
-        public ListDefinition.Builder endEntry() {
+        public ListTemplate.Builder endEntry() {
             this.parentBuilder.addEntry(this.id, this);
             return this.parentBuilder;
         }
 
-        public ListElementDefinition build(ComponentReference<ListDefinition> parent) {
-            return new ListElementDefinition(
+        public ListElementTemplate build(ComponentReference<ListTemplate> parent) {
+            return new ListElementTemplate(
                     this.name,
                     this.description,
                     this.index,

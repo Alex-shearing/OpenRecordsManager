@@ -6,12 +6,12 @@ import org.junit.jupiter.api.Test;
 
 import java.util.HashSet;
 
-class ListDefinitionTest {
+class ListTemplateTest {
 
     @Test
     void testDeserialisationFull() {
-        ListDefinition list = Component.fromJson("test_list.json", ListDefinition.class);
-        ListDefinition codeList = ListDefinition.builder("Test List")
+        ListTemplate list = Component.fromJson("test_list.json", ListTemplate.class);
+        ListTemplate codeList = ListTemplate.builder("Test List")
                 .entry("entry_1", "Entry 1").index(1).endEntry()
                 .entry("entry_2", "Entry 2").index(2).endEntry()
                 .build();

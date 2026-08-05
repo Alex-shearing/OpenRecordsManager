@@ -7,9 +7,9 @@ import com.openrecordsmanager.api.swagger.NotFoundApiResponse;
 import com.openrecordsmanager.api.types.ComponentType;
 import com.openrecordsmanager.api.types.ComponentTypes;
 import com.openrecordsmanager.database.DataRepository;
-import com.openrecordsmanager.plugin.ComponentCatalog;
 import com.openrecordsmanager.plugin.ExpressionsService;
-import com.openrecordsmanager.plugin.TemplateComponentRegistry;
+import com.openrecordsmanager.plugin.registry.ComponentCatalog;
+import com.openrecordsmanager.plugin.registry.TemplateComponentRegistry;
 import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -41,7 +41,7 @@ public class TemplateController {
     @Operation(summary = "List templates types available")
     @Transactional(readOnly = true)
     public Set<String> getTemplatesForType() {
-        return this.catalog.getRegisterableKeys().stream().map(ComponentType::toString).collect(Collectors.toSet());
+        return this.catalog.getTemplateTypes().stream().map(ComponentType::toString).collect(Collectors.toSet());
     }
 
     @GetMapping(value = "/{type}", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -67,7 +67,7 @@ public class TemplateController {
         }
         TemplateComponentRegistry<?, ?> registry = this.catalog.getTemplateRegistry(type);
 
-        return registry.getComponent(templateId)
+        return registry.get(templateId)
                 .orElseThrow(() -> new ResourceNotFoundException(type, templateId));
     }
 

@@ -6,9 +6,9 @@ import com.openrecordsmanager.api.errors.ResourceNotFoundException;
 import com.openrecordsmanager.api.types.ComponentType;
 import com.openrecordsmanager.api.types.ComponentTypes;
 import com.openrecordsmanager.database.DataRepository;
-import com.openrecordsmanager.plugin.ComponentCatalog;
 import com.openrecordsmanager.plugin.ExpressionsService;
-import com.openrecordsmanager.plugin.TemplateComponentRegistry;
+import com.openrecordsmanager.plugin.registry.ComponentCatalog;
+import com.openrecordsmanager.plugin.registry.TemplateComponentRegistry;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -31,7 +31,7 @@ public class TemplateService {
     ) {
         TemplateComponentRegistry<T, ?> registry = this.catalog.getTemplateRegistry(type);
 
-        T template = registry.getComponent(templateId)
+        T template = registry.get(templateId)
                 .orElseThrow(() -> new ResourceNotFoundException(ComponentTypes.RECORD_TYPE, templateId));
 
         registry.register(this.repository, this.catalog, this.expressions, templateId, template, includeDependencies);

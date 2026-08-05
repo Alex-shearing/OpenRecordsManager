@@ -7,7 +7,7 @@ import com.openrecordsmanager.api.auth.UserAuthDetails;
 import com.openrecordsmanager.auth.entity.AuthProvider;
 import com.openrecordsmanager.config.ConfigService;
 import com.openrecordsmanager.database.DataRepository;
-import com.openrecordsmanager.plugin.ComponentCatalog;
+import com.openrecordsmanager.plugin.registry.ComponentCatalog;
 import com.openrecordsmanager.user.User;
 import org.jspecify.annotations.Nullable;
 import org.springframework.security.authentication.*;

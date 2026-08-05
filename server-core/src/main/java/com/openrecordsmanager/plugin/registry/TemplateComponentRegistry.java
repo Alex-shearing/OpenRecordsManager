@@ -1,8 +1,9 @@
-package com.openrecordsmanager.plugin;
+package com.openrecordsmanager.plugin.registry;
 
 import com.openrecordsmanager.api.Component;
 import com.openrecordsmanager.api.ResourceIdentifier;
 import com.openrecordsmanager.database.DataRepository;
+import com.openrecordsmanager.plugin.ExpressionsService;
 import com.openrecordsmanager.plugin.types.ComponentBinder;
 
 import java.util.Optional;

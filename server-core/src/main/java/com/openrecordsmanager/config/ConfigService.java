@@ -1,13 +1,13 @@
 package com.openrecordsmanager.config;
 
-import com.openrecordsmanager.api.config.ConfigDefinition;
 import com.openrecordsmanager.api.config.ConfigStore;
+import com.openrecordsmanager.api.config.ConfigType;
 import com.openrecordsmanager.api.errors.ApiError;
 import com.openrecordsmanager.api.errors.ResourceNotFoundException;
 import com.openrecordsmanager.api.types.ComponentTypes;
 import com.openrecordsmanager.config.dto.ConfigResponse;
 import com.openrecordsmanager.database.DataRepository;
-import com.openrecordsmanager.plugin.ComponentCatalog;
+import com.openrecordsmanager.plugin.registry.ComponentCatalog;
 import org.jspecify.annotations.Nullable;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
@@ -32,7 +32,7 @@ public class ConfigService implements ConfigStore {
 
     @Transactional
     public ConfigResponse setConfig(String id, String value) {
-        ConfigDefinition<?> key = this.getConfigByKey(id)
+        ConfigType<?> key = this.getConfigByKey(id)
                 .orElseThrow(() -> ApiError.notFound(ComponentTypes.CONFIG.name, id));
         Object parsedValue = key.type().fromString(value)
                 .orElseThrow(() -> ApiError.clientError(
@@ -50,12 +50,12 @@ public class ConfigService implements ConfigStore {
     }
 
     @Override
-    public <T> @Nullable T getValue(ConfigDefinition<T> key) {
+    public <T> @Nullable T getValue(ConfigType<T> key) {
         T value = this.environment.getProperty(key.key(), key.type().cType);
         return value != null ? value : key.defaultValue();
     }
 
-    public Optional<ConfigDefinition<?>> getConfigByKey(String key) {
+    public Optional<ConfigType<?>> getConfigByKey(String key) {
         return this.catalog.getRegistry(ComponentTypes.CONFIG).stream()
                 .filter(configDefinition -> configDefinition.key().equals(key))
                 .findFirst();
@@ -68,7 +68,7 @@ public class ConfigService implements ConfigStore {
     }
 
     public Optional<?> getDatabaseConfig(String id) {
-        ConfigDefinition<?> config = this.getConfigByKey(id)
+        ConfigType<?> config = this.getConfigByKey(id)
                 .orElseThrow(() -> new ResourceNotFoundException(ComponentTypes.CONFIG.name, id));
 
         ConfigItem configItem = this.repository.configRepo.findByConfigKey(config.key())

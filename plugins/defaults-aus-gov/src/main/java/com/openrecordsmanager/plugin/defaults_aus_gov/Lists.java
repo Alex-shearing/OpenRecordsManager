@@ -1,11 +1,11 @@
 package com.openrecordsmanager.plugin.defaults_aus_gov;
 
-import com.openrecordsmanager.api.template.list.ListDefinition;
+import com.openrecordsmanager.api.template.list.ListTemplate;
 
 import java.util.*;
 
 public class Lists {
-    public static final ListDefinition SECURITY_CLASSIFICATION = ListDefinition.builder("Security Classification")
+    public static final ListTemplate SECURITY_CLASSIFICATION = ListTemplate.builder("Security Classification")
             .entry("unofficial", "UNOFFICIAL")
             .description("No damage. This information does not form part of official duty.")
             .alias("UO")
@@ -68,7 +68,7 @@ public class Lists {
             .endEntry()
             .build();
 
-    public static final ListDefinition SECURITY_CAVEAT = ListDefinition.builder("Security Caveat")
+    public static final ListTemplate SECURITY_CAVEAT = ListTemplate.builder("Security Caveat")
             .entry("delicate_source", "DELICATE SOURCE").endEntry()
             .entry("orcon", "ORCON").endEntry()
             .entry("exclusive_for", "EXCLUSIVE FOR").endEntry()
@@ -77,16 +77,16 @@ public class Lists {
             .activeTo(new GregorianCalendar(2025, Calendar.JULY, 1))
             .endEntry()
             .build();
-    public static final ListDefinition RELEASABILITY_CAVEAT = addCountyCodes(ListDefinition.builder("Releasability Caveat")
+    public static final ListTemplate RELEASABILITY_CAVEAT = addCountyCodes(ListTemplate.builder("Releasability Caveat")
             .entry("austeo", "AUSTEO").description("Australian eyes only").index(0).endEntry())
             .entry("agao", "AGAO").description("Australian government agencies only").index(5).endEntry()
             .build();
-    public static final ListDefinition INFORMATION_MANAGEMENT_MARKER = ListDefinition.builder("Information Management Marker")
+    public static final ListTemplate INFORMATION_MANAGEMENT_MARKER = ListTemplate.builder("Information Management Marker")
             .entry("personal_privacy", "Personal-Privacy").endEntry()
             .entry("legal_privilege", "Legal-Privilege").endEntry()
             .entry("legislative_secrecy", "Legislative-Secrecy").endEntry()
             .build();
-    public static final ListDefinition RECORD_CATEGORY = ListDefinition.builder("Record Category")
+    public static final ListTemplate RECORD_CATEGORY = ListTemplate.builder("Record Category")
             .entry("archives", "Archives")
             .description(
                     "All of the records within a specified society, jurisdiction or sector brought into an encompassing framework."
@@ -115,7 +115,7 @@ public class Lists {
             .endEntry()
             .build();
 
-    private static ListDefinition.Builder addCountyCodes(ListDefinition.Builder builder) {
+    private static ListTemplate.Builder addCountyCodes(ListTemplate.Builder builder) {
         Map<String, Integer> indexOverrides = Map.of(
                 "AUS", 10,
                 "CAN", 15,

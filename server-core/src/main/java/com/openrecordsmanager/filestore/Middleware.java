@@ -3,7 +3,7 @@ package com.openrecordsmanager.filestore;
 import com.openrecordsmanager.api.ResourceIdentifier;
 import com.openrecordsmanager.api.filestore.FileStoreMiddlewareType;
 import com.openrecordsmanager.api.types.ComponentTypes;
-import com.openrecordsmanager.plugin.ComponentCatalog;
+import com.openrecordsmanager.plugin.registry.ComponentCatalog;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
@@ -41,26 +41,28 @@ public class Middleware<T> {
 
     public Middleware(ComponentCatalog catalog, FileStoreMiddlewareType<T> type, Map<String, ?> properties) {
         this.id = UUID.randomUUID();
-        this.type = catalog.getId(ComponentTypes.FILE_STORE_MIDDLEWARE, type).orElseThrow();
+        this.type = catalog.getRegistry(ComponentTypes.FILE_STORE_MIDDLEWARE).getId(type).orElseThrow();
         this.properties = properties;
     }
 
     public T getProperties(ComponentCatalog catalog) {
-        return this.getStoreType(catalog).parseOptions(this.properties);
+        return this.getMiddlewareType(catalog).parseOptions(this.properties);
     }
 
     @SuppressWarnings("unchecked")
-    public FileStoreMiddlewareType<T> getStoreType(ComponentCatalog catalog) {
-        return (FileStoreMiddlewareType<T>) catalog.getComponent(ComponentTypes.FILE_STORE_MIDDLEWARE, this.type).orElseThrow();
+    public FileStoreMiddlewareType<T> getMiddlewareType(ComponentCatalog catalog) {
+        return (FileStoreMiddlewareType<T>) catalog.getRegistry(ComponentTypes.FILE_STORE_MIDDLEWARE)
+                .get(this.type)
+                .orElseThrow();
     }
 
     public InputStream duringSave(ComponentCatalog catalog, InputStream stream) {
-        FileStoreMiddlewareType<T> type = this.getStoreType(catalog);
+        FileStoreMiddlewareType<T> type = this.getMiddlewareType(catalog);
         return type.duringSave(this.getProperties(catalog), stream);
     }
 
     public InputStream duringRetrieve(ComponentCatalog catalog, InputStream stream) {
-        FileStoreMiddlewareType<T> type = this.getStoreType(catalog);
+        FileStoreMiddlewareType<T> type = this.getMiddlewareType(catalog);
         return type.duringRetrieve(this.getProperties(catalog), stream);
     }
 

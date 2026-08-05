@@ -6,8 +6,8 @@ import com.openrecordsmanager.api.types.ComponentTypes;
 import com.openrecordsmanager.config.ConfigService;
 import com.openrecordsmanager.database.DataRepository;
 import com.openrecordsmanager.filestore.FileStore;
-import com.openrecordsmanager.plugin.ComponentCatalog;
 import com.openrecordsmanager.plugin.ExpressionsService;
+import com.openrecordsmanager.plugin.registry.ComponentCatalog;
 import com.openrecordsmanager.property.ObjectProperty;
 import com.openrecordsmanager.record.dto.NewRecord;
 import com.openrecordsmanager.record.dto.RecordResponse;
@@ -57,7 +57,7 @@ public class RecordService {
         Record record = new Record("tba", type);
         input.properties().forEach((identifier, o) -> {
             ObjectProperty<?> property = this.repository.objectPropertyRepo.findById(identifier)
-                    .orElseThrow(() -> new ResourceNotFoundException(ComponentTypes.PROPERTY, identifier));
+                    .orElseThrow(() -> new ResourceNotFoundException(ComponentTypes.OBJECT_PROPERTY, identifier));
 
             setProperty(record, property, o);
         });

@@ -4,7 +4,7 @@ import com.openrecordsmanager.auth.dto.LoginResponse;
 import com.openrecordsmanager.auth.entity.AuthToken;
 import com.openrecordsmanager.config.ConfigService;
 import com.openrecordsmanager.database.DataRepository;
-import com.openrecordsmanager.plugin.ComponentCatalog;
+import com.openrecordsmanager.plugin.registry.ComponentCatalog;
 import com.openrecordsmanager.user.User;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;

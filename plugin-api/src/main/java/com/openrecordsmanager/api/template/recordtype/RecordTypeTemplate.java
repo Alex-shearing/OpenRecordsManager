@@ -3,7 +3,7 @@ package com.openrecordsmanager.api.template.recordtype;
 import com.openrecordsmanager.api.Component;
 import com.openrecordsmanager.api.ComponentReference;
 import com.openrecordsmanager.api.template.ExpressionBuilder;
-import com.openrecordsmanager.api.template.property.PropertyDefinition;
+import com.openrecordsmanager.api.template.property.ObjectPropertyTemplate;
 import org.jspecify.annotations.Nullable;
 import tools.jackson.databind.annotation.JsonDeserialize;
 
@@ -14,16 +14,16 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @JsonDeserialize
-public record RecordTypeDefinition(
+public record RecordTypeTemplate(
         String name,
         String description,
-        Map<ComponentReference<PropertyDefinition<?>>, ?> properties,
+        Map<ComponentReference<ObjectPropertyTemplate<?>>, ?> properties,
         @Nullable Set<String> allowedContentTypes,
         @Nullable ExpressionBuilder securityFilter,
         @JsonDeserialize(using = SecurityFilterUsage.Deserializer.class) SecurityFilterUsage securityFilterUsage
 ) implements Component {
 
-    public RecordTypeDefinition {
+    public RecordTypeTemplate {
         Objects.requireNonNull(name, "Property 'name' must not be null");
         Objects.requireNonNull(description, "Property 'description' must not be null");
         Objects.requireNonNull(properties, "Property 'properties' must not be null");
@@ -47,7 +47,7 @@ public record RecordTypeDefinition(
     public static class Builder {
         private String name;
         private String description = "";
-        private final Map<ComponentReference<PropertyDefinition<?>>, @Nullable Object> properties = new HashMap<>();
+        private final Map<ComponentReference<ObjectPropertyTemplate<?>>, @Nullable Object> properties = new HashMap<>();
         @Nullable
         private Set<String> allowedContentTypes = null;
         @Nullable
@@ -68,35 +68,35 @@ public record RecordTypeDefinition(
             return this;
         }
 
-        public Builder properties(Set<ComponentReference<PropertyDefinition<?>>> properties) {
-            for (ComponentReference<PropertyDefinition<?>> property : properties) {
+        public Builder properties(Set<ComponentReference<ObjectPropertyTemplate<?>>> properties) {
+            for (ComponentReference<ObjectPropertyTemplate<?>> property : properties) {
                 this.properties.put(property, null);
             }
             return this;
         }
 
-        public Builder property(ComponentReference<PropertyDefinition<?>> property) {
+        public Builder property(ComponentReference<ObjectPropertyTemplate<?>> property) {
             this.properties.put(property, null);
             return this;
         }
 
-        public Builder property(PropertyDefinition<?> property) {
+        public Builder property(ObjectPropertyTemplate<?> property) {
             return this.property(ComponentReference.of(property));
         }
 
-        public <T> Builder property(ComponentReference<PropertyDefinition<T>> property, T defaultValue) {
+        public <T> Builder property(ComponentReference<ObjectPropertyTemplate<T>> property, T defaultValue) {
             this.properties.put(property.widen(def -> def), defaultValue);
             return this;
         }
 
-        public <T> Builder property(PropertyDefinition<T> property, T defaultValue) {
+        public <T> Builder property(ObjectPropertyTemplate<T> property, T defaultValue) {
             return this.property(ComponentReference.of(property), defaultValue);
         }
 
-        public Builder securityFilter(SecurityFilterUsage filterUsage, String filter, PropertyDefinition<?>... properties) {
-            List<ComponentReference<PropertyDefinition<?>>> deps = new ArrayList<>(properties.length);
-            for (PropertyDefinition<?> propertyDefinition : properties) {
-                deps.add(ComponentReference.of(propertyDefinition));
+        public Builder securityFilter(SecurityFilterUsage filterUsage, String filter, ObjectPropertyTemplate<?>... properties) {
+            List<ComponentReference<ObjectPropertyTemplate<?>>> deps = new ArrayList<>(properties.length);
+            for (ObjectPropertyTemplate<?> objectPropertyTemplate : properties) {
+                deps.add(ComponentReference.of(objectPropertyTemplate));
             }
 
             return this.securityFilter(filterUsage, new ExpressionBuilder(filter, deps));
@@ -120,8 +120,8 @@ public record RecordTypeDefinition(
             return this;
         }
 
-        public RecordTypeDefinition build() {
-            return new RecordTypeDefinition(
+        public RecordTypeTemplate build() {
+            return new RecordTypeTemplate(
                     this.name,
                     this.description,
                     this.properties,

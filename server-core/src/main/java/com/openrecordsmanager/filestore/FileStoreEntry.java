@@ -1,6 +1,6 @@
 package com.openrecordsmanager.filestore;
 
-import com.openrecordsmanager.plugin.ComponentCatalog;
+import com.openrecordsmanager.plugin.registry.ComponentCatalog;
 import jakarta.persistence.*;
 import org.jspecify.annotations.Nullable;
 

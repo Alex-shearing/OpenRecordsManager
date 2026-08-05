@@ -8,13 +8,13 @@ import tools.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.io.InputStream;
 
-class PropertyDefinitionTest {
+class ObjectPropertyTemplateTest {
 
     static final ObjectMapper MAPPER = new ObjectMapper();
 
     @Test
     void testDeserialisation() {
-        try (InputStream inputStream = PropertyDefinitionTest.class
+        try (InputStream inputStream = ObjectPropertyTemplateTest.class
                 .getClassLoader()
                 .getResourceAsStream("user_email_property.json")) {
 
@@ -22,8 +22,8 @@ class PropertyDefinitionTest {
                 throw new IllegalArgumentException("File not found in resources!");
             }
 
-            PropertyDefinition<?> property = MAPPER.readValue(inputStream, PropertyDefinition.class);
-            PropertyDefinition<?> codeProperty = PropertyDefinition.builder("User Email Address", PropertyType.STRING)
+            ObjectPropertyTemplate<?> property = MAPPER.readValue(inputStream, ObjectPropertyTemplate.class);
+            ObjectPropertyTemplate<?> codeProperty = ObjectPropertyTemplate.builder("User Email Address", PropertyType.STRING)
                     .description("An email address")
                     .defaultValue("admin@company.com")
                     .validator("true")
@@ -42,8 +42,8 @@ class PropertyDefinitionTest {
 
     @Test
     void testDeserialisationFull() {
-        PropertyDefinition<?> property = Component.fromJson("user_email_property.json", PropertyDefinition.class);
-        PropertyDefinition<?> codeProperty = PropertyDefinition.builder("User Email Address", PropertyType.STRING)
+        ObjectPropertyTemplate<?> property = Component.fromJson("user_email_property.json", ObjectPropertyTemplate.class);
+        ObjectPropertyTemplate<?> codeProperty = ObjectPropertyTemplate.builder("User Email Address", PropertyType.STRING)
                 .description("An email address")
                 .defaultValue("admin@company.com")
                 .validator("true")

@@ -63,7 +63,7 @@ public class Record implements ObjectPropertyHolder<RecordPropertyValue<?>> {
     }
 
     @Override
-    public <V> RecordPropertyValue<V> createProperty(ObjectProperty<V> property, V value) {
+    public <V> RecordPropertyValue<V> createProperty(ObjectProperty<V> property, @Nullable V value) {
         return new RecordPropertyValue<>(this, property, value);
     }
 

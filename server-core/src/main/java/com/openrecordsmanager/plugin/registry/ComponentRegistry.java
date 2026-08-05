@@ -1,7 +1,8 @@
-package com.openrecordsmanager.plugin;
+package com.openrecordsmanager.plugin.registry;
 
 import com.google.common.collect.ImmutableBiMap;
 import com.openrecordsmanager.api.Component;
+import com.openrecordsmanager.api.ComponentAccess;
 import com.openrecordsmanager.api.ResourceIdentifier;
 
 import java.util.HashMap;
@@ -9,13 +10,15 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
 
-public class ComponentRegistry<T extends Component> {
+public class ComponentRegistry<T extends Component> implements ComponentAccess.RegistryAccess<T> {
     private ImmutableBiMap<ResourceIdentifier, T> map = ImmutableBiMap.of();
 
-    public Optional<T> getComponent(ResourceIdentifier id) {
+    @Override
+    public Optional<T> get(ResourceIdentifier id) {
         return Optional.ofNullable(this.map.get(id));
     }
 
+    @Override
     public Optional<ResourceIdentifier> getId(T definition) {
         return Optional.ofNullable(this.map.inverse().get(definition));
     }

@@ -1,7 +1,7 @@
 package com.openrecordsmanager.plugin.types;
 
 import com.openrecordsmanager.api.ComponentReference;
-import com.openrecordsmanager.plugin.ComponentCatalog;
+import com.openrecordsmanager.plugin.registry.ComponentCatalog;
 import tools.jackson.core.JacksonException;
 import tools.jackson.core.JsonGenerator;
 import tools.jackson.databind.SerializationContext;
