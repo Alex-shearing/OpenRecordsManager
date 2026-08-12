@@ -1,9 +1,10 @@
-package com.openrecordsmanager.filestore;
+package com.openrecordsmanager.filestore.store;
 
 import com.openrecordsmanager.api.swagger.ConflictApiResponse;
 import com.openrecordsmanager.api.swagger.DefaultApiResponses;
 import com.openrecordsmanager.api.swagger.NotFoundApiResponse;
 import com.openrecordsmanager.filestore.dto.*;
+import com.openrecordsmanager.filestore.middleware.MiddlewareService;
 import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;

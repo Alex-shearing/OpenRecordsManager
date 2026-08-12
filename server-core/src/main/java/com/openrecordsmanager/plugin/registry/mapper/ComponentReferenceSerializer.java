@@ -1,4 +1,4 @@
-package com.openrecordsmanager.plugin.types;
+package com.openrecordsmanager.plugin.registry.mapper;
 
 import com.openrecordsmanager.api.ComponentReference;
 import com.openrecordsmanager.plugin.registry.ComponentCatalog;

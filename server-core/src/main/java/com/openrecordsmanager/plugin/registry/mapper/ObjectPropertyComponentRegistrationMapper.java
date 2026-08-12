@@ -1,4 +1,4 @@
-package com.openrecordsmanager.plugin.types;
+package com.openrecordsmanager.plugin.registry.mapper;
 
 import com.openrecordsmanager.api.ResourceIdentifier;
 import com.openrecordsmanager.api.template.property.ObjectPropertyTemplate;
@@ -11,7 +11,7 @@ import com.openrecordsmanager.property.ObjectProperty;
 
 import java.util.Optional;
 
-public class ObjectPropertyComponentBinder extends ComponentBinder<ObjectPropertyTemplate<?>, ObjectProperty<?>> {
+public class ObjectPropertyComponentRegistrationMapper extends ComponentRegistrationMapper<ObjectPropertyTemplate<?>, ObjectProperty<?>> {
 
     @Override
     protected void register(

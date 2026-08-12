@@ -1,4 +1,4 @@
-package com.openrecordsmanager.plugin.types;
+package com.openrecordsmanager.plugin.registry.mapper;
 
 import com.openrecordsmanager.api.Component;
 import com.openrecordsmanager.api.ComponentReference;
@@ -13,7 +13,7 @@ import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 
-public abstract class ComponentBinder<T extends Component, D> {
+public abstract class ComponentRegistrationMapper<T extends Component, D> {
 
     /**
      * Register the component template to the database

@@ -1,4 +1,4 @@
-package com.openrecordsmanager.plugin.types;
+package com.openrecordsmanager.plugin.registry.mapper;
 
 import com.openrecordsmanager.api.ResourceIdentifier;
 import com.openrecordsmanager.api.template.list.ListTemplate;
@@ -10,7 +10,7 @@ import com.openrecordsmanager.plugin.registry.ComponentCatalog;
 
 import java.util.Optional;
 
-public class ListComponentBinder extends ComponentBinder<ListTemplate, ListType> {
+public class ListComponentRegistrationMapper extends ComponentRegistrationMapper<ListTemplate, ListType> {
 
     @Override
     public void register(

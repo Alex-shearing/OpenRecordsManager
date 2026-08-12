@@ -1,4 +1,4 @@
-package com.openrecordsmanager.filestore;
+package com.openrecordsmanager.filestore.middleware;
 
 import com.openrecordsmanager.api.errors.ResourceInUseException;
 import com.openrecordsmanager.api.errors.ResourceNotFoundException;

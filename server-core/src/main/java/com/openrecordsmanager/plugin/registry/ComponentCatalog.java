@@ -4,10 +4,10 @@ import com.openrecordsmanager.api.*;
 import com.openrecordsmanager.api.types.ComponentType;
 import com.openrecordsmanager.api.types.ComponentTypes;
 import com.openrecordsmanager.plugin.PluginManager;
-import com.openrecordsmanager.plugin.types.ListComponentBinder;
-import com.openrecordsmanager.plugin.types.ListElementComponentBinder;
-import com.openrecordsmanager.plugin.types.ObjectPropertyComponentBinder;
-import com.openrecordsmanager.plugin.types.RecordTypeComponentBinder;
+import com.openrecordsmanager.plugin.registry.mapper.ListComponentRegistrationMapper;
+import com.openrecordsmanager.plugin.registry.mapper.ListElementComponentRegistrationMapper;
+import com.openrecordsmanager.plugin.registry.mapper.ObjectPropertyComponentRegistrationMapper;
+import com.openrecordsmanager.plugin.registry.mapper.RecordTypeComponentRegistrationMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -35,10 +35,10 @@ public class ComponentCatalog implements ComponentAccess {
 
     // Templates
     private final Map<ComponentType<?>, TemplateComponentRegistry<?, ?>> templateRegistries = Map.of(
-            ComponentTypes.LIST, new TemplateComponentRegistry<>(new ListComponentBinder()),
-            ComponentTypes.LIST_ELEMENT, new TemplateComponentRegistry<>(new ListElementComponentBinder()),
-            ComponentTypes.OBJECT_PROPERTY, new TemplateComponentRegistry<>(new ObjectPropertyComponentBinder()),
-            ComponentTypes.RECORD_TYPE, new TemplateComponentRegistry<>(new RecordTypeComponentBinder())
+            ComponentTypes.LIST, new TemplateComponentRegistry<>(new ListComponentRegistrationMapper()),
+            ComponentTypes.LIST_ELEMENT, new TemplateComponentRegistry<>(new ListElementComponentRegistrationMapper()),
+            ComponentTypes.OBJECT_PROPERTY, new TemplateComponentRegistry<>(new ObjectPropertyComponentRegistrationMapper()),
+            ComponentTypes.RECORD_TYPE, new TemplateComponentRegistry<>(new RecordTypeComponentRegistrationMapper())
     );
 
     // Combined

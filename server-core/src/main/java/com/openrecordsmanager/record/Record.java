@@ -1,7 +1,7 @@
 package com.openrecordsmanager.record;
 
 import com.openrecordsmanager.api.template.recordtype.SecurityFilterUsage;
-import com.openrecordsmanager.filestore.FileStoreEntry;
+import com.openrecordsmanager.filestore.store.FileStoreEntry;
 import com.openrecordsmanager.plugin.ExpressionsService;
 import com.openrecordsmanager.property.ObjectProperty;
 import com.openrecordsmanager.property.ObjectPropertyHolder;

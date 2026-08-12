@@ -1,6 +1,6 @@
 package com.openrecordsmanager.record;
 
-import com.openrecordsmanager.filestore.FileStoreEntry;
+import com.openrecordsmanager.filestore.store.FileStoreEntry;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Pattern;
 

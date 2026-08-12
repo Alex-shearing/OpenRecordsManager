@@ -1,6 +1,6 @@
 package com.openrecordsmanager.plugin;
 
-import com.openrecordsmanager.filestore.FileStoreEntry;
+import com.openrecordsmanager.filestore.store.FileStoreEntry;
 import jakarta.persistence.*;
 import tools.jackson.core.JacksonException;
 import tools.jackson.core.JsonGenerator;

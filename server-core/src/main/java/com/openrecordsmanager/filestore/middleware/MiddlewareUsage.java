@@ -1,4 +1,4 @@
-package com.openrecordsmanager.filestore;
+package com.openrecordsmanager.filestore.middleware;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;

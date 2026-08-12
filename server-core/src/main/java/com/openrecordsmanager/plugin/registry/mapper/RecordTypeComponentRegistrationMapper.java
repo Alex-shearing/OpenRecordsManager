@@ -1,4 +1,4 @@
-package com.openrecordsmanager.plugin.types;
+package com.openrecordsmanager.plugin.registry.mapper;
 
 import com.openrecordsmanager.api.ComponentReference;
 import com.openrecordsmanager.api.ResourceIdentifier;
@@ -17,7 +17,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-public class RecordTypeComponentBinder extends ComponentBinder<RecordTypeTemplate, RecordType> {
+public class RecordTypeComponentRegistrationMapper extends ComponentRegistrationMapper<RecordTypeTemplate, RecordType> {
 
     @Override
     public void register(

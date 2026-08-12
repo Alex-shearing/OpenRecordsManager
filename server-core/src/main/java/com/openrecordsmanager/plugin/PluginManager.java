@@ -1,12 +1,12 @@
 package com.openrecordsmanager.plugin;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.hash.Hashing;
 import com.openrecordsmanager.api.Plugin;
 import com.openrecordsmanager.api.builtin.BuiltinPlugin;
 import com.openrecordsmanager.api.errors.ResourceNotFoundException;
-import com.openrecordsmanager.filestore.FileStore;
-import com.openrecordsmanager.filestore.FileStoreRepository;
+import com.openrecordsmanager.filestore.store.FileStore;
+import com.openrecordsmanager.filestore.store.FileStoreRepository;
+import com.openrecordsmanager.filestore.store.FileStoreService;
 import com.openrecordsmanager.plugin.registry.ComponentCatalog;
 import jakarta.annotation.PreDestroy;
 import org.jspecify.annotations.Nullable;
@@ -201,7 +201,7 @@ public class PluginManager {
 
             try {
                 String localHash = com.google.common.io.Files.asByteSource(localPlugin.file)
-                        .hash(Hashing.sha256())
+                        .hash(FileStoreService.getHashFunction(persistedPlugin.file.hashAlgorithm))
                         .toString();
 
                 if (!localHash.equals(persistedPlugin.file.hash)) {

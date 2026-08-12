@@ -1,4 +1,4 @@
 @NullMarked
-package com.openrecordsmanager.plugin.types;
+package com.openrecordsmanager.filestore.middleware;
 
 import org.jspecify.annotations.NullMarked;

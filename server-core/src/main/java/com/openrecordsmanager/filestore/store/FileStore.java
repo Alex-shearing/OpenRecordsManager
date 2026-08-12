@@ -1,12 +1,13 @@
-package com.openrecordsmanager.filestore;
+package com.openrecordsmanager.filestore.store;
 
 import com.google.common.hash.HashFunction;
-import com.google.common.hash.Hashing;
 import com.google.common.hash.HashingInputStream;
 import com.google.common.io.CountingInputStream;
 import com.openrecordsmanager.api.ResourceIdentifier;
 import com.openrecordsmanager.api.filestore.FileStoreType;
 import com.openrecordsmanager.api.types.ComponentTypes;
+import com.openrecordsmanager.filestore.middleware.Middleware;
+import com.openrecordsmanager.filestore.middleware.MiddlewareUsage;
 import com.openrecordsmanager.plugin.registry.ComponentCatalog;
 import jakarta.persistence.*;
 import org.hibernate.annotations.JdbcTypeCode;
@@ -25,7 +26,6 @@ import java.util.*;
 @Table(name = "file_store")
 @JsonSerialize(using = FileStore.Serializer.class)
 public class FileStore<T> {
-    private static final String CURRENT_HASH_ALGORITHM = "SHA-256";
 
     @Id
     public UUID id;
@@ -65,7 +65,7 @@ public class FileStore<T> {
     }
 
     public FileStoreEntry newFile(ComponentCatalog catalog, InputStream file, String extension) {
-        HashFunction hashFunction = getHashFunction(CURRENT_HASH_ALGORITHM);
+        HashFunction hashFunction = FileStoreService.getHashFunction(FileStoreService.CURRENT_HASH_ALGORITHM);
 
         CountingInputStream countingStream = new CountingInputStream(file);
         HashingInputStream hashingStream = new HashingInputStream(hashFunction, countingStream);
@@ -86,7 +86,7 @@ public class FileStore<T> {
         return new FileStoreEntry(
                 this,
                 path,
-                CURRENT_HASH_ALGORITHM,
+                FileStoreService.CURRENT_HASH_ALGORITHM,
                 hashingStream.hash().toString(),
                 countingStream.getCount(),
                 extension
@@ -114,14 +114,6 @@ public class FileStore<T> {
 
     public void setProperties(Map<String, ?> properties) {
         this.properties = properties;
-    }
-
-    public static HashFunction getHashFunction(String algorithm) {
-        return switch (algorithm) {
-            case "SHA-256" -> Hashing.sha256();
-            case "SHA-512" -> Hashing.sha512();
-            default -> throw new IllegalStateException("Unknown hash function: " + algorithm);
-        };
     }
 
     public static class Serializer extends ValueSerializer<FileStore<?>> {

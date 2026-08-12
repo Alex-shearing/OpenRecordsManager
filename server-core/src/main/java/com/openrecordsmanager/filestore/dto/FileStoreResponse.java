@@ -1,7 +1,7 @@
 package com.openrecordsmanager.filestore.dto;
 
 import com.openrecordsmanager.api.ResourceIdentifier;
-import com.openrecordsmanager.filestore.MiddlewareUsage;
+import com.openrecordsmanager.filestore.middleware.MiddlewareUsage;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 

@@ -1,4 +1,4 @@
-package com.openrecordsmanager.filestore;
+package com.openrecordsmanager.filestore.store;
 
 import com.openrecordsmanager.plugin.registry.ComponentCatalog;
 import jakarta.persistence.*;
