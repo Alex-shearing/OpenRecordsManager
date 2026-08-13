@@ -71,7 +71,7 @@ public class ExpressionsService {
             return true;
         }
 
-        LOGGER.info("using filter '{}' for property: {}", filter, id);
+        LOGGER.info("using filter '{}' for property: {} with value {}", filter, id, value);
 
         try {
             CelAbstractSyntaxTree ast = this.celCompiler.compile(filter).getAst();

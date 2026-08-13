@@ -3,7 +3,9 @@ package com.openrecordsmanager.list;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.openrecordsmanager.api.ResourceIdentifier;
+import com.openrecordsmanager.database.util.ResourceIdentifierJavaType;
 import jakarta.persistence.*;
+import org.hibernate.annotations.JavaType;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,6 +16,7 @@ import java.util.List;
 public class ListType {
     @Id
     @JsonProperty
+    @JavaType(ResourceIdentifierJavaType.class)
     public ResourceIdentifier id;
 
     @Column(nullable = false)

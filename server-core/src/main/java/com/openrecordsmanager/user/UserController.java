@@ -16,6 +16,6 @@ public class UserController {
 
     @GetMapping(value = "/me")
     public UserResponse me(@AuthenticationPrincipal User user) {
-        return new UserResponse(user.getUsername());
+        return new UserResponse(user.getUsername(), user.toPropertyMap());
     }
 }

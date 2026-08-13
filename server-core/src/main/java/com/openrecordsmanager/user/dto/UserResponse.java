@@ -2,5 +2,7 @@ package com.openrecordsmanager.user.dto;
 
 import jakarta.validation.constraints.NotBlank;
 
-public record UserResponse(@NotBlank String username) {
+import java.util.Map;
+
+public record UserResponse(@NotBlank String username, @NotBlank Map<String, Object> properties) {
 }

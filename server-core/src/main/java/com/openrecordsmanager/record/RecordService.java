@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.InputStream;
+import java.text.MessageFormat;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -77,11 +78,15 @@ public class RecordService {
                 .filter(r -> r.securityFilter(this.expressions, user, r).canSeeFiles())
                 .orElseThrow(() -> new ResourceNotFoundException("record", id));
 
+        if (!record.getType().supportsFile()) {
+            throw new IllegalArgumentException(MessageFormat.format("Record type {0} does not support attaching a file", record.getType().id));
+        }
+
         UUID defaultStoreId = this.config.getOptional(BuiltinConfigs.DEFAULT_FILE_STORE)
-                .orElseThrow(() -> new IllegalStateException("There is no default stream store set"));
+                .orElseThrow(() -> new IllegalStateException("There is no default file store set"));
 
         FileStore<?> fileStore = this.repository.fileStoreRepo.findById(defaultStoreId)
-                .orElseThrow(() -> new ResourceNotFoundException("stream store", defaultStoreId));
+                .orElseThrow(() -> new ResourceNotFoundException("file store", defaultStoreId));
 
         record.addRevision(version, fileStore.newFile(this.catalog, file, fileExtension));
 

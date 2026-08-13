@@ -2,6 +2,7 @@ package com.openrecordsmanager.property;
 
 import org.jspecify.annotations.Nullable;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -9,11 +10,15 @@ public interface ObjectPropertyHolder<T extends ObjectPropertyHolder.ObjectPrope
 
     Map<ObjectProperty<?>, T> getProperties();
 
-    default Map<String, Object> toPropertyMap() {
+    default HashMap<String, @Nullable Object> toPropertyMap() {
         return this.getProperties().entrySet().stream()
-                .collect(Collectors.toMap(
-                        el -> el.getKey().id.toString(),
-                        el -> el.getValue().getValue()
+                .collect(Collectors.collectingAndThen(
+                        Collectors.toList(),
+                        list -> {
+                            HashMap<String, @Nullable Object> innerMap = new HashMap<>();
+                            list.forEach(p -> innerMap.put(p.getKey().id.toString(), p.getValue().getValue()));
+                            return innerMap;
+                        }
                 ));
     }
 

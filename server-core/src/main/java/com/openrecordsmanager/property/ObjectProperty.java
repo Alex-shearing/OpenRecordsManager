@@ -3,6 +3,7 @@ package com.openrecordsmanager.property;
 import com.openrecordsmanager.api.ResourceIdentifier;
 import com.openrecordsmanager.api.template.property.PropertyType;
 import com.openrecordsmanager.database.util.PropertyTypeConverter;
+import com.openrecordsmanager.database.util.ResourceIdentifierJavaType;
 import com.openrecordsmanager.list.ListType;
 import jakarta.persistence.*;
 import org.hibernate.annotations.JavaType;
@@ -17,6 +18,7 @@ import java.util.Objects;
 @Table(name = "object_property")
 public class ObjectProperty<T> {
     @Id
+    @JavaType(ResourceIdentifierJavaType.class)
     public ResourceIdentifier id;
 
     @Column(nullable = false)

@@ -29,34 +29,34 @@ public class FileStoreController {
     }
 
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(summary = "Get all stream stores")
+    @Operation(summary = "Get all file stores")
     public Set<SimpleFileStoreResponse> fileStore_retrieveAll() {
         return this.storeService.getAll();
     }
 
     @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(summary = "Get stream store details")
+    @Operation(summary = "Get file store details")
     @NotFoundApiResponse
     public FileStoreResponse fileStore_retrieveOne(@PathVariable("id") UUID id) {
         return this.storeService.get(id);
     }
 
     @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(summary = "Create a new stream store")
+    @Operation(summary = "Create a new file store")
     @NotFoundApiResponse
     public SimpleFileStoreResponse fileStore_create(@RequestBody NewFileStore input) {
         return this.storeService.create(input);
     }
 
     @PutMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(summary = "Modify stream store config")
+    @Operation(summary = "Modify file store config")
     @NotFoundApiResponse
     public SimpleFileStoreResponse fileStore_update(@PathVariable("id") UUID id, @RequestBody Map<String, ?> properties) {
         return this.storeService.update(id, properties);
     }
 
     @DeleteMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(summary = "Delete a stream store")
+    @Operation(summary = "Delete a file store")
     @NotFoundApiResponse
     @ConflictApiResponse
     public void fileStore_delete(@PathVariable("id") UUID id) {
@@ -64,34 +64,34 @@ public class FileStoreController {
     }
 
     @GetMapping(value = "/middlewares", produces = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(summary = "Get all stream store middlewares")
+    @Operation(summary = "Get all file store middlewares")
     public Set<SimpleMiddlewareResponse> middleware_retrieveAll() {
         return this.middlewareService.getAll();
     }
 
     @GetMapping(value = "/middlewares/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(summary = "Get stream store middleware details")
+    @Operation(summary = "Get file store middleware details")
     @NotFoundApiResponse
     public MiddlewareResponse middleware_retrieveOne(@PathVariable("id") UUID id) {
         return this.middlewareService.get(id);
     }
 
     @PostMapping(value = "/middlewares", produces = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(summary = "Create a new stream store middleware")
+    @Operation(summary = "Create a new file store middleware")
     @NotFoundApiResponse
     public SimpleMiddlewareResponse middleware_create(@RequestBody NewFileStoreMiddleware input) {
         return this.middlewareService.create(input);
     }
 
     @PutMapping(value = "/middlewares/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(summary = "Modify stream store middleware config")
+    @Operation(summary = "Modify file store middleware config")
     @NotFoundApiResponse
     public SimpleFileStoreResponse middleware_update(@PathVariable("id") UUID id, @RequestBody Map<String, ?> properties) {
         return this.middlewareService.update(id, properties);
     }
 
     @DeleteMapping(value = "/middlewares/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(summary = "Delete a stream store middleware")
+    @Operation(summary = "Delete a file store middleware")
     @NotFoundApiResponse
     @ConflictApiResponse
     public void middleware_delete(@PathVariable("id") UUID id) {

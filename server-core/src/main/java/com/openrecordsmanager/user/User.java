@@ -27,7 +27,7 @@ public class User implements ObjectPropertyHolder<UserPropertyValue<?>>, UserDet
     @Nullable
     public AuthProvider authProvider;
 
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "user")
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "user", fetch = FetchType.EAGER)
     @MapKey(name = "property")
     private Map<ObjectProperty<?>, UserPropertyValue<?>> properties;
 

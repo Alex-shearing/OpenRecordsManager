@@ -4,7 +4,9 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.openrecordsmanager.api.ResourceIdentifier;
 import com.openrecordsmanager.api.template.list.IListElement;
+import com.openrecordsmanager.database.util.ResourceIdentifierJavaType;
 import jakarta.persistence.*;
+import org.hibernate.annotations.JavaType;
 import org.jspecify.annotations.Nullable;
 import tools.jackson.core.JacksonException;
 import tools.jackson.core.JsonGenerator;
@@ -21,6 +23,7 @@ import java.util.Set;
 public class ListElement implements IListElement {
     @Id
     @JsonProperty
+    @JavaType(ResourceIdentifierJavaType.class)
     public ResourceIdentifier id;
 
     @ManyToOne(optional = false)

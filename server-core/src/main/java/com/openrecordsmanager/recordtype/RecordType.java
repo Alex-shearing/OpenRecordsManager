@@ -3,7 +3,9 @@ package com.openrecordsmanager.recordtype;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.openrecordsmanager.api.ResourceIdentifier;
 import com.openrecordsmanager.api.template.recordtype.SecurityFilterUsage;
+import com.openrecordsmanager.database.util.ResourceIdentifierJavaType;
 import jakarta.persistence.*;
+import org.hibernate.annotations.JavaType;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 import org.jspecify.annotations.Nullable;
@@ -15,6 +17,7 @@ import java.util.Set;
 public class RecordType {
     @Id
     @JsonProperty
+    @JavaType(ResourceIdentifierJavaType.class)
     public ResourceIdentifier id;
 
     @Column(nullable = false)
