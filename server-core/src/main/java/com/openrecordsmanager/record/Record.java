@@ -66,7 +66,7 @@ public class Record implements ObjectPropertyHolder<RecordPropertyValue<?>> {
 
     private <T> RecordPropertyValue<T> newProperty(RecordTypeProperty<T> property, @Nullable RecordPropertyValue<?> oldValue) {
         // Either get the previous value (if exists) or the property default
-        T newValue = oldValue != null ? property.property.type.cast(oldValue.value) : property.getDefault();
+        T newValue = oldValue != null ? property.property.getType().cast(oldValue.value) : property.getDefault();
 
         return this.createProperty(property.property, newValue);
     }

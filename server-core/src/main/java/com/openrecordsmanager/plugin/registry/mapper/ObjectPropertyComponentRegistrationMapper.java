@@ -48,7 +48,8 @@ public class ObjectPropertyComponentRegistrationMapper extends ComponentRegistra
                 listType,
                 expressions.buildExpression(definition.validator()),
                 expressions.buildExpression(definition.securityFilter()),
-                definition.defaultValue()
+                definition.defaultValue(),
+                definition.userHidden()
         );
 
         repository.objectPropertyRepo.saveAndFlush(type);

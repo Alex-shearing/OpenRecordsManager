@@ -78,9 +78,9 @@ public class ExpressionsService {
             CelRuntime.Program program = this.celRuntime.createProgram(ast);
 
             ImmutableMap.Builder<String, Object> builder = ImmutableMap.builder();
-            builder.put("principal", user.toPropertyMap());
+            builder.put("principal", user.toPropertyMap(false));
             if (value != null) builder.put("value", value);
-            if (record != null) builder.put("resource", record.toPropertyMap());
+            if (record != null) builder.put("resource", record.toPropertyMap(false));
 
             Object result = program.eval(builder.build());
             if (result instanceof Boolean) {

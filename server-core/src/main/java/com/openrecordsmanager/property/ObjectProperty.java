@@ -19,36 +19,39 @@ import java.util.Objects;
 public class ObjectProperty<T> {
     @Id
     @JavaType(ResourceIdentifierJavaType.class)
-    public ResourceIdentifier id;
+    private ResourceIdentifier id;
 
     @Column(nullable = false)
-    public String name;
+    private String name;
 
     @Column(nullable = false)
-    public String description;
+    private String description;
 
     @Column(nullable = false)
     @Convert(converter = PropertyTypeConverter.class)
     @JavaType(ObjectJavaType.class)
-    public PropertyType<T> type;
+    private PropertyType<T> type;
 
     @ManyToOne
     @JoinColumn
     @Nullable
-    public ListType listType;
+    private ListType listType;
 
     @Column()
     @Nullable
-    public String validator;
+    private String validator;
 
     @Column()
     @Nullable
-    public String securityFilter;
+    private String securityFilter;
 
     @Column()
     @Nullable
     @JdbcTypeCode(SqlTypes.JSON)
-    public T defaultValue;
+    private T defaultValue;
+
+    @Column(nullable = false)
+    private boolean userHidden;
 
     @Deprecated
     protected ObjectProperty() {
@@ -62,7 +65,8 @@ public class ObjectProperty<T> {
             @Nullable ListType listType,
             @Nullable String validator,
             @Nullable String securityFilter,
-            @Nullable T defaultValue
+            @Nullable T defaultValue,
+            boolean userHidden
     ) {
         this.id = identifier;
         this.name = name;
@@ -72,10 +76,79 @@ public class ObjectProperty<T> {
         this.validator = validator;
         this.securityFilter = securityFilter;
         this.defaultValue = defaultValue;
+        this.userHidden = userHidden;
     }
 
     public ObjectProperty(ResourceIdentifier identifier, String name, String description, PropertyType<T> type) {
-        this(identifier, name, description, type, null, null, null, null);
+        this(identifier, name, description, type, null, null, null, null, false);
+    }
+
+    public ResourceIdentifier getId() {
+        return id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public PropertyType<T> getType() {
+        return type;
+    }
+
+    public void setType(PropertyType<T> type) {
+        this.type = type;
+    }
+
+    public @Nullable ListType getListType() {
+        return listType;
+    }
+
+    public void setListType(@Nullable ListType listType) {
+        this.listType = listType;
+    }
+
+    public @Nullable String getValidator() {
+        return validator;
+    }
+
+    public void setValidator(@Nullable String validator) {
+        this.validator = validator;
+    }
+
+    public @Nullable String getSecurityFilter() {
+        return securityFilter;
+    }
+
+    public void setSecurityFilter(@Nullable String securityFilter) {
+        this.securityFilter = securityFilter;
+    }
+
+    public @Nullable T getDefaultValue() {
+        return defaultValue;
+    }
+
+    public void setDefaultValue(@Nullable T defaultValue) {
+        this.defaultValue = defaultValue;
+    }
+
+    public boolean isUserHidden() {
+        return userHidden;
+    }
+
+    public void setUserHidden(boolean userHidden) {
+        this.userHidden = userHidden;
     }
 
     @Override

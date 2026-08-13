@@ -2,28 +2,22 @@ package com.openrecordsmanager.property;
 
 import org.jspecify.annotations.Nullable;
 
-import java.util.HashMap;
+import java.util.AbstractMap;
 import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 public interface ObjectPropertyHolder<T extends ObjectPropertyHolder.ObjectPropertyValue<?>> {
 
     Map<ObjectProperty<?>, T> getProperties();
 
-    default HashMap<String, @Nullable Object> toPropertyMap() {
-        return this.getProperties().entrySet().stream()
-                .collect(Collectors.collectingAndThen(
-                        Collectors.toList(),
-                        list -> {
-                            HashMap<String, @Nullable Object> innerMap = new HashMap<>();
-                            list.forEach(p -> innerMap.put(p.getKey().id.toString(), p.getValue().getValue()));
-                            return innerMap;
-                        }
-                ));
+    default Map<String, @Nullable Object> toPropertyMap(boolean forUser) {
+        return new PropertyMap(this, forUser);
     }
 
     default <K> @Nullable K getProperty(ObjectProperty<K> property) {
-        return property.type.cast(this.getProperties().get(property).getValue());
+        return property.getType().cast(this.getProperties().get(property).getValue());
     }
 
     boolean canSetProperty(ObjectProperty<?> property);
@@ -58,7 +52,44 @@ public interface ObjectPropertyHolder<T extends ObjectPropertyHolder.ObjectPrope
         void setValue(@Nullable T value);
 
         default void setValueRaw(Object value) {
-            this.setValue(getProperty().type.cast(value));
+            this.setValue(getProperty().getType().cast(value));
+        }
+    }
+
+    class PropertyMap extends AbstractMap<String, Object> {
+        private final ObjectPropertyHolder<?> holder;
+        private final boolean forUser;
+
+        public PropertyMap(ObjectPropertyHolder<?> holder, boolean forUser) {
+            this.holder = holder;
+            this.forUser = forUser;
+        }
+
+        @Override
+        public @Nullable Object get(Object key) {
+            if (!(key instanceof String keyString)) {
+                return null;
+            }
+
+            Optional<ObjectProperty<?>> propKey = this.holder.getProperties().keySet().stream()
+                    .filter(property -> !this.forUser || !property.isUserHidden())
+                    .filter(property -> property.getId().toString().equals(keyString))
+                    .findFirst();
+
+            return propKey
+                    .map(this.holder::getProperty)
+                    .orElse(null);
+        }
+
+        @Override
+        public Set<Entry<String, Object>> entrySet() {
+            return this.holder.getProperties().entrySet().stream()
+                    .filter(entry -> !this.forUser || !entry.getKey().isUserHidden())
+                    .map(entry -> new AbstractMap.SimpleEntry<String, Object>(
+                            entry.getKey().getId().toString(),
+                            entry.getValue().getValue()
+                    ))
+                    .collect(Collectors.toSet());
         }
     }
 }

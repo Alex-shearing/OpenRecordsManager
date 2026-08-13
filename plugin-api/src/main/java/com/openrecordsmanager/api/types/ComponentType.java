@@ -47,7 +47,6 @@ public class ComponentType<T extends Component> {
     }
 
     @JsonCreator
-    @SuppressWarnings("unused")
     private static @Nullable ComponentType<?> fromString(String name) {
         return ComponentTypes.fromName(name);
     }

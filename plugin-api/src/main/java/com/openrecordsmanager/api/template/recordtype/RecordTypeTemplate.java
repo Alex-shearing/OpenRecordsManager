@@ -93,11 +93,10 @@ public record RecordTypeTemplate(
             return this.property(ComponentReference.of(property), defaultValue);
         }
 
-        public Builder securityFilter(SecurityFilterUsage filterUsage, String filter, ObjectPropertyTemplate<?>... properties) {
-            List<ComponentReference<ObjectPropertyTemplate<?>>> deps = new ArrayList<>(properties.length);
-            for (ObjectPropertyTemplate<?> objectPropertyTemplate : properties) {
-                deps.add(ComponentReference.of(objectPropertyTemplate));
-            }
+        public Builder securityFilter(SecurityFilterUsage filterUsage, String filter, ObjectPropertyTemplate<?>... dependencies) {
+            List<ComponentReference<?>> deps = Arrays.stream(dependencies)
+                    .<ComponentReference<?>>map(ComponentReference::of)
+                    .toList();
 
             return this.securityFilter(filterUsage, new ExpressionBuilder(filter, deps));
         }

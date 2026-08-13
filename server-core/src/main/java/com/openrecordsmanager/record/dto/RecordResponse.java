@@ -23,7 +23,7 @@ public record RecordResponse(
                 record.id,
                 record.title,
                 record.getType().id,
-                record.toPropertyMap(),
+                record.toPropertyMap(true),
                 record.revisions.stream()
                         .map(recordRevision -> recordRevision.version)
                         .collect(Collectors.toSet())

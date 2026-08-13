@@ -69,7 +69,7 @@ public class RecordService {
     }
 
     private static <K> void setProperty(Record record, ObjectProperty<K> property, Object value) {
-        record.setProperty(property, Objects.requireNonNull(property.type.cast(value)));
+        record.setProperty(property, Objects.requireNonNull(property.getType().cast(value)));
     }
 
     @Transactional

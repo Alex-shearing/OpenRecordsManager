@@ -40,6 +40,6 @@ public class RecordTypeProperty<T> {
             return this.defaultValue;
         }
 
-        return this.property.defaultValue;
+        return this.property.getDefaultValue();
     }
 }

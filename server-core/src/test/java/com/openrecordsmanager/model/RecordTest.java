@@ -58,7 +58,7 @@ class RecordTest {
                 "String property",
                 PropertyType.STRING
         );
-        stringProperty.securityFilter = "value == principal['test:string_property']";
+        stringProperty.setSecurityFilter("value == principal['test:string_property']");
 
         RecordType recordType = new RecordType(
                 ResourceIdentifier.valueOf("test:record_type"),
