@@ -17,7 +17,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-public class RecordTypeComponentRegistrationMapper extends ComponentRegistrationMapper<RecordTypeTemplate, RecordType> {
+public class RecordTypeTemplateRegistrationMapper extends TemplateRegistrationMapper<RecordTypeTemplate, RecordType> {
 
     @Override
     public void register(
@@ -25,20 +25,20 @@ public class RecordTypeComponentRegistrationMapper extends ComponentRegistration
             ComponentCatalog catalog,
             ExpressionsService expressions,
             ResourceIdentifier id,
-            RecordTypeTemplate definition
+            RecordTypeTemplate component
     ) {
-        Set<RecordTypeProperty<?>> properties = definition.properties().entrySet()
+        Set<RecordTypeProperty<?>> properties = component.properties().entrySet()
                 .stream()
                 .map(def -> createRecordTypeProperty(def, catalog, repository))
                 .collect(Collectors.<RecordTypeProperty<?>>toSet());
 
         RecordType type = new RecordType(
                 id,
-                definition.name(),
-                definition.description(),
-                definition.allowedContentTypes(),
-                expressions.buildExpression(definition.securityFilter()),
-                definition.securityFilterUsage(),
+                component.name(),
+                component.description(),
+                component.allowedContentTypes(),
+                expressions.buildExpression(component.securityFilter()),
+                component.securityFilterUsage(),
                 properties
         );
         repository.recordTypeRepo.saveAndFlush(type);

@@ -1,6 +1,6 @@
 package com.openrecordsmanager.api.template.property;
 
-import com.openrecordsmanager.api.Component;
+import com.openrecordsmanager.api.template.TemplateComponent;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import tools.jackson.databind.ObjectMapper;
@@ -42,7 +42,7 @@ class ObjectPropertyTemplateTest {
 
     @Test
     void testDeserialisationFull() {
-        ObjectPropertyTemplate<?> property = Component.fromJson("user_email_property.json", ObjectPropertyTemplate.class);
+        ObjectPropertyTemplate<?> property = TemplateComponent.fromJson("user_email_property.json", ObjectPropertyTemplate.class);
         ObjectPropertyTemplate<?> codeProperty = ObjectPropertyTemplate.builder("User Email Address", PropertyType.STRING)
                 .description("An email address")
                 .defaultValue("admin@company.com")

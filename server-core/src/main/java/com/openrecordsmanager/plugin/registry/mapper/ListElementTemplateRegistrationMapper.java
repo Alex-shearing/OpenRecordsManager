@@ -10,7 +10,7 @@ import com.openrecordsmanager.plugin.registry.ComponentCatalog;
 
 import java.util.Optional;
 
-public class ListElementComponentRegistrationMapper extends ComponentRegistrationMapper<ListElementTemplate, ListElement> {
+public class ListElementTemplateRegistrationMapper extends TemplateRegistrationMapper<ListElementTemplate, ListElement> {
 
     @Override
     public void register(
@@ -18,9 +18,9 @@ public class ListElementComponentRegistrationMapper extends ComponentRegistratio
             ComponentCatalog catalog,
             ExpressionsService expressions,
             ResourceIdentifier id,
-            ListElementTemplate definition
+            ListElementTemplate component
     ) {
-        ResourceIdentifier parentId = definition.parent().getId(catalog)
+        ResourceIdentifier parentId = component.parent().getId(catalog)
                 .orElseThrow(() -> new IllegalArgumentException("attempted to register list element to a parent that was not registered"));
 
         ListType parent = repository.listTypeRepo.findById(parentId).orElseThrow();
@@ -28,11 +28,11 @@ public class ListElementComponentRegistrationMapper extends ComponentRegistratio
         ListElement type = new ListElement(
                 id,
                 parent,
-                definition.name(),
-                definition.description(),
-                definition.index(),
-                definition.activeTo(),
-                definition.aliases()
+                component.name(),
+                component.description(),
+                component.index(),
+                component.activeTo(),
+                component.aliases()
         );
         repository.listElementRepo.saveAndFlush(type);
     }

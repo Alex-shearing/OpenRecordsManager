@@ -1,12 +1,16 @@
 package com.openrecordsmanager.auth;
 
 import com.openrecordsmanager.api.ApiResponseV1;
+import com.openrecordsmanager.api.ComponentReference;
 import com.openrecordsmanager.api.auth.RedirectAuthProviderType;
 import com.openrecordsmanager.api.errors.ResourceNotFoundException;
+import com.openrecordsmanager.api.swagger.ForbiddenApiResponse;
 import com.openrecordsmanager.api.swagger.InternalServerErrorApiResponse;
 import com.openrecordsmanager.api.swagger.NotFoundApiResponse;
+import com.openrecordsmanager.api.swagger.UnauthorizedApiResponse;
 import com.openrecordsmanager.auth.dto.AuthProviderListResponse;
 import com.openrecordsmanager.auth.dto.LoginResponse;
+import com.openrecordsmanager.auth.dto.NewAuthProvider;
 import com.openrecordsmanager.auth.entity.AuthProvider;
 import com.openrecordsmanager.database.DataRepository;
 import com.openrecordsmanager.plugin.registry.ComponentCatalog;
@@ -20,6 +24,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
@@ -48,11 +53,21 @@ public class AuthController {
     @Operation(summary = "List all supported authentication providers.")
     public Set<AuthProviderListResponse> providers_listAll() {
         return this.repository.authProviderRepo.findAll().stream()
-                .map(provider -> new AuthProviderListResponse(
-                        provider.id,
-                        provider.providerType
-                ))
+                .map(AuthProviderListResponse::of)
                 .collect(Collectors.toSet());
+    }
+
+    @PutMapping(value = "/providers", produces = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(summary = "Create new authentication provider")
+    @PreAuthorize("isAuthenticated()")
+    @ForbiddenApiResponse
+    @UnauthorizedApiResponse
+    public AuthProviderListResponse createProvider(@RequestBody NewAuthProvider provider) {
+        return this.authService.createProvider(
+                provider.name(),
+                ComponentReference.of(provider.type().type, provider.typeId()),
+                provider.settings()
+        );
     }
 
     @PostMapping(value = "/login/{provider}", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -103,8 +118,8 @@ public class AuthController {
     public ResponseEntity<Void> redirect(@PathVariable("auth_provider") UUID authProvider) {
         AuthProvider provider = this.repository.authProviderRepo.findById(authProvider)
                 .orElseThrow(() -> new ResourceNotFoundException("authentication provider", authProvider.toString()));
-        RedirectAuthProviderType type = (RedirectAuthProviderType) provider.providerType.getComponent(this.catalog)
-                .orElseThrow(() -> new IllegalStateException(String.format("authentication provider type %s not found", provider.providerType)));
+        RedirectAuthProviderType type = (RedirectAuthProviderType) provider.getProviderType().getComponent(this.catalog)
+                .orElseThrow(() -> new IllegalStateException(String.format("authentication provider type %s not found", provider.getProviderType())));
 
         return ResponseEntity.status(HttpStatus.FOUND).location(type.getRedirectTo(provider)).build();
     }

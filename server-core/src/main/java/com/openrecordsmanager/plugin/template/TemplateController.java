@@ -4,6 +4,7 @@ import com.openrecordsmanager.api.ResourceIdentifier;
 import com.openrecordsmanager.api.errors.ResourceNotFoundException;
 import com.openrecordsmanager.api.swagger.DefaultApiResponses;
 import com.openrecordsmanager.api.swagger.NotFoundApiResponse;
+import com.openrecordsmanager.api.template.TemplateComponent;
 import com.openrecordsmanager.api.types.ComponentType;
 import com.openrecordsmanager.api.types.ComponentTypes;
 import com.openrecordsmanager.plugin.registry.ComponentCatalog;
@@ -43,7 +44,7 @@ public class TemplateController {
     @NotFoundApiResponse
     @Transactional(readOnly = true)
     public Set<ResourceIdentifier> getTemplatesForType(@PathVariable("type") String typeName) {
-        ComponentType<?> type = ComponentTypes.fromName(typeName);
+        ComponentType<? extends TemplateComponent> type = ComponentTypes.templateFromName(typeName);
         if (type == null) {
             throw new ResourceNotFoundException("component type", typeName);
         }
@@ -55,7 +56,7 @@ public class TemplateController {
     @NotFoundApiResponse
     @Transactional(readOnly = true)
     public Object getTemplate(@PathVariable("type") String typeName, @PathVariable("template") ResourceIdentifier templateId) {
-        ComponentType<?> type = ComponentTypes.fromName(typeName);
+        ComponentType<? extends TemplateComponent> type = ComponentTypes.templateFromName(typeName);
         if (type == null) {
             throw new ResourceNotFoundException("component type", typeName);
         }
@@ -73,7 +74,7 @@ public class TemplateController {
             @PathVariable("template") ResourceIdentifier templateId,
             @RequestParam(value = "includeDependencies", required = false, defaultValue = "false") boolean includeDependencies
     ) {
-        ComponentType<?> type = ComponentTypes.fromName(typeName);
+        ComponentType<? extends TemplateComponent> type = ComponentTypes.templateFromName(typeName);
         if (type == null) {
             throw new ResourceNotFoundException("component type", typeName);
         }

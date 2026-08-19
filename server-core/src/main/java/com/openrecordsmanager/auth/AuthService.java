@@ -1,10 +1,20 @@
 package com.openrecordsmanager.auth;
 
+import com.openrecordsmanager.api.ComponentReference;
+import com.openrecordsmanager.api.auth.AuthProviderType;
+import com.openrecordsmanager.api.auth.UserAuthContext;
+import com.openrecordsmanager.api.template.property.ObjectPropertyTemplate;
+import com.openrecordsmanager.api.types.ComponentTypes;
+import com.openrecordsmanager.auth.dto.AuthProviderListResponse;
 import com.openrecordsmanager.auth.dto.LoginResponse;
+import com.openrecordsmanager.auth.entity.AuthProvider;
 import com.openrecordsmanager.auth.entity.AuthToken;
 import com.openrecordsmanager.config.ConfigService;
 import com.openrecordsmanager.database.DataRepository;
+import com.openrecordsmanager.plugin.ExpressionsService;
 import com.openrecordsmanager.plugin.registry.ComponentCatalog;
+import com.openrecordsmanager.plugin.registry.mapper.TemplateRegistrationMapper;
+import com.openrecordsmanager.property.ObjectProperty;
 import com.openrecordsmanager.user.User;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
@@ -25,15 +35,18 @@ import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.util.Base64;
+import java.util.Map;
+import java.util.Optional;
 
 @Service
-public class AuthService {
+public class AuthService implements UserAuthContext {
     private static final SecureRandom RANDOM = new SecureRandom();
     private static final Base64.Encoder ENCODER = Base64.getUrlEncoder().withoutPadding();
 
     private final DataRepository repository;
     private final ComponentCatalog catalog;
     private final ConfigService config;
+    private final ExpressionsService expressions;
     private final String cookieName;
     private final long tokenDuration;
 
@@ -41,12 +54,14 @@ public class AuthService {
             DataRepository repository,
             ComponentCatalog catalog,
             ConfigService config,
+            ExpressionsService expressions,
             @Value("${app.security.cookie-name}") String cookieName,
             @Value("${app.security.expiration-time}") long tokenDuration
     ) {
         this.repository = repository;
         this.catalog = catalog;
         this.config = config;
+        this.expressions = expressions;
         this.cookieName = cookieName;
         this.tokenDuration = tokenDuration;
     }
@@ -59,7 +74,7 @@ public class AuthService {
 
     @Bean
     AuthenticationProvider authenticationProvider() {
-        return new PluginAuthenticationProvider(this.repository, this.catalog, this.config);
+        return new PluginAuthenticationProvider(this.repository, this.catalog, this.config, this);
     }
 
     public LoginResponse login(
@@ -109,5 +124,30 @@ public class AuthService {
 
     public String getCookieName() {
         return cookieName;
+    }
+
+    @Override
+    public <T> Optional<T> getUserProperty(String username, ObjectPropertyTemplate<T> property) {
+        return this.catalog.<ObjectPropertyTemplate<?>, ObjectProperty<T>>getTemplateRegistry(ComponentTypes.OBJECT_PROPERTY)
+                .getRegistered(property, this.repository)
+                .flatMap(prop ->
+                        this.repository.userRepo.findByUsername(username)
+                                .map(user -> user.getProperty(prop))
+                );
+    }
+
+    public AuthProviderListResponse createProvider(String name, ComponentReference<? extends AuthProviderType> type, Map<String, Object> settings) {
+        // Ensure any pre-requisite templates are registered
+        TemplateRegistrationMapper.registerDependencies(
+                this.repository, this.catalog, this.expressions,
+                type.getComponent(this.catalog)
+                        .orElseThrow(() -> new IllegalArgumentException("unknown auth provider type " + type))
+        );
+
+        AuthProvider provider = new AuthProvider(name, type, settings);
+
+        this.repository.authProviderRepo.save(provider);
+
+        return AuthProviderListResponse.of(provider);
     }
 }

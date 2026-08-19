@@ -1,6 +1,6 @@
 package com.openrecordsmanager.api.template.list;
 
-import com.openrecordsmanager.api.Component;
+import com.openrecordsmanager.api.template.TemplateComponent;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -10,7 +10,7 @@ class ListTemplateTest {
 
     @Test
     void testDeserialisationFull() {
-        ListTemplate list = Component.fromJson("test_list.json", ListTemplate.class);
+        ListTemplate list = TemplateComponent.fromJson("test_list.json", ListTemplate.class);
         ListTemplate codeList = ListTemplate.builder("Test List")
                 .entry("entry_1", "Entry 1").index(1).endEntry()
                 .entry("entry_2", "Entry 2").index(2).endEntry()

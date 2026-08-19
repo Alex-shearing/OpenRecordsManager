@@ -1,6 +1,7 @@
 package com.openrecordsmanager.auth.dto;
 
 import com.openrecordsmanager.api.ComponentReference;
+import com.openrecordsmanager.auth.entity.AuthProvider;
 import com.openrecordsmanager.plugin.registry.mapper.ComponentReferenceSerializer;
 import io.swagger.v3.oas.annotations.StringToClassMapItem;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -25,4 +26,7 @@ public record AuthProviderListResponse(
         )
         @NotNull ComponentReference<?> type
 ) {
+    public static AuthProviderListResponse of(AuthProvider provider) {
+        return new AuthProviderListResponse(provider.getId(), provider.getProviderType());
+    }
 }

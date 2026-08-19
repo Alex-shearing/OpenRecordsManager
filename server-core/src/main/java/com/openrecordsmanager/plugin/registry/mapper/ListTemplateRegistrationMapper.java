@@ -10,7 +10,7 @@ import com.openrecordsmanager.plugin.registry.ComponentCatalog;
 
 import java.util.Optional;
 
-public class ListComponentRegistrationMapper extends ComponentRegistrationMapper<ListTemplate, ListType> {
+public class ListTemplateRegistrationMapper extends TemplateRegistrationMapper<ListTemplate, ListType> {
 
     @Override
     public void register(
@@ -18,12 +18,12 @@ public class ListComponentRegistrationMapper extends ComponentRegistrationMapper
             ComponentCatalog catalog,
             ExpressionsService expressions,
             ResourceIdentifier id,
-            ListTemplate definition
+            ListTemplate component
     ) {
-        ListType type = new ListType(id, definition.name());
+        ListType type = new ListType(id, component.name());
         repository.listTypeRepo.saveAndFlush(type);
 
-        definition.defaultEntries().forEach((s, listItem) -> {
+        component.defaultEntries().forEach((s, listItem) -> {
             ResourceIdentifier childId = new ResourceIdentifier(id.source(), s);
 
             catalog.getTemplateRegistry(ComponentTypes.LIST_ELEMENT)

@@ -2,8 +2,8 @@ package com.openrecordsmanager.api.template.list;
 
 import com.fasterxml.jackson.annotation.JsonSetter;
 import com.fasterxml.jackson.annotation.Nulls;
-import com.openrecordsmanager.api.Component;
 import com.openrecordsmanager.api.ComponentReference;
+import com.openrecordsmanager.api.template.TemplateComponent;
 import org.jspecify.annotations.Nullable;
 
 import java.util.*;
@@ -15,7 +15,7 @@ public record ListElementTemplate(
         @Nullable Date activeTo,
         @JsonSetter(nulls = Nulls.AS_EMPTY) Set<String> aliases,
         ComponentReference<ListTemplate> parent
-) implements Component {
+) implements TemplateComponent {
 
     public ListElementTemplate {
         Objects.requireNonNull(name, "Property 'name' must not be null");
@@ -43,7 +43,7 @@ public record ListElementTemplate(
     }
 
     @Override
-    public Set<ComponentReference<? extends Component>> getDependencies() {
+    public Set<ComponentReference<? extends TemplateComponent>> getDependencies() {
         return Set.of(this.parent);
     }
 

@@ -1,8 +1,8 @@
 package com.openrecordsmanager.api.template.list;
 
 import com.google.common.collect.ImmutableMap;
-import com.openrecordsmanager.api.Component;
 import com.openrecordsmanager.api.ComponentReference;
+import com.openrecordsmanager.api.template.TemplateComponent;
 import tools.jackson.databind.annotation.JsonDeserialize;
 
 import java.util.Comparator;
@@ -11,7 +11,8 @@ import java.util.Map;
 import java.util.Objects;
 
 @JsonDeserialize
-public record ListTemplate(String name, Map<String, ListElementTemplate> defaultEntries) implements Component {
+public record ListTemplate(String name,
+                           Map<String, ListElementTemplate> defaultEntries) implements TemplateComponent {
     public ListTemplate {
         Objects.requireNonNull(name, "Property 'name' must not be null");
         Objects.requireNonNull(defaultEntries, "Property 'defaultEntries' must not be null");

@@ -16,6 +16,7 @@ import com.nimbusds.openid.connect.sdk.op.OIDCProviderConfigurationRequest;
 import com.nimbusds.openid.connect.sdk.op.OIDCProviderMetadata;
 import com.openrecordsmanager.api.auth.AuthProviderInstance;
 import com.openrecordsmanager.api.auth.RedirectAuthProviderType;
+import com.openrecordsmanager.api.auth.UserAuthContext;
 import com.openrecordsmanager.api.auth.UserAuthDetails;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
@@ -60,7 +61,7 @@ public class OidcAuthProviderType extends RedirectAuthProviderType {
     }
 
     @Override
-    public @Nullable UserAuthDetails authenticateCallback(AuthProviderInstance instance, URI uri) {
+    public @Nullable UserAuthDetails authenticateCallback(AuthProviderInstance instance, UserAuthContext context, URI uri) {
         try {
             AuthenticationResponse response = AuthenticationResponseParser.parse(uri);
             OidcSettings settings = OidcSettings.parse(instance.getSettings());

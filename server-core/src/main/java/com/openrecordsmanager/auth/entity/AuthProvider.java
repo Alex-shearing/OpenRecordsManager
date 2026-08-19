@@ -16,11 +16,11 @@ import java.util.UUID;
 public class AuthProvider implements AuthProviderInstance {
 
     @Id
-    public UUID id;
+    private UUID id;
 
     @Column(name = "provider_type", nullable = false)
     @Convert(converter = ComponentReferenceConverter.class)
-    public ComponentReference<? extends AuthProviderType> providerType;
+    private ComponentReference<? extends AuthProviderType> providerType;
 
     @Column(name = "name", nullable = false)
     public String name;
@@ -42,5 +42,20 @@ public class AuthProvider implements AuthProviderInstance {
     @Override
     public Map<String, Object> getSettings() {
         return this.settings;
+    }
+
+    @Deprecated
+    protected AuthProvider() {
+    }
+
+    public AuthProvider(String name, ComponentReference<? extends AuthProviderType> providerType, Map<String, Object> settings) {
+        this.id = UUID.randomUUID();
+        this.name = name;
+        this.providerType = providerType;
+        this.settings = settings;
+    }
+
+    public ComponentReference<? extends AuthProviderType> getProviderType() {
+        return providerType;
     }
 }

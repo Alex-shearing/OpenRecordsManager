@@ -11,7 +11,7 @@ import com.openrecordsmanager.property.ObjectProperty;
 
 import java.util.Optional;
 
-public class ObjectPropertyComponentRegistrationMapper extends ComponentRegistrationMapper<ObjectPropertyTemplate<?>, ObjectProperty<?>> {
+public class ObjectPropertyTemplateRegistrationMapper extends TemplateRegistrationMapper<ObjectPropertyTemplate<?>, ObjectProperty<?>> {
 
     @Override
     protected void register(
@@ -19,9 +19,9 @@ public class ObjectPropertyComponentRegistrationMapper extends ComponentRegistra
             ComponentCatalog catalog,
             ExpressionsService expressions,
             ResourceIdentifier id,
-            ObjectPropertyTemplate<?> definition
+            ObjectPropertyTemplate<?> component
     ) {
-        this.registerInternal(repository, catalog, expressions, id, definition);
+        this.registerInternal(repository, catalog, expressions, id, component);
     }
 
     private <T> void registerInternal(

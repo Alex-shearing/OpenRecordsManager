@@ -12,8 +12,13 @@ public abstract class RedirectAuthProviderType implements AuthProviderType {
     /**
      *
      * @param instance
+     * @param context
      * @param uri
      * @return either {{@link UserAuthDetails}} or null if no user was authenticated
      */
-    public abstract @Nullable UserAuthDetails authenticateCallback(AuthProviderInstance instance, URI uri);
+    public abstract @Nullable UserAuthDetails authenticateCallback(
+            AuthProviderInstance instance,
+            UserAuthContext context,
+            URI uri
+    );
 }

@@ -6,7 +6,7 @@ import com.openrecordsmanager.api.ComponentReference;
 import java.util.List;
 import java.util.Objects;
 
-public record ExpressionBuilder(String filter, List<ComponentReference<?>> dependencies) {
+public record ExpressionBuilder(String filter, List<ComponentReference<TemplateComponent>> dependencies) {
 
     public ExpressionBuilder {
         Objects.requireNonNull(filter, "Property 'filter' must not be null");

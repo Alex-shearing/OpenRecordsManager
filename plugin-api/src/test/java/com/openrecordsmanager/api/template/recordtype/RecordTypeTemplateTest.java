@@ -1,8 +1,8 @@
 package com.openrecordsmanager.api.template.recordtype;
 
-import com.openrecordsmanager.api.Component;
 import com.openrecordsmanager.api.ComponentReference;
 import com.openrecordsmanager.api.ResourceIdentifier;
+import com.openrecordsmanager.api.template.TemplateComponent;
 import com.openrecordsmanager.api.types.ComponentTypes;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -11,7 +11,7 @@ class RecordTypeTemplateTest {
 
     @Test
     void testDeserialization() {
-        RecordTypeTemplate type = Component.fromJson("test_record_type.json", RecordTypeTemplate.class);
+        RecordTypeTemplate type = TemplateComponent.fromJson("test_record_type.json", RecordTypeTemplate.class);
         RecordTypeTemplate codeType = RecordTypeTemplate.builder("Test record type")
                 .description("Test record description")
                 .allowedContentTypes("application/json")

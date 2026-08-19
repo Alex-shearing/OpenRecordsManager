@@ -25,11 +25,13 @@ public class PluginAuthenticationProvider implements AuthenticationProvider {
     private final DataRepository repository;
     private final ComponentCatalog catalog;
     private final ConfigService config;
+    private final AuthService authService;
 
-    public PluginAuthenticationProvider(DataRepository repository, ComponentCatalog catalog, ConfigService config) {
+    public PluginAuthenticationProvider(DataRepository repository, ComponentCatalog catalog, ConfigService config, AuthService authService) {
         this.repository = repository;
         this.catalog = catalog;
         this.config = config;
+        this.authService = authService;
     }
 
     @Override
@@ -45,15 +47,17 @@ public class PluginAuthenticationProvider implements AuthenticationProvider {
         AuthProvider provider = this.repository.authProviderRepo.findById(token.provider)
                 .orElseThrow(() -> new ProviderNotFoundException("Provider " + token.provider + " not found"));
 
-        AuthProviderType type = provider.providerType.getComponent(this.catalog)
-                .orElseThrow(() -> new ProviderNotFoundException("Provider type " + provider.providerType + " not found"));
+        AuthProviderType type = provider.getProviderType().getComponent(this.catalog)
+                .orElseThrow(() -> new ProviderNotFoundException("Provider type " + provider.getProviderType() + " not found"));
 
         UserAuthDetails authDetails = switch (type) {
-            case InputAuthProviderType input -> input.authenticate(this.config, provider, ((InputToken) token).data);
+            case InputAuthProviderType input ->
+                    input.authenticate(this.config, this.authService, provider, ((InputToken) token).data);
             case RedirectAuthProviderType redirect ->
-                    redirect.authenticateCallback(provider, ((RedirectToken) token).uri);
+                    redirect.authenticateCallback(provider, this.authService, ((RedirectToken) token).uri);
             default -> throw new InternalAuthenticationServiceException("Unexpected provider type: " + type);
         };
+
         if (authDetails == null) {
             throw new BadCredentialsException("Username or password is incorrect'");
         }

@@ -1,8 +1,8 @@
 package com.openrecordsmanager.api.template.recordtype;
 
-import com.openrecordsmanager.api.Component;
 import com.openrecordsmanager.api.ComponentReference;
 import com.openrecordsmanager.api.template.ExpressionBuilder;
+import com.openrecordsmanager.api.template.TemplateComponent;
 import com.openrecordsmanager.api.template.property.ObjectPropertyTemplate;
 import org.jspecify.annotations.Nullable;
 import tools.jackson.databind.annotation.JsonDeserialize;
@@ -21,7 +21,7 @@ public record RecordTypeTemplate(
         @Nullable Set<String> allowedContentTypes,
         @Nullable ExpressionBuilder securityFilter,
         @JsonDeserialize(using = SecurityFilterUsage.Deserializer.class) SecurityFilterUsage securityFilterUsage
-) implements Component {
+) implements TemplateComponent {
 
     public RecordTypeTemplate {
         Objects.requireNonNull(name, "Property 'name' must not be null");
@@ -35,7 +35,7 @@ public record RecordTypeTemplate(
     }
 
     @Override
-    public Set<ComponentReference<? extends Component>> getDependencies() {
+    public Set<ComponentReference<? extends TemplateComponent>> getDependencies() {
         if (this.securityFilter == null) {
             return Set.copyOf(this.properties.keySet());
         }
@@ -93,9 +93,10 @@ public record RecordTypeTemplate(
             return this.property(ComponentReference.of(property), defaultValue);
         }
 
-        public Builder securityFilter(SecurityFilterUsage filterUsage, String filter, ObjectPropertyTemplate<?>... dependencies) {
-            List<ComponentReference<?>> deps = Arrays.stream(dependencies)
-                    .<ComponentReference<?>>map(ComponentReference::of)
+        @SafeVarargs
+        public final Builder securityFilter(SecurityFilterUsage filterUsage, String filter, ObjectPropertyTemplate<TemplateComponent>... dependencies) {
+            List<ComponentReference<TemplateComponent>> deps = Arrays.stream(dependencies)
+                    .<ComponentReference<TemplateComponent>>map(ComponentReference::of)
                     .toList();
 
             return this.securityFilter(filterUsage, new ExpressionBuilder(filter, deps));

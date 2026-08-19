@@ -1,8 +1,8 @@
 package com.openrecordsmanager.api.template.property;
 
-import com.openrecordsmanager.api.Component;
 import com.openrecordsmanager.api.ComponentReference;
 import com.openrecordsmanager.api.template.ExpressionBuilder;
+import com.openrecordsmanager.api.template.TemplateComponent;
 import com.openrecordsmanager.api.template.list.ListTemplate;
 import org.jspecify.annotations.Nullable;
 import tools.jackson.databind.annotation.JsonDeserialize;
@@ -19,7 +19,7 @@ public record ObjectPropertyTemplate<T>(
         @Nullable T defaultValue,
         @Nullable ExpressionBuilder securityFilter,
         boolean userHidden
-) implements Component {
+) implements TemplateComponent {
 
     public ObjectPropertyTemplate {
         Objects.requireNonNull(type, "Property 'type' must not be null");
@@ -27,15 +27,15 @@ public record ObjectPropertyTemplate<T>(
         Objects.requireNonNull(description, "Property 'description' must not be null");
     }
 
-    public Set<ComponentReference<? extends Component>> getDependencies() {
-        Set<ComponentReference<? extends Component>> dependencies = new HashSet<>();
+    public Set<ComponentReference<? extends TemplateComponent>> getDependencies() {
+        Set<ComponentReference<? extends TemplateComponent>> dependencies = new HashSet<>();
 
         if (this.listType != null) dependencies.add(this.listType);
         if (this.validator != null) dependencies.addAll(this.validator.dependencies());
         if (this.securityFilter != null) dependencies.addAll(this.securityFilter.dependencies());
         return dependencies;
     }
-    
+
     public static <K> Builder<K> builder(String name, PropertyType<K> type) {
         return new Builder<>(name, type);
     }
@@ -124,8 +124,8 @@ public record ObjectPropertyTemplate<T>(
          * @return this builder
          */
         public Builder<T> validator(String validator, ObjectPropertyTemplate<?>... dependencies) {
-            List<ComponentReference<?>> deps = Arrays.stream(dependencies)
-                    .<ComponentReference<?>>map(ComponentReference::of)
+            List<ComponentReference<TemplateComponent>> deps = Arrays.stream(dependencies)
+                    .<ComponentReference<TemplateComponent>>map(ComponentReference::of)
                     .toList();
 
             return this.validator(new ExpressionBuilder(validator, deps));
@@ -171,8 +171,8 @@ public record ObjectPropertyTemplate<T>(
          * @return this builder
          */
         public Builder<T> securityFilter(String filter, ObjectPropertyTemplate<?>... dependencies) {
-            List<ComponentReference<?>> deps = Arrays.stream(dependencies)
-                    .<ComponentReference<?>>map(ComponentReference::of)
+            List<ComponentReference<TemplateComponent>> deps = Arrays.stream(dependencies)
+                    .<ComponentReference<TemplateComponent>>map(ComponentReference::of)
                     .toList();
 
             return this.securityFilter(new ExpressionBuilder(filter, deps));
@@ -183,7 +183,7 @@ public record ObjectPropertyTemplate<T>(
          *
          * @return this builder
          */
-        private Builder<T> userHidden() {
+        public Builder<T> userHidden() {
             this.userHidden = true;
             return this;
         }

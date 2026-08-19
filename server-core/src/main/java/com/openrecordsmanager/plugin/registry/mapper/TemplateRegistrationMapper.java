@@ -3,7 +3,7 @@ package com.openrecordsmanager.plugin.registry.mapper;
 import com.openrecordsmanager.api.Component;
 import com.openrecordsmanager.api.ComponentReference;
 import com.openrecordsmanager.api.ResourceIdentifier;
-import com.openrecordsmanager.api.types.ComponentTypes;
+import com.openrecordsmanager.api.template.TemplateComponent;
 import com.openrecordsmanager.database.DataRepository;
 import com.openrecordsmanager.plugin.ExpressionsService;
 import com.openrecordsmanager.plugin.registry.ComponentCatalog;
@@ -13,7 +13,7 @@ import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 
-public abstract class ComponentRegistrationMapper<T extends Component, D> {
+public abstract class TemplateRegistrationMapper<T extends TemplateComponent, D> {
 
     /**
      * Register the component template to the database
@@ -22,7 +22,7 @@ public abstract class ComponentRegistrationMapper<T extends Component, D> {
      * @param catalog             the component catalog
      * @param expressions         expressions service
      * @param id                  id to register as
-     * @param definition          the definition
+     * @param component           the component
      * @param includeDependencies if true, all dependencies of the component will be registered before registration
      */
     public final void register(
@@ -30,26 +30,48 @@ public abstract class ComponentRegistrationMapper<T extends Component, D> {
             ComponentCatalog catalog,
             ExpressionsService expressions,
             ResourceIdentifier id,
-            T definition,
+            T component,
             boolean includeDependencies
     ) {
         if (includeDependencies) {
-            for (ComponentReference<? extends Component> dependencyRef : definition.getDependencies()) {
-                Component dependency = dependencyRef.getComponent(catalog)
-                        .orElseThrow(() -> new IllegalStateException("Cannot find referenced dependency " + dependencyRef));
-
-                ResourceIdentifier dependencyId = dependencyRef.getId(catalog)
-                        .orElseThrow(() -> new IllegalStateException("Cannot find dependency " + dependencyRef));
-
-                TemplateComponentRegistry<Component, ?> registry = catalog.getTemplateRegistry(ComponentTypes.fromObject(dependency));
-                registry.register(repository, catalog, expressions, dependencyId, dependency, true);
-            }
+            registerDependencies(repository, catalog, expressions, component);
         }
 
         // Validate all dependencies exist
-        validateAllDependenciesRegistered(definition, repository, catalog);
+        validateAllDependenciesRegistered(component, repository, catalog);
 
-        this.register(repository, catalog, expressions, id, definition);
+        this.register(repository, catalog, expressions, id, component);
+    }
+
+    /**
+     * Register the dependencies of a component. Does not register the component itself,
+     * see {@link TemplateRegistrationMapper#register(DataRepository, ComponentCatalog, ExpressionsService, ResourceIdentifier, TemplateComponent, boolean)}.
+     *
+     * @param repository  the data repository
+     * @param catalog     the component catalog
+     * @param expressions expressions service
+     * @param component   the component
+     */
+    public static void registerDependencies(
+            DataRepository repository,
+            ComponentCatalog catalog,
+            ExpressionsService expressions,
+            Component component
+    ) {
+        for (ComponentReference<? extends TemplateComponent> dependencyRef : component.getDependencies()) {
+            registerDependency(repository, catalog, expressions, dependencyRef);
+        }
+    }
+
+    private static <K extends TemplateComponent> void registerDependency(DataRepository repository, ComponentCatalog catalog, ExpressionsService expressions, ComponentReference<K> reference) {
+        catalog.getTemplateRegistry(reference.getType())
+                .register(
+                        repository,
+                        catalog,
+                        expressions,
+                        reference,
+                        true
+                );
     }
 
     /**
@@ -59,14 +81,14 @@ public abstract class ComponentRegistrationMapper<T extends Component, D> {
      * @param catalog     the component catalog
      * @param expressions expressions service
      * @param id          id to register as
-     * @param definition  the definition
+     * @param component   the component
      */
     protected abstract void register(
             DataRepository repository,
             ComponentCatalog catalog,
             ExpressionsService expressions,
             ResourceIdentifier id,
-            T definition
+            T component
     );
 
     /**
@@ -90,7 +112,7 @@ public abstract class ComponentRegistrationMapper<T extends Component, D> {
             DataRepository repository,
             ComponentCatalog catalog
     ) {
-        for (ComponentReference<? extends Component> dependency : collectDependencies(component, new HashSet<>())) {
+        for (ComponentReference<? extends TemplateComponent> dependency : collectDependencies(component, new HashSet<>())) {
             ResourceIdentifier dependencyId = dependency.getId(catalog)
                     .orElseThrow(() -> new IllegalStateException("Cannot find dependency " + dependency));
 
@@ -110,8 +132,8 @@ public abstract class ComponentRegistrationMapper<T extends Component, D> {
      * @param dependencies the current list of dependencies
      * @return the input set, with new dependencies added
      */
-    private static Set<ComponentReference<? extends Component>> collectDependencies(Component component, Set<ComponentReference<? extends Component>> dependencies) {
-        for (ComponentReference<? extends Component> dependencyRef : component.getDependencies()) {
+    private static Set<ComponentReference<? extends TemplateComponent>> collectDependencies(Component component, Set<ComponentReference<? extends TemplateComponent>> dependencies) {
+        for (ComponentReference<? extends TemplateComponent> dependencyRef : component.getDependencies()) {
             if (!dependencies.contains(dependencyRef)) {
                 dependencies.add(dependencyRef);
                 dependencies.addAll(collectDependencies(component, dependencies));
