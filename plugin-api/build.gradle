@@ -11,6 +11,9 @@ dependencies {
 
     // Jackson 3.x ecosystem dependencies
     api 'tools.jackson.core:jackson-databind:3.2.0'
+
+    // JSON Schema validation
+    api 'com.networknt:json-schema-validator:3.0.6'
 }
 
 testing {

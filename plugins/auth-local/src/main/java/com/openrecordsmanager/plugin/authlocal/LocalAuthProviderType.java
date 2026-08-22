@@ -6,46 +6,55 @@ import com.openrecordsmanager.api.auth.InputAuthProviderType;
 import com.openrecordsmanager.api.auth.UserAuthContext;
 import com.openrecordsmanager.api.auth.UserAuthDetails;
 import com.openrecordsmanager.api.config.ConfigStore;
+import com.openrecordsmanager.api.schema.SchemaField;
+import com.openrecordsmanager.api.schema.SchemaFieldFormat;
 import com.openrecordsmanager.api.template.TemplateComponent;
 import org.jspecify.annotations.Nullable;
 import org.mindrot.jbcrypt.BCrypt;
 
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
-public class LocalAuthProviderType extends InputAuthProviderType {
+public class LocalAuthProviderType extends InputAuthProviderType<LocalAuthProviderType.LocalAuthInputs> {
+
+    public LocalAuthProviderType() {
+        super(LocalAuthInputs.class);
+    }
+
+    public record LocalAuthInputs(
+            @SchemaField(title = "Username", minLength = 1) String username,
+            @SchemaField(title = "Password", format = SchemaFieldFormat.PASSWORD, minLength = 1) String password
+    ) {
+    }
 
     @Override
-    public @Nullable UserAuthDetails authenticate(ConfigStore config, UserAuthContext context, AuthProviderInstance instance, Map<String, String> inputs) {
+    public @Nullable UserAuthDetails authenticate(
+            ConfigStore config,
+            UserAuthContext context,
+            AuthProviderInstance instance,
+            LocalAuthInputs inputs
+    ) {
         if (!config.getOrDefault(AuthLocalPlugin.CONFIG_ADMIN_ENABLED, false)) {
             return null;
         }
 
-        String username = inputs.get("username");
-        String password = inputs.get("password");
-
-        if (username == null || password == null) {
-            return null;
-        }
-
-        Optional<String> hash = context.getUserProperty(username, AuthLocalPlugin.PASSWORD_HASH_PROPERTY);
+        Optional<String> hash = context.getUserProperty(inputs.username(), AuthLocalPlugin.PASSWORD_HASH_PROPERTY);
         if (hash.isEmpty()) {
-            AuthLocalPlugin.LOGGER.info("Failed to validate password for user {} (no password set)", username);
+            AuthLocalPlugin.LOGGER.info("Failed to validate password for user {} (no password set)", inputs.username());
             return null;
         }
 
         try {
-            if (!BCrypt.checkpw(password, hash.get())) {
-                AuthLocalPlugin.LOGGER.info("Failed to validate password for user {} (incorrect password)", username);
+            if (!BCrypt.checkpw(inputs.password(), hash.get())) {
+                AuthLocalPlugin.LOGGER.info("Failed to validate password for user {} (incorrect password)", inputs.username());
                 return null;
             }
         } catch (IllegalArgumentException e) {
-            AuthLocalPlugin.LOGGER.warn("Invalid password hash found for user {} on auth_local:password_hash property", username);
+            AuthLocalPlugin.LOGGER.warn("Invalid password hash found for user {} on auth_local:password_hash property", inputs.username());
             return null;
         }
 
-        return new UserAuthDetails(instance, username, "");
+        return new UserAuthDetails(instance, inputs.username(), "");
     }
 
     @Override

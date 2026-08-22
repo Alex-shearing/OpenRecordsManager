@@ -153,6 +153,6 @@ public class AuthService implements UserAuthContext {
 
         this.repository.authProviderRepo.save(provider);
 
-        return AuthProviderListResponse.of(provider);
+        return AuthProviderListResponse.of(provider, this.catalog);
     }
 }

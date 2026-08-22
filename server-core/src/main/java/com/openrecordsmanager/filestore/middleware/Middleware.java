@@ -46,7 +46,7 @@ public class Middleware {
     }
 
     public Object getProperties(ComponentCatalog catalog) {
-        return this.getMiddlewareType(catalog).parseOptions(this.properties);
+        return this.getMiddlewareType(catalog).parseSettings(this.properties);
     }
 
     public FileStoreMiddlewareType<?> getMiddlewareType(ComponentCatalog catalog) {

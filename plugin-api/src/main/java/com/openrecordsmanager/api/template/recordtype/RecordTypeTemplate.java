@@ -70,9 +70,9 @@ public record RecordTypeTemplate(
             this.description = description;
             return this;
         }
-        
-        public <L> Builder property(ComponentReference<ObjectPropertyTemplate<L>> property) {
-            this.properties.add(PropertyAssignment.of(property));
+
+        public Builder property(ComponentReference<? extends ObjectPropertyTemplate<?>> property) {
+            this.properties.add(PropertyAssignment.ofUnknown(property));
             return this;
         }
 

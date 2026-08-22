@@ -1,6 +1,8 @@
 package com.openrecordsmanager.plugin.filestoremiddleware_encrypting;
 
 import com.openrecordsmanager.api.filestore.FileStoreMiddlewareType;
+import com.openrecordsmanager.api.schema.SchemaField;
+import com.openrecordsmanager.api.schema.SchemaFieldFormat;
 import com.openrecordsmanager.api.types.MaskingConverter;
 import tools.jackson.databind.annotation.JsonSerialize;
 
@@ -21,32 +23,32 @@ import java.security.spec.AlgorithmParameterSpec;
 import java.util.List;
 import java.util.Vector;
 
-public class FilestoreMiddlewareEncryptingType extends FileStoreMiddlewareType<FilestoreMiddlewareEncryptingType.LocalFileStoreSettings> {
+public class FilestoreMiddlewareEncryptingType extends FileStoreMiddlewareType<FilestoreMiddlewareEncryptingType.EncryptingMiddlewareSettings> {
     public FilestoreMiddlewareEncryptingType() {
-        super(LocalFileStoreSettings.class);
+        super(EncryptingMiddlewareSettings.class);
     }
 
     @Override
-    public InputStream duringSave(LocalFileStoreSettings properties, InputStream data) {
+    public InputStream duringSave(EncryptingMiddlewareSettings settings, InputStream data) {
         try {
             // Construct the cipher
-            Cipher cipher = Cipher.getInstance(properties.algorithm.getTransformation());
+            Cipher cipher = Cipher.getInstance(settings.algorithm().getTransformation());
 
             // Construct secret key
-            SecretKeySpec secretKey = new SecretKeySpec(properties.secretKey(), properties.algorithm.getSecretKeySpec());
+            SecretKeySpec secretKey = new SecretKeySpec(settings.secretKey(), settings.algorithm().getSecretKeySpec());
 
             // Construct nonce
-            byte[] iv = new byte[properties.algorithm.getIvLength()];
+            byte[] iv = new byte[settings.algorithm().getIvLength()];
             SecureRandom.getInstanceStrong().nextBytes(iv);
-            AlgorithmParameterSpec paramSpec = properties.algorithm.createParameterSpec(iv);
+            AlgorithmParameterSpec paramSpec = settings.algorithm().createParameterSpec(iv);
 
             // Initialize cipher engine in ENCRYPT mode
             cipher.init(Cipher.ENCRYPT_MODE, secretKey, paramSpec);
 
             // Returns a concatenated single stream: [ Algorithm Length ] + [ Algorithm ] + [ Nonce Length ] + [ Nonce ] + [ Encrypted Body Bytes ]
             Vector<InputStream> inputStreams = new Vector<>(List.of(
-                    new ByteArrayInputStream(new byte[]{(byte) properties.algorithm.name().length()}),
-                    new ByteArrayInputStream(properties.algorithm.name().getBytes(StandardCharsets.UTF_8)),
+                    new ByteArrayInputStream(new byte[]{(byte) settings.algorithm().name().length()}),
+                    new ByteArrayInputStream(settings.algorithm().name().getBytes(StandardCharsets.UTF_8)),
                     new ByteArrayInputStream(new byte[]{(byte) iv.length}),
                     new ByteArrayInputStream(iv),
                     new CipherInputStream(data, cipher)
@@ -61,7 +63,7 @@ public class FilestoreMiddlewareEncryptingType extends FileStoreMiddlewareType<F
     }
 
     @Override
-    public InputStream duringRetrieve(LocalFileStoreSettings properties, InputStream data) {
+    public InputStream duringRetrieve(EncryptingMiddlewareSettings settings, InputStream data) {
         try {
             // Read the algorithm length
             int algoLength = data.read();
@@ -90,7 +92,7 @@ public class FilestoreMiddlewareEncryptingType extends FileStoreMiddlewareType<F
             }
 
             // Construct secret key
-            SecretKeySpec secretKey = new SecretKeySpec(properties.secretKey(), algorithmName.getSecretKeySpec());
+            SecretKeySpec secretKey = new SecretKeySpec(settings.secretKey(), algorithmName.getSecretKeySpec());
 
             // Initialize cipher engine in DECRYPT mode
             Cipher cipher = Cipher.getInstance(algorithmName.getTransformation());
@@ -104,7 +106,10 @@ public class FilestoreMiddlewareEncryptingType extends FileStoreMiddlewareType<F
         }
     }
 
-    public record LocalFileStoreSettings(@JsonSerialize(converter = MaskingConverter.class) byte[] secretKey,
-                                         EncryptionType algorithm) {
+    public record EncryptingMiddlewareSettings(
+            @SchemaField(title = "Secret Key", format = SchemaFieldFormat.PASSWORD)
+            @JsonSerialize(converter = MaskingConverter.class) byte[] secretKey,
+            @SchemaField(title = "Algorithm") EncryptionType algorithm
+    ) {
     }
 }

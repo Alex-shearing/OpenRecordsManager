@@ -94,7 +94,7 @@ public class FileStore {
     }
 
     public Object getProperties(ComponentCatalog catalog) {
-        return this.getStoreType(catalog).parseOptions(this.properties);
+        return this.getStoreType(catalog).parseSettings(this.properties);
     }
 
     public InputStream getFile(ComponentCatalog catalog, FileStoreEntry entry) throws IOException {

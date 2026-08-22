@@ -1,6 +1,7 @@
 package com.openrecordsmanager.api.errors;
 
 import com.openrecordsmanager.api.ApiResponseV1;
+import com.openrecordsmanager.api.ValidationErrorResponse;
 import com.openrecordsmanager.api.builtin.BuiltinConfigs;
 import com.openrecordsmanager.config.ConfigService;
 import org.slf4j.Logger;
@@ -50,6 +51,13 @@ public class ExceptionController {
         return ResponseEntity.status(HttpStatus.CONFLICT)
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(ApiResponseV1.error(ex.getMessage()));
+    }
+
+    @ExceptionHandler(InputValidationException.class)
+    public ResponseEntity<ValidationErrorResponse> inputValidation(InputValidationException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(ValidationErrorResponse.validationFailed(ex.getFieldErrors()));
     }
 
     @ExceptionHandler(AccessDeniedException.class)

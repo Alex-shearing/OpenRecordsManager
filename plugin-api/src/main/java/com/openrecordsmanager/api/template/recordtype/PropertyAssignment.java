@@ -25,6 +25,11 @@ public record PropertyAssignment<T>(
         return new PropertyAssignment<>(property, defaultValue);
     }
 
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    public static PropertyAssignment<?> ofUnknown(ComponentReference<? extends ObjectPropertyTemplate<?>> property) {
+        return new PropertyAssignment(property, null);
+    }
+
     public static class ListDeserializer extends StdDeserializer<List<PropertyAssignment<?>>> {
         public ListDeserializer() {
             super(List.class);

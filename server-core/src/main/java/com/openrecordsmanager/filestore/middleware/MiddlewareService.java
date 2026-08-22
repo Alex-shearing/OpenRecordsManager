@@ -51,7 +51,7 @@ public class MiddlewareService {
         FileStoreMiddlewareType<?> type = this.catalog.getRegistry(ComponentTypes.FILE_STORE_MIDDLEWARE).get(input.type())
                 .orElseThrow(() -> new ResourceNotFoundException(ComponentTypes.FILE_STORE_MIDDLEWARE, input.type()));
 
-        Middleware middleware = new Middleware(this.catalog, type, input.properties());
+        Middleware middleware = new Middleware(this.catalog, type, type.validateSettings(input.properties()));
 
         this.repository.fileStoreMiddlewareRepo.saveAndFlush(middleware);
 
@@ -63,7 +63,7 @@ public class MiddlewareService {
         Middleware middleware = this.repository.fileStoreMiddlewareRepo.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("stream store middleware", id.toString()));
 
-        middleware.setProperties(properties);
+        middleware.setProperties(middleware.getMiddlewareType(this.catalog).validateSettings(properties));
 
         this.repository.fileStoreMiddlewareRepo.saveAndFlush(middleware);
 

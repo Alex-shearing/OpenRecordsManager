@@ -51,8 +51,8 @@ public class PluginAuthenticationProvider implements AuthenticationProvider {
                 .orElseThrow(() -> new ProviderNotFoundException("Provider type " + provider.getProviderType() + " not found"));
 
         UserAuthDetails authDetails = switch (type) {
-            case InputAuthProviderType input ->
-                    input.authenticate(this.config, this.authService, provider, ((InputToken) token).data);
+            case InputAuthProviderType<?> input ->
+                    input.authenticateRaw(this.config, this.authService, provider, ((InputToken) token).data);
             case RedirectAuthProviderType redirect ->
                     redirect.authenticateCallback(provider, this.authService, ((RedirectToken) token).uri);
             default -> throw new InternalAuthenticationServiceException("Unexpected provider type: " + type);

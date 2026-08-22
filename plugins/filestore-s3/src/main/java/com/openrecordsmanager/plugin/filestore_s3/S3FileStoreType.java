@@ -1,6 +1,7 @@
 package com.openrecordsmanager.plugin.filestore_s3;
 
 import com.openrecordsmanager.api.filestore.FileStoreType;
+import com.openrecordsmanager.api.schema.SchemaField;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -18,16 +19,13 @@ public class S3FileStoreType extends FileStoreType<S3FileStoreType.S3FileStoreSe
     }
 
     @Override
-    public String save(S3FileStoreSettings properties, InputStream data) throws IOException {
-        String bucket = properties.bucket;
-        String endpoint = properties.endpoint;
-
+    public String save(S3FileStoreSettings settings, InputStream data) throws IOException {
         String path = UUID.randomUUID().toString();
 
-        LOGGER.info("Uploading file to S3: endpoint={}, bucket={}, key={}", endpoint, bucket, path);
+        LOGGER.info("Uploading file to S3: endpoint={}, bucket={}, key={}", settings.endpoint(), settings.bucket(), path);
 
         // Simulating S3 compatible storage using a local mock directory
-        File destFile = new File("./data/s3_mock/" + bucket, path);
+        File destFile = new File("./data/s3_mock/" + settings.bucket(), path);
         if (!destFile.getParentFile().exists()) {
             destFile.getParentFile().mkdirs();
         }
@@ -39,19 +37,19 @@ public class S3FileStoreType extends FileStoreType<S3FileStoreType.S3FileStoreSe
     }
 
     @Override
-    public InputStream retrieve(S3FileStoreSettings properties, String data) throws IOException {
-        String bucket = properties.bucket;
-        String endpoint = properties.endpoint;
+    public InputStream retrieve(S3FileStoreSettings settings, String data) throws IOException {
+        LOGGER.info("Downloading file from S3: endpoint={}, bucket={}, key={}", settings.endpoint(), settings.bucket(), data);
 
-        LOGGER.info("Downloading file from S3: endpoint={}, bucket={}, key={}", endpoint, bucket, data);
-
-        File srcFile = new File("./data/s3_mock/" + bucket, data);
+        File srcFile = new File("./data/s3_mock/" + settings.bucket(), data);
         if (!srcFile.exists()) {
-            throw new IOException("S3 Object not found: bucket=" + bucket + ", key=" + data);
+            throw new IOException("S3 Object not found: bucket=" + settings.bucket() + ", key=" + data);
         }
         return new FileInputStream(srcFile);
     }
 
-    public record S3FileStoreSettings(String bucket, String endpoint) {
+    public record S3FileStoreSettings(
+            @SchemaField(title = "Bucket", minLength = 1) String bucket,
+            @SchemaField(title = "Endpoint", minLength = 1) String endpoint
+    ) {
     }
 }

@@ -2,6 +2,8 @@ package com.openrecordsmanager.auth;
 
 import com.openrecordsmanager.api.ApiResponseV1;
 import com.openrecordsmanager.api.ComponentReference;
+import com.openrecordsmanager.api.ValidationErrorResponse;
+import com.openrecordsmanager.api.auth.InputAuthProviderType;
 import com.openrecordsmanager.api.auth.RedirectAuthProviderType;
 import com.openrecordsmanager.api.errors.ResourceNotFoundException;
 import com.openrecordsmanager.api.swagger.ForbiddenApiResponse;
@@ -53,7 +55,7 @@ public class AuthController {
     @Operation(summary = "List all supported authentication providers.")
     public Set<AuthProviderListResponse> providers_listAll() {
         return this.repository.authProviderRepo.findAll().stream()
-                .map(AuthProviderListResponse::of)
+                .map(provider -> AuthProviderListResponse.of(provider, this.catalog))
                 .collect(Collectors.toSet());
     }
 
@@ -90,14 +92,29 @@ public class AuthController {
                     )
             )
     )
+    @ApiResponse(
+            responseCode = "400",
+            description = "Validation Failed",
+            content = @Content(
+                    mediaType = MediaType.APPLICATION_JSON_VALUE,
+                    schema = @Schema(implementation = ValidationErrorResponse.class)
+            )
+    )
     public LoginResponse login(
             @PathVariable("provider") UUID provider,
             @RequestBody Map<String, String> inputs,
             HttpServletRequest request,
             HttpServletResponse response
     ) {
-        PluginAuthenticationProvider.InputToken auth = new PluginAuthenticationProvider.InputToken(provider, inputs);
-        return this.authService.login(auth, request, response);
+        AuthProvider authProvider = this.repository.authProviderRepo.findById(provider)
+                .orElseThrow(() -> new ResourceNotFoundException("authentication provider", provider.toString()));
+
+        InputAuthProviderType<?> type = authProvider.getProviderType().getComponent(this.catalog)
+                .filter(InputAuthProviderType.class::isInstance)
+                .map(InputAuthProviderType.class::cast)
+                .orElseThrow(() -> new ResourceNotFoundException("input authentication provider", provider.toString()));
+
+        return this.authService.login(new PluginAuthenticationProvider.InputToken(provider, inputs), request, response);
     }
 
     @PostMapping(value = "/signup", produces = MediaType.APPLICATION_JSON_VALUE)

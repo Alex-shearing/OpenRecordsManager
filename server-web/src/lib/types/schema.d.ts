@@ -29,12 +29,12 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Get stream store details */
+        /** Get file store details */
         get: operations["fileStore_retrieveOne"];
-        /** Modify stream store config */
+        /** Modify file store config */
         put: operations["fileStore_update"];
         post?: never;
-        /** Delete a stream store */
+        /** Delete a file store */
         delete: operations["fileStore_delete"];
         options?: never;
         head?: never;
@@ -48,12 +48,12 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Get stream store middleware details */
+        /** Get file store middleware details */
         get: operations["middleware_retrieveOne"];
-        /** Modify stream store middleware config */
+        /** Modify file store middleware config */
         put: operations["middleware_update"];
         post?: never;
-        /** Delete a stream store middleware */
+        /** Delete a file store middleware */
         delete: operations["middleware_delete"];
         options?: never;
         head?: never;
@@ -71,6 +71,24 @@ export interface paths {
         get: operations["database_retrieveOne"];
         /** Set a config value in the database */
         put: operations["set"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/auth/providers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List all supported authentication providers. */
+        get: operations["providers_listAll"];
+        /** Create new authentication provider */
+        put: operations["createProvider"];
         post?: never;
         delete?: never;
         options?: never;
@@ -119,10 +137,10 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Get all stream stores */
+        /** Get all file stores */
         get: operations["fileStore_retrieveAll"];
         put?: never;
-        /** Create a new stream store */
+        /** Create a new file store */
         post: operations["fileStore_create"];
         delete?: never;
         options?: never;
@@ -137,10 +155,10 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Get all stream store middlewares */
+        /** Get all file store middlewares */
         get: operations["middleware_retrieveAll"];
         put?: never;
-        /** Create a new stream store middleware */
+        /** Create a new file store middleware */
         post: operations["middleware_create"];
         delete?: never;
         options?: never;
@@ -240,7 +258,7 @@ export interface paths {
             cookie?: never;
         };
         /** Get template details */
-        get: operations["getTemplatesForType_2"];
+        get: operations["getTemplate"];
         put?: never;
         post?: never;
         delete?: never;
@@ -436,23 +454,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/auth/providers": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** List all supported authentication providers. */
-        get: operations["providers_listAll"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/api/auth/callback/{auth_provider}": {
         parameters: {
             query?: never;
@@ -500,6 +501,48 @@ export interface components {
             key: string;
             value: unknown;
         };
+        NewAuthProvider: {
+            name?: string;
+            typeId?: string;
+            /** @enum {string} */
+            type?: "INPUT" | "REDIRECT";
+            settings?: {
+                [key: string]: unknown;
+            };
+        };
+        AuthProviderListResponse: {
+            /** Format: uuid */
+            id: string;
+            name: string;
+            type: {
+                id: string;
+                type: string;
+            } & {
+                [key: string]: unknown;
+            };
+            loginSchema?: components["schemas"]["InputFormSchema"];
+        };
+        InputFormSchema: {
+            type?: string;
+            additionalProperties?: boolean;
+            properties?: {
+                [key: string]: components["schemas"]["InputFormSchemaField"];
+            };
+            required?: string[];
+        };
+        InputFormSchemaField: {
+            type?: string;
+            title?: string;
+            description?: string;
+            writeOnly?: boolean;
+            format?: string;
+            /** Format: int32 */
+            minLength?: number;
+            /** Format: int32 */
+            maxLength?: number;
+            pattern?: string;
+            contentEncoding?: string;
+        };
         NewRecord: {
             type: string;
             properties: {
@@ -530,7 +573,12 @@ export interface components {
             expiresIn: number;
         };
         UserResponse: {
+            /** Format: uuid */
+            id: string;
             username: string;
+            properties: {
+                [key: string]: unknown;
+            };
         };
         ListElement: {
             id?: string;
@@ -557,6 +605,7 @@ export interface components {
             validator?: string;
             securityFilter?: string;
             defaultValue?: unknown;
+            userHidden?: boolean;
         };
         PropertyTypeObject: {
             name?: string;
@@ -603,7 +652,7 @@ export interface components {
             };
             middlewares: components["schemas"]["MiddlewareUsage"][];
         };
-        MiddlewareObject: {
+        Middleware: {
             /** Format: uuid */
             id?: string;
             type?: string;
@@ -612,7 +661,7 @@ export interface components {
             };
         };
         MiddlewareUsage: {
-            middleware?: components["schemas"]["MiddlewareObject"];
+            middleware?: components["schemas"]["Middleware"];
             /** Format: int32 */
             applicationOrder?: number;
         };
@@ -621,16 +670,6 @@ export interface components {
             id: string;
             type: string;
             properties: {
-                [key: string]: unknown;
-            };
-        };
-        AuthProviderListResponse: {
-            /** Format: uuid */
-            id: string;
-            type: {
-                id: string;
-                type: string;
-            } & {
                 [key: string]: unknown;
             };
         };
@@ -1806,6 +1845,150 @@ export interface operations {
             };
         };
     };
+    providers_listAll: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @constant */
+                        success: true;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        data: components["schemas"]["AuthProviderListResponse"][];
+                    };
+                };
+            };
+            /** @description Internal Server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "Internal Server Error",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                    };
+                };
+            };
+        };
+    };
+    createProvider: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["NewAuthProvider"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @constant */
+                        success: true;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        data: components["schemas"]["AuthProviderListResponse"];
+                    };
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "Unauthorized",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                    };
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "Forbidden",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                    };
+                };
+            };
+            /** @description Internal Server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "Internal Server Error",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                    };
+                };
+            };
+        };
+    };
     registerTemplate: {
         parameters: {
             query?: {
@@ -2571,6 +2754,21 @@ export interface operations {
                     };
                 };
             };
+            /** @description Validation Failed */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                    };
+                };
+            };
             /** @description Authentication Failed */
             401: {
                 headers: {
@@ -2939,7 +3137,7 @@ export interface operations {
             };
         };
     };
-    getTemplatesForType_2: {
+    getTemplate: {
         parameters: {
             query?: never;
             header?: never;
@@ -3844,7 +4042,7 @@ export interface operations {
                         /** Format: date-time */
                         timestamp: unknown;
                         data: {
-                            [key: string]: unknown;
+                            [key: string]: Record<string, never>;
                         };
                     };
                 };
@@ -3938,7 +4136,7 @@ export interface operations {
                         /** Format: date-time */
                         timestamp: unknown;
                         data: {
-                            [key: string]: unknown;
+                            [key: string]: Record<string, never>;
                         };
                     };
                 };
@@ -4153,54 +4351,6 @@ export interface operations {
                      *     }
                      */
                     "application/json": components["schemas"]["ApiResponseV1"];
-                };
-            };
-        };
-    };
-    providers_listAll: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": {
-                        /** @constant */
-                        success: true;
-                        /** Format: date-time */
-                        timestamp: unknown;
-                        data: components["schemas"]["AuthProviderListResponse"][];
-                    };
-                };
-            };
-            /** @description Internal Server error */
-            500: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "success": false,
-                     *       "error": "Internal Server Error",
-                     *       "timestamp": "2026-06-29T23:05:00Z"
-                     *     }
-                     */
-                    "application/json": {
-                        /** @constant */
-                        success: false;
-                        /** Format: date-time */
-                        timestamp: unknown;
-                        error: string;
-                    };
                 };
             };
         };
