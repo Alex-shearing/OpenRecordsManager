@@ -17,7 +17,11 @@ public interface ObjectPropertyHolder<T extends ObjectPropertyHolder.ObjectPrope
     }
 
     default <K> @Nullable K getProperty(ObjectProperty<K> property) {
-        return property.getType().cast(this.getProperties().get(property).getValue());
+        ObjectPropertyValue<?> value = this.getProperties().get(property);
+        if (value == null) {
+            return null;
+        }
+        return property.getType().cast(value.getValue());
     }
 
     boolean canSetProperty(ObjectProperty<?> property);

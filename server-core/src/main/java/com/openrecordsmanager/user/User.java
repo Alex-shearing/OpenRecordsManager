@@ -52,7 +52,7 @@ public class User implements ObjectPropertyHolder<UserPropertyValue<?>>, UserDet
     }
 
     @Override
-    public <V> UserPropertyValue<?> createProperty(ObjectProperty<V> property, V value) {
+    public <V> UserPropertyValue<V> createProperty(ObjectProperty<V> property, V value) {
         return new UserPropertyValue<>(this, property, value);
     }
 

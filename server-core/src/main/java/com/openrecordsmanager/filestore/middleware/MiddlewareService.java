@@ -51,7 +51,7 @@ public class MiddlewareService {
         FileStoreMiddlewareType<?> type = this.catalog.getRegistry(ComponentTypes.FILE_STORE_MIDDLEWARE).get(input.type())
                 .orElseThrow(() -> new ResourceNotFoundException(ComponentTypes.FILE_STORE_MIDDLEWARE, input.type()));
 
-        Middleware<?> middleware = new Middleware<>(this.catalog, type, input.properties());
+        Middleware middleware = new Middleware(this.catalog, type, input.properties());
 
         this.repository.fileStoreMiddlewareRepo.saveAndFlush(middleware);
 
@@ -60,7 +60,7 @@ public class MiddlewareService {
 
     @Transactional
     public SimpleFileStoreResponse update(UUID id, Map<String, ?> properties) throws ResourceNotFoundException {
-        Middleware<?> middleware = this.repository.fileStoreMiddlewareRepo.findById(id)
+        Middleware middleware = this.repository.fileStoreMiddlewareRepo.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("stream store middleware", id.toString()));
 
         middleware.setProperties(properties);
@@ -72,7 +72,7 @@ public class MiddlewareService {
 
     @Transactional
     public void delete(UUID id) throws ResourceNotFoundException, ResourceInUseException {
-        Middleware<?> middleware = this.repository.fileStoreMiddlewareRepo.findById(id)
+        Middleware middleware = this.repository.fileStoreMiddlewareRepo.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("stream store middleware", id.toString()));
 
         if (this.repository.fileStoreRepo.existsByMiddlewares(middleware.id)) {

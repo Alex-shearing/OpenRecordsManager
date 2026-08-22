@@ -23,7 +23,7 @@ import java.util.UUID;
 @Entity
 @Table(name = "file_store_middleware")
 @JsonSerialize(using = Middleware.Serializer.class)
-public class Middleware<T> {
+public class Middleware {
 
     @Id
     public UUID id;
@@ -39,38 +39,35 @@ public class Middleware<T> {
     protected Middleware() {
     }
 
-    public Middleware(ComponentCatalog catalog, FileStoreMiddlewareType<T> type, Map<String, ?> properties) {
+    public Middleware(ComponentCatalog catalog, FileStoreMiddlewareType<?> type, Map<String, ?> properties) {
         this.id = UUID.randomUUID();
         this.type = catalog.getRegistry(ComponentTypes.FILE_STORE_MIDDLEWARE).getId(type).orElseThrow();
         this.properties = properties;
     }
 
-    public T getProperties(ComponentCatalog catalog) {
+    public Object getProperties(ComponentCatalog catalog) {
         return this.getMiddlewareType(catalog).parseOptions(this.properties);
     }
 
-    @SuppressWarnings("unchecked")
-    public FileStoreMiddlewareType<T> getMiddlewareType(ComponentCatalog catalog) {
-        return (FileStoreMiddlewareType<T>) catalog.getRegistry(ComponentTypes.FILE_STORE_MIDDLEWARE)
+    public FileStoreMiddlewareType<?> getMiddlewareType(ComponentCatalog catalog) {
+        return catalog.getRegistry(ComponentTypes.FILE_STORE_MIDDLEWARE)
                 .get(this.type)
                 .orElseThrow();
     }
 
     public InputStream duringSave(ComponentCatalog catalog, InputStream stream) {
-        FileStoreMiddlewareType<T> type = this.getMiddlewareType(catalog);
-        return type.duringSave(this.getProperties(catalog), stream);
+        return this.getMiddlewareType(catalog).duringSaveUntyped(this.properties, stream);
     }
 
     public InputStream duringRetrieve(ComponentCatalog catalog, InputStream stream) {
-        FileStoreMiddlewareType<T> type = this.getMiddlewareType(catalog);
-        return type.duringRetrieve(this.getProperties(catalog), stream);
+        return this.getMiddlewareType(catalog).duringRetrieveUntyped(this.properties, stream);
     }
 
     public void setProperties(Map<String, ?> properties) {
         this.properties = properties;
     }
 
-    public static class Serializer extends ValueSerializer<Middleware<?>> {
+    public static class Serializer extends ValueSerializer<Middleware> {
 
         private final ComponentCatalog catalog;
 

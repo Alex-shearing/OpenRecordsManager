@@ -8,7 +8,6 @@ import tools.jackson.databind.KeyDeserializer;
 
 import java.util.Objects;
 import java.util.Optional;
-import java.util.function.Function;
 
 public abstract class ComponentReference<T extends Component> {
 
@@ -40,8 +39,6 @@ public abstract class ComponentReference<T extends Component> {
         return of(componentType, ResourceIdentifier.valueOf(split[1]));
     }
 
-    public abstract <K extends Component> ComponentReference<K> widen(Function<T, K> mapper);
-
     public static class Reference<T extends Component> extends ComponentReference<T> {
         private final ComponentType<T> type;
         private final ResourceIdentifier id;
@@ -64,12 +61,6 @@ public abstract class ComponentReference<T extends Component> {
         @Override
         public ComponentType<T> getType() {
             return this.type;
-        }
-
-        @Override
-        @SuppressWarnings("unchecked")
-        public <K extends Component> ComponentReference<K> widen(Function<T, K> mapper) {
-            return new Reference<>((ComponentType<K>) this.type, this.id);
         }
 
         @Override
@@ -109,11 +100,6 @@ public abstract class ComponentReference<T extends Component> {
         @Override
         public ComponentType<T> getType() {
             return ComponentTypes.fromObject(this.value);
-        }
-
-        @Override
-        public <K extends Component> ComponentReference<K> widen(Function<T, K> mapper) {
-            return new Value<>(mapper.apply(this.value));
         }
 
         @Override

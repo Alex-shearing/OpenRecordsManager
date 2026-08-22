@@ -25,7 +25,7 @@ import java.util.*;
 @Entity
 @Table(name = "file_store")
 @JsonSerialize(using = FileStore.Serializer.class)
-public class FileStore<T> {
+public class FileStore {
 
     @Id
     public UUID id;
@@ -52,14 +52,14 @@ public class FileStore<T> {
     protected FileStore() {
     }
 
-    public FileStore(ComponentCatalog catalog, FileStoreType<T> type, Map<String, ?> properties) {
+    public FileStore(ComponentCatalog catalog, FileStoreType<?> type, Map<String, ?> properties) {
         this.id = UUID.randomUUID();
         this.type = catalog.getRegistry(ComponentTypes.FILE_STORE).getId(type).orElseThrow();
         this.properties = properties;
         this.middlewares = new ArrayList<>();
     }
 
-    public void addMiddleware(Middleware<?> middleware) {
+    public void addMiddleware(Middleware middleware) {
         int index = this.middlewares.size();
         this.middlewares.add(new MiddlewareUsage(middleware, index));
     }
@@ -78,7 +78,7 @@ public class FileStore<T> {
         // Save the stream into the store
         String path;
         try {
-            path = this.getStoreType(catalog).save(this.getProperties(catalog), stream);
+            path = this.getStoreType(catalog).saveUntyped(this.properties, stream);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -93,12 +93,12 @@ public class FileStore<T> {
         );
     }
 
-    public T getProperties(ComponentCatalog catalog) {
+    public Object getProperties(ComponentCatalog catalog) {
         return this.getStoreType(catalog).parseOptions(this.properties);
     }
 
     public InputStream getFile(ComponentCatalog catalog, FileStoreEntry entry) throws IOException {
-        InputStream stream = this.getStoreType(catalog).retrieve(this.getProperties(catalog), entry.path);
+        InputStream stream = this.getStoreType(catalog).retrieveUntyped(this.properties, entry.path);
 
         for (MiddlewareUsage middleware : this.middlewares) {
             stream = middleware.middleware.duringRetrieve(catalog, stream);
@@ -107,16 +107,15 @@ public class FileStore<T> {
         return stream;
     }
 
-    @SuppressWarnings("unchecked")
-    public FileStoreType<T> getStoreType(ComponentCatalog catalog) {
-        return (FileStoreType<T>) catalog.getRegistry(ComponentTypes.FILE_STORE).get(this.type).orElseThrow();
+    public FileStoreType<?> getStoreType(ComponentCatalog catalog) {
+        return catalog.getRegistry(ComponentTypes.FILE_STORE).get(this.type).orElseThrow();
     }
 
     public void setProperties(Map<String, ?> properties) {
         this.properties = properties;
     }
 
-    public static class Serializer extends ValueSerializer<FileStore<?>> {
+    public static class Serializer extends ValueSerializer<FileStore> {
 
         private final ComponentCatalog catalog;
 

@@ -27,6 +27,13 @@ public abstract class FileStoreMiddlewareType<T> implements Component {
     public abstract InputStream duringSave(T properties, InputStream data);
 
     /**
+     * Applies save-time modification using untyped properties (typically raw JSON maps from persistence).
+     */
+    public final InputStream duringSaveUntyped(Object properties, InputStream data) {
+        return duringSave(parseOptions(properties), data);
+    }
+
+    /**
      * Retrieves the modified InputStream and converts it back to the original InputStream
      *
      * @param properties configuration properties for the file store instance (e.g. root directory, bucket name)
@@ -34,6 +41,13 @@ public abstract class FileStoreMiddlewareType<T> implements Component {
      * @return an input stream of the file content
      */
     public abstract InputStream duringRetrieve(T properties, InputStream data);
+
+    /**
+     * Applies retrieve-time modification using untyped properties (typically raw JSON maps from persistence).
+     */
+    public final InputStream duringRetrieveUntyped(Object properties, InputStream data) {
+        return duringRetrieve(parseOptions(properties), data);
+    }
 
     public T parseOptions(Object properties) {
         return MAPPER.convertValue(properties, propertiesClass);

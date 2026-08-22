@@ -1,9 +1,9 @@
 package com.openrecordsmanager.plugin.registry.mapper;
 
-import com.openrecordsmanager.api.ComponentReference;
 import com.openrecordsmanager.api.ResourceIdentifier;
-import com.openrecordsmanager.api.template.property.ObjectPropertyTemplate;
+import com.openrecordsmanager.api.template.recordtype.PropertyAssignment;
 import com.openrecordsmanager.api.template.recordtype.RecordTypeTemplate;
+import com.openrecordsmanager.api.types.ComponentType;
 import com.openrecordsmanager.api.types.ComponentTypes;
 import com.openrecordsmanager.database.DataRepository;
 import com.openrecordsmanager.plugin.ExpressionsService;
@@ -12,12 +12,16 @@ import com.openrecordsmanager.property.ObjectProperty;
 import com.openrecordsmanager.recordtype.RecordType;
 import com.openrecordsmanager.recordtype.RecordTypeProperty;
 
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 public class RecordTypeTemplateRegistrationMapper extends TemplateRegistrationMapper<RecordTypeTemplate, RecordType> {
+
+    @Override
+    public ComponentType<RecordTypeTemplate> componentType() {
+        return ComponentTypes.RECORD_TYPE;
+    }
 
     @Override
     public void register(
@@ -27,7 +31,7 @@ public class RecordTypeTemplateRegistrationMapper extends TemplateRegistrationMa
             ResourceIdentifier id,
             RecordTypeTemplate component
     ) {
-        Set<RecordTypeProperty<?>> properties = component.properties().entrySet()
+        Set<RecordTypeProperty<?>> properties = component.properties()
                 .stream()
                 .map(def -> createRecordTypeProperty(def, catalog, repository))
                 .collect(Collectors.<RecordTypeProperty<?>>toSet());
@@ -46,16 +50,16 @@ public class RecordTypeTemplateRegistrationMapper extends TemplateRegistrationMa
 
     @SuppressWarnings("unchecked")
     private static <T> RecordTypeProperty<T> createRecordTypeProperty(
-            Map.Entry<ComponentReference<ObjectPropertyTemplate<?>>, ?> entry,
+            PropertyAssignment<T> assignment,
             ComponentCatalog catalog,
             DataRepository repository
     ) {
-        ResourceIdentifier id = entry.getKey().getId(catalog)
-                .orElseThrow(() -> new IllegalArgumentException("id " + entry.getKey() + " is not found"));
-        ObjectProperty<?> property = (ObjectProperty<?>) catalog.getTemplateRegistry(ComponentTypes.OBJECT_PROPERTY).getRegistered(id, repository)
-                .orElseThrow(() -> new IllegalArgumentException("Attempted to use property that was not registered: " + entry.getKey().getId(catalog)));
+        ResourceIdentifier id = assignment.property().getId(catalog)
+                .orElseThrow(() -> new IllegalArgumentException("id " + assignment.property() + " is not found"));
+        ObjectProperty<T> property = (ObjectProperty<T>) catalog.getTemplateRegistry(ComponentCatalog.OBJECT_PROPERTY_MAPPER).getRegistered(id, repository)
+                .orElseThrow(() -> new IllegalArgumentException("Attempted to use property that was not registered: " + assignment.property().getId(catalog)));
 
-        return new RecordTypeProperty<>((ObjectProperty<T>) property, (T) entry.getValue());
+        return new RecordTypeProperty<>(property, assignment.defaultValue());
     }
 
     @Override

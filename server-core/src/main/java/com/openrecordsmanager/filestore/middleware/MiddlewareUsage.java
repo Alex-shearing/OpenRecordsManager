@@ -10,12 +10,12 @@ public class MiddlewareUsage {
 
     @ManyToOne(targetEntity = Middleware.class, optional = false)
     @JoinColumn(name = "middleware_id")
-    public Middleware<?> middleware;
+    public Middleware middleware;
 
     @Column(name = "application_order")
     public int applicationOrder;
 
-    public MiddlewareUsage(Middleware<?> middleware, int order) {
+    public MiddlewareUsage(Middleware middleware, int order) {
         this.middleware = middleware;
         this.applicationOrder = order;
     }

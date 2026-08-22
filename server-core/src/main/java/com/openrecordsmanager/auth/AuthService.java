@@ -4,7 +4,6 @@ import com.openrecordsmanager.api.ComponentReference;
 import com.openrecordsmanager.api.auth.AuthProviderType;
 import com.openrecordsmanager.api.auth.UserAuthContext;
 import com.openrecordsmanager.api.template.property.ObjectPropertyTemplate;
-import com.openrecordsmanager.api.types.ComponentTypes;
 import com.openrecordsmanager.auth.dto.AuthProviderListResponse;
 import com.openrecordsmanager.auth.dto.LoginResponse;
 import com.openrecordsmanager.auth.entity.AuthProvider;
@@ -127,13 +126,19 @@ public class AuthService implements UserAuthContext {
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public <T> Optional<T> getUserProperty(String username, ObjectPropertyTemplate<T> property) {
-        return this.catalog.<ObjectPropertyTemplate<?>, ObjectProperty<T>>getTemplateRegistry(ComponentTypes.OBJECT_PROPERTY)
-                .getRegistered(property, this.repository)
-                .flatMap(prop ->
-                        this.repository.userRepo.findByUsername(username)
-                                .map(user -> user.getProperty(prop))
-                );
+        Optional<ObjectProperty<?>> prop = this.catalog.getTemplateRegistry(ComponentCatalog.OBJECT_PROPERTY_MAPPER)
+                .getRegistered(property, this.repository);
+
+        if (prop.isEmpty()) {
+            return Optional.empty();
+        }
+
+        ObjectProperty<T> typedProp = (ObjectProperty<T>) prop.get();
+
+        return this.repository.userRepo.findByUsername(username)
+                .map(user -> user.getProperty(typedProp));
     }
 
     public AuthProviderListResponse createProvider(String name, ComponentReference<? extends AuthProviderType> type, Map<String, Object> settings) {

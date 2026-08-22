@@ -2,6 +2,7 @@ package com.openrecordsmanager.plugin.registry.mapper;
 
 import com.openrecordsmanager.api.ResourceIdentifier;
 import com.openrecordsmanager.api.template.property.ObjectPropertyTemplate;
+import com.openrecordsmanager.api.types.ComponentType;
 import com.openrecordsmanager.api.types.ComponentTypes;
 import com.openrecordsmanager.database.DataRepository;
 import com.openrecordsmanager.list.ListType;
@@ -12,6 +13,11 @@ import com.openrecordsmanager.property.ObjectProperty;
 import java.util.Optional;
 
 public class ObjectPropertyTemplateRegistrationMapper extends TemplateRegistrationMapper<ObjectPropertyTemplate<?>, ObjectProperty<?>> {
+
+    @Override
+    public ComponentType<ObjectPropertyTemplate<?>> componentType() {
+        return ComponentTypes.OBJECT_PROPERTY;
+    }
 
     @Override
     protected void register(
@@ -36,7 +42,7 @@ public class ObjectPropertyTemplateRegistrationMapper extends TemplateRegistrati
             ResourceIdentifier listId = definition.listType().getId(catalog)
                     .orElseThrow(() -> new RuntimeException("listType " + definition.listType() + " does not exist"));
 
-            listType = (ListType) catalog.getTemplateRegistry(ComponentTypes.LIST).getRegistered(listId, repository)
+            listType = catalog.getTemplateRegistry(ComponentCatalog.LIST_MAPPER).getRegistered(listId, repository)
                     .orElseThrow(() -> new IllegalArgumentException("listType " + definition.listType() + " is not registered"));
         }
 

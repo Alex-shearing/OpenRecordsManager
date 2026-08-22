@@ -4,11 +4,10 @@ import com.openrecordsmanager.api.ResourceIdentifier;
 import com.openrecordsmanager.api.errors.ResourceNotFoundException;
 import com.openrecordsmanager.api.swagger.DefaultApiResponses;
 import com.openrecordsmanager.api.swagger.NotFoundApiResponse;
-import com.openrecordsmanager.api.template.TemplateComponent;
 import com.openrecordsmanager.api.types.ComponentType;
-import com.openrecordsmanager.api.types.ComponentTypes;
 import com.openrecordsmanager.plugin.registry.ComponentCatalog;
 import com.openrecordsmanager.plugin.registry.TemplateComponentRegistry;
+import com.openrecordsmanager.plugin.registry.mapper.TemplateRegistrationMapper;
 import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -44,9 +43,9 @@ public class TemplateController {
     @NotFoundApiResponse
     @Transactional(readOnly = true)
     public Set<ResourceIdentifier> getTemplatesForType(@PathVariable("type") String typeName) {
-        ComponentType<? extends TemplateComponent> type = ComponentTypes.templateFromName(typeName);
+        TemplateRegistrationMapper<?, ?> type = ComponentCatalog.mapperFromName(typeName);
         if (type == null) {
-            throw new ResourceNotFoundException("component type", typeName);
+            throw new ResourceNotFoundException("template type", typeName);
         }
         return this.catalog.getTemplateRegistry(type).getIds();
     }
@@ -56,14 +55,14 @@ public class TemplateController {
     @NotFoundApiResponse
     @Transactional(readOnly = true)
     public Object getTemplate(@PathVariable("type") String typeName, @PathVariable("template") ResourceIdentifier templateId) {
-        ComponentType<? extends TemplateComponent> type = ComponentTypes.templateFromName(typeName);
+        TemplateRegistrationMapper<?, ?> type = ComponentCatalog.mapperFromName(typeName);
         if (type == null) {
-            throw new ResourceNotFoundException("component type", typeName);
+            throw new ResourceNotFoundException("template type", typeName);
         }
         TemplateComponentRegistry<?, ?> registry = this.catalog.getTemplateRegistry(type);
 
         return registry.get(templateId)
-                .orElseThrow(() -> new ResourceNotFoundException(type, templateId));
+                .orElseThrow(() -> new ResourceNotFoundException(type.componentType(), templateId));
     }
 
     @PostMapping(value = "/{type}/{template}/register", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -74,9 +73,9 @@ public class TemplateController {
             @PathVariable("template") ResourceIdentifier templateId,
             @RequestParam(value = "includeDependencies", required = false, defaultValue = "false") boolean includeDependencies
     ) {
-        ComponentType<? extends TemplateComponent> type = ComponentTypes.templateFromName(typeName);
+        TemplateRegistrationMapper<?, ?> type = ComponentCatalog.mapperFromName(typeName);
         if (type == null) {
-            throw new ResourceNotFoundException("component type", typeName);
+            throw new ResourceNotFoundException("template type", typeName);
         }
 
         this.service.registerTemplate(type, templateId, includeDependencies);

@@ -6,6 +6,6 @@ import org.springframework.stereotype.Repository;
 import java.util.UUID;
 
 @Repository
-public interface FileStoreRepository extends JpaRepository<FileStore<?>, UUID> {
+public interface FileStoreRepository extends JpaRepository<FileStore, UUID> {
     boolean existsByMiddlewares(UUID middlewareId);
 }

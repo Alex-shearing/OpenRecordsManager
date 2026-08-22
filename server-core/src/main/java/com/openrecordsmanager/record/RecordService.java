@@ -85,7 +85,7 @@ public class RecordService {
         UUID defaultStoreId = this.config.getOptional(BuiltinConfigs.DEFAULT_FILE_STORE)
                 .orElseThrow(() -> new IllegalStateException("There is no default file store set"));
 
-        FileStore<?> fileStore = this.repository.fileStoreRepo.findById(defaultStoreId)
+        FileStore fileStore = this.repository.fileStoreRepo.findById(defaultStoreId)
                 .orElseThrow(() -> new ResourceNotFoundException("file store", defaultStoreId));
 
         record.addRevision(version, fileStore.newFile(this.catalog, file, fileExtension));

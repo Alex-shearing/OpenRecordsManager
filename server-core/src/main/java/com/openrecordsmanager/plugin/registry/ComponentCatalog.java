@@ -5,19 +5,14 @@ import com.openrecordsmanager.api.template.TemplateComponent;
 import com.openrecordsmanager.api.types.ComponentType;
 import com.openrecordsmanager.api.types.ComponentTypes;
 import com.openrecordsmanager.plugin.PluginManager;
-import com.openrecordsmanager.plugin.registry.mapper.ListElementTemplateRegistrationMapper;
-import com.openrecordsmanager.plugin.registry.mapper.ListTemplateRegistrationMapper;
-import com.openrecordsmanager.plugin.registry.mapper.ObjectPropertyTemplateRegistrationMapper;
-import com.openrecordsmanager.plugin.registry.mapper.RecordTypeTemplateRegistrationMapper;
+import com.openrecordsmanager.plugin.registry.mapper.*;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -25,8 +20,30 @@ import java.util.stream.Stream;
 public class ComponentCatalog implements ComponentAccess {
     private static final Logger LOGGER = LoggerFactory.getLogger(ComponentCatalog.class);
 
-    // Static
-    private final Map<ComponentType<?>, ComponentRegistry<?>> staticRegistries = Map.of(
+    // Mappers
+    public static final ListTemplateRegistrationMapper LIST_MAPPER = new ListTemplateRegistrationMapper();
+    public static final ListElementTemplateRegistrationMapper LIST_ELEMENT_MAPPER = new ListElementTemplateRegistrationMapper();
+    public static final ObjectPropertyTemplateRegistrationMapper OBJECT_PROPERTY_MAPPER = new ObjectPropertyTemplateRegistrationMapper();
+    public static final RecordTypeTemplateRegistrationMapper RECORD_TYPE_MAPPER = new RecordTypeTemplateRegistrationMapper();
+
+    private static final List<TemplateRegistrationMapper<?, ?>> TEMPLATE_MAPPERS = List.of(
+            LIST_MAPPER,
+            LIST_ELEMENT_MAPPER,
+            OBJECT_PROPERTY_MAPPER,
+            RECORD_TYPE_MAPPER
+    );
+
+    // Templates Registries
+    private static final Map<ComponentType<?>, TemplateComponentRegistry<?, ?>> TEMPLATE_REGISTRIES = TEMPLATE_MAPPERS.stream()
+            .map(mapper -> Map.entry(
+                    mapper.componentType(),
+                    new TemplateComponentRegistry<>(mapper)
+            ))
+            .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+
+
+    // Static Registries
+    private static final Map<ComponentType<?>, ComponentRegistry<?>> STATIC_REGISTRIES = Map.of(
             ComponentTypes.CONFIG, new ComponentRegistry<>(),
             ComponentTypes.INPUT_AUTH_PROVIDER, new ComponentRegistry<>(),
             ComponentTypes.REDIRECT_AUTH_PROVIDER, new ComponentRegistry<>(),
@@ -34,18 +51,10 @@ public class ComponentCatalog implements ComponentAccess {
             ComponentTypes.FILE_STORE_MIDDLEWARE, new ComponentRegistry<>()
     );
 
-    // Templates
-    private final Map<ComponentType<?>, TemplateComponentRegistry<?, ?>> templateRegistries = Map.of(
-            ComponentTypes.LIST, new TemplateComponentRegistry<>(new ListTemplateRegistrationMapper()),
-            ComponentTypes.LIST_ELEMENT, new TemplateComponentRegistry<>(new ListElementTemplateRegistrationMapper()),
-            ComponentTypes.OBJECT_PROPERTY, new TemplateComponentRegistry<>(new ObjectPropertyTemplateRegistrationMapper()),
-            ComponentTypes.RECORD_TYPE, new TemplateComponentRegistry<>(new RecordTypeTemplateRegistrationMapper())
-    );
-
     // Combined
     private final Map<ComponentType<?>, ComponentRegistry<?>> componentsMap = Stream.concat(
-                    staticRegistries.entrySet().stream(),
-                    templateRegistries.entrySet().stream()
+                    STATIC_REGISTRIES.entrySet().stream(),
+                    TEMPLATE_REGISTRIES.entrySet().stream()
             )
             .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 
@@ -67,12 +76,14 @@ public class ComponentCatalog implements ComponentAccess {
     }
 
     @SuppressWarnings("unchecked")
-    public <K extends TemplateComponent, D> TemplateComponentRegistry<K, D> getTemplateRegistry(ComponentType<K> type) {
-        return (TemplateComponentRegistry<K, D>) this.templateRegistries.get(type);
+    public <K extends TemplateComponent, D> TemplateComponentRegistry<K, D> getTemplateRegistry(
+            TemplateRegistrationMapper<K, D> mapper
+    ) {
+        return (TemplateComponentRegistry<K, D>) TEMPLATE_REGISTRIES.get(mapper.componentType());
     }
 
     public Set<ComponentType<?>> getTemplateTypes() {
-        return this.templateRegistries.keySet();
+        return TEMPLATE_REGISTRIES.keySet();
     }
 
     private void loadCatalog(PluginManager pluginManager) {
@@ -83,6 +94,23 @@ public class ComponentCatalog implements ComponentAccess {
         }
         builder.build();
     }
+
+    @Nullable
+    public static TemplateRegistrationMapper<?, ?> mapperFromName(String name) {
+        return TEMPLATE_MAPPERS.stream()
+                .filter(mapper -> mapper.componentType().name.equals(name))
+                .findFirst()
+                .orElse(null);
+    }
+
+    @SuppressWarnings("unchecked")
+    public static <T extends TemplateComponent> TemplateRegistrationMapper<T, ?> mapperFromComponent(ComponentType<T> type) {
+        return (TemplateRegistrationMapper<T, ?>) TEMPLATE_MAPPERS.stream()
+                .filter(mapper -> mapper.componentType().equals(type))
+                .findFirst()
+                .orElseThrow();
+    }
+
 
     private class Builder {
         private final Map<ComponentType<?>, ComponentRegistry<?>.Builder> builder = ComponentCatalog.this.componentsMap

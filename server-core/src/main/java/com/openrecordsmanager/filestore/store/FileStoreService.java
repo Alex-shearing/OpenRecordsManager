@@ -64,10 +64,10 @@ public class FileStoreService {
         FileStoreType<?> type = this.catalog.getRegistry(ComponentTypes.FILE_STORE).get(input.type())
                 .orElseThrow(() -> new ResourceNotFoundException(ComponentTypes.FILE_STORE, input.type()));
 
-        FileStore<?> store = new FileStore<>(this.catalog, type, input.properties());
+        FileStore store = new FileStore(this.catalog, type, input.properties());
 
         for (UUID middleware : input.middlewares()) {
-            Middleware<?> mw = this.repository.fileStoreMiddlewareRepo.findById(middleware)
+            Middleware mw = this.repository.fileStoreMiddlewareRepo.findById(middleware)
                     .orElseThrow(() -> new ResourceNotFoundException("file store middleware", middleware));
 
             store.addMiddleware(mw);
@@ -80,7 +80,7 @@ public class FileStoreService {
 
     @Transactional
     public SimpleFileStoreResponse update(UUID id, Map<String, ?> properties) throws ResourceNotFoundException {
-        FileStore<?> store = this.repository.fileStoreRepo.findById(id)
+        FileStore store = this.repository.fileStoreRepo.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("file store", id));
         store.properties = properties;
 
@@ -91,7 +91,7 @@ public class FileStoreService {
 
     @Transactional
     public void delete(UUID id) throws ResourceNotFoundException, ResourceInUseException {
-        FileStore<?> store = this.repository.fileStoreRepo.findById(id)
+        FileStore store = this.repository.fileStoreRepo.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("file store", id));
 
         if (!store.files.isEmpty()) {

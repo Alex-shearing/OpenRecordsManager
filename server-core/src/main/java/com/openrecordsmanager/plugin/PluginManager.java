@@ -149,7 +149,7 @@ public class PluginManager {
 
         LocalPluginInfo[] localPluginInfos = this.getLocalPlugins();
 
-        FileStore<?> fileStore = this.fileStoreRepo.findById(defaultStore)
+        FileStore fileStore = this.fileStoreRepo.findById(defaultStore)
                 .orElseThrow(() -> new ResourceNotFoundException("default store", defaultStore.toString()));
 
         List<PersistedPlugin> missingPlugins = this.pluginRepo.findAll();
@@ -238,7 +238,7 @@ public class PluginManager {
         return false;
     }
 
-    private void uploadPlugin(ComponentCatalog catalog, FileStore<?> fileStore, PersistedPlugin persistedPlugin, LocalPluginInfo localPlugin) {
+    private void uploadPlugin(ComponentCatalog catalog, FileStore fileStore, PersistedPlugin persistedPlugin, LocalPluginInfo localPlugin) {
         try {
             persistedPlugin.version = localPlugin.version.toString();
             persistedPlugin.file = fileStore.newFile(catalog, new FileInputStream(localPlugin.file), "jar");
@@ -249,7 +249,7 @@ public class PluginManager {
         this.pluginRepo.save(persistedPlugin);
     }
 
-    private void downloadPlugin(ComponentCatalog catalog, FileStore<?> fileStore, PersistedPlugin persistedPlugin) {
+    private void downloadPlugin(ComponentCatalog catalog, FileStore fileStore, PersistedPlugin persistedPlugin) {
         Path destFile = this.directory.resolve(String.format("%s-%s.jar", persistedPlugin.name, persistedPlugin.version));
         LOGGER.info("Downloading {} to {}", persistedPlugin.name, destFile);
 

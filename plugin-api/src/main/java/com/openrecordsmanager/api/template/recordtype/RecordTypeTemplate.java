@@ -17,7 +17,7 @@ import java.util.stream.Stream;
 public record RecordTypeTemplate(
         String name,
         String description,
-        Map<ComponentReference<ObjectPropertyTemplate<?>>, ?> properties,
+        @JsonDeserialize(using = PropertyAssignment.ListDeserializer.class) List<PropertyAssignment<?>> properties,
         @Nullable Set<String> allowedContentTypes,
         @Nullable ExpressionBuilder securityFilter,
         @JsonDeserialize(using = SecurityFilterUsage.Deserializer.class) SecurityFilterUsage securityFilterUsage
@@ -36,18 +36,21 @@ public record RecordTypeTemplate(
 
     @Override
     public Set<ComponentReference<? extends TemplateComponent>> getDependencies() {
+        Stream<ComponentReference<? extends TemplateComponent>> propertyDeps = this.properties.stream()
+                .map(PropertyAssignment::property);
+
         if (this.securityFilter == null) {
-            return Set.copyOf(this.properties.keySet());
+            return propertyDeps.collect(Collectors.toSet());
         }
 
-        return Stream.concat(this.properties.keySet().stream(), this.securityFilter.dependencies().stream())
+        return Stream.concat(propertyDeps, this.securityFilter.dependencies().stream())
                 .collect(Collectors.toSet());
     }
 
     public static class Builder {
         private String name;
         private String description = "";
-        private final Map<ComponentReference<ObjectPropertyTemplate<?>>, @Nullable Object> properties = new HashMap<>();
+        private final List<PropertyAssignment<?>> properties = new ArrayList<>();
         @Nullable
         private Set<String> allowedContentTypes = null;
         @Nullable
@@ -67,16 +70,9 @@ public record RecordTypeTemplate(
             this.description = description;
             return this;
         }
-
-        public Builder properties(Set<ComponentReference<ObjectPropertyTemplate<?>>> properties) {
-            for (ComponentReference<ObjectPropertyTemplate<?>> property : properties) {
-                this.properties.put(property, null);
-            }
-            return this;
-        }
-
-        public Builder property(ComponentReference<ObjectPropertyTemplate<?>> property) {
-            this.properties.put(property, null);
+        
+        public <L> Builder property(ComponentReference<ObjectPropertyTemplate<L>> property) {
+            this.properties.add(PropertyAssignment.of(property));
             return this;
         }
 
@@ -85,7 +81,7 @@ public record RecordTypeTemplate(
         }
 
         public <T> Builder property(ComponentReference<ObjectPropertyTemplate<T>> property, T defaultValue) {
-            this.properties.put(property.widen(def -> def), defaultValue);
+            this.properties.add(PropertyAssignment.of(property, defaultValue));
             return this;
         }
 

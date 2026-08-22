@@ -29,6 +29,13 @@ public abstract class FileStoreType<T> implements Component {
     public abstract String save(T properties, InputStream data) throws IOException;
 
     /**
+     * Saves a file using untyped properties (typically raw JSON maps from persistence).
+     */
+    public final String saveUntyped(Object properties, InputStream data) throws IOException {
+        return this.save(this.parseOptions(properties), data);
+    }
+
+    /**
      * Retrieves a file from the storage provider using the specified instance properties.
      *
      * @param properties configuration properties for the file store instance (e.g. root directory, bucket name)
@@ -37,6 +44,13 @@ public abstract class FileStoreType<T> implements Component {
      * @throws IOException if there is an error retrieving the file
      */
     public abstract InputStream retrieve(T properties, String data) throws IOException;
+
+    /**
+     * Retrieves a file using untyped properties (typically raw JSON maps from persistence).
+     */
+    public final InputStream retrieveUntyped(Object properties, String data) throws IOException {
+        return this.retrieve(this.parseOptions(properties), data);
+    }
 
     public T parseOptions(Object properties) {
         return MAPPER.convertValue(properties, propertiesClass);

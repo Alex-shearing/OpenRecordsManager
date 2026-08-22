@@ -4,6 +4,7 @@ import com.openrecordsmanager.api.Component;
 import com.openrecordsmanager.api.ComponentReference;
 import com.openrecordsmanager.api.ResourceIdentifier;
 import com.openrecordsmanager.api.template.TemplateComponent;
+import com.openrecordsmanager.api.types.ComponentType;
 import com.openrecordsmanager.database.DataRepository;
 import com.openrecordsmanager.plugin.ExpressionsService;
 import com.openrecordsmanager.plugin.registry.ComponentCatalog;
@@ -14,6 +15,8 @@ import java.util.Optional;
 import java.util.Set;
 
 public abstract class TemplateRegistrationMapper<T extends TemplateComponent, D> {
+
+    public abstract ComponentType<T> componentType();
 
     /**
      * Register the component template to the database
@@ -64,7 +67,7 @@ public abstract class TemplateRegistrationMapper<T extends TemplateComponent, D>
     }
 
     private static <K extends TemplateComponent> void registerDependency(DataRepository repository, ComponentCatalog catalog, ExpressionsService expressions, ComponentReference<K> reference) {
-        catalog.getTemplateRegistry(reference.getType())
+        catalog.getTemplateRegistry(ComponentCatalog.mapperFromComponent(reference.getType()))
                 .register(
                         repository,
                         catalog,
@@ -116,7 +119,7 @@ public abstract class TemplateRegistrationMapper<T extends TemplateComponent, D>
             ResourceIdentifier dependencyId = dependency.getId(catalog)
                     .orElseThrow(() -> new IllegalStateException("Cannot find dependency " + dependency));
 
-            TemplateComponentRegistry<?, ?> registry = catalog.getTemplateRegistry(dependency.getType());
+            TemplateComponentRegistry<?, ?> registry = catalog.getTemplateRegistry(ComponentCatalog.mapperFromComponent(dependency.getType()));
 
             Optional<?> childComponent = registry.getRegistered(dependencyId, repository);
             if (childComponent.isEmpty()) {
