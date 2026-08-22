@@ -19,9 +19,6 @@ public class User implements ObjectPropertyHolder<UserPropertyValue<?>>, UserDet
     @Column(unique = true, nullable = false)
     public String username;
 
-    @Column()
-    public String password;
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn
     @Nullable
@@ -33,6 +30,7 @@ public class User implements ObjectPropertyHolder<UserPropertyValue<?>>, UserDet
 
     @Deprecated
     protected User() {
+        this.properties = new HashMap<>();
     }
 
     public User(UUID id, String username) {
@@ -64,15 +62,11 @@ public class User implements ObjectPropertyHolder<UserPropertyValue<?>>, UserDet
 
     @Override
     public @Nullable String getPassword() {
-        return this.password;
+        return null;
     }
 
     @Override
     public String getUsername() {
         return this.username;
-    }
-
-    public String getEmail() {
-        return "";
     }
 }
