@@ -7,10 +7,11 @@ import java.util.Map;
 
 public abstract class InputAuthProviderType implements AuthProviderType {
     /**
+     * Attempt to authenticate a user with the provided credential input.
      *
-     * @param context
-     * @param instance
-     * @param inputs
+     * @param context  usable context to pull user information
+     * @param instance the instance of the authentication provider being used
+     * @param inputs   the user provided inputs
      * @return the {@link UserAuthDetails} or null if no user was authenticated
      */
     public abstract @Nullable UserAuthDetails authenticate(

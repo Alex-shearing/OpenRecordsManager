@@ -10,10 +10,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class AuthLocalPlugin implements Plugin {
-    private static final Logger LOGGER = LoggerFactory.getLogger(AuthLocalPlugin.class);
+    public static final Logger LOGGER = LoggerFactory.getLogger(AuthLocalPlugin.class);
 
     public static final LocalAuthProviderType LOCAL_AUTH_PROVIDER_TYPE = new LocalAuthProviderType();
-    public static final ObjectPropertyTemplate<String> USER_PASSWORD_PROPERTY = ObjectPropertyTemplate.builder("password_hash", PropertyType.STRING)
+    public static final ObjectPropertyTemplate<String> PASSWORD_HASH_PROPERTY = ObjectPropertyTemplate.builder("Password Hash", PropertyType.STRING)
+            .description("Hashed password for the user")
             .userHidden()
             .build();
     public static final ConfigType<Boolean> CONFIG_ADMIN_ENABLED = ConfigType.builder("auth.auth_local.enable_default_admin", ConfigValueType.BOOL)
@@ -32,6 +33,7 @@ public class AuthLocalPlugin implements Plugin {
         LOGGER.info("Initializing plugin...");
 
         registry.registerConfig(CONFIG_ADMIN_ENABLED);
+        registry.registerComponent("password_hash", PASSWORD_HASH_PROPERTY);
         registry.registerComponent("local_auth", LOCAL_AUTH_PROVIDER_TYPE);
     }
 }

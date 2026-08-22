@@ -65,6 +65,11 @@ public class PluginAuthenticationProvider implements AuthenticationProvider {
         User user = this.repository.userRepo.findByUsername(authDetails.getName())
                 .orElseThrow(() -> UsernameNotFoundException.fromUsername(authDetails.getName()));
 
+        // Ensure the authentication provider used is the same one the user signed up with
+        if (user.authProvider != provider) {
+            throw new BadCredentialsException("The authentication provider used is not valid for this user");
+        }
+
         // Auth success
         token.setAuthenticated(true);
         token.setDetails(user);
