@@ -10,7 +10,6 @@ import io.swagger.v3.oas.annotations.StringToClassMapItem;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import org.jspecify.annotations.Nullable;
 import tools.jackson.databind.annotation.JsonSerialize;
 
 import java.util.Map;
@@ -30,7 +29,7 @@ public record AuthProviderListResponse(
                 requiredProperties = {"id", "type"}
         )
         @NotNull ComponentReference<?> type,
-        @Nullable InputFormSchema loginSchema
+        @NotNull InputFormSchema loginSchema
 ) {
     public static AuthProviderListResponse of(AuthProvider provider, ComponentCatalog catalog) {
         InputAuthProviderType<?> loginSchema = provider.getProviderType(catalog, InputAuthProviderType.class);
