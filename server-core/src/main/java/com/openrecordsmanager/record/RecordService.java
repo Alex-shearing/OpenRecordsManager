@@ -8,7 +8,7 @@ import com.openrecordsmanager.filestore.store.FileStore;
 import com.openrecordsmanager.plugin.ExpressionsService;
 import com.openrecordsmanager.plugin.registry.ComponentCatalog;
 import com.openrecordsmanager.property.ObjectProperty;
-import com.openrecordsmanager.record.dto.NewRecord;
+import com.openrecordsmanager.record.dto.NewRecordRequest;
 import com.openrecordsmanager.record.dto.RecordResponse;
 import com.openrecordsmanager.record.dto.RecordRevisionResponse;
 import com.openrecordsmanager.recordtype.RecordType;
@@ -51,7 +51,7 @@ public class RecordService {
     }
 
     @Transactional
-    public RecordResponse create(NewRecord input) {
+    public RecordResponse create(NewRecordRequest input) {
         RecordType type = this.repository.recordTypeRepo.findById(input.type())
                 .orElseThrow(() -> new ResourceNotFoundException(ComponentTypes.RECORD_TYPE, input.type()));
 

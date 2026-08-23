@@ -1,10 +1,10 @@
 package com.openrecordsmanager.property;
 
 import com.openrecordsmanager.api.ResourceIdentifier;
-import com.openrecordsmanager.property.dto.NewObjectProperty;
+import com.openrecordsmanager.property.dto.NewObjectPropertyRequest;
 import com.openrecordsmanager.property.dto.ObjectPropertyResponse;
 import com.openrecordsmanager.property.dto.SimpleObjectPropertyResponse;
-import com.openrecordsmanager.property.dto.UpdateObjectProperty;
+import com.openrecordsmanager.property.dto.UpdateObjectPropertyRequest;
 import com.openrecordsmanager.rest.swagger.ConflictApiResponse;
 import com.openrecordsmanager.rest.swagger.DefaultApiResponses;
 import com.openrecordsmanager.rest.swagger.NotFoundApiResponse;
@@ -44,7 +44,7 @@ public class ObjectPropertyController {
     @Operation(summary = "Create a new object property")
     @NotFoundApiResponse
     @ConflictApiResponse
-    public ObjectPropertyResponse objectProperty_create(@RequestBody NewObjectProperty input) {
+    public ObjectPropertyResponse objectProperty_create(@RequestBody NewObjectPropertyRequest input) {
         return this.service.create(input);
     }
 
@@ -53,7 +53,7 @@ public class ObjectPropertyController {
     @NotFoundApiResponse
     public ObjectPropertyResponse objectProperty_update(
             @PathVariable("id") ResourceIdentifier id,
-            @RequestBody UpdateObjectProperty input
+            @RequestBody UpdateObjectPropertyRequest input
     ) {
         return this.service.update(id, input);
     }

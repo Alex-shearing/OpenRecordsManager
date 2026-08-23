@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-public record NewFileStore(
+public record NewFileStoreRequest(
         @NotBlank ResourceIdentifier type,
         @NotNull Map<String, ?> properties,
         @NotNull List<UUID> middlewares) {

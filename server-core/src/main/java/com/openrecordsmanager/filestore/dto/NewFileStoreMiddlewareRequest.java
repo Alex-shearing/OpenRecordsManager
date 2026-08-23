@@ -6,7 +6,7 @@ import jakarta.validation.constraints.NotNull;
 
 import java.util.Map;
 
-public record NewFileStoreMiddleware(
+public record NewFileStoreMiddlewareRequest(
         @NotBlank ResourceIdentifier type,
         @NotNull Map<String, ?> properties) {
 }

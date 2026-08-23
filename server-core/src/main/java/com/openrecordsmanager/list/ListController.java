@@ -33,7 +33,7 @@ public class ListController {
     @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Create a new list type")
     @ConflictApiResponse
-    public ListTypeResponse createList(@RequestBody NewListType input) {
+    public ListTypeResponse createList(@RequestBody NewListTypeRequest input) {
         return this.service.create(input);
     }
 
@@ -49,7 +49,7 @@ public class ListController {
     @NotFoundApiResponse
     public ListTypeResponse updateList(
             @PathVariable("list") ResourceIdentifier listType,
-            @RequestBody UpdateListType input
+            @RequestBody UpdateListTypeRequest input
     ) {
         return this.service.update(listType, input);
     }
@@ -88,7 +88,7 @@ public class ListController {
     @ConflictApiResponse
     public ListElementResponse createListElement(
             @PathVariable("list") ResourceIdentifier list,
-            @RequestBody NewListElement input
+            @RequestBody NewListElementRequest input
     ) {
         return this.service.createElement(list, input);
     }
@@ -99,7 +99,7 @@ public class ListController {
     public ListElementResponse updateListElement(
             @PathVariable("list") ResourceIdentifier list,
             @PathVariable("element") ResourceIdentifier element,
-            @RequestBody UpdateListElement input
+            @RequestBody UpdateListElementRequest input
     ) {
         return this.service.updateElement(list, element, input);
     }

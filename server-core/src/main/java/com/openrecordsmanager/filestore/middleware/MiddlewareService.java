@@ -5,7 +5,7 @@ import com.openrecordsmanager.api.types.ComponentTypes;
 import com.openrecordsmanager.database.DataRepository;
 import com.openrecordsmanager.filestore.dto.MiddlewareResponse;
 import com.openrecordsmanager.filestore.dto.MiddlewareTypeResponse;
-import com.openrecordsmanager.filestore.dto.NewFileStoreMiddleware;
+import com.openrecordsmanager.filestore.dto.NewFileStoreMiddlewareRequest;
 import com.openrecordsmanager.filestore.dto.SimpleMiddlewareResponse;
 import com.openrecordsmanager.plugin.registry.ComponentCatalog;
 import com.openrecordsmanager.rest.errors.ResourceInUseException;
@@ -43,7 +43,7 @@ public class MiddlewareService {
     }
 
     @Transactional
-    public SimpleMiddlewareResponse create(NewFileStoreMiddleware input) throws ResourceNotFoundException {
+    public SimpleMiddlewareResponse create(NewFileStoreMiddlewareRequest input) throws ResourceNotFoundException {
         FileStoreMiddlewareType<?> type = this.catalog.getRegistry(ComponentTypes.FILE_STORE_MIDDLEWARE).get(input.type())
                 .orElseThrow(() -> new ResourceNotFoundException(ComponentTypes.FILE_STORE_MIDDLEWARE, input.type()));
 

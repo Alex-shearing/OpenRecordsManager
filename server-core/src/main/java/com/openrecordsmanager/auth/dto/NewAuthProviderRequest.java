@@ -7,7 +7,7 @@ import com.openrecordsmanager.api.types.ComponentTypes;
 
 import java.util.Map;
 
-public record NewAuthProvider(
+public record NewAuthProviderRequest(
         String name,
         ResourceIdentifier typeId,
         Type type,

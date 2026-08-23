@@ -45,7 +45,7 @@ public class FileStoreController {
     @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Create a new file store")
     @NotFoundApiResponse
-    public SimpleFileStoreResponse fileStore_create(@RequestBody NewFileStore input) {
+    public SimpleFileStoreResponse fileStore_create(@RequestBody NewFileStoreRequest input) {
         return this.storeService.create(input);
     }
 
@@ -80,7 +80,7 @@ public class FileStoreController {
     @PostMapping(value = "/middlewares", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Create a new file store middleware")
     @NotFoundApiResponse
-    public SimpleMiddlewareResponse middleware_create(@RequestBody NewFileStoreMiddleware input) {
+    public SimpleMiddlewareResponse middleware_create(@RequestBody NewFileStoreMiddlewareRequest input) {
         return this.middlewareService.create(input);
     }
 

@@ -5,7 +5,7 @@ import com.openrecordsmanager.api.ValidationErrorResponse;
 import com.openrecordsmanager.api.auth.RedirectAuthProviderType;
 import com.openrecordsmanager.auth.dto.AuthProviderListResponse;
 import com.openrecordsmanager.auth.dto.LoginResponse;
-import com.openrecordsmanager.auth.dto.NewAuthProvider;
+import com.openrecordsmanager.auth.dto.NewAuthProviderRequest;
 import com.openrecordsmanager.auth.entity.AuthProvider;
 import com.openrecordsmanager.database.DataRepository;
 import com.openrecordsmanager.plugin.registry.ComponentCatalog;
@@ -63,7 +63,7 @@ public class AuthController {
     @PreAuthorize("isAuthenticated()")
     @ForbiddenApiResponse
     @UnauthorizedApiResponse
-    public AuthProviderListResponse createProvider(@RequestBody NewAuthProvider provider) {
+    public AuthProviderListResponse createProvider(@RequestBody NewAuthProviderRequest provider) {
         return this.authService.createProvider(
                 provider.name(),
                 ComponentReference.of(provider.type().type, provider.typeId()),

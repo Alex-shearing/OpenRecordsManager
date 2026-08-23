@@ -6,10 +6,10 @@ import com.openrecordsmanager.api.template.property.PropertyType;
 import com.openrecordsmanager.api.types.ComponentTypes;
 import com.openrecordsmanager.database.DataRepository;
 import com.openrecordsmanager.list.ListType;
-import com.openrecordsmanager.property.dto.NewObjectProperty;
+import com.openrecordsmanager.property.dto.NewObjectPropertyRequest;
 import com.openrecordsmanager.property.dto.ObjectPropertyResponse;
 import com.openrecordsmanager.property.dto.SimpleObjectPropertyResponse;
-import com.openrecordsmanager.property.dto.UpdateObjectProperty;
+import com.openrecordsmanager.property.dto.UpdateObjectPropertyRequest;
 import com.openrecordsmanager.rest.errors.ResourceInUseException;
 import com.openrecordsmanager.rest.errors.ResourceNotFoundException;
 import org.jspecify.annotations.Nullable;
@@ -44,7 +44,7 @@ public class ObjectPropertyService {
     }
 
     @Transactional
-    public ObjectPropertyResponse create(NewObjectProperty input) throws ResourceNotFoundException {
+    public ObjectPropertyResponse create(NewObjectPropertyRequest input) throws ResourceNotFoundException {
         if (this.repository.objectPropertyRepo.existsById(input.id())) {
             throw new ResourceInUseException("object property already exists: " + input.id());
         }
@@ -67,7 +67,7 @@ public class ObjectPropertyService {
     }
 
     @Transactional
-    public ObjectPropertyResponse update(ResourceIdentifier id, UpdateObjectProperty input) throws ResourceNotFoundException {
+    public ObjectPropertyResponse update(ResourceIdentifier id, UpdateObjectPropertyRequest input) throws ResourceNotFoundException {
         ObjectProperty<?> property = this.repository.objectPropertyRepo.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(ComponentTypes.OBJECT_PROPERTY, id));
 
@@ -147,7 +147,7 @@ public class ObjectPropertyService {
         );
     }
 
-    private static <T> void applyUpdate(ObjectProperty<T> property, UpdateObjectProperty input) {
+    private static <T> void applyUpdate(ObjectProperty<T> property, UpdateObjectPropertyRequest input) {
         property.setName(input.name());
         property.setDescription(input.description());
         property.setValidator(input.validator());

@@ -7,7 +7,7 @@ import com.openrecordsmanager.api.types.ComponentTypes;
 import com.openrecordsmanager.database.DataRepository;
 import com.openrecordsmanager.filestore.dto.FileStoreResponse;
 import com.openrecordsmanager.filestore.dto.FileStoreTypeResponse;
-import com.openrecordsmanager.filestore.dto.NewFileStore;
+import com.openrecordsmanager.filestore.dto.NewFileStoreRequest;
 import com.openrecordsmanager.filestore.dto.SimpleFileStoreResponse;
 import com.openrecordsmanager.filestore.middleware.Middleware;
 import com.openrecordsmanager.plugin.registry.ComponentCatalog;
@@ -56,7 +56,7 @@ public class FileStoreService {
     }
 
     @Transactional
-    public SimpleFileStoreResponse create(NewFileStore input) throws ResourceNotFoundException {
+    public SimpleFileStoreResponse create(NewFileStoreRequest input) throws ResourceNotFoundException {
         FileStoreType<?> type = this.catalog.getRegistry(ComponentTypes.FILE_STORE).get(input.type())
                 .orElseThrow(() -> new ResourceNotFoundException(ComponentTypes.FILE_STORE, input.type()));
 

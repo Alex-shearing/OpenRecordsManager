@@ -37,7 +37,7 @@ public class ListService {
     }
 
     @Transactional
-    public ListTypeResponse create(NewListType input) {
+    public ListTypeResponse create(NewListTypeRequest input) {
         if (this.repository.listTypeRepo.existsById(input.id())) {
             throw new ResourceInUseException("list type already exists: " + input.id());
         }
@@ -49,7 +49,7 @@ public class ListService {
     }
 
     @Transactional
-    public ListTypeResponse update(ResourceIdentifier id, UpdateListType input) {
+    public ListTypeResponse update(ResourceIdentifier id, UpdateListTypeRequest input) {
         ListType listType = this.repository.listTypeRepo.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(ComponentTypes.LIST, id));
 
@@ -95,7 +95,7 @@ public class ListService {
     }
 
     @Transactional
-    public ListElementResponse createElement(ResourceIdentifier parentId, NewListElement input) {
+    public ListElementResponse createElement(ResourceIdentifier parentId, NewListElementRequest input) {
         ListType parent = this.repository.listTypeRepo.findById(parentId)
                 .orElseThrow(() -> new ResourceNotFoundException(ComponentTypes.LIST, parentId));
 
@@ -118,7 +118,7 @@ public class ListService {
     }
 
     @Transactional
-    public ListElementResponse updateElement(ResourceIdentifier parentId, ResourceIdentifier elementId, UpdateListElement input) {
+    public ListElementResponse updateElement(ResourceIdentifier parentId, ResourceIdentifier elementId, UpdateListElementRequest input) {
         ListElement element = this.repository.listElementRepo.getElement(parentId, elementId)
                 .orElseThrow(() -> new ResourceNotFoundException(ComponentTypes.LIST_ELEMENT, elementId));
 

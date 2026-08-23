@@ -2,7 +2,7 @@ package com.openrecordsmanager.record;
 
 import com.openrecordsmanager.rest.swagger.DefaultApiResponses;
 import com.openrecordsmanager.rest.swagger.NotFoundApiResponse;
-import com.openrecordsmanager.record.dto.NewRecord;
+import com.openrecordsmanager.record.dto.NewRecordRequest;
 import com.openrecordsmanager.record.dto.RecordResponse;
 import com.openrecordsmanager.record.dto.RecordRevisionResponse;
 import com.openrecordsmanager.user.User;
@@ -46,7 +46,7 @@ public class RecordController {
     @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Create a new record")
     @NotFoundApiResponse
-    public RecordResponse newRecord(@RequestBody NewRecord input) {
+    public RecordResponse newRecord(@RequestBody NewRecordRequest input) {
         return this.service.create(input);
     }
 
