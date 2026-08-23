@@ -4,11 +4,13 @@ import com.openrecordsmanager.api.ResourceIdentifier;
 import com.openrecordsmanager.api.filestore.FileStoreMiddlewareType;
 import com.openrecordsmanager.api.schema.JsonSchemaValidator;
 import com.openrecordsmanager.api.types.ComponentTypes;
+import com.openrecordsmanager.database.util.ResourceIdentifierJavaType;
 import com.openrecordsmanager.plugin.registry.ComponentCatalog;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import org.hibernate.annotations.JavaType;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
@@ -24,6 +26,7 @@ public class Middleware {
     private UUID id;
 
     @Column(nullable = false)
+    @JavaType(ResourceIdentifierJavaType.class)
     private ResourceIdentifier type;
 
     @Column(nullable = false)

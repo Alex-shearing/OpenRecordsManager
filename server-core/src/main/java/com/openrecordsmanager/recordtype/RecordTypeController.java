@@ -1,12 +1,13 @@
 package com.openrecordsmanager.recordtype;
 
 import com.openrecordsmanager.api.ResourceIdentifier;
-import com.openrecordsmanager.rest.errors.ResourceNotFoundException;
-import com.openrecordsmanager.rest.swagger.DefaultApiResponses;
-import com.openrecordsmanager.rest.swagger.NotFoundApiResponse;
 import com.openrecordsmanager.api.types.ComponentTypes;
 import com.openrecordsmanager.database.DataRepository;
 import com.openrecordsmanager.plugin.ExpressionsService;
+import com.openrecordsmanager.recordtype.dto.RecordTypeResponse;
+import com.openrecordsmanager.rest.errors.ResourceNotFoundException;
+import com.openrecordsmanager.rest.swagger.DefaultApiResponses;
+import com.openrecordsmanager.rest.swagger.NotFoundApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -43,9 +44,11 @@ public class RecordTypeController {
     @Operation(summary = "Get record type details")
     @NotFoundApiResponse
     @Transactional(readOnly = true)
-    public RecordType getRecordType(@PathVariable("id") ResourceIdentifier id) {
-        return this.repository.recordTypeRepo.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException(ComponentTypes.RECORD_TYPE, id));
+    public RecordTypeResponse getRecordType(@PathVariable("id") ResourceIdentifier id) {
+        return RecordTypeResponse.of(
+                this.repository.recordTypeRepo.findById(id)
+                        .orElseThrow(() -> new ResourceNotFoundException(ComponentTypes.RECORD_TYPE, id))
+        );
     }
 
 }
