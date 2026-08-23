@@ -35,5 +35,6 @@ public class AuthLocalPlugin implements Plugin {
         registry.registerConfig(CONFIG_ADMIN_ENABLED);
         registry.registerComponent("password_hash", PASSWORD_HASH_PROPERTY);
         registry.registerComponent("local_auth", LOCAL_AUTH_PROVIDER_TYPE);
+        registry.registerComponent("reset_password", new ResetLocalPasswordAction());
     }
 }

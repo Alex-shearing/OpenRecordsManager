@@ -1,12 +1,13 @@
 package com.openrecordsmanager.api.types;
 
 import com.openrecordsmanager.api.Component;
+import com.openrecordsmanager.api.action.RecordActionType;
+import com.openrecordsmanager.api.action.UserActionType;
 import com.openrecordsmanager.api.auth.InputAuthProviderType;
 import com.openrecordsmanager.api.auth.RedirectAuthProviderType;
 import com.openrecordsmanager.api.config.ConfigType;
 import com.openrecordsmanager.api.filestore.FileStoreMiddlewareType;
 import com.openrecordsmanager.api.filestore.FileStoreType;
-import com.openrecordsmanager.api.template.TemplateComponent;
 import com.openrecordsmanager.api.template.list.ListElementTemplate;
 import com.openrecordsmanager.api.template.list.ListTemplate;
 import com.openrecordsmanager.api.template.property.ObjectPropertyTemplate;
@@ -18,10 +19,12 @@ import java.util.Set;
 
 public class ComponentTypes {
     public static final ComponentType<ConfigType<?>> CONFIG = ComponentType.of("config", ConfigType.class);
-    public static final ComponentType<InputAuthProviderType> INPUT_AUTH_PROVIDER = ComponentType.of("input_auth_provider", InputAuthProviderType.class);
+    public static final ComponentType<InputAuthProviderType<?>> INPUT_AUTH_PROVIDER = ComponentType.of("input_auth_provider", InputAuthProviderType.class);
     public static final ComponentType<RedirectAuthProviderType> REDIRECT_AUTH_PROVIDER = ComponentType.of("redirect_auth_provider", RedirectAuthProviderType.class);
     public static final ComponentType<FileStoreType<?>> FILE_STORE = ComponentType.of("file_store", FileStoreType.class);
     public static final ComponentType<FileStoreMiddlewareType<?>> FILE_STORE_MIDDLEWARE = ComponentType.of("file_store_middleware", FileStoreMiddlewareType.class);
+    public static final ComponentType<UserActionType<?>> USER_ACTION = ComponentType.of("user_action", UserActionType.class);
+    public static final ComponentType<RecordActionType<?>> RECORD_ACTION = ComponentType.of("record_action", RecordActionType.class);
 
     // Registerable components
     public static final ComponentType<ListTemplate> LIST = ComponentType.of("list", ListTemplate.class);
@@ -38,25 +41,13 @@ public class ComponentTypes {
             INPUT_AUTH_PROVIDER,
             REDIRECT_AUTH_PROVIDER,
             FILE_STORE,
-            FILE_STORE_MIDDLEWARE
-    );
-
-    private static final Set<ComponentType<? extends TemplateComponent>> TEMPLATES = Set.of(
-            LIST,
-            LIST_ELEMENT,
-            OBJECT_PROPERTY,
-            RECORD_TYPE
+            FILE_STORE_MIDDLEWARE,
+            USER_ACTION,
+            RECORD_ACTION
     );
 
     public static @Nullable ComponentType<?> fromName(String name) {
         for (ComponentType<?> value : VALUES) {
-            if (Objects.equals(value.name, name)) return value;
-        }
-        return null;
-    }
-
-    public static @Nullable ComponentType<? extends TemplateComponent> templateFromName(String name) {
-        for (ComponentType<? extends TemplateComponent> value : TEMPLATES) {
             if (Objects.equals(value.name, name)) return value;
         }
         return null;

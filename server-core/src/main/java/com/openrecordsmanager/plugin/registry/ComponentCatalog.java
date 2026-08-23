@@ -48,7 +48,9 @@ public class ComponentCatalog implements ComponentAccess {
             ComponentTypes.INPUT_AUTH_PROVIDER, new ComponentRegistry<>(),
             ComponentTypes.REDIRECT_AUTH_PROVIDER, new ComponentRegistry<>(),
             ComponentTypes.FILE_STORE, new ComponentRegistry<>(),
-            ComponentTypes.FILE_STORE_MIDDLEWARE, new ComponentRegistry<>()
+            ComponentTypes.FILE_STORE_MIDDLEWARE, new ComponentRegistry<>(),
+            ComponentTypes.USER_ACTION, new ComponentRegistry<>(),
+            ComponentTypes.RECORD_ACTION, new ComponentRegistry<>()
     );
 
     // Combined

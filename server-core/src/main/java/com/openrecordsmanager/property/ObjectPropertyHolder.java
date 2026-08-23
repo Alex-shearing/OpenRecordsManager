@@ -26,7 +26,7 @@ public interface ObjectPropertyHolder<T extends ObjectPropertyHolder.ObjectPrope
 
     boolean canSetProperty(ObjectProperty<?> property);
 
-    <V> T createProperty(ObjectProperty<V> property, V value);
+    <V> T createProperty(ObjectProperty<V> property, @Nullable V value);
 
     /**
      * Set a property on the holder, creating it if allowed.
@@ -34,7 +34,7 @@ public interface ObjectPropertyHolder<T extends ObjectPropertyHolder.ObjectPrope
      * @param property the property to set/create
      * @param value    the value to set to
      */
-    default <K> void setProperty(ObjectProperty<K> property, K value) {
+    default <K> void setProperty(ObjectProperty<K> property, @Nullable K value) {
         T holder = this.getProperties().get(property);
         if (holder == null) {
             if (!this.canSetProperty(property)) {
@@ -55,7 +55,7 @@ public interface ObjectPropertyHolder<T extends ObjectPropertyHolder.ObjectPrope
 
         void setValue(@Nullable T value);
 
-        default void setValueRaw(Object value) {
+        default void setValueRaw(@Nullable Object value) {
             this.setValue(getProperty().getType().cast(value));
         }
     }

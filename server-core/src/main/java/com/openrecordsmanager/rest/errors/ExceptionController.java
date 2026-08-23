@@ -1,6 +1,5 @@
 package com.openrecordsmanager.rest.errors;
 
-import com.openrecordsmanager.api.ValidationErrorResponse;
 import com.openrecordsmanager.api.builtin.BuiltinConfigs;
 import com.openrecordsmanager.api.errors.InputValidationException;
 import com.openrecordsmanager.config.ConfigService;
@@ -55,10 +54,10 @@ public class ExceptionController {
     }
 
     @ExceptionHandler(InputValidationException.class)
-    public ResponseEntity<ValidationErrorResponse> inputValidation(InputValidationException ex) {
+    public ResponseEntity<ApiResponseV1<ApiResponseV1<Void>>> inputValidation(InputValidationException ex) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .contentType(MediaType.APPLICATION_JSON)
-                .body(ValidationErrorResponse.validationFailed(ex.getFieldErrors()));
+                .body(ApiResponseV1.error("Validation failed", ex.getFieldErrors()));
     }
 
     @ExceptionHandler(AccessDeniedException.class)

@@ -13,16 +13,21 @@ public record ApiResponseV1<T extends @Nullable Object>(
         @Schema(requiredMode = Schema.RequiredMode.REQUIRED) boolean success,
         @Nullable T data,
         @Nullable String error,
+        @Nullable Object errorData,
         @Schema(requiredMode = Schema.RequiredMode.REQUIRED) Instant timestamp) {
 
     // Convenience constructor for successful responses
     public static <T extends @Nullable Object> ApiResponseV1<T> success(@Nullable T data) {
-        return new ApiResponseV1<>(true, data, null, Instant.now());
+        return new ApiResponseV1<>(true, data, null, null, Instant.now());
     }
 
     // Convenience constructor for error responses
     public static <T> ApiResponseV1<T> error(String error) {
-        return new ApiResponseV1<>(false, null, error, Instant.now());
+        return new ApiResponseV1<>(false, null, null, error, Instant.now());
+    }
+
+    public static <T> ApiResponseV1<T> error(String error, Object errorData) {
+        return new ApiResponseV1<>(false, null, error, errorData, Instant.now());
     }
 
     @Override

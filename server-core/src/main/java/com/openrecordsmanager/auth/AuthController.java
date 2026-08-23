@@ -1,7 +1,6 @@
 package com.openrecordsmanager.auth;
 
 import com.openrecordsmanager.api.ComponentReference;
-import com.openrecordsmanager.api.ValidationErrorResponse;
 import com.openrecordsmanager.api.auth.RedirectAuthProviderType;
 import com.openrecordsmanager.auth.dto.AuthProviderListResponse;
 import com.openrecordsmanager.auth.dto.LoginResponse;
@@ -11,10 +10,7 @@ import com.openrecordsmanager.database.DataRepository;
 import com.openrecordsmanager.plugin.registry.ComponentCatalog;
 import com.openrecordsmanager.rest.ApiResponseV1;
 import com.openrecordsmanager.rest.errors.ResourceNotFoundException;
-import com.openrecordsmanager.rest.swagger.ForbiddenApiResponse;
-import com.openrecordsmanager.rest.swagger.InternalServerErrorApiResponse;
-import com.openrecordsmanager.rest.swagger.NotFoundApiResponse;
-import com.openrecordsmanager.rest.swagger.UnauthorizedApiResponse;
+import com.openrecordsmanager.rest.swagger.*;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
@@ -74,6 +70,7 @@ public class AuthController {
     @PostMapping(value = "/login/{provider}", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Trigger a login to an authentication provider, implementations vary depending on the provider.")
     @NotFoundApiResponse
+    @ValidationFailedApiResponse
     @ApiResponse(
             responseCode = "401",
             description = "Authentication Failed",
@@ -89,14 +86,6 @@ public class AuthController {
                                     }
                                     """
                     )
-            )
-    )
-    @ApiResponse(
-            responseCode = "400",
-            description = "Validation Failed",
-            content = @Content(
-                    mediaType = MediaType.APPLICATION_JSON_VALUE,
-                    schema = @Schema(implementation = ValidationErrorResponse.class)
             )
     )
     public LoginResponse login(

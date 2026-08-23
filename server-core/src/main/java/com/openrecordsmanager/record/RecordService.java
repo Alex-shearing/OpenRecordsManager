@@ -1,5 +1,8 @@
 package com.openrecordsmanager.record;
 
+import com.openrecordsmanager.action.dto.ActionResponse;
+import com.openrecordsmanager.api.ResourceIdentifier;
+import com.openrecordsmanager.api.action.RecordActionType;
 import com.openrecordsmanager.api.builtin.BuiltinConfigs;
 import com.openrecordsmanager.api.types.ComponentTypes;
 import com.openrecordsmanager.config.ConfigService;
@@ -19,8 +22,11 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.io.InputStream;
 import java.text.MessageFormat;
+import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 public class RecordService {
@@ -100,5 +106,37 @@ public class RecordService {
                 .orElseThrow(() -> new ResourceNotFoundException("record revision", id + "/" + version));
 
         return RecordRevisionResponse.of(this.catalog, rev);
+    }
+
+    @Transactional(readOnly = true)
+    public Set<ActionResponse> listActions(User user, UUID recordId) {
+        Record record = this.repository.recordRepo.findById(recordId)
+                .filter(r -> r.securityFilter(this.expressions, user, r).canSeeMetadata())
+                .orElseThrow(() -> new ResourceNotFoundException("record", recordId));
+
+        RecordActionContextImpl context = new RecordActionContextImpl(this.repository, this.catalog, this.config, user, record);
+
+        return this.catalog.getRegistry(ComponentTypes.RECORD_ACTION).stream()
+                .filter(action -> action.isAvailable(context))
+                .map(action -> ActionResponse.ofRecord(this.catalog, action))
+                .collect(Collectors.toSet());
+    }
+
+    @Transactional
+    public void executeAction(User user, UUID recordId, ResourceIdentifier actionId, Map<String, ?> inputs) {
+        RecordActionType<?> action = this.catalog.getRegistry(ComponentTypes.RECORD_ACTION).get(actionId)
+                .orElseThrow(() -> new ResourceNotFoundException(ComponentTypes.RECORD_ACTION, actionId));
+
+        Record record = this.repository.recordRepo.findById(recordId)
+                .filter(r -> r.securityFilter(this.expressions, user, r).canSeeMetadata())
+                .orElseThrow(() -> new ResourceNotFoundException("record", recordId));
+
+        RecordActionContextImpl context = new RecordActionContextImpl(this.repository, this.catalog, this.config, user, record);
+
+        if (!action.isAvailable(context)) {
+            throw new IllegalArgumentException("Action " + actionId + " is not available for record " + recordId);
+        }
+
+        action.executeUntyped(context, inputs);
     }
 }

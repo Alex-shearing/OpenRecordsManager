@@ -1,5 +1,7 @@
 package com.openrecordsmanager.record;
 
+import com.openrecordsmanager.action.dto.ActionResponse;
+import com.openrecordsmanager.api.ResourceIdentifier;
 import com.openrecordsmanager.rest.swagger.DefaultApiResponses;
 import com.openrecordsmanager.rest.swagger.NotFoundApiResponse;
 import com.openrecordsmanager.record.dto.NewRecordRequest;
@@ -22,6 +24,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 @RestController
@@ -41,6 +45,25 @@ public class RecordController {
     @NotFoundApiResponse
     public RecordResponse get(@AuthenticationPrincipal User user, @PathVariable("id") UUID id) {
         return this.service.get(user, id);
+    }
+
+    @GetMapping(value = "/{id}/actions", produces = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(summary = "List available actions for a record")
+    @NotFoundApiResponse
+    public Set<ActionResponse> listActions(@AuthenticationPrincipal User user, @PathVariable("id") UUID id) {
+        return this.service.listActions(user, id);
+    }
+
+    @PostMapping(value = "/{id}/actions/{action}", consumes = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(summary = "Execute an action on a record")
+    @NotFoundApiResponse
+    public void executeAction(
+            @AuthenticationPrincipal User user,
+            @PathVariable("id") UUID id,
+            @PathVariable("action") ResourceIdentifier action,
+            @RequestBody Map<String, ?> inputs
+    ) {
+        this.service.executeAction(user, id, action, inputs);
     }
 
     @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE)
