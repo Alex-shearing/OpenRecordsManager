@@ -25,7 +25,7 @@ public class ListService {
     @Transactional(readOnly = true)
     public Set<SimpleListTypeResponse> getAll() {
         return this.repository.listTypeRepo.findAll().stream()
-                .map(listType -> new SimpleListTypeResponse(listType.id, listType.name))
+                .map(SimpleListTypeResponse::of)
                 .collect(Collectors.toSet());
     }
 

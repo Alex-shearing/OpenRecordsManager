@@ -107,16 +107,8 @@ public class ObjectProperty<T> {
         return type;
     }
 
-    public void setType(PropertyType<T> type) {
-        this.type = type;
-    }
-
     public @Nullable ListType getListType() {
         return listType;
-    }
-
-    public void setListType(@Nullable ListType listType) {
-        this.listType = listType;
     }
 
     public @Nullable String getValidator() {

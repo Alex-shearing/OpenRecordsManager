@@ -110,4 +110,9 @@ public abstract class PropertyType<T> {
         }
         return type;
     }
+
+    @Override
+    public String toString() {
+        return this.name;
+    }
 }
