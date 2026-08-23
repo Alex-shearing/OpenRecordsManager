@@ -3,7 +3,6 @@ package com.openrecordsmanager.api.auth;
 import com.networknt.schema.Schema;
 import com.openrecordsmanager.api.config.ConfigStore;
 import com.openrecordsmanager.api.schema.JsonSchemaValidator;
-import com.openrecordsmanager.api.schema.RecordInputs;
 import org.jspecify.annotations.Nullable;
 
 import java.util.Map;
@@ -44,7 +43,7 @@ public abstract class InputAuthProviderType<I extends Record> implements AuthPro
                 config,
                 context,
                 instance,
-                this.inputClass.cast(RecordInputs.parse(this.inputClass, inputs))
+                this.inputClass.cast(JsonSchemaValidator.toRecord(this.inputClass, inputs))
         );
     }
 }

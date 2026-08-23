@@ -1,7 +1,5 @@
 package com.openrecordsmanager.filestore.middleware;
 
-import com.openrecordsmanager.api.errors.ResourceInUseException;
-import com.openrecordsmanager.api.errors.ResourceNotFoundException;
 import com.openrecordsmanager.api.filestore.FileStoreMiddlewareType;
 import com.openrecordsmanager.api.types.ComponentTypes;
 import com.openrecordsmanager.database.DataRepository;
@@ -10,6 +8,8 @@ import com.openrecordsmanager.filestore.dto.NewFileStoreMiddleware;
 import com.openrecordsmanager.filestore.dto.SimpleFileStoreResponse;
 import com.openrecordsmanager.filestore.dto.SimpleMiddlewareResponse;
 import com.openrecordsmanager.plugin.registry.ComponentCatalog;
+import com.openrecordsmanager.rest.errors.ResourceInUseException;
+import com.openrecordsmanager.rest.errors.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 

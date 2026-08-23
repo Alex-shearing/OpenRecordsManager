@@ -1,6 +1,6 @@
 package com.openrecordsmanager.user;
 
-import com.openrecordsmanager.api.swagger.DefaultApiResponses;
+import com.openrecordsmanager.rest.swagger.DefaultApiResponses;
 import com.openrecordsmanager.user.dto.UserResponse;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;

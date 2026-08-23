@@ -1,10 +1,12 @@
-package com.openrecordsmanager.api.swagger;
+package com.openrecordsmanager.rest.swagger;
 
-import com.openrecordsmanager.api.ApiResponseV1;
+import com.openrecordsmanager.rest.ApiResponseV1;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.ResponseStatus;
 
 import java.lang.annotation.*;
 
@@ -12,8 +14,8 @@ import java.lang.annotation.*;
 @Retention(RetentionPolicy.RUNTIME)
 @Inherited
 @ApiResponse(
-        responseCode = "404",
-        description = "Not Found",
+        responseCode = "409",
+        description = "Resource in use",
         content = @Content(
                 mediaType = "application/json",
                 schema = @Schema(implementation = ApiResponseV1.class),
@@ -21,12 +23,13 @@ import java.lang.annotation.*;
                         value = """
                                 {
                                   "success": false,
-                                  "error": "object {0} of type {1} not found",
+                                  "error": "Cannot delete a store that contains files",
                                   "timestamp": "2026-06-29T23:05:00Z"
                                 }
                                 """
                 )
         )
 )
-public @interface NotFoundApiResponse {
+@ResponseStatus(HttpStatus.CONFLICT)
+public @interface ConflictApiResponse {
 }

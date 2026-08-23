@@ -1,13 +1,13 @@
 package com.openrecordsmanager.plugin.template;
 
 import com.openrecordsmanager.api.ResourceIdentifier;
-import com.openrecordsmanager.api.errors.ResourceNotFoundException;
-import com.openrecordsmanager.api.swagger.DefaultApiResponses;
-import com.openrecordsmanager.api.swagger.NotFoundApiResponse;
 import com.openrecordsmanager.api.types.ComponentType;
 import com.openrecordsmanager.plugin.registry.ComponentCatalog;
 import com.openrecordsmanager.plugin.registry.TemplateComponentRegistry;
 import com.openrecordsmanager.plugin.registry.mapper.TemplateRegistrationMapper;
+import com.openrecordsmanager.rest.errors.ResourceNotFoundException;
+import com.openrecordsmanager.rest.swagger.DefaultApiResponses;
+import com.openrecordsmanager.rest.swagger.NotFoundApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;

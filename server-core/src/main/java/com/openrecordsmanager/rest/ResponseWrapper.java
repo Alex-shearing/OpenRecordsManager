@@ -1,4 +1,4 @@
-package com.openrecordsmanager.api;
+package com.openrecordsmanager.rest;
 
 import org.jspecify.annotations.Nullable;
 import org.springframework.core.MethodParameter;

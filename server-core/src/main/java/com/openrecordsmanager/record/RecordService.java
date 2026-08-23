@@ -1,7 +1,6 @@
 package com.openrecordsmanager.record;
 
 import com.openrecordsmanager.api.builtin.BuiltinConfigs;
-import com.openrecordsmanager.api.errors.ResourceNotFoundException;
 import com.openrecordsmanager.api.types.ComponentTypes;
 import com.openrecordsmanager.config.ConfigService;
 import com.openrecordsmanager.database.DataRepository;
@@ -13,6 +12,7 @@ import com.openrecordsmanager.record.dto.NewRecord;
 import com.openrecordsmanager.record.dto.RecordResponse;
 import com.openrecordsmanager.record.dto.RecordRevisionResponse;
 import com.openrecordsmanager.recordtype.RecordType;
+import com.openrecordsmanager.rest.errors.ResourceNotFoundException;
 import com.openrecordsmanager.user.User;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

@@ -2,7 +2,6 @@ package com.openrecordsmanager.api.filestore;
 
 import com.openrecordsmanager.api.Component;
 import com.openrecordsmanager.api.schema.JsonSchemaValidator;
-import com.openrecordsmanager.api.schema.RecordInputs;
 
 import java.io.InputStream;
 import java.util.Map;
@@ -50,7 +49,7 @@ public abstract class FileStoreMiddlewareType<S extends Record> implements Compo
     }
 
     public S parseSettings(Object properties) {
-        return RecordInputs.parse(this.settingsClass, properties);
+        return JsonSchemaValidator.toRecord(this.settingsClass, properties);
     }
 
     public final Map<String, Object> validateSettings(Map<String, ?> properties) {

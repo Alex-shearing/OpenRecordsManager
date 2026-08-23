@@ -1,4 +1,4 @@
-package com.openrecordsmanager.api.errors;
+package com.openrecordsmanager.rest.errors;
 
 public class ResourceInUseException extends RuntimeException {
     public ResourceInUseException(String message) {

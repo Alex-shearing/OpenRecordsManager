@@ -1,6 +1,7 @@
-package com.openrecordsmanager.api.schema;
+package com.openrecordsmanager.rest;
 
 import com.networknt.schema.Schema;
+import com.openrecordsmanager.api.schema.JsonSchemaValidator;
 import org.jspecify.annotations.Nullable;
 
 import java.util.List;
@@ -12,11 +13,13 @@ public record InputFormSchema(
         @Nullable Map<String, InputFormSchemaField> properties,
         @Nullable List<String> required
 ) {
+
     public static InputFormSchema from(Schema schema) {
-        return RecordInputs.MAPPER.convertValue(schema.getSchemaNode(), InputFormSchema.class);
+        return JsonSchemaValidator.MAPPER.convertValue(schema.getSchemaNode(), InputFormSchema.class);
     }
 
     public static InputFormSchema from(Class<? extends Record> recordClass) {
         return from(JsonSchemaValidator.getSchema(recordClass));
     }
+
 }

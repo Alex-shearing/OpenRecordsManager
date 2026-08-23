@@ -1,9 +1,9 @@
 package com.openrecordsmanager.recordtype;
 
 import com.openrecordsmanager.api.ResourceIdentifier;
-import com.openrecordsmanager.api.errors.ResourceNotFoundException;
-import com.openrecordsmanager.api.swagger.DefaultApiResponses;
-import com.openrecordsmanager.api.swagger.NotFoundApiResponse;
+import com.openrecordsmanager.rest.errors.ResourceNotFoundException;
+import com.openrecordsmanager.rest.swagger.DefaultApiResponses;
+import com.openrecordsmanager.rest.swagger.NotFoundApiResponse;
 import com.openrecordsmanager.api.types.ComponentTypes;
 import com.openrecordsmanager.database.DataRepository;
 import com.openrecordsmanager.plugin.ExpressionsService;

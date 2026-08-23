@@ -1,12 +1,12 @@
 package com.openrecordsmanager.list;
 
 import com.openrecordsmanager.api.ResourceIdentifier;
-import com.openrecordsmanager.api.errors.ResourceNotFoundException;
 import com.openrecordsmanager.api.types.ComponentTypes;
 import com.openrecordsmanager.database.DataRepository;
 import com.openrecordsmanager.list.dto.ListElementResponse;
 import com.openrecordsmanager.list.dto.ListTypeResponse;
 import com.openrecordsmanager.list.dto.SimpleListTypeResponse;
+import com.openrecordsmanager.rest.errors.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 

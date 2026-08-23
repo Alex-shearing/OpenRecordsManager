@@ -1,10 +1,6 @@
-package com.openrecordsmanager.api.schema;
+package com.openrecordsmanager.rest;
 
-import com.networknt.schema.Schema;
 import org.jspecify.annotations.Nullable;
-
-import java.util.List;
-import java.util.Map;
 
 public record InputFormSchemaField(
         @Nullable String type,

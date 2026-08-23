@@ -1,21 +1,21 @@
 package com.openrecordsmanager.auth;
 
-import com.openrecordsmanager.api.ApiResponseV1;
 import com.openrecordsmanager.api.ComponentReference;
 import com.openrecordsmanager.api.ValidationErrorResponse;
 import com.openrecordsmanager.api.auth.InputAuthProviderType;
 import com.openrecordsmanager.api.auth.RedirectAuthProviderType;
-import com.openrecordsmanager.api.errors.ResourceNotFoundException;
-import com.openrecordsmanager.api.swagger.ForbiddenApiResponse;
-import com.openrecordsmanager.api.swagger.InternalServerErrorApiResponse;
-import com.openrecordsmanager.api.swagger.NotFoundApiResponse;
-import com.openrecordsmanager.api.swagger.UnauthorizedApiResponse;
 import com.openrecordsmanager.auth.dto.AuthProviderListResponse;
 import com.openrecordsmanager.auth.dto.LoginResponse;
 import com.openrecordsmanager.auth.dto.NewAuthProvider;
 import com.openrecordsmanager.auth.entity.AuthProvider;
 import com.openrecordsmanager.database.DataRepository;
 import com.openrecordsmanager.plugin.registry.ComponentCatalog;
+import com.openrecordsmanager.rest.ApiResponseV1;
+import com.openrecordsmanager.rest.errors.ResourceNotFoundException;
+import com.openrecordsmanager.rest.swagger.ForbiddenApiResponse;
+import com.openrecordsmanager.rest.swagger.InternalServerErrorApiResponse;
+import com.openrecordsmanager.rest.swagger.NotFoundApiResponse;
+import com.openrecordsmanager.rest.swagger.UnauthorizedApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;

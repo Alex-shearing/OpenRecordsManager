@@ -2,8 +2,6 @@ package com.openrecordsmanager.filestore.store;
 
 import com.google.common.hash.HashFunction;
 import com.google.common.hash.Hashing;
-import com.openrecordsmanager.api.errors.ResourceInUseException;
-import com.openrecordsmanager.api.errors.ResourceNotFoundException;
 import com.openrecordsmanager.api.filestore.FileStoreType;
 import com.openrecordsmanager.api.types.ComponentTypes;
 import com.openrecordsmanager.database.DataRepository;
@@ -12,6 +10,8 @@ import com.openrecordsmanager.filestore.dto.NewFileStore;
 import com.openrecordsmanager.filestore.dto.SimpleFileStoreResponse;
 import com.openrecordsmanager.filestore.middleware.Middleware;
 import com.openrecordsmanager.plugin.registry.ComponentCatalog;
+import com.openrecordsmanager.rest.errors.ResourceInUseException;
+import com.openrecordsmanager.rest.errors.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 

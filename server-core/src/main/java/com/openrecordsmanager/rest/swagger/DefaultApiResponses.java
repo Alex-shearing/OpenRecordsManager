@@ -1,4 +1,4 @@
-package com.openrecordsmanager.api.swagger;
+package com.openrecordsmanager.rest.swagger;
 
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 

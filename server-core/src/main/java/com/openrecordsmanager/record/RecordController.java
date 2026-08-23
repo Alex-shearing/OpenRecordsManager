@@ -1,7 +1,7 @@
 package com.openrecordsmanager.record;
 
-import com.openrecordsmanager.api.swagger.DefaultApiResponses;
-import com.openrecordsmanager.api.swagger.NotFoundApiResponse;
+import com.openrecordsmanager.rest.swagger.DefaultApiResponses;
+import com.openrecordsmanager.rest.swagger.NotFoundApiResponse;
 import com.openrecordsmanager.record.dto.NewRecord;
 import com.openrecordsmanager.record.dto.RecordResponse;
 import com.openrecordsmanager.record.dto.RecordRevisionResponse;

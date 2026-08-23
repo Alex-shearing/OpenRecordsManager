@@ -2,7 +2,7 @@ package com.openrecordsmanager.api.template;
 
 import com.openrecordsmanager.api.Component;
 import com.openrecordsmanager.api.Plugin;
-import com.openrecordsmanager.api.schema.RecordInputs;
+import com.openrecordsmanager.api.schema.JsonSchemaValidator;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -18,7 +18,7 @@ public interface TemplateComponent extends Component {
                 throw new IllegalArgumentException("File not found in resources!");
             }
 
-            return RecordInputs.MAPPER.readValue(inputStream, clazz);
+            return JsonSchemaValidator.MAPPER.readValue(inputStream, clazz);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

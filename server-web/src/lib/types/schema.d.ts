@@ -543,6 +543,16 @@ export interface components {
             pattern?: string;
             contentEncoding?: string;
         };
+        ValidationErrorResponse: {
+            /** @constant */
+            success: false;
+            errorCode: string;
+            fieldErrors: {
+                [key: string]: string;
+            };
+            /** Format: date-time */
+            timestamp: string;
+        };
         NewRecord: {
             type: string;
             properties: {
@@ -2760,13 +2770,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        /** @constant */
-                        success: false;
-                        /** Format: date-time */
-                        timestamp: unknown;
-                        error: string;
-                    };
+                    "application/json": components["schemas"]["ValidationErrorResponse"];
                 };
             };
             /** @description Authentication Failed */

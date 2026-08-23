@@ -1,7 +1,7 @@
-package com.openrecordsmanager.api.swagger;
+package com.openrecordsmanager.rest.swagger;
 
-import com.openrecordsmanager.api.ApiResponseV1;
 import com.openrecordsmanager.auth.AuthService;
+import com.openrecordsmanager.rest.ApiResponseV1;
 import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.Operation;

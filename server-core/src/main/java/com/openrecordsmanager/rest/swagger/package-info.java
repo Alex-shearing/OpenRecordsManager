@@ -1,4 +1,4 @@
 @NullMarked
-package com.openrecordsmanager.api.errors;
+package com.openrecordsmanager.rest.swagger;
 
 import org.jspecify.annotations.NullMarked;

@@ -1,11 +1,11 @@
 package com.openrecordsmanager.config;
 
 import com.openrecordsmanager.api.config.ConfigType;
-import com.openrecordsmanager.api.errors.ResourceNotFoundException;
-import com.openrecordsmanager.api.swagger.DefaultApiResponses;
 import com.openrecordsmanager.api.types.ComponentTypes;
 import com.openrecordsmanager.config.dto.ConfigResponse;
 import com.openrecordsmanager.plugin.registry.ComponentCatalog;
+import com.openrecordsmanager.rest.errors.ResourceNotFoundException;
+import com.openrecordsmanager.rest.swagger.DefaultApiResponses;
 import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;

@@ -1,4 +1,4 @@
-package com.openrecordsmanager.api.errors;
+package com.openrecordsmanager.rest.errors;
 
 import com.openrecordsmanager.api.ResourceIdentifier;
 import com.openrecordsmanager.api.types.ComponentType;

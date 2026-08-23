@@ -1,11 +1,11 @@
 package com.openrecordsmanager.list;
 
 import com.openrecordsmanager.api.ResourceIdentifier;
-import com.openrecordsmanager.api.swagger.DefaultApiResponses;
-import com.openrecordsmanager.api.swagger.NotFoundApiResponse;
 import com.openrecordsmanager.list.dto.ListElementResponse;
 import com.openrecordsmanager.list.dto.ListTypeResponse;
 import com.openrecordsmanager.list.dto.SimpleListTypeResponse;
+import com.openrecordsmanager.rest.swagger.DefaultApiResponses;
+import com.openrecordsmanager.rest.swagger.NotFoundApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;

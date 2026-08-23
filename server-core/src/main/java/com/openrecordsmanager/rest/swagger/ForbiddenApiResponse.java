@@ -1,6 +1,6 @@
-package com.openrecordsmanager.api.swagger;
+package com.openrecordsmanager.rest.swagger;
 
-import com.openrecordsmanager.api.ApiResponseV1;
+import com.openrecordsmanager.rest.ApiResponseV1;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -12,8 +12,8 @@ import java.lang.annotation.*;
 @Retention(RetentionPolicy.RUNTIME)
 @Inherited
 @ApiResponse(
-        responseCode = "500",
-        description = "Internal Server error",
+        responseCode = "403",
+        description = "Forbidden",
         content = @Content(
                 mediaType = "application/json",
                 schema = @Schema(implementation = ApiResponseV1.class),
@@ -21,12 +21,12 @@ import java.lang.annotation.*;
                         value = """
                                 {
                                   "success": false,
-                                  "error": "Internal Server Error",
+                                  "error": "Forbidden",
                                   "timestamp": "2026-06-29T23:05:00Z"
                                 }
                                 """
                 )
         )
 )
-public @interface InternalServerErrorApiResponse {
+public @interface ForbiddenApiResponse {
 }

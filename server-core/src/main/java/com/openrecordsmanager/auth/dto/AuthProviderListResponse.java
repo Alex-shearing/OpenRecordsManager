@@ -2,10 +2,10 @@ package com.openrecordsmanager.auth.dto;
 
 import com.openrecordsmanager.api.ComponentReference;
 import com.openrecordsmanager.api.auth.InputAuthProviderType;
-import com.openrecordsmanager.api.schema.InputFormSchema;
 import com.openrecordsmanager.auth.entity.AuthProvider;
 import com.openrecordsmanager.plugin.registry.ComponentCatalog;
 import com.openrecordsmanager.plugin.registry.mapper.ComponentReferenceSerializer;
+import com.openrecordsmanager.rest.InputFormSchema;
 import io.swagger.v3.oas.annotations.StringToClassMapItem;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;

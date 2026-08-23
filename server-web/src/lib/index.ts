@@ -29,8 +29,8 @@ client.use({
 
 		return request;
 	},
-	onResponse({ response }) {
-		if (response.status === 401) {
+	onResponse({ response, schemaPath }) {
+		if (response.status === 401 && schemaPath !== '/api/auth/login/{provider}') {
 			throw goto(`/login?redirect=${page.url.pathname}`);
 		}
 		if (response.status >= 400) {

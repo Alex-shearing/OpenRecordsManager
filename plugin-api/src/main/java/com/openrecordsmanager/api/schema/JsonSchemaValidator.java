@@ -4,9 +4,12 @@ import com.networknt.schema.Error;
 import com.networknt.schema.Schema;
 import com.networknt.schema.SchemaRegistry;
 import com.networknt.schema.SpecificationVersion;
+import com.openrecordsmanager.api.ComponentReference;
 import com.openrecordsmanager.api.errors.InputValidationException;
 import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.databind.module.SimpleModule;
 import tools.jackson.databind.node.ArrayNode;
 import tools.jackson.databind.node.ObjectNode;
 
@@ -17,7 +20,11 @@ import java.util.List;
 import java.util.Map;
 
 public final class JsonSchemaValidator {
-    private static final JsonMapper MAPPER = JsonMapper.builder().build();
+    public static final ObjectMapper MAPPER = JsonMapper.builder()
+            .addModule(new SimpleModule()
+                    .addKeyDeserializer(ComponentReference.class, new ComponentReference.RefKeyDeserializer())
+            )
+            .build();
     private static final SchemaRegistry SCHEMA_REGISTRY =
             SchemaRegistry.withDefaultDialect(SpecificationVersion.DRAFT_2020_12);
 
@@ -28,7 +35,7 @@ public final class JsonSchemaValidator {
         return SCHEMA_REGISTRY.getSchema(jsonSchemaFromClass(recordClass));
     }
 
-    public static Map<String, Object> validate(Class<? extends Record> recordClass, Map<String, ?> inputs) throws InputValidationException {
+    public static Map<String, Object> validate(Class<? extends Record> recordClass, Object inputs) throws InputValidationException {
         Schema compiledSchema = getSchema(recordClass);
         JsonNode inputNode = MAPPER.valueToTree(inputs);
 
@@ -86,7 +93,7 @@ public final class JsonSchemaValidator {
     }
 
     private static JsonNode jsonSchemaFromClass(Class<? extends Record> recordClass) {
-        ObjectNode schema = RecordInputs.MAPPER.createObjectNode();
+        ObjectNode schema = MAPPER.createObjectNode();
         schema.put("$schema", "https://json-schema.org/draft/2020-12/schema");
         schema.put("type", "object");
         schema.put("additionalProperties", false);
@@ -185,5 +192,17 @@ public final class JsonSchemaValidator {
 
     private static boolean isStringLike(Class<?> componentType) {
         return componentType == String.class || componentType == char.class || componentType == Character.class;
+    }
+
+    /**
+     * Converts the provided data into the provided record type.
+     *
+     * @param recordClass the record type to convert into
+     * @param values      the input data
+     * @return the record
+     */
+    public static <I extends Record> I toRecord(Class<I> recordClass, Object values) {
+        Map<String, Object> validated = validate(recordClass, values);
+        return MAPPER.convertValue(validated, recordClass);
     }
 }

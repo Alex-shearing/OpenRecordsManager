@@ -2,11 +2,11 @@ package com.openrecordsmanager.config;
 
 import com.openrecordsmanager.api.config.ConfigStore;
 import com.openrecordsmanager.api.config.ConfigType;
-import com.openrecordsmanager.api.errors.ResourceNotFoundException;
 import com.openrecordsmanager.api.types.ComponentTypes;
 import com.openrecordsmanager.config.dto.ConfigResponse;
 import com.openrecordsmanager.database.DataRepository;
 import com.openrecordsmanager.plugin.registry.ComponentCatalog;
+import com.openrecordsmanager.rest.errors.ResourceNotFoundException;
 import org.jspecify.annotations.Nullable;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
