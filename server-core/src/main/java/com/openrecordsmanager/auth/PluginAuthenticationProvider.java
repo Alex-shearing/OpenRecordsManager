@@ -47,12 +47,11 @@ public class PluginAuthenticationProvider implements AuthenticationProvider {
         AuthProvider provider = this.repository.authProviderRepo.findById(token.provider)
                 .orElseThrow(() -> new ProviderNotFoundException("Provider " + token.provider + " not found"));
 
-        AuthProviderType type = provider.getProviderType().getComponent(this.catalog)
-                .orElseThrow(() -> new ProviderNotFoundException("Provider type " + provider.getProviderType() + " not found"));
+        AuthProviderType type = provider.getProviderType(catalog, AuthProviderType.class);
 
         UserAuthDetails authDetails = switch (type) {
             case InputAuthProviderType<?> input ->
-                    input.authenticateRaw(this.config, this.authService, provider, ((InputToken) token).data);
+                    input.authenticateUntyped(this.config, this.authService, provider, ((InputToken) token).data);
             case RedirectAuthProviderType redirect ->
                     redirect.authenticateCallback(provider, this.authService, ((RedirectToken) token).uri);
             default -> throw new InternalAuthenticationServiceException("Unexpected provider type: " + type);

@@ -4,8 +4,8 @@ import com.openrecordsmanager.api.filestore.FileStoreMiddlewareType;
 import com.openrecordsmanager.api.types.ComponentTypes;
 import com.openrecordsmanager.database.DataRepository;
 import com.openrecordsmanager.filestore.dto.MiddlewareResponse;
+import com.openrecordsmanager.filestore.dto.MiddlewareTypeResponse;
 import com.openrecordsmanager.filestore.dto.NewFileStoreMiddleware;
-import com.openrecordsmanager.filestore.dto.SimpleFileStoreResponse;
 import com.openrecordsmanager.filestore.dto.SimpleMiddlewareResponse;
 import com.openrecordsmanager.plugin.registry.ComponentCatalog;
 import com.openrecordsmanager.rest.errors.ResourceInUseException;
@@ -31,18 +31,14 @@ public class MiddlewareService {
     @Transactional(readOnly = true)
     public Set<SimpleMiddlewareResponse> getAll() {
         return this.repository.fileStoreMiddlewareRepo.findAll().stream()
-                .map(middleware -> new SimpleMiddlewareResponse(middleware.id, middleware.type))
+                .map(middleware -> SimpleMiddlewareResponse.of(this.catalog, middleware))
                 .collect(Collectors.toSet());
     }
 
     @Transactional(readOnly = true)
     public MiddlewareResponse get(UUID id) throws ResourceNotFoundException {
         return this.repository.fileStoreMiddlewareRepo.findById(id)
-                .map(middleware -> new MiddlewareResponse(
-                        middleware.id,
-                        middleware.type,
-                        middleware.properties
-                ))
+                .map(middleware -> MiddlewareResponse.of(this.catalog, middleware))
                 .orElseThrow(() -> new ResourceNotFoundException("stream store middleware", id.toString()));
     }
 
@@ -51,23 +47,23 @@ public class MiddlewareService {
         FileStoreMiddlewareType<?> type = this.catalog.getRegistry(ComponentTypes.FILE_STORE_MIDDLEWARE).get(input.type())
                 .orElseThrow(() -> new ResourceNotFoundException(ComponentTypes.FILE_STORE_MIDDLEWARE, input.type()));
 
-        Middleware middleware = new Middleware(this.catalog, type, type.validateSettings(input.properties()));
+        Middleware middleware = new Middleware(this.catalog, type, input.properties());
 
         this.repository.fileStoreMiddlewareRepo.saveAndFlush(middleware);
 
-        return new SimpleMiddlewareResponse(middleware.id, middleware.type);
+        return SimpleMiddlewareResponse.of(this.catalog, middleware);
     }
 
     @Transactional
-    public SimpleFileStoreResponse update(UUID id, Map<String, ?> properties) throws ResourceNotFoundException {
+    public SimpleMiddlewareResponse update(UUID id, Map<String, ?> properties) throws ResourceNotFoundException {
         Middleware middleware = this.repository.fileStoreMiddlewareRepo.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("stream store middleware", id.toString()));
 
-        middleware.setProperties(middleware.getMiddlewareType(this.catalog).validateSettings(properties));
+        middleware.setProperties(this.catalog, properties);
 
         this.repository.fileStoreMiddlewareRepo.saveAndFlush(middleware);
 
-        return new SimpleFileStoreResponse(middleware.id, middleware.type);
+        return SimpleMiddlewareResponse.of(this.catalog, middleware);
     }
 
     @Transactional
@@ -75,10 +71,17 @@ public class MiddlewareService {
         Middleware middleware = this.repository.fileStoreMiddlewareRepo.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("stream store middleware", id.toString()));
 
-        if (this.repository.fileStoreRepo.existsByMiddlewares(middleware.id)) {
+        if (this.repository.fileStoreRepo.existsByMiddlewares(middleware.getId())) {
             throw new ResourceInUseException("middleware is in use by one or more stream stores");
         }
 
         this.repository.fileStoreMiddlewareRepo.delete(middleware);
+    }
+
+    @Transactional
+    public MiddlewareTypeResponse[] getTypes() {
+        return this.catalog.getRegistry(ComponentTypes.FILE_STORE_MIDDLEWARE).stream()
+                .map(type -> MiddlewareTypeResponse.of(this.catalog, type))
+                .toArray(MiddlewareTypeResponse[]::new);
     }
 }

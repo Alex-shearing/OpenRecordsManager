@@ -4,6 +4,8 @@ import com.openrecordsmanager.api.ComponentReference;
 import com.openrecordsmanager.api.auth.AuthProviderInstance;
 import com.openrecordsmanager.api.auth.AuthProviderType;
 import com.openrecordsmanager.database.util.ComponentReferenceConverter;
+import com.openrecordsmanager.plugin.registry.ComponentCatalog;
+import com.openrecordsmanager.rest.errors.ResourceNotFoundException;
 import jakarta.persistence.*;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
@@ -57,5 +59,17 @@ public class AuthProvider implements AuthProviderInstance {
 
     public ComponentReference<? extends AuthProviderType> getProviderType() {
         return providerType;
+    }
+
+    @SuppressWarnings("unchecked")
+    public <T extends AuthProviderType> T getProviderType(ComponentCatalog catalog, Class<T> type) {
+        AuthProviderType genericProvider = this.providerType.getComponent(catalog)
+                .orElseThrow(() -> new ResourceNotFoundException(this.providerType.getType(), this.providerType.getId(catalog).orElseThrow()));
+
+        if (type.isInstance(genericProvider)) {
+            return (T) genericProvider;
+        }
+
+        throw new ResourceNotFoundException(this.providerType.getType(), this.providerType.getId(catalog).orElseThrow());
     }
 }

@@ -1,5 +1,6 @@
 package com.openrecordsmanager.rest.errors;
 
+import com.openrecordsmanager.api.Component;
 import com.openrecordsmanager.api.ResourceIdentifier;
 import com.openrecordsmanager.api.types.ComponentType;
 
@@ -17,5 +18,9 @@ public class ResourceNotFoundException extends RuntimeException {
 
     public ResourceNotFoundException(ComponentType<?> type, ResourceIdentifier resource) {
         this(type.toString(), resource.toString());
+    }
+
+    public ResourceNotFoundException(ComponentType<?> type, Class<? extends Component> resource) {
+        this(type.toString(), resource.getName());
     }
 }

@@ -1,7 +1,8 @@
-package com.openrecordsmanager.filestore.store;
+package com.openrecordsmanager.filestore;
 
 import com.openrecordsmanager.filestore.dto.*;
 import com.openrecordsmanager.filestore.middleware.MiddlewareService;
+import com.openrecordsmanager.filestore.store.FileStoreService;
 import com.openrecordsmanager.rest.swagger.ConflictApiResponse;
 import com.openrecordsmanager.rest.swagger.DefaultApiResponses;
 import com.openrecordsmanager.rest.swagger.NotFoundApiResponse;
@@ -86,7 +87,7 @@ public class FileStoreController {
     @PutMapping(value = "/middlewares/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Modify file store middleware config")
     @NotFoundApiResponse
-    public SimpleFileStoreResponse middleware_update(@PathVariable("id") UUID id, @RequestBody Map<String, ?> properties) {
+    public SimpleMiddlewareResponse middleware_update(@PathVariable("id") UUID id, @RequestBody Map<String, ?> properties) {
         return this.middlewareService.update(id, properties);
     }
 
@@ -97,4 +98,17 @@ public class FileStoreController {
     public void middleware_delete(@PathVariable("id") UUID id) {
         this.middlewareService.delete(id);
     }
+
+    @GetMapping(value = "/types", produces = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(summary = "Get all supported file store types")
+    public FileStoreTypeResponse[] fileStoreType_get() {
+        return this.storeService.getTypes();
+    }
+
+    @GetMapping(value = "/middlewares/types", produces = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(summary = "Get all supported file store middleware types")
+    public MiddlewareTypeResponse[] fileStoreMiddlewareType_get() {
+        return this.middlewareService.getTypes();
+    }
+
 }

@@ -1,6 +1,5 @@
 package com.openrecordsmanager.api.auth;
 
-import com.networknt.schema.Schema;
 import com.openrecordsmanager.api.config.ConfigStore;
 import com.openrecordsmanager.api.schema.JsonSchemaValidator;
 import org.jspecify.annotations.Nullable;
@@ -12,10 +11,6 @@ public abstract class InputAuthProviderType<I extends Record> implements AuthPro
 
     protected InputAuthProviderType(Class<I> inputClass) {
         this.inputClass = inputClass;
-    }
-
-    public final Schema getLoginInputSchema() {
-        return JsonSchemaValidator.getSchema(this.inputClass);
     }
 
     /**
@@ -33,7 +28,7 @@ public abstract class InputAuthProviderType<I extends Record> implements AuthPro
             I inputs
     );
 
-    public final @Nullable UserAuthDetails authenticateRaw(
+    public final @Nullable UserAuthDetails authenticateUntyped(
             ConfigStore config,
             UserAuthContext context,
             AuthProviderInstance instance,
@@ -43,7 +38,11 @@ public abstract class InputAuthProviderType<I extends Record> implements AuthPro
                 config,
                 context,
                 instance,
-                this.inputClass.cast(JsonSchemaValidator.toRecord(this.inputClass, inputs))
+                JsonSchemaValidator.toRecord(this.inputClass, inputs)
         );
+    }
+
+    public Class<I> getInputClass() {
+        return this.inputClass;
     }
 }

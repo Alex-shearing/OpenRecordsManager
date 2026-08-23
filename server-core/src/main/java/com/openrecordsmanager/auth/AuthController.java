@@ -2,7 +2,6 @@ package com.openrecordsmanager.auth;
 
 import com.openrecordsmanager.api.ComponentReference;
 import com.openrecordsmanager.api.ValidationErrorResponse;
-import com.openrecordsmanager.api.auth.InputAuthProviderType;
 import com.openrecordsmanager.api.auth.RedirectAuthProviderType;
 import com.openrecordsmanager.auth.dto.AuthProviderListResponse;
 import com.openrecordsmanager.auth.dto.LoginResponse;
@@ -106,14 +105,6 @@ public class AuthController {
             HttpServletRequest request,
             HttpServletResponse response
     ) {
-        AuthProvider authProvider = this.repository.authProviderRepo.findById(provider)
-                .orElseThrow(() -> new ResourceNotFoundException("authentication provider", provider.toString()));
-
-        InputAuthProviderType<?> type = authProvider.getProviderType().getComponent(this.catalog)
-                .filter(InputAuthProviderType.class::isInstance)
-                .map(InputAuthProviderType.class::cast)
-                .orElseThrow(() -> new ResourceNotFoundException("input authentication provider", provider.toString()));
-
         return this.authService.login(new PluginAuthenticationProvider.InputToken(provider, inputs), request, response);
     }
 
@@ -135,8 +126,7 @@ public class AuthController {
     public ResponseEntity<Void> redirect(@PathVariable("auth_provider") UUID authProvider) {
         AuthProvider provider = this.repository.authProviderRepo.findById(authProvider)
                 .orElseThrow(() -> new ResourceNotFoundException("authentication provider", authProvider.toString()));
-        RedirectAuthProviderType type = (RedirectAuthProviderType) provider.getProviderType().getComponent(this.catalog)
-                .orElseThrow(() -> new IllegalStateException(String.format("authentication provider type %s not found", provider.getProviderType())));
+        RedirectAuthProviderType type = provider.getProviderType(this.catalog, RedirectAuthProviderType.class);
 
         return ResponseEntity.status(HttpStatus.FOUND).location(type.getRedirectTo(provider)).build();
     }

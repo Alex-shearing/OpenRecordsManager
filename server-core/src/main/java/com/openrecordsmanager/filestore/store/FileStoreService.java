@@ -6,6 +6,7 @@ import com.openrecordsmanager.api.filestore.FileStoreType;
 import com.openrecordsmanager.api.types.ComponentTypes;
 import com.openrecordsmanager.database.DataRepository;
 import com.openrecordsmanager.filestore.dto.FileStoreResponse;
+import com.openrecordsmanager.filestore.dto.FileStoreTypeResponse;
 import com.openrecordsmanager.filestore.dto.NewFileStore;
 import com.openrecordsmanager.filestore.dto.SimpleFileStoreResponse;
 import com.openrecordsmanager.filestore.middleware.Middleware;
@@ -43,19 +44,14 @@ public class FileStoreService {
     @Transactional(readOnly = true)
     public Set<SimpleFileStoreResponse> getAll() {
         return this.repository.fileStoreRepo.findAll().stream()
-                .map(fileStore -> new SimpleFileStoreResponse(fileStore.id, fileStore.type))
+                .map(fileStore -> SimpleFileStoreResponse.of(this.catalog, fileStore))
                 .collect(Collectors.toSet());
     }
 
     @Transactional(readOnly = true)
     public FileStoreResponse get(UUID id) throws ResourceNotFoundException {
         return this.repository.fileStoreRepo.findById(id)
-                .map(fileStore -> new FileStoreResponse(
-                        fileStore.id,
-                        fileStore.type,
-                        fileStore.properties,
-                        fileStore.middlewares
-                ))
+                .map(fileStore -> FileStoreResponse.of(this.catalog, fileStore))
                 .orElseThrow(() -> new ResourceNotFoundException("file store", id.toString()));
     }
 
@@ -64,7 +60,7 @@ public class FileStoreService {
         FileStoreType<?> type = this.catalog.getRegistry(ComponentTypes.FILE_STORE).get(input.type())
                 .orElseThrow(() -> new ResourceNotFoundException(ComponentTypes.FILE_STORE, input.type()));
 
-        FileStore store = new FileStore(this.catalog, type, type.validateSettings(input.properties()));
+        FileStore store = new FileStore(this.catalog, type, input.properties());
 
         for (UUID middleware : input.middlewares()) {
             Middleware mw = this.repository.fileStoreMiddlewareRepo.findById(middleware)
@@ -75,18 +71,18 @@ public class FileStoreService {
 
         this.repository.fileStoreRepo.saveAndFlush(store);
 
-        return new SimpleFileStoreResponse(store.id, store.type);
+        return SimpleFileStoreResponse.of(this.catalog, store);
     }
 
     @Transactional
     public SimpleFileStoreResponse update(UUID id, Map<String, ?> properties) throws ResourceNotFoundException {
         FileStore store = this.repository.fileStoreRepo.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("file store", id));
-        store.properties = store.getStoreType(this.catalog).validateSettings(properties);
+        store.setProperties(this.catalog, properties);
 
         this.repository.fileStoreRepo.saveAndFlush(store);
 
-        return new SimpleFileStoreResponse(store.id, store.type);
+        return SimpleFileStoreResponse.of(this.catalog, store);
     }
 
     @Transactional
@@ -94,11 +90,18 @@ public class FileStoreService {
         FileStore store = this.repository.fileStoreRepo.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("file store", id));
 
-        if (!store.files.isEmpty()) {
+        if (!store.getFiles().isEmpty()) {
             throw new ResourceInUseException("stream store has contents and cannot be deleted");
         }
 
         this.repository.fileStoreRepo.delete(store);
+    }
+
+    @Transactional
+    public FileStoreTypeResponse[] getTypes() {
+        return this.catalog.getRegistry(ComponentTypes.FILE_STORE).stream()
+                .map(type -> FileStoreTypeResponse.of(this.catalog, type))
+                .toArray(FileStoreTypeResponse[]::new);
     }
 
 }

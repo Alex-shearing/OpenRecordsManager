@@ -30,16 +30,16 @@ public record AuthProviderListResponse(
                 requiredProperties = {"id", "type"}
         )
         @NotNull ComponentReference<?> type,
-        @Nullable @Schema(implementation = InputFormSchema.class) InputFormSchema loginSchema
+        @Nullable InputFormSchema loginSchema
 ) {
     public static AuthProviderListResponse of(AuthProvider provider, ComponentCatalog catalog) {
-        InputFormSchema loginSchema = provider.getProviderType().getComponent(catalog)
-                .filter(InputAuthProviderType.class::isInstance)
-                .map(InputAuthProviderType.class::cast)
-                .map(InputAuthProviderType::getLoginInputSchema)
-                .map(InputFormSchema::from)
-                .orElse(null);
+        InputAuthProviderType<?> loginSchema = provider.getProviderType(catalog, InputAuthProviderType.class);
 
-        return new AuthProviderListResponse(provider.getId(), provider.getName(), provider.getProviderType(), loginSchema);
+        return new AuthProviderListResponse(
+                provider.getId(),
+                provider.getName(),
+                provider.getProviderType(),
+                InputFormSchema.from(loginSchema.getInputClass())
+        );
     }
 }

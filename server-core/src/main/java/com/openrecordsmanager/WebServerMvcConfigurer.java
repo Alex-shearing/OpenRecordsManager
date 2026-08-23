@@ -31,7 +31,7 @@ public class WebServerMvcConfigurer implements WebMvcConfigurer {
                     protected Resource getResource(String resourcePath, Resource location) throws IOException {
                         Resource requestedResource = location.createRelative(resourcePath);
 
-                        // If the browser requests a real stream (like css, js, images) or an API endpoint, serve it normally
+                        // If the browser requests a real stream (like CSS, JS, images) or an API endpoint, serve it normally
                         if (requestedResource.exists() && requestedResource.isReadable() || resourcePath.startsWith("api/")) {
                             return requestedResource;
                         }

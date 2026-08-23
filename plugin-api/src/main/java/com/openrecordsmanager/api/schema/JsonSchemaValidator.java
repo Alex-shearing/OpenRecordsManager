@@ -35,7 +35,7 @@ public final class JsonSchemaValidator {
         return SCHEMA_REGISTRY.getSchema(jsonSchemaFromClass(recordClass));
     }
 
-    public static Map<String, Object> validate(Class<? extends Record> recordClass, Object inputs) throws InputValidationException {
+    public static Map<String, Object> validateAndSerialize(Class<? extends Record> recordClass, Object inputs) throws InputValidationException {
         Schema compiledSchema = getSchema(recordClass);
         JsonNode inputNode = MAPPER.valueToTree(inputs);
 
@@ -201,8 +201,12 @@ public final class JsonSchemaValidator {
      * @param values      the input data
      * @return the record
      */
-    public static <I extends Record> I toRecord(Class<I> recordClass, Object values) {
-        Map<String, Object> validated = validate(recordClass, values);
+    public static <I extends Record> I toRecord(Class<I> recordClass, Map<String, ?> values) throws InputValidationException {
+        Map<String, Object> validated = validateAndSerialize(recordClass, values);
         return MAPPER.convertValue(validated, recordClass);
+    }
+
+    public static Map<String, ?> serializeSettings(Record record) throws InputValidationException {
+        return validateAndSerialize(record.getClass(), record);
     }
 }

@@ -2,6 +2,7 @@ package com.openrecordsmanager.rest.errors;
 
 import com.openrecordsmanager.api.ValidationErrorResponse;
 import com.openrecordsmanager.api.builtin.BuiltinConfigs;
+import com.openrecordsmanager.api.errors.InputValidationException;
 import com.openrecordsmanager.config.ConfigService;
 import com.openrecordsmanager.rest.ApiResponseV1;
 import org.slf4j.Logger;

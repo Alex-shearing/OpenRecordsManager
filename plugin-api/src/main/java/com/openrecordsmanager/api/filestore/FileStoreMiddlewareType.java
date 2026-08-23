@@ -28,7 +28,7 @@ public abstract class FileStoreMiddlewareType<S extends Record> implements Compo
     /**
      * Applies save-time modification using untyped properties (typically raw JSON maps from persistence).
      */
-    public final InputStream duringSaveUntyped(Object properties, InputStream data) {
+    public final InputStream duringSaveUntyped(Map<String, ?> properties, InputStream data) {
         return this.duringSave(this.parseSettings(properties), data);
     }
 
@@ -44,16 +44,15 @@ public abstract class FileStoreMiddlewareType<S extends Record> implements Compo
     /**
      * Applies retrieve-time modification using untyped properties (typically raw JSON maps from persistence).
      */
-    public final InputStream duringRetrieveUntyped(Object properties, InputStream data) {
+    public final InputStream duringRetrieveUntyped(Map<String, ?> properties, InputStream data) {
         return this.duringRetrieve(this.parseSettings(properties), data);
     }
 
-    public S parseSettings(Object properties) {
+    public S parseSettings(Map<String, ?> properties) {
         return JsonSchemaValidator.toRecord(this.settingsClass, properties);
     }
 
-    public final Map<String, Object> validateSettings(Map<String, ?> properties) {
-        return JsonSchemaValidator.validate(this.settingsClass, properties);
+    public Class<S> getSettingsClass() {
+        return this.settingsClass;
     }
-
 }

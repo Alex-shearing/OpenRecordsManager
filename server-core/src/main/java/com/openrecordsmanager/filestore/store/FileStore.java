@@ -5,6 +5,7 @@ import com.google.common.hash.HashingInputStream;
 import com.google.common.io.CountingInputStream;
 import com.openrecordsmanager.api.ResourceIdentifier;
 import com.openrecordsmanager.api.filestore.FileStoreType;
+import com.openrecordsmanager.api.schema.JsonSchemaValidator;
 import com.openrecordsmanager.api.types.ComponentTypes;
 import com.openrecordsmanager.filestore.middleware.Middleware;
 import com.openrecordsmanager.filestore.middleware.MiddlewareUsage;
@@ -12,11 +13,6 @@ import com.openrecordsmanager.plugin.registry.ComponentCatalog;
 import jakarta.persistence.*;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
-import tools.jackson.core.JacksonException;
-import tools.jackson.core.JsonGenerator;
-import tools.jackson.databind.SerializationContext;
-import tools.jackson.databind.ValueSerializer;
-import tools.jackson.databind.annotation.JsonSerialize;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -24,18 +20,17 @@ import java.util.*;
 
 @Entity
 @Table(name = "file_store")
-@JsonSerialize(using = FileStore.Serializer.class)
 public class FileStore {
 
     @Id
-    public UUID id;
+    private UUID id;
 
     @Column(nullable = false)
-    public ResourceIdentifier type;
+    private ResourceIdentifier type;
 
     @Column(nullable = false)
     @JdbcTypeCode(SqlTypes.JSON)
-    public Map<String, ?> properties;
+    private Map<String, ?> properties;
 
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(
@@ -43,10 +38,10 @@ public class FileStore {
             joinColumns = @JoinColumn(name = "file_store_id")
     )
     @OrderBy("application_order ASC")
-    public List<MiddlewareUsage> middlewares = new ArrayList<>();
+    private List<MiddlewareUsage> middlewares = new ArrayList<>();
 
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "store")
-    public Set<FileStoreEntry> files = new HashSet<>();
+    private Set<FileStoreEntry> files = new HashSet<>();
 
     @Deprecated
     protected FileStore() {
@@ -55,8 +50,12 @@ public class FileStore {
     public FileStore(ComponentCatalog catalog, FileStoreType<?> type, Map<String, ?> properties) {
         this.id = UUID.randomUUID();
         this.type = catalog.getRegistry(ComponentTypes.FILE_STORE).getId(type).orElseThrow();
-        this.properties = properties;
+        this.properties = JsonSchemaValidator.serializeSettings(type.parseSettings(properties));
         this.middlewares = new ArrayList<>();
+    }
+
+    public UUID getId() {
+        return id;
     }
 
     public void addMiddleware(Middleware middleware) {
@@ -93,8 +92,8 @@ public class FileStore {
         );
     }
 
-    public Object getProperties(ComponentCatalog catalog) {
-        return this.getStoreType(catalog).parseSettings(this.properties);
+    public Map<String, ?> getProperties(ComponentCatalog catalog) {
+        return JsonSchemaValidator.serializeSettings(this.getStoreType(catalog).parseSettings(this.properties));
     }
 
     public InputStream getFile(ComponentCatalog catalog, FileStoreEntry entry) throws IOException {
@@ -111,26 +110,15 @@ public class FileStore {
         return catalog.getRegistry(ComponentTypes.FILE_STORE).get(this.type).orElseThrow();
     }
 
-    public void setProperties(Map<String, ?> properties) {
-        this.properties = properties;
+    public void setProperties(ComponentCatalog catalog, Map<String, ?> properties) {
+        this.properties = JsonSchemaValidator.serializeSettings(this.getStoreType(catalog).parseSettings(properties));
     }
 
-    public static class Serializer extends ValueSerializer<FileStore> {
+    public List<MiddlewareUsage> getMiddlewares() {
+        return middlewares;
+    }
 
-        private final ComponentCatalog catalog;
-
-        public Serializer(ComponentCatalog catalog) {
-            this.catalog = catalog;
-        }
-
-        @Override
-        public void serialize(FileStore value, JsonGenerator gen, SerializationContext ctxt) throws JacksonException {
-            gen.writeStartObject();
-            gen.writeStringProperty("id", value.id.toString());
-            gen.writeStringProperty("type", value.type.toString());
-            gen.writePOJOProperty("properties", value.getProperties(catalog));
-            gen.writePOJOProperty("middlewares", value.middlewares);
-            gen.writeEndObject();
-        }
+    public Set<FileStoreEntry> getFiles() {
+        return files;
     }
 }

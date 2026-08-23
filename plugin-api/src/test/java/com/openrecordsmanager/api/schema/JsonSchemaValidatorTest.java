@@ -49,7 +49,7 @@ class JsonSchemaValidatorTest {
 
     @Test
     void validInputNormalizesTrimmedValues() {
-        Map<String, Object> result = JsonSchemaValidator.validate(LoginInputs.class, Map.of(
+        Map<String, Object> result = JsonSchemaValidator.validateAndSerialize(LoginInputs.class, Map.of(
                 "username", "  alice  ",
                 "password", "secret"
         ));
@@ -61,14 +61,14 @@ class JsonSchemaValidatorTest {
     @Test
     void missingRequiredFieldsReturnFieldErrors() {
         assertThrows(InputValidationException.class, () -> {
-            JsonSchemaValidator.validate(LoginInputs.class, Map.of("username", "alice"));
+            JsonSchemaValidator.validateAndSerialize(LoginInputs.class, Map.of("username", "alice"));
         });
     }
 
     @Test
     void extraPropertiesRejected() {
         assertThrows(InputValidationException.class, () -> {
-            JsonSchemaValidator.validate(LoginInputs.class, Map.of(
+            JsonSchemaValidator.validateAndSerialize(LoginInputs.class, Map.of(
                     "username", "alice",
                     "password", "secret",
                     "extra", "nope"

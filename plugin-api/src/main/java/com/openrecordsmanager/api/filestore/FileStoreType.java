@@ -28,10 +28,10 @@ public abstract class FileStoreType<S extends Record> implements Component {
     public abstract String save(S settings, InputStream data) throws IOException;
 
     /**
-     * Saves a file using untyped properties (typically raw JSON maps from persistence).
+     * Saves a file using untyped settings (typically raw JSON maps from persistence).
      */
-    public final String saveUntyped(Object properties, InputStream data) throws IOException {
-        return this.save(this.parseSettings(properties), data);
+    public final String saveUntyped(Map<String, ?> settings, InputStream data) throws IOException {
+        return this.save(this.parseSettings(settings), data);
     }
 
     /**
@@ -47,15 +47,15 @@ public abstract class FileStoreType<S extends Record> implements Component {
     /**
      * Retrieves a file using untyped properties (typically raw JSON maps from persistence).
      */
-    public final InputStream retrieveUntyped(Object properties, String data) throws IOException {
+    public final InputStream retrieveUntyped(Map<String, ?> properties, String data) throws IOException {
         return this.retrieve(this.parseSettings(properties), data);
     }
 
-    public S parseSettings(Object properties) {
+    public S parseSettings(Map<String, ?> properties) {
         return JsonSchemaValidator.toRecord(this.settingsClass, properties);
     }
 
-    public final Map<String, Object> validateSettings(Map<String, ?> properties) {
-        return JsonSchemaValidator.validate(this.settingsClass, properties);
+    public Class<S> getSettingsClass() {
+        return this.settingsClass;
     }
 }
