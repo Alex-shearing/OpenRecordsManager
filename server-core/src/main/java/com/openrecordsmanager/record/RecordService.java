@@ -1,12 +1,12 @@
 package com.openrecordsmanager.record;
 
-import com.openrecordsmanager.action.dto.ActionResponse;
 import com.openrecordsmanager.api.ResourceIdentifier;
-import com.openrecordsmanager.api.action.RecordActionType;
 import com.openrecordsmanager.api.builtin.BuiltinConfigs;
+import com.openrecordsmanager.api.record.RecordActionType;
 import com.openrecordsmanager.api.types.ComponentTypes;
 import com.openrecordsmanager.config.ConfigService;
 import com.openrecordsmanager.database.DataRepository;
+import com.openrecordsmanager.dto.ActionResponse;
 import com.openrecordsmanager.filestore.store.FileStore;
 import com.openrecordsmanager.plugin.ExpressionsService;
 import com.openrecordsmanager.plugin.registry.ComponentCatalog;

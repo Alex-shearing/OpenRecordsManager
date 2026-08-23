@@ -1,4 +1,4 @@
-package com.openrecordsmanager.plugin.template;
+package com.openrecordsmanager.template;
 
 import com.openrecordsmanager.api.ResourceIdentifier;
 import com.openrecordsmanager.api.template.TemplateComponent;

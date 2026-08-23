@@ -1,4 +1,4 @@
 @NullMarked
-package com.openrecordsmanager.plugin.template;
+package com.openrecordsmanager.template;
 
 import org.jspecify.annotations.NullMarked;

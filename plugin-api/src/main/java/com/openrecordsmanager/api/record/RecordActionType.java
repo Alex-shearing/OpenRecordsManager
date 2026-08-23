@@ -1,16 +1,16 @@
-package com.openrecordsmanager.api.action;
+package com.openrecordsmanager.api.record;
 
 import com.openrecordsmanager.api.Component;
 import com.openrecordsmanager.api.schema.JsonSchemaValidator;
 
 import java.util.Map;
 
-public abstract class UserActionType<I extends Record> implements Component {
+public abstract class RecordActionType<I extends Record> implements Component {
     private final Class<I> inputClass;
     private final String displayName;
     private final String description;
 
-    protected UserActionType(Class<I> inputClass, String displayName, String description) {
+    protected RecordActionType(Class<I> inputClass, String displayName, String description) {
         this.inputClass = inputClass;
         this.displayName = displayName;
         this.description = description;
@@ -28,11 +28,11 @@ public abstract class UserActionType<I extends Record> implements Component {
         return this.inputClass;
     }
 
-    public abstract boolean isAvailable(UserActionContext context);
+    public abstract boolean isAvailable(RecordActionContext context);
 
-    public abstract void execute(UserActionContext context, I inputs);
+    public abstract void execute(RecordActionContext context, I inputs);
 
-    public final void executeUntyped(UserActionContext context, Map<String, ?> inputs) {
+    public final void executeUntyped(RecordActionContext context, Map<String, ?> inputs) {
         this.execute(context, JsonSchemaValidator.toRecord(this.inputClass, inputs));
     }
 }

@@ -1,9 +1,9 @@
 package com.openrecordsmanager.plugin.authlocal;
 
-import com.openrecordsmanager.api.action.UserActionContext;
-import com.openrecordsmanager.api.action.UserActionType;
 import com.openrecordsmanager.api.schema.SchemaField;
 import com.openrecordsmanager.api.schema.SchemaFieldFormat;
+import com.openrecordsmanager.api.user.UserActionContext;
+import com.openrecordsmanager.api.user.UserActionType;
 import org.mindrot.jbcrypt.BCrypt;
 
 public class ResetLocalPasswordAction extends UserActionType<ResetLocalPasswordAction.Inputs> {

@@ -1,12 +1,12 @@
 package com.openrecordsmanager.record;
 
-import com.openrecordsmanager.action.dto.ActionResponse;
 import com.openrecordsmanager.api.ResourceIdentifier;
-import com.openrecordsmanager.rest.swagger.DefaultApiResponses;
-import com.openrecordsmanager.rest.swagger.NotFoundApiResponse;
+import com.openrecordsmanager.dto.ActionResponse;
 import com.openrecordsmanager.record.dto.NewRecordRequest;
 import com.openrecordsmanager.record.dto.RecordResponse;
 import com.openrecordsmanager.record.dto.RecordRevisionResponse;
+import com.openrecordsmanager.rest.swagger.DefaultApiResponses;
+import com.openrecordsmanager.rest.swagger.NotFoundApiResponse;
 import com.openrecordsmanager.user.User;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.constraints.Pattern;

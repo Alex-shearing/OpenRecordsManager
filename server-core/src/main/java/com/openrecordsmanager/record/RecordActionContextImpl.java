@@ -1,7 +1,7 @@
 package com.openrecordsmanager.record;
 
-import com.openrecordsmanager.api.action.RecordActionContext;
 import com.openrecordsmanager.api.config.ConfigStore;
+import com.openrecordsmanager.api.record.RecordActionContext;
 import com.openrecordsmanager.api.template.property.ObjectPropertyTemplate;
 import com.openrecordsmanager.api.types.ComponentTypes;
 import com.openrecordsmanager.database.DataRepository;

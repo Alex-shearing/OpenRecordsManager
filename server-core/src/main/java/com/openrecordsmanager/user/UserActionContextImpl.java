@@ -1,9 +1,9 @@
 package com.openrecordsmanager.user;
 
-import com.openrecordsmanager.api.action.UserActionContext;
 import com.openrecordsmanager.api.config.ConfigStore;
 import com.openrecordsmanager.api.template.property.ObjectPropertyTemplate;
 import com.openrecordsmanager.api.types.ComponentTypes;
+import com.openrecordsmanager.api.user.UserActionContext;
 import com.openrecordsmanager.database.DataRepository;
 import com.openrecordsmanager.plugin.registry.ComponentCatalog;
 import com.openrecordsmanager.property.ObjectProperty;

@@ -1,11 +1,11 @@
 package com.openrecordsmanager.user;
 
-import com.openrecordsmanager.action.dto.ActionResponse;
 import com.openrecordsmanager.api.ResourceIdentifier;
-import com.openrecordsmanager.api.action.UserActionType;
 import com.openrecordsmanager.api.types.ComponentTypes;
+import com.openrecordsmanager.api.user.UserActionType;
 import com.openrecordsmanager.config.ConfigService;
 import com.openrecordsmanager.database.DataRepository;
+import com.openrecordsmanager.dto.ActionResponse;
 import com.openrecordsmanager.plugin.registry.ComponentCatalog;
 import com.openrecordsmanager.rest.errors.ResourceNotFoundException;
 import org.springframework.stereotype.Service;

@@ -1,17 +1,17 @@
 package com.openrecordsmanager.api.types;
 
 import com.openrecordsmanager.api.Component;
-import com.openrecordsmanager.api.action.RecordActionType;
-import com.openrecordsmanager.api.action.UserActionType;
 import com.openrecordsmanager.api.auth.InputAuthProviderType;
 import com.openrecordsmanager.api.auth.RedirectAuthProviderType;
 import com.openrecordsmanager.api.config.ConfigType;
 import com.openrecordsmanager.api.filestore.FileStoreMiddlewareType;
 import com.openrecordsmanager.api.filestore.FileStoreType;
+import com.openrecordsmanager.api.record.RecordActionType;
 import com.openrecordsmanager.api.template.list.ListElementTemplate;
 import com.openrecordsmanager.api.template.list.ListTemplate;
 import com.openrecordsmanager.api.template.property.ObjectPropertyTemplate;
 import com.openrecordsmanager.api.template.recordtype.RecordTypeTemplate;
+import com.openrecordsmanager.api.user.UserActionType;
 import org.jspecify.annotations.Nullable;
 
 import java.util.Objects;

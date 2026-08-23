@@ -1,4 +1,4 @@
-package com.openrecordsmanager.api.action;
+package com.openrecordsmanager.api.record;
 
 import com.openrecordsmanager.api.config.ConfigStore;
 import com.openrecordsmanager.api.template.property.ObjectPropertyTemplate;
