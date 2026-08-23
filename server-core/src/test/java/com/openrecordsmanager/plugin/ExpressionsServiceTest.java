@@ -34,7 +34,7 @@ class ExpressionsServiceTest {
 
     @BeforeAll
     static void setupList() {
-        LIST_TYPE.children.addAll(Set.of(LIST_ITEM_1, LIST_ITEM_2, LIST_ITEM_3));
+        LIST_TYPE.getChildren().addAll(Set.of(LIST_ITEM_1, LIST_ITEM_2, LIST_ITEM_3));
     }
 
     // Construct test user

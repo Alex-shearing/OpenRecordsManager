@@ -1,7 +1,5 @@
 package com.openrecordsmanager.list;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.openrecordsmanager.api.ResourceIdentifier;
 import com.openrecordsmanager.api.template.list.IListElement;
 import com.openrecordsmanager.database.util.ResourceIdentifierJavaType;
@@ -17,39 +15,32 @@ import java.util.Set;
 @Table(name = "list_element")
 public class ListElement implements IListElement {
     @Id
-    @JsonProperty
     @JavaType(ResourceIdentifierJavaType.class)
-    public ResourceIdentifier id;
+    private ResourceIdentifier id;
 
     @ManyToOne(optional = false)
     @JoinColumn(nullable = false)
-    public ListType parent;
+    private ListType parent;
 
     @Column(nullable = false)
-    @JsonProperty
-    public String name;
+    private String name;
 
     @Column(nullable = false)
-    @JsonProperty
-    public String description;
+    private String description;
 
     @Column(nullable = false)
-    @JsonProperty
-    public int elementIndex;
+    private int elementIndex;
 
     @Column()
-    @JsonProperty
     @Nullable
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    public Date activeTo;
+    private Date activeTo;
 
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(
             name = "list_element_alias",
             joinColumns = @JoinColumn(name = "list_element_id")
     )
-    @JsonInclude(JsonInclude.Include.NON_EMPTY)
-    public Set<String> aliases = new HashSet<>();
+    private Set<String> aliases = new HashSet<>();
 
     @Deprecated
     protected ListElement() {
@@ -73,9 +64,56 @@ public class ListElement implements IListElement {
         this.aliases = aliases;
     }
 
+    public ResourceIdentifier getId() {
+        return this.id;
+    }
+
+    public ListType getParent() {
+        return this.parent;
+    }
+
+    public String getName() {
+        return this.name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getDescription() {
+        return this.description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public int getElementIndex() {
+        return this.elementIndex;
+    }
+
+    public void setElementIndex(int elementIndex) {
+        this.elementIndex = elementIndex;
+    }
+
+    public @Nullable Date getActiveTo() {
+        return this.activeTo;
+    }
+
+    public void setActiveTo(@Nullable Date activeTo) {
+        this.activeTo = activeTo;
+    }
+
+    public Set<String> getAliases() {
+        return this.aliases;
+    }
+
+    public void setAliases(Set<String> aliases) {
+        this.aliases = aliases;
+    }
+
     @Override
     public int index() {
         return this.elementIndex;
     }
-
 }

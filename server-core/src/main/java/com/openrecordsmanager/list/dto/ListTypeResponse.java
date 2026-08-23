@@ -14,9 +14,9 @@ public record ListTypeResponse(
 ) {
     public static ListTypeResponse of(ListType listType) {
         return new ListTypeResponse(
-                listType.id,
-                listType.name,
-                listType.children.stream()
+                listType.getId(),
+                listType.getName(),
+                listType.getChildren().stream()
                         .map(ListElementResponse::of)
                         .toList()
         );

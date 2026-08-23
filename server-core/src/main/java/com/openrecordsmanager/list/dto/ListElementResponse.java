@@ -19,12 +19,12 @@ public record ListElementResponse(
 
     public static ListElementResponse of(ListElement element) {
         return new ListElementResponse(
-                element.id,
-                element.name,
-                element.description,
-                element.aliases,
-                element.elementIndex,
-                element.activeTo
+                element.getId(),
+                element.getName(),
+                element.getDescription(),
+                element.getAliases(),
+                element.getElementIndex(),
+                element.getActiveTo()
         );
     }
 }

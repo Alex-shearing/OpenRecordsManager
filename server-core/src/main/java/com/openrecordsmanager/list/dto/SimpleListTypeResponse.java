@@ -6,6 +6,6 @@ import jakarta.validation.constraints.NotBlank;
 
 public record SimpleListTypeResponse(@NotBlank ResourceIdentifier id, @NotBlank String name) {
     public static SimpleListTypeResponse of(ListType listType) {
-        return new SimpleListTypeResponse(listType.id, listType.name);
+        return new SimpleListTypeResponse(listType.getId(), listType.getName());
     }
 }

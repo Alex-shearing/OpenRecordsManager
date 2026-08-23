@@ -1,6 +1,5 @@
 package com.openrecordsmanager.list;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.openrecordsmanager.api.ResourceIdentifier;
 import com.openrecordsmanager.database.util.ResourceIdentifierJavaType;
 import jakarta.persistence.*;
@@ -13,18 +12,15 @@ import java.util.List;
 @Table(name = "list_type")
 public class ListType {
     @Id
-    @JsonProperty
     @JavaType(ResourceIdentifierJavaType.class)
-    public ResourceIdentifier id;
+    private ResourceIdentifier id;
 
     @Column(nullable = false)
-    @JsonProperty
-    public String name;
+    private String name;
 
     @OneToMany(mappedBy = "parent")
     @OrderBy("elementIndex ASC")
-    @JsonProperty
-    public List<ListElement> children = new ArrayList<>();
+    private List<ListElement> children = new ArrayList<>();
 
     @Deprecated
     protected ListType() {
@@ -33,5 +29,21 @@ public class ListType {
     public ListType(ResourceIdentifier id, String name) {
         this.id = id;
         this.name = name;
+    }
+
+    public ResourceIdentifier getId() {
+        return this.id;
+    }
+
+    public String getName() {
+        return this.name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public List<ListElement> getChildren() {
+        return this.children;
     }
 }
