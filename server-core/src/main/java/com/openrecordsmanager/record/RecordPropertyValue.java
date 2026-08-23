@@ -8,17 +8,11 @@ import jakarta.persistence.*;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 import org.jspecify.annotations.Nullable;
-import tools.jackson.core.JacksonException;
-import tools.jackson.core.JsonGenerator;
-import tools.jackson.databind.SerializationContext;
-import tools.jackson.databind.ValueSerializer;
-import tools.jackson.databind.annotation.JsonSerialize;
 
 import java.util.UUID;
 
 @Entity
 @Table(name = "record_property_value")
-@JsonSerialize(using = RecordPropertyValue.Serializer.class)
 public class RecordPropertyValue<T> implements ObjectPropertyHolder.ObjectPropertyValue<T> {
     @Id
     public UUID id;
@@ -70,15 +64,4 @@ public class RecordPropertyValue<T> implements ObjectPropertyHolder.ObjectProper
         this.value = value;
     }
 
-    public static class Serializer extends ValueSerializer<RecordPropertyValue<?>> {
-        @Override
-        public void serialize(RecordPropertyValue<?> value, JsonGenerator gen, SerializationContext ctxt) throws JacksonException {
-            gen.writeStartObject();
-
-            gen.writePOJOProperty("type", value.property);
-            gen.writePOJOProperty("value", value.getValue());
-
-            gen.writeEndObject();
-        }
-    }
 }

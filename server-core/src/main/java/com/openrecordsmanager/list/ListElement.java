@@ -8,18 +8,12 @@ import com.openrecordsmanager.database.util.ResourceIdentifierJavaType;
 import jakarta.persistence.*;
 import org.hibernate.annotations.JavaType;
 import org.jspecify.annotations.Nullable;
-import tools.jackson.core.JacksonException;
-import tools.jackson.core.JsonGenerator;
-import tools.jackson.databind.SerializationContext;
-import tools.jackson.databind.ValueSerializer;
-import tools.jackson.databind.annotation.JsonSerialize;
 
 import java.util.Date;
 import java.util.Set;
 
 @Entity
 @Table(name = "list_element")
-@JsonSerialize(using = ListElement.Serializer.class)
 public class ListElement implements IListElement {
     @Id
     @JsonProperty
@@ -81,25 +75,6 @@ public class ListElement implements IListElement {
     @Override
     public int index() {
         return this.elementIndex;
-    }
-
-    public static class Serializer extends ValueSerializer<ListElement> {
-
-        @Override
-        public void serialize(ListElement value, JsonGenerator gen, SerializationContext ctxt) throws JacksonException {
-            gen.writeStartObject();
-            gen.writeStringProperty("id", value.id.toString());
-            gen.writeStringProperty("name", value.name);
-            gen.writeStringProperty("description", value.description);
-            gen.writeNumberProperty("index", value.index());
-            if (value.activeTo != null) gen.writePOJOProperty("activeTo", value.activeTo);
-
-            gen.writeArrayPropertyStart("aliases");
-            value.aliases.forEach(gen::writeString);
-            gen.writeEndArray();
-
-            gen.writeEndObject();
-        }
     }
 
 }

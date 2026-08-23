@@ -1,7 +1,6 @@
 package com.openrecordsmanager.list;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.openrecordsmanager.api.ResourceIdentifier;
 import com.openrecordsmanager.database.util.ResourceIdentifierJavaType;
 import jakarta.persistence.*;
@@ -12,7 +11,6 @@ import java.util.List;
 
 @Entity
 @Table(name = "list_type")
-@JsonPropertyOrder({"id", "name"})
 public class ListType {
     @Id
     @JsonProperty
