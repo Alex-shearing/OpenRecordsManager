@@ -20,6 +20,10 @@ public class ResourceNotFoundException extends RuntimeException {
         this(type.toString(), resource.toString());
     }
 
+    public ResourceNotFoundException(ComponentType<?> type, String resource) {
+        this(type.toString(), resource);
+    }
+
     public ResourceNotFoundException(ComponentType<?> type, Class<? extends Component> resource) {
         this(type.toString(), resource.getName());
     }

@@ -46,7 +46,7 @@ public class RecordService {
     public RecordResponse get(User user, UUID id) {
         return this.repository.recordRepo.findById(id)
                 .filter(record -> record.securityFilter(this.expressions, user, record).canSeeMetadata())
-                .map(RecordResponse::from)
+                .map(RecordResponse::of)
                 .orElseThrow(() -> new ResourceNotFoundException("record", id));
     }
 
@@ -65,7 +65,7 @@ public class RecordService {
 
         this.repository.recordRepo.saveAndFlush(record);
 
-        return RecordResponse.from(record);
+        return RecordResponse.of(record);
     }
 
     private static <K> void setProperty(Record record, ObjectProperty<K> property, Object value) {
@@ -90,7 +90,7 @@ public class RecordService {
 
         record.addRevision(version, fileStore.newFile(this.catalog, file, fileExtension));
 
-        return RecordResponse.from(this.repository.recordRepo.saveAndFlush(record));
+        return RecordResponse.of(this.repository.recordRepo.saveAndFlush(record));
     }
 
     @Transactional(readOnly = true)
@@ -99,13 +99,6 @@ public class RecordService {
                 .filter(r -> r.record.securityFilter(this.expressions, user, r.record).canSeeFiles())
                 .orElseThrow(() -> new ResourceNotFoundException("record revision", id + "/" + version));
 
-        return new RecordRevisionResponse(
-                rev.file.getFile(this.catalog),
-                rev.version,
-                rev.file.extension,
-                rev.file.sizeBytes,
-                rev.file.hash,
-                rev.file.hashAlgorithm
-        );
+        return RecordRevisionResponse.of(this.catalog, rev);
     }
 }

@@ -12,8 +12,8 @@ import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.text.MessageFormat;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -32,22 +32,13 @@ public class ConfigService implements ConfigStore {
 
     @Transactional
     public ConfigResponse setConfig(String id, String value) {
-        ConfigType<?> key = this.getConfigByKey(id)
-                .orElseThrow(() -> new ResourceNotFoundException(ComponentTypes.CONFIG.name, id));
-
-        Object parsedValue = key.type().fromString(value)
-                .orElseThrow(() -> new IllegalArgumentException(MessageFormat.format(
-                        "Unable to parse configuration value as {0}",
-                        key.type().toString()
-                )));
-
         ConfigItem config = this.repository.configRepo.findByConfigKey(id)
-                .orElseGet(() -> new ConfigItem(id, value));
-        config.configValue = value;
+                .orElseGet(() -> new ConfigItem(this.catalog, id, value));
+        config.setValue(catalog, value);
 
         this.repository.configRepo.saveAndFlush(config);
 
-        return new ConfigResponse(config.configKey, parsedValue);
+        return ConfigResponse.of(config);
     }
 
     @Override
@@ -62,12 +53,14 @@ public class ConfigService implements ConfigStore {
                 .findFirst();
     }
 
+    @Transactional(readOnly = true)
     public Map<String, Optional<?>> getAllConfig() {
-        return this.catalog.getRegistry(ComponentTypes.CONFIG).stream()
-                .map(def -> Map.entry(def.key(), this.getOptional(def)))
+        return this.repository.configRepo.findAll().stream()
+                .map(def -> Map.entry(def.configKey, this.getOptional(def.getConfigKey(this.catalog))))
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 
+    @Transactional(readOnly = true)
     public Optional<?> getDatabaseConfig(String id) {
         ConfigType<?> config = this.getConfigByKey(id)
                 .orElseThrow(() -> new ResourceNotFoundException(ComponentTypes.CONFIG.name, id));
@@ -76,6 +69,27 @@ public class ConfigService implements ConfigStore {
                 .orElseThrow(() -> new ResourceNotFoundException("config value", id));
 
         return config.type().fromString(configItem.configValue);
+    }
+
+    @Transactional(readOnly = true)
+    public Map<String, ?> getServerConfig() {
+        return this.catalog.getRegistry(ComponentTypes.CONFIG).stream()
+                .map(config -> {
+                    Object value = this.getValue(config);
+                    if (value == null) return null;
+                    return Map.entry(config.key(), value);
+                })
+                .filter(Objects::nonNull)
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+    }
+
+    @Transactional(readOnly = true)
+    public Object getServerConfig(String id) {
+        ConfigType<?> config = this.getConfigByKey(id)
+                .orElseThrow(() -> new ResourceNotFoundException(ComponentTypes.CONFIG.name, id));
+
+        return this.getOptional(config)
+                .orElseThrow(() -> new ResourceNotFoundException("config value", id));
     }
 
 }

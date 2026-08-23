@@ -31,7 +31,7 @@ public record AuthProviderListResponse(
         @NotNull ComponentReference<?> type,
         @NotNull InputFormSchema loginSchema
 ) {
-    public static AuthProviderListResponse of(AuthProvider provider, ComponentCatalog catalog) {
+    public static AuthProviderListResponse of(ComponentCatalog catalog, AuthProvider provider) {
         InputAuthProviderType<?> loginSchema = provider.getProviderType(catalog, InputAuthProviderType.class);
 
         return new AuthProviderListResponse(

@@ -17,7 +17,7 @@ public record ListElementResponse(
         @NotNull Date activeTo) {
 
 
-    public static ListElementResponse from(ListElement element) {
+    public static ListElementResponse of(ListElement element) {
         return new ListElementResponse(
                 element.id,
                 element.name,

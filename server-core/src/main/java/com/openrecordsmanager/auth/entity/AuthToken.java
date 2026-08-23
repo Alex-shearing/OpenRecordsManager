@@ -31,6 +31,10 @@ public class AuthToken {
         return LocalDateTime.now().isAfter(this.expiryDate);
     }
 
+    public LocalDateTime getExpiryDate() {
+        return this.expiryDate;
+    }
+
     public User getUser() {
         return this.user;
     }

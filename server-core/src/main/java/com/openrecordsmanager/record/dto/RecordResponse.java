@@ -18,7 +18,7 @@ public record RecordResponse(
         @NotNull Set<String> revisions
 ) {
 
-    public static RecordResponse from(Record record) {
+    public static RecordResponse of(Record record) {
         return new RecordResponse(
                 record.id,
                 record.title,

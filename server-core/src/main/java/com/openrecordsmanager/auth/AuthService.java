@@ -98,7 +98,7 @@ public class AuthService implements UserAuthContext {
             response.addCookie(cookie);
         }
 
-        return new LoginResponse(persistedToken.getToken(), this.tokenDuration);
+        return LoginResponse.of(persistedToken);
     }
 
     public static String generateToken() {
@@ -153,6 +153,6 @@ public class AuthService implements UserAuthContext {
 
         this.repository.authProviderRepo.save(provider);
 
-        return AuthProviderListResponse.of(provider, this.catalog);
+        return AuthProviderListResponse.of(this.catalog, provider);
     }
 }

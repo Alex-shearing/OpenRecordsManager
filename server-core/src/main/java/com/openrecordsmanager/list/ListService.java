@@ -31,16 +31,9 @@ public class ListService {
 
     @Transactional(readOnly = true)
     public ListTypeResponse get(ResourceIdentifier id) {
-        ListType type = this.repository.listTypeRepo.findById(id)
+        return this.repository.listTypeRepo.findById(id)
+                .map(ListTypeResponse::of)
                 .orElseThrow(() -> new ResourceNotFoundException(ComponentTypes.LIST, id));
-
-        return new ListTypeResponse(
-                type.id,
-                type.name,
-                type.children.stream()
-                        .map(ListElementResponse::from)
-                        .toList()
-        );
     }
 
     @Transactional(readOnly = true)
@@ -48,7 +41,7 @@ public class ListService {
         ListElement type = this.repository.listElementRepo.getElement(parent, id)
                 .orElseThrow(() -> new ResourceNotFoundException(ComponentTypes.LIST, id));
 
-        return ListElementResponse.from(type);
+        return ListElementResponse.of(type);
     }
 
     @Transactional(readOnly = true)
@@ -58,7 +51,7 @@ public class ListService {
 
         return this.repository.listElementRepo.searchNameAndAlias(type, search)
                 .stream()
-                .map(ListElementResponse::from)
+                .map(ListElementResponse::of)
                 .collect(Collectors.toSet());
     }
 }

@@ -54,7 +54,7 @@ public class AuthController {
     @Operation(summary = "List all supported authentication providers.")
     public Set<AuthProviderListResponse> providers_listAll() {
         return this.repository.authProviderRepo.findAll().stream()
-                .map(provider -> AuthProviderListResponse.of(provider, this.catalog))
+                .map(provider -> AuthProviderListResponse.of(this.catalog, provider))
                 .collect(Collectors.toSet());
     }
 

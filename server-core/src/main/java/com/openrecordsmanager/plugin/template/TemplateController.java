@@ -1,21 +1,15 @@
 package com.openrecordsmanager.plugin.template;
 
 import com.openrecordsmanager.api.ResourceIdentifier;
-import com.openrecordsmanager.api.types.ComponentType;
-import com.openrecordsmanager.plugin.registry.ComponentCatalog;
-import com.openrecordsmanager.plugin.registry.TemplateComponentRegistry;
-import com.openrecordsmanager.plugin.registry.mapper.TemplateRegistrationMapper;
-import com.openrecordsmanager.rest.errors.ResourceNotFoundException;
+import com.openrecordsmanager.api.template.TemplateComponent;
 import com.openrecordsmanager.rest.swagger.DefaultApiResponses;
 import com.openrecordsmanager.rest.swagger.NotFoundApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Set;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/templates")
@@ -23,46 +17,30 @@ import java.util.stream.Collectors;
 @PreAuthorize("isAuthenticated()")
 public class TemplateController {
 
-    private final ComponentCatalog catalog;
     private final TemplateService service;
 
-    public TemplateController(ComponentCatalog catalog, TemplateService service) {
-        this.catalog = catalog;
+    public TemplateController(TemplateService service) {
         this.service = service;
     }
 
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "List templates types available")
-    @Transactional(readOnly = true)
     public Set<String> getTemplatesForType() {
-        return this.catalog.getTemplateTypes().stream().map(ComponentType::toString).collect(Collectors.toSet());
+        return this.service.listTemplateTypes();
     }
 
     @GetMapping(value = "/{type}", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "List templates available for type")
     @NotFoundApiResponse
-    @Transactional(readOnly = true)
     public Set<ResourceIdentifier> getTemplatesForType(@PathVariable("type") String typeName) {
-        TemplateRegistrationMapper<?, ?> type = ComponentCatalog.mapperFromName(typeName);
-        if (type == null) {
-            throw new ResourceNotFoundException("template type", typeName);
-        }
-        return this.catalog.getTemplateRegistry(type).getIds();
+        return this.service.listTemplates(typeName);
     }
 
     @GetMapping(value = "/{type}/{template}", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Get template details")
     @NotFoundApiResponse
-    @Transactional(readOnly = true)
-    public Object getTemplate(@PathVariable("type") String typeName, @PathVariable("template") ResourceIdentifier templateId) {
-        TemplateRegistrationMapper<?, ?> type = ComponentCatalog.mapperFromName(typeName);
-        if (type == null) {
-            throw new ResourceNotFoundException("template type", typeName);
-        }
-        TemplateComponentRegistry<?, ?> registry = this.catalog.getTemplateRegistry(type);
-
-        return registry.get(templateId)
-                .orElseThrow(() -> new ResourceNotFoundException(type.componentType(), templateId));
+    public TemplateComponent getTemplate(@PathVariable("type") String typeName, @PathVariable("template") ResourceIdentifier templateId) {
+        return this.service.getTemplate(typeName, templateId);
     }
 
     @PostMapping(value = "/{type}/{template}/register", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -73,11 +51,6 @@ public class TemplateController {
             @PathVariable("template") ResourceIdentifier templateId,
             @RequestParam(value = "includeDependencies", required = false, defaultValue = "false") boolean includeDependencies
     ) {
-        TemplateRegistrationMapper<?, ?> type = ComponentCatalog.mapperFromName(typeName);
-        if (type == null) {
-            throw new ResourceNotFoundException("template type", typeName);
-        }
-
-        this.service.registerTemplate(type, templateId, includeDependencies);
+        this.service.registerTemplate(typeName, templateId, includeDependencies);
     }
 }
