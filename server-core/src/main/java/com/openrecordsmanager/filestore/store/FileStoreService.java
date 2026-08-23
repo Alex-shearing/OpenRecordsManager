@@ -97,7 +97,7 @@ public class FileStoreService {
         this.repository.fileStoreRepo.delete(store);
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     public FileStoreTypeResponse[] getTypes() {
         return this.catalog.getRegistry(ComponentTypes.FILE_STORE).stream()
                 .map(type -> FileStoreTypeResponse.of(this.catalog, type))

@@ -10,6 +10,7 @@ import org.hibernate.annotations.JavaType;
 import org.jspecify.annotations.Nullable;
 
 import java.util.Date;
+import java.util.HashSet;
 import java.util.Set;
 
 @Entity
@@ -48,7 +49,7 @@ public class ListElement implements IListElement {
             joinColumns = @JoinColumn(name = "list_element_id")
     )
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
-    public Set<String> aliases;
+    public Set<String> aliases = new HashSet<>();
 
     @Deprecated
     protected ListElement() {

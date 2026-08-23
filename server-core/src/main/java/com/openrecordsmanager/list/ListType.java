@@ -24,7 +24,7 @@ public class ListType {
     @OneToMany(mappedBy = "parent")
     @OrderBy("elementIndex ASC")
     @JsonProperty
-    public List<ListElement> children;
+    public List<ListElement> children = new ArrayList<>();
 
     @Deprecated
     protected ListType() {
@@ -33,6 +33,5 @@ public class ListType {
     public ListType(ResourceIdentifier id, String name) {
         this.id = id;
         this.name = name;
-        this.children = new ArrayList<>();
     }
 }

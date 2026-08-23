@@ -42,7 +42,6 @@ public class Record implements ObjectPropertyHolder<RecordPropertyValue<?>> {
         this.id = UUID.randomUUID();
         this.title = title;
         this.type = type;
-        this.revisions = new ArrayList<>();
         this.properties = type.properties.stream()
                 .map(prop -> Map.entry(prop.property, newProperty(prop, null)))
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));

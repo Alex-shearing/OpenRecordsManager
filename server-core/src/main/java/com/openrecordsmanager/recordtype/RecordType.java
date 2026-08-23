@@ -10,6 +10,7 @@ import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 import org.jspecify.annotations.Nullable;
 
+import java.util.HashSet;
 import java.util.Set;
 
 @Entity
@@ -39,9 +40,8 @@ public class RecordType {
 
     @Column()
     @JsonProperty
-    @Nullable
     @JdbcTypeCode(SqlTypes.JSON)
-    public Set<String> contentTypes;
+    public Set<String> contentTypes = new HashSet<>();
 
     @JsonProperty
     @ElementCollection
@@ -49,7 +49,7 @@ public class RecordType {
             name = "record_type_property",
             joinColumns = @JoinColumn(name = "record_type")
     )
-    public Set<RecordTypeProperty<?>> properties;
+    public Set<RecordTypeProperty<?>> properties = new HashSet<>();
 
     @Deprecated
     protected RecordType() {
@@ -67,13 +67,13 @@ public class RecordType {
         this.id = id;
         this.description = description;
         this.name = name;
-        this.contentTypes = contentTypes;
+        this.contentTypes = contentTypes != null ? contentTypes : new HashSet<>();
         this.securityFilter = securityFilter;
         this.securityFilterUsage = securityFilterUsage;
         this.properties = properties;
     }
 
     public boolean supportsFile() {
-        return this.contentTypes != null && !this.contentTypes.isEmpty();
+        return !this.contentTypes.isEmpty();
     }
 }

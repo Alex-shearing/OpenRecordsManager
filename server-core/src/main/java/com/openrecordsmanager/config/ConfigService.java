@@ -47,7 +47,7 @@ public class ConfigService implements ConfigStore {
         return value != null ? value : key.defaultValue();
     }
 
-    public Optional<ConfigType<?>> getConfigByKey(String key) {
+    private Optional<ConfigType<?>> getConfigByKey(String key) {
         return this.catalog.getRegistry(ComponentTypes.CONFIG).stream()
                 .filter(configDefinition -> configDefinition.key().equals(key))
                 .findFirst();

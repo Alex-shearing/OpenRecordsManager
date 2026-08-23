@@ -78,7 +78,7 @@ public class MiddlewareService {
         this.repository.fileStoreMiddlewareRepo.delete(middleware);
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     public MiddlewareTypeResponse[] getTypes() {
         return this.catalog.getRegistry(ComponentTypes.FILE_STORE_MIDDLEWARE).stream()
                 .map(type -> MiddlewareTypeResponse.of(this.catalog, type))

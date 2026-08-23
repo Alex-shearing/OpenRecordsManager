@@ -26,17 +26,15 @@ public class User implements ObjectPropertyHolder<UserPropertyValue<?>>, UserDet
 
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "user", fetch = FetchType.EAGER)
     @MapKey(name = "property")
-    private Map<ObjectProperty<?>, UserPropertyValue<?>> properties;
+    private Map<ObjectProperty<?>, UserPropertyValue<?>> properties = new HashMap<>();
 
     @Deprecated
     protected User() {
-        this.properties = new HashMap<>();
     }
 
     public User(UUID id, String username) {
         this.id = id;
         this.username = username;
-        this.properties = new HashMap<>();
     }
 
     @Override

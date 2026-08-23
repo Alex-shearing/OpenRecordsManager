@@ -33,7 +33,7 @@ public class FileStore {
 
     @Column(nullable = false)
     @JdbcTypeCode(SqlTypes.JSON)
-    private Map<String, ?> properties;
+    private Map<String, ?> properties = new HashMap<>();
 
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(
@@ -54,7 +54,6 @@ public class FileStore {
         this.id = UUID.randomUUID();
         this.type = catalog.getRegistry(ComponentTypes.FILE_STORE).getId(type).orElseThrow();
         this.properties = JsonSchemaValidator.serializeSettings(type.parseSettings(properties));
-        this.middlewares = new ArrayList<>();
     }
 
     public UUID getId() {

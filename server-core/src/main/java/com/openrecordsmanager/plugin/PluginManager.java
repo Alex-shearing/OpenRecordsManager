@@ -106,7 +106,7 @@ public class PluginManager {
     }
 
     public List<Plugin> getPlugins() {
-        return plugins;
+        return this.plugins;
     }
 
     @PreDestroy

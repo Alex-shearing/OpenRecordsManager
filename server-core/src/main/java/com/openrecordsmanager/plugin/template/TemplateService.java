@@ -29,16 +29,19 @@ public class TemplateService {
         this.expressions = expressions;
     }
 
+    @Transactional(readOnly = true)
     public Set<String> listTemplateTypes() {
         return this.catalog.getTemplateTypes().stream()
                 .map(ComponentType::toString)
                 .collect(Collectors.toSet());
     }
 
+    @Transactional(readOnly = true)
     public Set<ResourceIdentifier> listTemplates(String typeName) {
         return this.catalog.getTemplateRegistry(resolveMapper(typeName)).getIds();
     }
 
+    @Transactional(readOnly = true)
     public TemplateComponent getTemplate(String typeName, ResourceIdentifier templateId) {
         TemplateRegistrationMapper<?, ?> type = resolveMapper(typeName);
         TemplateComponentRegistry<?, ?> registry = this.catalog.getTemplateRegistry(type);

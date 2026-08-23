@@ -10,6 +10,7 @@ import jakarta.persistence.*;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
@@ -29,7 +30,7 @@ public class AuthProvider implements AuthProviderInstance {
 
     @Column(name = "settings", nullable = false)
     @JdbcTypeCode(SqlTypes.JSON)
-    public Map<String, Object> settings;
+    public Map<String, Object> settings = new HashMap<>();
 
     @Override
     public UUID getId() {
