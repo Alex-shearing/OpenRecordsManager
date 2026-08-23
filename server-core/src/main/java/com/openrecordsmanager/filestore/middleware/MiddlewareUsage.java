@@ -6,6 +6,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 
 @Embeddable
+@SuppressWarnings("NotNullFieldNotInitialized")
 public class MiddlewareUsage {
 
     @ManyToOne(targetEntity = Middleware.class, optional = false)

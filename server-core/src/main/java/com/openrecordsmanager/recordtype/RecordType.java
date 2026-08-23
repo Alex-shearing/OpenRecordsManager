@@ -15,6 +15,7 @@ import java.util.Set;
 
 @Entity
 @Table(name = "record_type")
+@SuppressWarnings("NotNullFieldNotInitialized")
 public class RecordType {
     @Id
     @JsonProperty

@@ -5,11 +5,13 @@ import com.openrecordsmanager.property.ObjectPropertyHolder;
 import jakarta.persistence.*;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
+import org.jspecify.annotations.Nullable;
 
 import java.util.UUID;
 
 @Entity
 @Table(name = "user_property_value")
+@SuppressWarnings("NotNullFieldNotInitialized")
 public class UserPropertyValue<T> implements ObjectPropertyHolder.ObjectPropertyValue<T> {
     @Id
     public UUID id;
@@ -24,13 +26,14 @@ public class UserPropertyValue<T> implements ObjectPropertyHolder.ObjectProperty
 
     @Column(name = "property_value")
     @JdbcTypeCode(SqlTypes.JSON)
+    @Nullable
     public T value;
 
     @Deprecated
     protected UserPropertyValue() {
     }
 
-    public UserPropertyValue(User user, ObjectProperty<T> property, T value) {
+    public UserPropertyValue(User user, ObjectProperty<T> property, @Nullable T value) {
         this.id = UUID.randomUUID();
         this.user = user;
         this.property = property;
@@ -43,12 +46,12 @@ public class UserPropertyValue<T> implements ObjectPropertyHolder.ObjectProperty
     }
 
     @Override
-    public T getValue() {
+    public @Nullable T getValue() {
         return this.value;
     }
 
     @Override
-    public void setValue(T value) {
+    public void setValue(@Nullable T value) {
         this.value = value;
     }
 }

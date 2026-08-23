@@ -9,6 +9,7 @@ import org.hibernate.type.SqlTypes;
 import org.jspecify.annotations.Nullable;
 
 @Embeddable
+@SuppressWarnings("NotNullFieldNotInitialized")
 public class RecordTypeProperty<T> {
 
     @ManyToOne(targetEntity = ObjectProperty.class, optional = false)

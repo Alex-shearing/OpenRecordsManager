@@ -62,7 +62,7 @@ public record PropertyAssignment<T>(
         private static <T> PropertyAssignment<T> fromMapEntry(String key, JsonNode value, DeserializationContext ctxt) {
             ComponentReference<ObjectPropertyTemplate<T>> property =
                     (ComponentReference<ObjectPropertyTemplate<T>>) ComponentReference.valueOf(key);
-            T defaultValue = value == null || value.isNull() ? null : (T) ctxt.readTreeAsValue(value, Object.class);
+            T defaultValue = value.isNull() ? null : (T) ctxt.readTreeAsValue(value, Object.class);
             return new PropertyAssignment<>(property, defaultValue);
         }
     }

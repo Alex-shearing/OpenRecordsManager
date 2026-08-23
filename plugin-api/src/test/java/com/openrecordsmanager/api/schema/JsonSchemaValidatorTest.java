@@ -60,19 +60,19 @@ class JsonSchemaValidatorTest {
 
     @Test
     void missingRequiredFieldsReturnFieldErrors() {
-        assertThrows(InputValidationException.class, () -> {
-            JsonSchemaValidator.validateAndSerialize(LoginInputs.class, Map.of("username", "alice"));
-        });
+        assertThrows(InputValidationException.class, () ->
+                JsonSchemaValidator.validateAndSerialize(LoginInputs.class, Map.of("username", "alice"))
+        );
     }
 
     @Test
     void extraPropertiesRejected() {
-        assertThrows(InputValidationException.class, () -> {
-            JsonSchemaValidator.validateAndSerialize(LoginInputs.class, Map.of(
-                    "username", "alice",
-                    "password", "secret",
-                    "extra", "nope"
-            ));
-        });
+        assertThrows(InputValidationException.class, () ->
+                JsonSchemaValidator.validateAndSerialize(LoginInputs.class, Map.of(
+                        "username", "alice",
+                        "password", "secret",
+                        "extra", "nope"
+                ))
+        );
     }
 }

@@ -6,6 +6,7 @@ import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
 @Entity(name = "auth_token")
+@SuppressWarnings("NotNullFieldNotInitialized")
 public class AuthToken {
     @Id
     private String tokenValue;

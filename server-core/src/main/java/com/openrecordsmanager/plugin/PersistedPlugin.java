@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 
 @Entity
 @Table(name = "plugin")
+@SuppressWarnings("NotNullFieldNotInitialized")
 public class PersistedPlugin {
     @Id
     public String name;

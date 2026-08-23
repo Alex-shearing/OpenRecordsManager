@@ -13,6 +13,7 @@ import java.util.Set;
 
 @Entity
 @Table(name = "list_element")
+@SuppressWarnings("NotNullFieldNotInitialized")
 public class ListElement implements IListElement {
     @Id
     @JavaType(ResourceIdentifierJavaType.class)

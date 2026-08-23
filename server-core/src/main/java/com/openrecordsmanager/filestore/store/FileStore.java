@@ -22,6 +22,7 @@ import java.util.*;
 
 @Entity
 @Table(name = "file_store")
+@SuppressWarnings({"NotNullFieldNotInitialized", "CanBeFinal"})
 public class FileStore {
 
     @Id

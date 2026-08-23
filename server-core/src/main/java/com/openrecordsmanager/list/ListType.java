@@ -10,6 +10,7 @@ import java.util.List;
 
 @Entity
 @Table(name = "list_type")
+@SuppressWarnings({"NotNullFieldNotInitialized", "CanBeFinal"})
 public class ListType {
     @Id
     @JavaType(ResourceIdentifierJavaType.class)

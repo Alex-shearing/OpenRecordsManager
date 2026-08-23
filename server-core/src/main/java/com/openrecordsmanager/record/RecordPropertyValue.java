@@ -13,6 +13,7 @@ import java.util.UUID;
 
 @Entity
 @Table(name = "record_property_value")
+@SuppressWarnings("NotNullFieldNotInitialized")
 public class RecordPropertyValue<T> implements ObjectPropertyHolder.ObjectPropertyValue<T> {
     @Id
     public UUID id;

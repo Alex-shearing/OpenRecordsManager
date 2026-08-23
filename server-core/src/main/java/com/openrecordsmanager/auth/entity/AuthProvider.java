@@ -16,6 +16,7 @@ import java.util.UUID;
 
 @Entity
 @Table(name = "auth_provider")
+@SuppressWarnings("NotNullFieldNotInitialized")
 public class AuthProvider implements AuthProviderInstance {
 
     @Id

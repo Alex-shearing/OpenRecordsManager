@@ -17,6 +17,7 @@ import java.util.UUID;
                 )
         }
 )
+@SuppressWarnings("NotNullFieldNotInitialized")
 public class RecordRevision {
     @Id
     public UUID id;

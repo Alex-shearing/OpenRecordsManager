@@ -16,6 +16,7 @@ import java.util.stream.Collectors;
 
 @Entity
 @Table(name = "record")
+@SuppressWarnings({"NotNullFieldNotInitialized", "CanBeFinal"})
 public class Record implements ObjectPropertyHolder<RecordPropertyValue<?>> {
     @Id
     public UUID id;

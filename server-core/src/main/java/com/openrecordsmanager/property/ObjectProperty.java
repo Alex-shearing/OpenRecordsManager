@@ -16,6 +16,7 @@ import java.util.Objects;
 
 @Entity
 @Table(name = "object_property")
+@SuppressWarnings("NotNullFieldNotInitialized")
 public class ObjectProperty<T> {
     @Id
     @JavaType(ResourceIdentifierJavaType.class)

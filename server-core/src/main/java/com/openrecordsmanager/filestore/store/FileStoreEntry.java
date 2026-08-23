@@ -10,6 +10,7 @@ import java.util.UUID;
 
 @Entity
 @Table(name = "file_store_entry")
+@SuppressWarnings("NotNullFieldNotInitialized")
 public class FileStoreEntry {
     @Id
     public UUID id;
