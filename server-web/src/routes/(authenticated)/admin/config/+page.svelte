@@ -1,8 +1,8 @@
 <script lang="ts">
-	import { client } from '$lib';
+	import { getClient } from '$lib';
 </script>
 
-{#await client.GET(`/api/config`)}
+{#await getClient().GET(`/api/config`)}
 	Loading...
 {:then { data, error }}
 	{#if error}

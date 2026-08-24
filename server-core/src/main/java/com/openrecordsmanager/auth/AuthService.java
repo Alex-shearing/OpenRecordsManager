@@ -48,14 +48,16 @@ public class AuthService implements UserAuthContext {
     private final ExpressionsService expressions;
     private final String cookieName;
     private final long tokenDuration;
+    private final boolean cookieSecure;
 
     public AuthService(
             DataRepository repository,
             ComponentCatalog catalog,
             ConfigService config,
             ExpressionsService expressions,
-            @Value("${app.security.cookie-name}") String cookieName,
-            @Value("${app.security.expiration-time}") long tokenDuration
+            @Value("${app.security.cookie-name:ORM-Authentication}") String cookieName,
+            @Value("${app.security.expiration-time:3600000}") long tokenDuration,
+            @Value("${app.security.cookie-secure:true}") boolean cookieSecure
     ) {
         this.repository = repository;
         this.catalog = catalog;
@@ -63,6 +65,7 @@ public class AuthService implements UserAuthContext {
         this.expressions = expressions;
         this.cookieName = cookieName;
         this.tokenDuration = tokenDuration;
+        this.cookieSecure = cookieSecure;
     }
 
     @Bean
@@ -92,9 +95,10 @@ public class AuthService implements UserAuthContext {
             Cookie cookie = new Cookie(this.getCookieName(), persistedToken.getToken());
             cookie.setMaxAge((int) this.tokenDuration);
             cookie.setHttpOnly(true);
-            cookie.setSecure(true);
+            cookie.setSecure(this.cookieSecure);
             cookie.setPath("/");
-            cookie.setAttribute("SameSite", "None");
+            // SameSite=None requires Secure; use Lax for local HTTP deployments
+            cookie.setAttribute("SameSite", this.cookieSecure ? "None" : "Lax");
             response.addCookie(cookie);
         }
 

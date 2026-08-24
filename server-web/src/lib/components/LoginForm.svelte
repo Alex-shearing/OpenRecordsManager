@@ -1,9 +1,10 @@
 <script lang="ts">
-	import { client } from '$lib';
+	import { getClient } from '$lib';
 	import type { components } from '$lib/types/schema';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
 	import { onMount } from 'svelte';
+	import { apiUrl } from '$lib/runtime-config';
 
 	type AuthProvider = components['schemas']['AuthProviderListResponse'];
 	type LoginJsonSchema = components['schemas']['InputFormSchema'];
@@ -99,16 +100,16 @@
 		fieldErrors = {};
 		authError = '';
 
-		const { data, error, response } = await client.POST('/api/auth/login/{provider}', {
+		const { data, error } = await getClient().POST('/api/auth/login/{provider}', {
 			params: { path: { provider: provider.id } },
 			body: values
 		});
 
 		submitting = false;
 
-		if (response.status === 400) {
-			const payload = (await response.clone().json()) as components['schemas']['ValidationErrorResponse'];
-			fieldErrors = payload.fieldErrors;
+		if (error) {
+			fieldErrors = error.errorData || {};
+			console.log(fieldErrors)
 			return;
 		}
 
@@ -197,7 +198,7 @@
 
 		{#each redirectProviders as provider (provider.id)}
 			<a
-				href="/api/auth/redirect/{provider.id}"
+				href={apiUrl(`/api/auth/redirect/${provider.id}`)}
 				class="inline-block rounded border border-gray-300 px-4 py-2 text-center hover:bg-gray-50 dark:border-gray-600"
 			>
 				Continue with {providerLabel(provider)}

@@ -1,0 +1,54 @@
+#####################
+# ORM Configuration #
+#####################
+# Precedence: Environment Variables > this file > Database / code defaults.
+
+auth:
+  auth_local:
+    enable_default_admin: true
+
+server:
+  database:
+    primary:
+      url: jdbc:sqlite:orm_system.db
+    read_only:
+      url: jdbc:sqlite:orm_system.db
+  plugins:
+    directory: ./plugins
+    skip_startup_check: false
+  web:
+    # Optional static SPA directory. Leave empty when UI is hosted separately.
+    directory:
+
+app:
+  debug:
+    detailed_errors: true
+    show_sql: false
+  security:
+    expiration-time: 3600000
+    cookie-name: ORM-Authentication
+    cookie-secure: true
+    cors:
+      allowed-origins:
+        - http://localhost:5173
+        - http://localhost:3000
+      allowed-methods:
+        - GET
+        - POST
+        - PUT
+        - PATCH
+        - DELETE
+        - OPTIONS
+      allowed-headers:
+        - Authorization
+        - Content-Type
+        - X-XSRF-TOKEN
+        - X-Client-Platform
+  logging:
+    level: INFO
+    path: ./logs/openrecordsmanager.log
+    rolling:
+      max-file-size: 10MB
+      max-history: 7
+      total-size-cap: 100MB
+      clean-history-on-start: false

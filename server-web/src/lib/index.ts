@@ -1,9 +1,10 @@
 import createClient from 'openapi-fetch';
 import type { paths } from './types/schema';
+import { browser } from '$app/environment';
 import { page } from '$app/state';
 import { goto } from '$app/navigation';
+import { getRuntimeConfigSync } from './runtime-config';
 
-// Helper function to read cookies in the browser environment
 function getCookie(name: string): string | null {
 	if (typeof document === 'undefined') return null;
 	const value = `; ${document.cookie}`;
@@ -12,29 +13,44 @@ function getCookie(name: string): string | null {
 	return null;
 }
 
-export const client = createClient<paths>({
-	headers: {
-		'X-Client-Platform': 'Web-Client'
-	},
-	credentials: 'include'
-});
+let cachedClient: ReturnType<typeof createClient<paths>> | undefined;
 
-client.use({
-	onRequest({ request }) {
-		// Extract the token from browser cookies and attach it for CSFR protection
-		const csrfToken = getCookie('XSRF-TOKEN');
-		if (csrfToken) {
-			request.headers.set('X-XSRF-TOKEN', csrfToken);
-		}
+export function getClient() {
+	if (cachedClient) return cachedClient;
 
-		return request;
-	},
-	onResponse({ response, schemaPath }) {
-		if (response.status === 401 && schemaPath !== '/api/auth/login/{provider}') {
-			throw goto(`/login?redirect=${page.url.pathname}`);
+	cachedClient = createClient<paths>({
+		baseUrl: getRuntimeConfigSync().apiBaseUrl,
+		headers: {
+			'X-Client-Platform': 'Web-Client'
+		},
+		credentials: 'include'
+	});
+
+	cachedClient.use({
+		onRequest({ request }) {
+			// Extract the token from browser cookies and attach it for CSFR protection
+			const csrfToken = getCookie('XSRF-TOKEN');
+			if (csrfToken) {
+				request.headers.set('X-XSRF-TOKEN', csrfToken);
+			}
+
+			return request;
+		},
+		onResponse({ response, schemaPath }) {
+			if (
+				browser &&
+				response.status === 401 &&
+				schemaPath !== '/api/auth/login/{provider}'
+			) {
+				throw goto(`/login?redirect=${page.url.pathname}`);
+			}
+			if (response.status >= 400) {
+				console.error(response.url + " returned " + response.status);
+			}
 		}
-		if (response.status >= 400) {
-			console.error(response.statusText);
-		}
-	}
-});
+	});
+
+
+	return cachedClient;
+}
+

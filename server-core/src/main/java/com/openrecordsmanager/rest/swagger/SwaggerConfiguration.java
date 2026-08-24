@@ -82,7 +82,8 @@ public class SwaggerConfiguration {
                 .name("OrmError")
                 .addProperty("success", new BooleanSchema()._const(false)).addRequiredItem("success")
                 .addProperty("timestamp", new Schema<>().type("string").format("date-time")).addRequiredItem("timestamp")
-                .addProperty("error", new StringSchema()).addRequiredItem("error");
+                .addProperty("error", new StringSchema()).addRequiredItem("error")
+                .addProperty("errorData", new ObjectSchema());
     }
 
     @Bean

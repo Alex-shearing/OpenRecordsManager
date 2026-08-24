@@ -22,6 +22,64 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/object_properties/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get object property details */
+        get: operations["objectProperty_retrieveOne"];
+        /** Update an object property */
+        put: operations["objectProperty_update"];
+        post?: never;
+        /** Delete an object property */
+        delete: operations["objectProperty_delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/lists/{list}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get list details */
+        get: operations["getList"];
+        /** Update a list type */
+        put: operations["updateList"];
+        /** Create a new list element */
+        post: operations["createListElement"];
+        /** Delete a list type */
+        delete: operations["deleteList"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/lists/{list}/{element}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get list element details */
+        get: operations["getListElement"];
+        /** Update a list element */
+        put: operations["updateListElement"];
+        post?: never;
+        /** Delete a list element */
+        delete: operations["deleteListElement"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/file_stores/{id}": {
         parameters: {
             query?: never;
@@ -96,6 +154,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/user/{id}/actions/{action}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Execute an action on a user */
+        post: operations["executeAction"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/templates/{type}/{template}/register": {
         parameters: {
             query?: never;
@@ -124,6 +199,59 @@ export interface paths {
         put?: never;
         /** Create a new record */
         post: operations["newRecord"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/records/{id}/actions/{action}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Execute an action on a record */
+        post: operations["executeAction_1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/object_properties": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get all object properties */
+        get: operations["objectProperty_retrieveAll"];
+        put?: never;
+        /** Create a new object property */
+        post: operations["objectProperty_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/lists": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get all list type identifiers */
+        get: operations["getLists"];
+        put?: never;
+        /** Create a new list type */
+        post: operations["createList"];
         delete?: never;
         options?: never;
         head?: never;
@@ -194,6 +322,23 @@ export interface paths {
         put?: never;
         /** Trigger a login to an authentication provider, implementations vary depending on the provider. */
         post: operations["login"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/user/{id}/actions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List available actions for a user */
+        get: operations["listActions"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -284,6 +429,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/records/{id}/actions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List available actions for a record */
+        get: operations["listActions_1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/record_types": {
         parameters: {
             query?: never;
@@ -318,49 +480,15 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/lists": {
+    "/api/plugins": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        /** Get all list type identifiers */
-        get: operations["getLists"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/lists/{list}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Get list details */
-        get: operations["getList"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/lists/{list}/{element}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Get list element details */
-        get: operations["getListElement"];
+        /** List currently enabled plugins */
+        get: operations["list"];
         put?: never;
         post?: never;
         delete?: never;
@@ -378,6 +506,40 @@ export interface paths {
         };
         /** Search for list elements in a list */
         get: operations["searchListElement"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/file_stores/types": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get all supported file store types */
+        get: operations["fileStoreType_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/file_stores/middlewares/types": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get all supported file store middleware types */
+        get: operations["fileStoreMiddlewareType_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -481,6 +643,7 @@ export interface components {
             /** Format: date-time */
             timestamp: string;
             data?: unknown;
+            errorData?: unknown;
         };
         RecordResponse: {
             /** Format: uuid */
@@ -492,7 +655,62 @@ export interface components {
             };
             revisions: string[];
         };
+        UpdateObjectPropertyRequest: {
+            name: string;
+            description: string;
+            validator?: string;
+            securityFilter?: string;
+            defaultValue?: unknown;
+            userHidden: boolean;
+        };
+        ObjectPropertyResponse: {
+            id: string;
+            name: string;
+            description: string;
+            type: string;
+            listType?: components["schemas"]["SimpleListTypeResponse"];
+            validator?: string;
+            securityFilter?: string;
+            defaultValue?: unknown;
+            userHidden?: boolean;
+        };
+        SimpleListTypeResponse: {
+            id: string;
+            name: string;
+        };
+        UpdateListTypeRequest: {
+            name: string;
+        };
+        ListElementResponse: {
+            type: string;
+            name: string;
+            description: string;
+            aliases: string[];
+            /** Format: int32 */
+            index: number;
+            /** Format: date-time */
+            activeTo: string;
+        };
+        ListTypeResponse: {
+            type?: string;
+            name?: string;
+            elements: components["schemas"]["ListElementResponse"][];
+        };
+        UpdateListElementRequest: {
+            name: string;
+            description: string;
+            /** Format: int32 */
+            index: number;
+            /** Format: date-time */
+            activeTo?: string;
+            aliases: string[];
+        };
         SimpleFileStoreResponse: {
+            /** Format: uuid */
+            id: string;
+            type: string;
+        };
+        SimpleMiddlewareResponse: {
             /** Format: uuid */
             id: string;
             type: string;
@@ -501,7 +719,7 @@ export interface components {
             key: string;
             value: unknown;
         };
-        NewAuthProvider: {
+        NewAuthProviderRequest: {
             name?: string;
             typeId?: string;
             /** @enum {string} */
@@ -520,7 +738,7 @@ export interface components {
             } & {
                 [key: string]: unknown;
             };
-            loginSchema?: components["schemas"]["InputFormSchema"];
+            loginSchema: components["schemas"]["InputFormSchema"];
         };
         InputFormSchema: {
             type?: string;
@@ -543,44 +761,63 @@ export interface components {
             pattern?: string;
             contentEncoding?: string;
         };
-        ValidationErrorResponse: {
-            /** @constant */
-            success: false;
-            errorCode: string;
-            fieldErrors: {
-                [key: string]: string;
-            };
-            /** Format: date-time */
-            timestamp: string;
-        };
-        NewRecord: {
+        NewRecordRequest: {
             type: string;
             properties: {
                 [key: string]: unknown;
             };
         };
-        NewFileStore: {
+        NewObjectPropertyRequest: {
+            id: string;
+            name: string;
+            description: string;
+            type: components["schemas"]["PropertyTypeObject"];
+            listType?: string;
+            validator?: string;
+            securityFilter?: string;
+            defaultValue?: unknown;
+            userHidden: boolean;
+        };
+        PropertyTypeObject: {
+            name?: string;
+        };
+        NewListTypeRequest: {
+            id: string;
+            name: string;
+        };
+        NewListElementRequest: {
+            id: string;
+            name: string;
+            description: string;
+            /** Format: int32 */
+            index?: number;
+            /** Format: date-time */
+            activeTo?: string;
+            aliases: string[];
+        };
+        NewFileStoreRequest: {
             type: string;
             properties: {
                 [key: string]: unknown;
             };
             middlewares: string[];
         };
-        NewFileStoreMiddleware: {
+        NewFileStoreMiddlewareRequest: {
             type: string;
             properties: {
                 [key: string]: unknown;
             };
         };
-        SimpleMiddlewareResponse: {
-            /** Format: uuid */
-            id: string;
-            type: string;
-        };
         LoginResponse: {
             token: string;
-            /** Format: int64 */
-            expiresIn: number;
+            /** Format: date-time */
+            expires: string;
+        };
+        ActionResponse: {
+            id: string;
+            name: string;
+            description: string;
+            inputSchema: components["schemas"]["InputFormSchema"];
         };
         UserResponse: {
             /** Format: uuid */
@@ -590,68 +827,33 @@ export interface components {
                 [key: string]: unknown;
             };
         };
-        ListElement: {
-            id?: string;
-            parent?: components["schemas"]["ListType"];
-            name?: string;
-            description?: string;
-            /** Format: int32 */
-            elementIndex?: number;
-            /** Format: date-time */
-            activeTo?: string;
-            aliases?: string[];
+        ComponentReferenceTemplateComponent: {
+            type?: components["schemas"]["ComponentTypeTemplateComponent"];
         };
-        ListType: {
-            id?: string;
-            name?: string;
-            children?: components["schemas"]["ListElement"][];
-        };
-        ObjectPropertyObject: {
-            id?: string;
-            name?: string;
-            description?: string;
-            type?: components["schemas"]["PropertyTypeObject"];
-            listType?: components["schemas"]["ListType"];
-            validator?: string;
-            securityFilter?: string;
-            defaultValue?: unknown;
-            userHidden?: boolean;
-        };
-        PropertyTypeObject: {
+        ComponentTypeTemplateComponent: {
             name?: string;
         };
-        RecordType: {
-            id?: string;
-            name?: string;
-            description?: string;
-            securityFilter?: string;
-            /** @enum {string} */
-            securityFilterUsage?: "HIDE_RECORD" | "HIDE_FILES" | "SHOW_ALL";
-            contentTypes?: string[];
-            properties?: components["schemas"]["RecordTypePropertyObject"][];
+        TemplateComponent: {
+            dependencies?: components["schemas"]["ComponentReferenceTemplateComponent"][];
         };
-        RecordTypePropertyObject: {
-            property?: components["schemas"]["ObjectPropertyObject"];
+        RecordTypePropertyResponse: {
+            property: components["schemas"]["ObjectPropertyResponse"];
             default?: unknown;
         };
-        SimpleListTypeResponse: {
+        RecordTypeResponse: {
             id: string;
             name: string;
-        };
-        ListElementResponse: {
-            type: string;
-            name: string;
             description: string;
-            aliases: string[];
-            /** Format: int32 */
-            index: number;
-            /** Format: date-time */
-            activeTo: string;
+            securityFilter?: string;
+            /** @enum {string} */
+            securityFilterUsage: "HIDE_RECORD" | "HIDE_FILES" | "SHOW_ALL";
+            contentTypes?: string[];
+            properties: components["schemas"]["RecordTypePropertyResponse"][];
         };
-        ListTypeResponse: {
-            type?: string;
-            name?: string;
-            elements: components["schemas"]["ListElementResponse"][];
+        SimpleObjectPropertyResponse: {
+            id: string;
+            name: string;
+            type: string;
         };
         FileStoreResponse: {
             /** Format: uuid */
@@ -660,20 +862,11 @@ export interface components {
             properties: {
                 [key: string]: unknown;
             };
-            middlewares: components["schemas"]["MiddlewareUsage"][];
+            middlewares: string[];
         };
-        Middleware: {
-            /** Format: uuid */
-            id?: string;
-            type?: string;
-            properties?: {
-                [key: string]: unknown;
-            };
-        };
-        MiddlewareUsage: {
-            middleware?: components["schemas"]["Middleware"];
-            /** Format: int32 */
-            applicationOrder?: number;
+        FileStoreTypeResponse: {
+            id: string;
+            settingsSchema: components["schemas"]["InputFormSchema"];
         };
         MiddlewareResponse: {
             /** Format: uuid */
@@ -682,6 +875,10 @@ export interface components {
             properties: {
                 [key: string]: unknown;
             };
+        };
+        MiddlewareTypeResponse: {
+            id: string;
+            settingsSchema: components["schemas"]["InputFormSchema"];
         };
     };
     responses: never;
@@ -842,6 +1039,7 @@ export interface operations {
                         /** Format: date-time */
                         timestamp: unknown;
                         error: string;
+                        errorData?: Record<string, never>;
                     };
                 };
             };
@@ -864,6 +1062,7 @@ export interface operations {
                         /** Format: date-time */
                         timestamp: unknown;
                         error: string;
+                        errorData?: Record<string, never>;
                     };
                 };
             };
@@ -886,6 +1085,7 @@ export interface operations {
                         /** Format: date-time */
                         timestamp: unknown;
                         error: string;
+                        errorData?: Record<string, never>;
                     };
                 };
             };
@@ -908,6 +1108,1292 @@ export interface operations {
                         /** Format: date-time */
                         timestamp: unknown;
                         error: string;
+                        errorData?: Record<string, never>;
+                    };
+                };
+            };
+        };
+    };
+    objectProperty_retrieveOne: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @constant */
+                        success: true;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        data: components["schemas"]["ObjectPropertyResponse"];
+                    };
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "Unauthorized",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                        errorData?: Record<string, never>;
+                    };
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "Forbidden",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                        errorData?: Record<string, never>;
+                    };
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "object {0} of type {1} not found",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                        errorData?: Record<string, never>;
+                    };
+                };
+            };
+            /** @description Internal Server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "Internal Server Error",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                        errorData?: Record<string, never>;
+                    };
+                };
+            };
+        };
+    };
+    objectProperty_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateObjectPropertyRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @constant */
+                        success: true;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        data: components["schemas"]["ObjectPropertyResponse"];
+                    };
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "Unauthorized",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                        errorData?: Record<string, never>;
+                    };
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "Forbidden",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                        errorData?: Record<string, never>;
+                    };
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "object {0} of type {1} not found",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                        errorData?: Record<string, never>;
+                    };
+                };
+            };
+            /** @description Internal Server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "Internal Server Error",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                        errorData?: Record<string, never>;
+                    };
+                };
+            };
+        };
+    };
+    objectProperty_delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @constant */
+                        success: true;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                    };
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "Unauthorized",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                        errorData?: Record<string, never>;
+                    };
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "Forbidden",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                        errorData?: Record<string, never>;
+                    };
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "object {0} of type {1} not found",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                        errorData?: Record<string, never>;
+                    };
+                };
+            };
+            /** @description Resource in use */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "Cannot delete a store that contains files",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                        errorData?: Record<string, never>;
+                    };
+                };
+            };
+            /** @description Internal Server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "Internal Server Error",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                        errorData?: Record<string, never>;
+                    };
+                };
+            };
+        };
+    };
+    getList: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                list: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @constant */
+                        success: true;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        data: components["schemas"]["ListTypeResponse"];
+                    };
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "Unauthorized",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                        errorData?: Record<string, never>;
+                    };
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "Forbidden",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                        errorData?: Record<string, never>;
+                    };
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "object {0} of type {1} not found",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                        errorData?: Record<string, never>;
+                    };
+                };
+            };
+            /** @description Internal Server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "Internal Server Error",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                        errorData?: Record<string, never>;
+                    };
+                };
+            };
+        };
+    };
+    updateList: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                list: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateListTypeRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @constant */
+                        success: true;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        data: components["schemas"]["ListTypeResponse"];
+                    };
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "Unauthorized",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                        errorData?: Record<string, never>;
+                    };
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "Forbidden",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                        errorData?: Record<string, never>;
+                    };
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "object {0} of type {1} not found",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                        errorData?: Record<string, never>;
+                    };
+                };
+            };
+            /** @description Internal Server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "Internal Server Error",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                        errorData?: Record<string, never>;
+                    };
+                };
+            };
+        };
+    };
+    createListElement: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                list: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["NewListElementRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @constant */
+                        success: true;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        data: components["schemas"]["ListElementResponse"];
+                    };
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "Unauthorized",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                        errorData?: Record<string, never>;
+                    };
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "Forbidden",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                        errorData?: Record<string, never>;
+                    };
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "object {0} of type {1} not found",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                        errorData?: Record<string, never>;
+                    };
+                };
+            };
+            /** @description Resource in use */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "Cannot delete a store that contains files",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                        errorData?: Record<string, never>;
+                    };
+                };
+            };
+            /** @description Internal Server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "Internal Server Error",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                        errorData?: Record<string, never>;
+                    };
+                };
+            };
+        };
+    };
+    deleteList: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                list: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @constant */
+                        success: true;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                    };
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "Unauthorized",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                        errorData?: Record<string, never>;
+                    };
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "Forbidden",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                        errorData?: Record<string, never>;
+                    };
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "object {0} of type {1} not found",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                        errorData?: Record<string, never>;
+                    };
+                };
+            };
+            /** @description Resource in use */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "Cannot delete a store that contains files",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                        errorData?: Record<string, never>;
+                    };
+                };
+            };
+            /** @description Internal Server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "Internal Server Error",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                        errorData?: Record<string, never>;
+                    };
+                };
+            };
+        };
+    };
+    getListElement: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                list: string;
+                element: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @constant */
+                        success: true;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        data: components["schemas"]["ListElementResponse"];
+                    };
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "Unauthorized",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                        errorData?: Record<string, never>;
+                    };
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "Forbidden",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                        errorData?: Record<string, never>;
+                    };
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "object {0} of type {1} not found",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                        errorData?: Record<string, never>;
+                    };
+                };
+            };
+            /** @description Internal Server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "Internal Server Error",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                        errorData?: Record<string, never>;
+                    };
+                };
+            };
+        };
+    };
+    updateListElement: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                list: string;
+                element: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateListElementRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @constant */
+                        success: true;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        data: components["schemas"]["ListElementResponse"];
+                    };
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "Unauthorized",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                        errorData?: Record<string, never>;
+                    };
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "Forbidden",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                        errorData?: Record<string, never>;
+                    };
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "object {0} of type {1} not found",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                        errorData?: Record<string, never>;
+                    };
+                };
+            };
+            /** @description Internal Server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "Internal Server Error",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                        errorData?: Record<string, never>;
+                    };
+                };
+            };
+        };
+    };
+    deleteListElement: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                list: string;
+                element: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @constant */
+                        success: true;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                    };
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "Unauthorized",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                        errorData?: Record<string, never>;
+                    };
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "Forbidden",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                        errorData?: Record<string, never>;
+                    };
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "object {0} of type {1} not found",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                        errorData?: Record<string, never>;
+                    };
+                };
+            };
+            /** @description Internal Server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "Internal Server Error",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                        errorData?: Record<string, never>;
                     };
                 };
             };
@@ -958,6 +2444,7 @@ export interface operations {
                         /** Format: date-time */
                         timestamp: unknown;
                         error: string;
+                        errorData?: Record<string, never>;
                     };
                 };
             };
@@ -980,6 +2467,7 @@ export interface operations {
                         /** Format: date-time */
                         timestamp: unknown;
                         error: string;
+                        errorData?: Record<string, never>;
                     };
                 };
             };
@@ -1002,6 +2490,7 @@ export interface operations {
                         /** Format: date-time */
                         timestamp: unknown;
                         error: string;
+                        errorData?: Record<string, never>;
                     };
                 };
             };
@@ -1024,6 +2513,7 @@ export interface operations {
                         /** Format: date-time */
                         timestamp: unknown;
                         error: string;
+                        errorData?: Record<string, never>;
                     };
                 };
             };
@@ -1080,6 +2570,7 @@ export interface operations {
                         /** Format: date-time */
                         timestamp: unknown;
                         error: string;
+                        errorData?: Record<string, never>;
                     };
                 };
             };
@@ -1102,6 +2593,7 @@ export interface operations {
                         /** Format: date-time */
                         timestamp: unknown;
                         error: string;
+                        errorData?: Record<string, never>;
                     };
                 };
             };
@@ -1124,6 +2616,7 @@ export interface operations {
                         /** Format: date-time */
                         timestamp: unknown;
                         error: string;
+                        errorData?: Record<string, never>;
                     };
                 };
             };
@@ -1146,6 +2639,7 @@ export interface operations {
                         /** Format: date-time */
                         timestamp: unknown;
                         error: string;
+                        errorData?: Record<string, never>;
                     };
                 };
             };
@@ -1195,6 +2689,7 @@ export interface operations {
                         /** Format: date-time */
                         timestamp: unknown;
                         error: string;
+                        errorData?: Record<string, never>;
                     };
                 };
             };
@@ -1217,6 +2712,7 @@ export interface operations {
                         /** Format: date-time */
                         timestamp: unknown;
                         error: string;
+                        errorData?: Record<string, never>;
                     };
                 };
             };
@@ -1239,6 +2735,7 @@ export interface operations {
                         /** Format: date-time */
                         timestamp: unknown;
                         error: string;
+                        errorData?: Record<string, never>;
                     };
                 };
             };
@@ -1261,6 +2758,7 @@ export interface operations {
                         /** Format: date-time */
                         timestamp: unknown;
                         error: string;
+                        errorData?: Record<string, never>;
                     };
                 };
             };
@@ -1283,6 +2781,7 @@ export interface operations {
                         /** Format: date-time */
                         timestamp: unknown;
                         error: string;
+                        errorData?: Record<string, never>;
                     };
                 };
             };
@@ -1333,6 +2832,7 @@ export interface operations {
                         /** Format: date-time */
                         timestamp: unknown;
                         error: string;
+                        errorData?: Record<string, never>;
                     };
                 };
             };
@@ -1355,6 +2855,7 @@ export interface operations {
                         /** Format: date-time */
                         timestamp: unknown;
                         error: string;
+                        errorData?: Record<string, never>;
                     };
                 };
             };
@@ -1377,6 +2878,7 @@ export interface operations {
                         /** Format: date-time */
                         timestamp: unknown;
                         error: string;
+                        errorData?: Record<string, never>;
                     };
                 };
             };
@@ -1399,6 +2901,7 @@ export interface operations {
                         /** Format: date-time */
                         timestamp: unknown;
                         error: string;
+                        errorData?: Record<string, never>;
                     };
                 };
             };
@@ -1432,7 +2935,7 @@ export interface operations {
                         success: true;
                         /** Format: date-time */
                         timestamp: unknown;
-                        data: components["schemas"]["SimpleFileStoreResponse"];
+                        data: components["schemas"]["SimpleMiddlewareResponse"];
                     };
                 };
             };
@@ -1455,6 +2958,7 @@ export interface operations {
                         /** Format: date-time */
                         timestamp: unknown;
                         error: string;
+                        errorData?: Record<string, never>;
                     };
                 };
             };
@@ -1477,6 +2981,7 @@ export interface operations {
                         /** Format: date-time */
                         timestamp: unknown;
                         error: string;
+                        errorData?: Record<string, never>;
                     };
                 };
             };
@@ -1499,6 +3004,7 @@ export interface operations {
                         /** Format: date-time */
                         timestamp: unknown;
                         error: string;
+                        errorData?: Record<string, never>;
                     };
                 };
             };
@@ -1521,6 +3027,7 @@ export interface operations {
                         /** Format: date-time */
                         timestamp: unknown;
                         error: string;
+                        errorData?: Record<string, never>;
                     };
                 };
             };
@@ -1570,6 +3077,7 @@ export interface operations {
                         /** Format: date-time */
                         timestamp: unknown;
                         error: string;
+                        errorData?: Record<string, never>;
                     };
                 };
             };
@@ -1592,6 +3100,7 @@ export interface operations {
                         /** Format: date-time */
                         timestamp: unknown;
                         error: string;
+                        errorData?: Record<string, never>;
                     };
                 };
             };
@@ -1614,6 +3123,7 @@ export interface operations {
                         /** Format: date-time */
                         timestamp: unknown;
                         error: string;
+                        errorData?: Record<string, never>;
                     };
                 };
             };
@@ -1636,6 +3146,7 @@ export interface operations {
                         /** Format: date-time */
                         timestamp: unknown;
                         error: string;
+                        errorData?: Record<string, never>;
                     };
                 };
             };
@@ -1658,6 +3169,7 @@ export interface operations {
                         /** Format: date-time */
                         timestamp: unknown;
                         error: string;
+                        errorData?: Record<string, never>;
                     };
                 };
             };
@@ -1708,6 +3220,7 @@ export interface operations {
                         /** Format: date-time */
                         timestamp: unknown;
                         error: string;
+                        errorData?: Record<string, never>;
                     };
                 };
             };
@@ -1730,6 +3243,7 @@ export interface operations {
                         /** Format: date-time */
                         timestamp: unknown;
                         error: string;
+                        errorData?: Record<string, never>;
                     };
                 };
             };
@@ -1752,6 +3266,7 @@ export interface operations {
                         /** Format: date-time */
                         timestamp: unknown;
                         error: string;
+                        errorData?: Record<string, never>;
                     };
                 };
             };
@@ -1806,6 +3321,7 @@ export interface operations {
                         /** Format: date-time */
                         timestamp: unknown;
                         error: string;
+                        errorData?: Record<string, never>;
                     };
                 };
             };
@@ -1828,6 +3344,7 @@ export interface operations {
                         /** Format: date-time */
                         timestamp: unknown;
                         error: string;
+                        errorData?: Record<string, never>;
                     };
                 };
             };
@@ -1850,6 +3367,7 @@ export interface operations {
                         /** Format: date-time */
                         timestamp: unknown;
                         error: string;
+                        errorData?: Record<string, never>;
                     };
                 };
             };
@@ -1898,6 +3416,7 @@ export interface operations {
                         /** Format: date-time */
                         timestamp: unknown;
                         error: string;
+                        errorData?: Record<string, never>;
                     };
                 };
             };
@@ -1912,7 +3431,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["NewAuthProvider"];
+                "application/json": components["schemas"]["NewAuthProviderRequest"];
             };
         };
         responses: {
@@ -1950,6 +3469,7 @@ export interface operations {
                         /** Format: date-time */
                         timestamp: unknown;
                         error: string;
+                        errorData?: Record<string, never>;
                     };
                 };
             };
@@ -1972,6 +3492,7 @@ export interface operations {
                         /** Format: date-time */
                         timestamp: unknown;
                         error: string;
+                        errorData?: Record<string, never>;
                     };
                 };
             };
@@ -1994,6 +3515,133 @@ export interface operations {
                         /** Format: date-time */
                         timestamp: unknown;
                         error: string;
+                        errorData?: Record<string, never>;
+                    };
+                };
+            };
+        };
+    };
+    executeAction: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+                action: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    [key: string]: unknown;
+                };
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @constant */
+                        success: true;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                    };
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "Unauthorized",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                        errorData?: Record<string, never>;
+                    };
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "Forbidden",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                        errorData?: Record<string, never>;
+                    };
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "object {0} of type {1} not found",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                        errorData?: Record<string, never>;
+                    };
+                };
+            };
+            /** @description Internal Server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "Internal Server Error",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                        errorData?: Record<string, never>;
                     };
                 };
             };
@@ -2046,6 +3694,7 @@ export interface operations {
                         /** Format: date-time */
                         timestamp: unknown;
                         error: string;
+                        errorData?: Record<string, never>;
                     };
                 };
             };
@@ -2068,6 +3717,7 @@ export interface operations {
                         /** Format: date-time */
                         timestamp: unknown;
                         error: string;
+                        errorData?: Record<string, never>;
                     };
                 };
             };
@@ -2090,6 +3740,7 @@ export interface operations {
                         /** Format: date-time */
                         timestamp: unknown;
                         error: string;
+                        errorData?: Record<string, never>;
                     };
                 };
             };
@@ -2112,6 +3763,7 @@ export interface operations {
                         /** Format: date-time */
                         timestamp: unknown;
                         error: string;
+                        errorData?: Record<string, never>;
                     };
                 };
             };
@@ -2126,7 +3778,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["NewRecord"];
+                "application/json": components["schemas"]["NewRecordRequest"];
             };
         };
         responses: {
@@ -2164,6 +3816,7 @@ export interface operations {
                         /** Format: date-time */
                         timestamp: unknown;
                         error: string;
+                        errorData?: Record<string, never>;
                     };
                 };
             };
@@ -2186,6 +3839,7 @@ export interface operations {
                         /** Format: date-time */
                         timestamp: unknown;
                         error: string;
+                        errorData?: Record<string, never>;
                     };
                 };
             };
@@ -2208,6 +3862,7 @@ export interface operations {
                         /** Format: date-time */
                         timestamp: unknown;
                         error: string;
+                        errorData?: Record<string, never>;
                     };
                 };
             };
@@ -2230,6 +3885,590 @@ export interface operations {
                         /** Format: date-time */
                         timestamp: unknown;
                         error: string;
+                        errorData?: Record<string, never>;
+                    };
+                };
+            };
+        };
+    };
+    executeAction_1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+                action: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    [key: string]: unknown;
+                };
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @constant */
+                        success: true;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                    };
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "Unauthorized",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                        errorData?: Record<string, never>;
+                    };
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "Forbidden",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                        errorData?: Record<string, never>;
+                    };
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "object {0} of type {1} not found",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                        errorData?: Record<string, never>;
+                    };
+                };
+            };
+            /** @description Internal Server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "Internal Server Error",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                        errorData?: Record<string, never>;
+                    };
+                };
+            };
+        };
+    };
+    objectProperty_retrieveAll: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @constant */
+                        success: true;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        data: components["schemas"]["SimpleObjectPropertyResponse"][];
+                    };
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "Unauthorized",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                        errorData?: Record<string, never>;
+                    };
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "Forbidden",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                        errorData?: Record<string, never>;
+                    };
+                };
+            };
+            /** @description Internal Server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "Internal Server Error",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                        errorData?: Record<string, never>;
+                    };
+                };
+            };
+        };
+    };
+    objectProperty_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["NewObjectPropertyRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @constant */
+                        success: true;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        data: components["schemas"]["ObjectPropertyResponse"];
+                    };
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "Unauthorized",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                        errorData?: Record<string, never>;
+                    };
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "Forbidden",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                        errorData?: Record<string, never>;
+                    };
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "object {0} of type {1} not found",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                        errorData?: Record<string, never>;
+                    };
+                };
+            };
+            /** @description Resource in use */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "Cannot delete a store that contains files",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                        errorData?: Record<string, never>;
+                    };
+                };
+            };
+            /** @description Internal Server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "Internal Server Error",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                        errorData?: Record<string, never>;
+                    };
+                };
+            };
+        };
+    };
+    getLists: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @constant */
+                        success: true;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        data: components["schemas"]["SimpleListTypeResponse"][];
+                    };
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "Unauthorized",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                        errorData?: Record<string, never>;
+                    };
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "Forbidden",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                        errorData?: Record<string, never>;
+                    };
+                };
+            };
+            /** @description Internal Server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "Internal Server Error",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                        errorData?: Record<string, never>;
+                    };
+                };
+            };
+        };
+    };
+    createList: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["NewListTypeRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @constant */
+                        success: true;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        data: components["schemas"]["ListTypeResponse"];
+                    };
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "Unauthorized",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                        errorData?: Record<string, never>;
+                    };
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "Forbidden",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                        errorData?: Record<string, never>;
+                    };
+                };
+            };
+            /** @description Resource in use */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "Cannot delete a store that contains files",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                        errorData?: Record<string, never>;
+                    };
+                };
+            };
+            /** @description Internal Server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "Internal Server Error",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                        errorData?: Record<string, never>;
                     };
                 };
             };
@@ -2278,6 +4517,7 @@ export interface operations {
                         /** Format: date-time */
                         timestamp: unknown;
                         error: string;
+                        errorData?: Record<string, never>;
                     };
                 };
             };
@@ -2300,6 +4540,7 @@ export interface operations {
                         /** Format: date-time */
                         timestamp: unknown;
                         error: string;
+                        errorData?: Record<string, never>;
                     };
                 };
             };
@@ -2322,6 +4563,7 @@ export interface operations {
                         /** Format: date-time */
                         timestamp: unknown;
                         error: string;
+                        errorData?: Record<string, never>;
                     };
                 };
             };
@@ -2336,7 +4578,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["NewFileStore"];
+                "application/json": components["schemas"]["NewFileStoreRequest"];
             };
         };
         responses: {
@@ -2374,6 +4616,7 @@ export interface operations {
                         /** Format: date-time */
                         timestamp: unknown;
                         error: string;
+                        errorData?: Record<string, never>;
                     };
                 };
             };
@@ -2396,6 +4639,7 @@ export interface operations {
                         /** Format: date-time */
                         timestamp: unknown;
                         error: string;
+                        errorData?: Record<string, never>;
                     };
                 };
             };
@@ -2418,6 +4662,7 @@ export interface operations {
                         /** Format: date-time */
                         timestamp: unknown;
                         error: string;
+                        errorData?: Record<string, never>;
                     };
                 };
             };
@@ -2440,6 +4685,7 @@ export interface operations {
                         /** Format: date-time */
                         timestamp: unknown;
                         error: string;
+                        errorData?: Record<string, never>;
                     };
                 };
             };
@@ -2488,6 +4734,7 @@ export interface operations {
                         /** Format: date-time */
                         timestamp: unknown;
                         error: string;
+                        errorData?: Record<string, never>;
                     };
                 };
             };
@@ -2510,6 +4757,7 @@ export interface operations {
                         /** Format: date-time */
                         timestamp: unknown;
                         error: string;
+                        errorData?: Record<string, never>;
                     };
                 };
             };
@@ -2532,6 +4780,7 @@ export interface operations {
                         /** Format: date-time */
                         timestamp: unknown;
                         error: string;
+                        errorData?: Record<string, never>;
                     };
                 };
             };
@@ -2546,7 +4795,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["NewFileStoreMiddleware"];
+                "application/json": components["schemas"]["NewFileStoreMiddlewareRequest"];
             };
         };
         responses: {
@@ -2584,6 +4833,7 @@ export interface operations {
                         /** Format: date-time */
                         timestamp: unknown;
                         error: string;
+                        errorData?: Record<string, never>;
                     };
                 };
             };
@@ -2606,6 +4856,7 @@ export interface operations {
                         /** Format: date-time */
                         timestamp: unknown;
                         error: string;
+                        errorData?: Record<string, never>;
                     };
                 };
             };
@@ -2628,6 +4879,7 @@ export interface operations {
                         /** Format: date-time */
                         timestamp: unknown;
                         error: string;
+                        errorData?: Record<string, never>;
                     };
                 };
             };
@@ -2650,6 +4902,7 @@ export interface operations {
                         /** Format: date-time */
                         timestamp: unknown;
                         error: string;
+                        errorData?: Record<string, never>;
                     };
                 };
             };
@@ -2705,6 +4958,7 @@ export interface operations {
                         /** Format: date-time */
                         timestamp: unknown;
                         error: string;
+                        errorData?: Record<string, never>;
                     };
                 };
             };
@@ -2727,6 +4981,7 @@ export interface operations {
                         /** Format: date-time */
                         timestamp: unknown;
                         error: string;
+                        errorData?: Record<string, never>;
                     };
                 };
             };
@@ -2764,13 +5019,31 @@ export interface operations {
                     };
                 };
             };
-            /** @description Validation Failed */
+            /** @description Validation failed */
             400: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ValidationErrorResponse"];
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "Validation failed",
+                     *       "error_data": {
+                     *         "field_1": "error details",
+                     *         "field_2": "error details"
+                     *       },
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                        errorData?: Record<string, never>;
+                    };
                 };
             };
             /** @description Authentication Failed */
@@ -2792,6 +5065,7 @@ export interface operations {
                         /** Format: date-time */
                         timestamp: unknown;
                         error: string;
+                        errorData?: Record<string, never>;
                     };
                 };
             };
@@ -2814,6 +5088,7 @@ export interface operations {
                         /** Format: date-time */
                         timestamp: unknown;
                         error: string;
+                        errorData?: Record<string, never>;
                     };
                 };
             };
@@ -2836,6 +5111,127 @@ export interface operations {
                         /** Format: date-time */
                         timestamp: unknown;
                         error: string;
+                        errorData?: Record<string, never>;
+                    };
+                };
+            };
+        };
+    };
+    listActions: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @constant */
+                        success: true;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        data: components["schemas"]["ActionResponse"][];
+                    };
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "Unauthorized",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                        errorData?: Record<string, never>;
+                    };
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "Forbidden",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                        errorData?: Record<string, never>;
+                    };
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "object {0} of type {1} not found",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                        errorData?: Record<string, never>;
+                    };
+                };
+            };
+            /** @description Internal Server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "Internal Server Error",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                        errorData?: Record<string, never>;
                     };
                 };
             };
@@ -2884,6 +5280,7 @@ export interface operations {
                         /** Format: date-time */
                         timestamp: unknown;
                         error: string;
+                        errorData?: Record<string, never>;
                     };
                 };
             };
@@ -2906,6 +5303,7 @@ export interface operations {
                         /** Format: date-time */
                         timestamp: unknown;
                         error: string;
+                        errorData?: Record<string, never>;
                     };
                 };
             };
@@ -2928,6 +5326,7 @@ export interface operations {
                         /** Format: date-time */
                         timestamp: unknown;
                         error: string;
+                        errorData?: Record<string, never>;
                     };
                 };
             };
@@ -2976,6 +5375,7 @@ export interface operations {
                         /** Format: date-time */
                         timestamp: unknown;
                         error: string;
+                        errorData?: Record<string, never>;
                     };
                 };
             };
@@ -2998,6 +5398,7 @@ export interface operations {
                         /** Format: date-time */
                         timestamp: unknown;
                         error: string;
+                        errorData?: Record<string, never>;
                     };
                 };
             };
@@ -3020,6 +5421,7 @@ export interface operations {
                         /** Format: date-time */
                         timestamp: unknown;
                         error: string;
+                        errorData?: Record<string, never>;
                     };
                 };
             };
@@ -3070,6 +5472,7 @@ export interface operations {
                         /** Format: date-time */
                         timestamp: unknown;
                         error: string;
+                        errorData?: Record<string, never>;
                     };
                 };
             };
@@ -3092,6 +5495,7 @@ export interface operations {
                         /** Format: date-time */
                         timestamp: unknown;
                         error: string;
+                        errorData?: Record<string, never>;
                     };
                 };
             };
@@ -3114,6 +5518,7 @@ export interface operations {
                         /** Format: date-time */
                         timestamp: unknown;
                         error: string;
+                        errorData?: Record<string, never>;
                     };
                 };
             };
@@ -3136,6 +5541,7 @@ export interface operations {
                         /** Format: date-time */
                         timestamp: unknown;
                         error: string;
+                        errorData?: Record<string, never>;
                     };
                 };
             };
@@ -3164,7 +5570,7 @@ export interface operations {
                         success: true;
                         /** Format: date-time */
                         timestamp: unknown;
-                        data: Record<string, never>;
+                        data: components["schemas"]["TemplateComponent"];
                     };
                 };
             };
@@ -3187,6 +5593,7 @@ export interface operations {
                         /** Format: date-time */
                         timestamp: unknown;
                         error: string;
+                        errorData?: Record<string, never>;
                     };
                 };
             };
@@ -3209,6 +5616,7 @@ export interface operations {
                         /** Format: date-time */
                         timestamp: unknown;
                         error: string;
+                        errorData?: Record<string, never>;
                     };
                 };
             };
@@ -3231,6 +5639,7 @@ export interface operations {
                         /** Format: date-time */
                         timestamp: unknown;
                         error: string;
+                        errorData?: Record<string, never>;
                     };
                 };
             };
@@ -3253,6 +5662,7 @@ export interface operations {
                         /** Format: date-time */
                         timestamp: unknown;
                         error: string;
+                        errorData?: Record<string, never>;
                     };
                 };
             };
@@ -3303,6 +5713,7 @@ export interface operations {
                         /** Format: date-time */
                         timestamp: unknown;
                         error: string;
+                        errorData?: Record<string, never>;
                     };
                 };
             };
@@ -3325,6 +5736,7 @@ export interface operations {
                         /** Format: date-time */
                         timestamp: unknown;
                         error: string;
+                        errorData?: Record<string, never>;
                     };
                 };
             };
@@ -3347,6 +5759,7 @@ export interface operations {
                         /** Format: date-time */
                         timestamp: unknown;
                         error: string;
+                        errorData?: Record<string, never>;
                     };
                 };
             };
@@ -3369,6 +5782,127 @@ export interface operations {
                         /** Format: date-time */
                         timestamp: unknown;
                         error: string;
+                        errorData?: Record<string, never>;
+                    };
+                };
+            };
+        };
+    };
+    listActions_1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @constant */
+                        success: true;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        data: components["schemas"]["ActionResponse"][];
+                    };
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "Unauthorized",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                        errorData?: Record<string, never>;
+                    };
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "Forbidden",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                        errorData?: Record<string, never>;
+                    };
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "object {0} of type {1} not found",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                        errorData?: Record<string, never>;
+                    };
+                };
+            };
+            /** @description Internal Server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "Internal Server Error",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                        errorData?: Record<string, never>;
                     };
                 };
             };
@@ -3417,6 +5951,7 @@ export interface operations {
                         /** Format: date-time */
                         timestamp: unknown;
                         error: string;
+                        errorData?: Record<string, never>;
                     };
                 };
             };
@@ -3439,6 +5974,7 @@ export interface operations {
                         /** Format: date-time */
                         timestamp: unknown;
                         error: string;
+                        errorData?: Record<string, never>;
                     };
                 };
             };
@@ -3461,6 +5997,7 @@ export interface operations {
                         /** Format: date-time */
                         timestamp: unknown;
                         error: string;
+                        errorData?: Record<string, never>;
                     };
                 };
             };
@@ -3488,7 +6025,7 @@ export interface operations {
                         success: true;
                         /** Format: date-time */
                         timestamp: unknown;
-                        data: components["schemas"]["RecordType"];
+                        data: components["schemas"]["RecordTypeResponse"];
                     };
                 };
             };
@@ -3511,6 +6048,7 @@ export interface operations {
                         /** Format: date-time */
                         timestamp: unknown;
                         error: string;
+                        errorData?: Record<string, never>;
                     };
                 };
             };
@@ -3533,6 +6071,7 @@ export interface operations {
                         /** Format: date-time */
                         timestamp: unknown;
                         error: string;
+                        errorData?: Record<string, never>;
                     };
                 };
             };
@@ -3555,6 +6094,7 @@ export interface operations {
                         /** Format: date-time */
                         timestamp: unknown;
                         error: string;
+                        errorData?: Record<string, never>;
                     };
                 };
             };
@@ -3577,12 +6117,13 @@ export interface operations {
                         /** Format: date-time */
                         timestamp: unknown;
                         error: string;
+                        errorData?: Record<string, never>;
                     };
                 };
             };
         };
     };
-    getLists: {
+    list: {
         parameters: {
             query?: never;
             header?: never;
@@ -3602,7 +6143,7 @@ export interface operations {
                         success: true;
                         /** Format: date-time */
                         timestamp: unknown;
-                        data: components["schemas"]["SimpleListTypeResponse"][];
+                        data: string[];
                     };
                 };
             };
@@ -3625,6 +6166,7 @@ export interface operations {
                         /** Format: date-time */
                         timestamp: unknown;
                         error: string;
+                        errorData?: Record<string, never>;
                     };
                 };
             };
@@ -3647,6 +6189,7 @@ export interface operations {
                         /** Format: date-time */
                         timestamp: unknown;
                         error: string;
+                        errorData?: Record<string, never>;
                     };
                 };
             };
@@ -3669,239 +6212,7 @@ export interface operations {
                         /** Format: date-time */
                         timestamp: unknown;
                         error: string;
-                    };
-                };
-            };
-        };
-    };
-    getList: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                list: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": {
-                        /** @constant */
-                        success: true;
-                        /** Format: date-time */
-                        timestamp: unknown;
-                        data: components["schemas"]["ListTypeResponse"];
-                    };
-                };
-            };
-            /** @description Unauthorized */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "success": false,
-                     *       "error": "Unauthorized",
-                     *       "timestamp": "2026-06-29T23:05:00Z"
-                     *     }
-                     */
-                    "application/json": {
-                        /** @constant */
-                        success: false;
-                        /** Format: date-time */
-                        timestamp: unknown;
-                        error: string;
-                    };
-                };
-            };
-            /** @description Forbidden */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "success": false,
-                     *       "error": "Forbidden",
-                     *       "timestamp": "2026-06-29T23:05:00Z"
-                     *     }
-                     */
-                    "application/json": {
-                        /** @constant */
-                        success: false;
-                        /** Format: date-time */
-                        timestamp: unknown;
-                        error: string;
-                    };
-                };
-            };
-            /** @description Not Found */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "success": false,
-                     *       "error": "object {0} of type {1} not found",
-                     *       "timestamp": "2026-06-29T23:05:00Z"
-                     *     }
-                     */
-                    "application/json": {
-                        /** @constant */
-                        success: false;
-                        /** Format: date-time */
-                        timestamp: unknown;
-                        error: string;
-                    };
-                };
-            };
-            /** @description Internal Server error */
-            500: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "success": false,
-                     *       "error": "Internal Server Error",
-                     *       "timestamp": "2026-06-29T23:05:00Z"
-                     *     }
-                     */
-                    "application/json": {
-                        /** @constant */
-                        success: false;
-                        /** Format: date-time */
-                        timestamp: unknown;
-                        error: string;
-                    };
-                };
-            };
-        };
-    };
-    getListElement: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                list: string;
-                element: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": {
-                        /** @constant */
-                        success: true;
-                        /** Format: date-time */
-                        timestamp: unknown;
-                        data: components["schemas"]["ListElementResponse"];
-                    };
-                };
-            };
-            /** @description Unauthorized */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "success": false,
-                     *       "error": "Unauthorized",
-                     *       "timestamp": "2026-06-29T23:05:00Z"
-                     *     }
-                     */
-                    "application/json": {
-                        /** @constant */
-                        success: false;
-                        /** Format: date-time */
-                        timestamp: unknown;
-                        error: string;
-                    };
-                };
-            };
-            /** @description Forbidden */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "success": false,
-                     *       "error": "Forbidden",
-                     *       "timestamp": "2026-06-29T23:05:00Z"
-                     *     }
-                     */
-                    "application/json": {
-                        /** @constant */
-                        success: false;
-                        /** Format: date-time */
-                        timestamp: unknown;
-                        error: string;
-                    };
-                };
-            };
-            /** @description Not Found */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "success": false,
-                     *       "error": "object {0} of type {1} not found",
-                     *       "timestamp": "2026-06-29T23:05:00Z"
-                     *     }
-                     */
-                    "application/json": {
-                        /** @constant */
-                        success: false;
-                        /** Format: date-time */
-                        timestamp: unknown;
-                        error: string;
-                    };
-                };
-            };
-            /** @description Internal Server error */
-            500: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "success": false,
-                     *       "error": "Internal Server Error",
-                     *       "timestamp": "2026-06-29T23:05:00Z"
-                     *     }
-                     */
-                    "application/json": {
-                        /** @constant */
-                        success: false;
-                        /** Format: date-time */
-                        timestamp: unknown;
-                        error: string;
+                        errorData?: Record<string, never>;
                     };
                 };
             };
@@ -3954,6 +6265,7 @@ export interface operations {
                         /** Format: date-time */
                         timestamp: unknown;
                         error: string;
+                        errorData?: Record<string, never>;
                     };
                 };
             };
@@ -3976,6 +6288,7 @@ export interface operations {
                         /** Format: date-time */
                         timestamp: unknown;
                         error: string;
+                        errorData?: Record<string, never>;
                     };
                 };
             };
@@ -3998,6 +6311,7 @@ export interface operations {
                         /** Format: date-time */
                         timestamp: unknown;
                         error: string;
+                        errorData?: Record<string, never>;
                     };
                 };
             };
@@ -4020,6 +6334,197 @@ export interface operations {
                         /** Format: date-time */
                         timestamp: unknown;
                         error: string;
+                        errorData?: Record<string, never>;
+                    };
+                };
+            };
+        };
+    };
+    fileStoreType_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @constant */
+                        success: true;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        data: components["schemas"]["FileStoreTypeResponse"][];
+                    };
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "Unauthorized",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                        errorData?: Record<string, never>;
+                    };
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "Forbidden",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                        errorData?: Record<string, never>;
+                    };
+                };
+            };
+            /** @description Internal Server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "Internal Server Error",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                        errorData?: Record<string, never>;
+                    };
+                };
+            };
+        };
+    };
+    fileStoreMiddlewareType_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @constant */
+                        success: true;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        data: components["schemas"]["MiddlewareTypeResponse"][];
+                    };
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "Unauthorized",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                        errorData?: Record<string, never>;
+                    };
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "Forbidden",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                        errorData?: Record<string, never>;
+                    };
+                };
+            };
+            /** @description Internal Server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "Internal Server Error",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                        errorData?: Record<string, never>;
                     };
                 };
             };
@@ -4070,6 +6575,7 @@ export interface operations {
                         /** Format: date-time */
                         timestamp: unknown;
                         error: string;
+                        errorData?: Record<string, never>;
                     };
                 };
             };
@@ -4092,6 +6598,7 @@ export interface operations {
                         /** Format: date-time */
                         timestamp: unknown;
                         error: string;
+                        errorData?: Record<string, never>;
                     };
                 };
             };
@@ -4114,6 +6621,7 @@ export interface operations {
                         /** Format: date-time */
                         timestamp: unknown;
                         error: string;
+                        errorData?: Record<string, never>;
                     };
                 };
             };
@@ -4164,6 +6672,7 @@ export interface operations {
                         /** Format: date-time */
                         timestamp: unknown;
                         error: string;
+                        errorData?: Record<string, never>;
                     };
                 };
             };
@@ -4186,6 +6695,7 @@ export interface operations {
                         /** Format: date-time */
                         timestamp: unknown;
                         error: string;
+                        errorData?: Record<string, never>;
                     };
                 };
             };
@@ -4208,6 +6718,7 @@ export interface operations {
                         /** Format: date-time */
                         timestamp: unknown;
                         error: string;
+                        errorData?: Record<string, never>;
                     };
                 };
             };
@@ -4258,6 +6769,7 @@ export interface operations {
                         /** Format: date-time */
                         timestamp: unknown;
                         error: string;
+                        errorData?: Record<string, never>;
                     };
                 };
             };
@@ -4280,6 +6792,7 @@ export interface operations {
                         /** Format: date-time */
                         timestamp: unknown;
                         error: string;
+                        errorData?: Record<string, never>;
                     };
                 };
             };
@@ -4302,6 +6815,7 @@ export interface operations {
                         /** Format: date-time */
                         timestamp: unknown;
                         error: string;
+                        errorData?: Record<string, never>;
                     };
                 };
             };
@@ -4404,6 +6918,7 @@ export interface operations {
                         /** Format: date-time */
                         timestamp: unknown;
                         error: string;
+                        errorData?: Record<string, never>;
                     };
                 };
             };
@@ -4426,6 +6941,7 @@ export interface operations {
                         /** Format: date-time */
                         timestamp: unknown;
                         error: string;
+                        errorData?: Record<string, never>;
                     };
                 };
             };
@@ -4448,6 +6964,7 @@ export interface operations {
                         /** Format: date-time */
                         timestamp: unknown;
                         error: string;
+                        errorData?: Record<string, never>;
                     };
                 };
             };

@@ -1,10 +1,10 @@
 <script lang="ts">
-	import { client } from '$lib';
+	import { getClient } from '$lib';
 
-	const types = client.GET('/api/templates');
+	const types = getClient().GET('/api/templates');
 
 	const registerTemplate = async (type: string, template: string) => {
-		const { data, error } = await client.POST(`/api/templates/{type}/{template}/register`, {
+		const { data, error } = await getClient().POST(`/api/templates/{type}/{template}/register`, {
 			params: {
 				path: { type, template },
 				query: { includeDependencies: true }
@@ -28,7 +28,7 @@
 		{#if data}
 			{#each data.data as type}
 				<h1 class="text-2xl font-bold">{type}</h1>
-				{#await client.GET(`/api/templates/{type}`, { params: { path: { type } } })}
+				{#await getClient().GET(`/api/templates/{type}`, { params: { path: { type } } })}
 					Loading...
 				{:then { data, error }}
 					{#if data?.data}

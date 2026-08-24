@@ -43,10 +43,6 @@ distributions {
             from project(':server-core').file('config.yml')
             // Copy the executable jar
             from project(':server-core').tasks.named('bootJar')
-            // Copy the frontend static files into a /static directory in the zip
-            into('static') {
-                from project(':server-web').tasks.named('buildWeb')
-            }
             into('plugins') {
                 def pluginProjects = subprojects.findAll { it.path.startsWith(':plugins:') }
 
@@ -56,19 +52,11 @@ distributions {
     }
 }
 
-project(':server-core').tasks.named('bootRun').configure {
-    environment 'SERVER_WEB_DIRECTORY', project(':server-web').file('build')
-}
-
-// Primary run task, including all dependencies
+// Primary run task for the API
 tasks.register('runApp') {
     group = "application"
 
-    // Ensure all the dependencies are ran
     dependsOn tasks.named('copyPlugins')
-    dependsOn project(':server-web').tasks.named('buildWeb')
-
-    // Wire the execution of bootRun
     dependsOn project(':server-core').tasks.named('bootRun')
 }
 

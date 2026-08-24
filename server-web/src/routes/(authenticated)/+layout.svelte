@@ -1,10 +1,11 @@
 <script lang="ts">
 	import { NavigationMenu } from 'bits-ui';
-	import CaretDownIcon from 'phosphor-svelte/lib/CaretDownIcon';
-	import cn from 'clsx';
 	import SearchBar from '$lib/components/SearchBar.svelte';
+	import { getRuntimeConfigSync } from '$lib/runtime-config';
 
 	let { children } = $props();
+
+	const branding = $derived(getRuntimeConfigSync().branding);
 </script>
 
 <NavigationMenu.Root
@@ -12,7 +13,13 @@
 >
 	<!-- Left Side: Logo (Hidden on mobile) -->
 	<div class="hidden items-center sm:flex">
-		<a href="/" class="text-xl font-bold">Logo</a>
+		<a href="/" class="text-xl font-bold">
+			{#if branding.logoUrl}
+				<img src={branding.logoUrl} alt={branding.productName} class="h-8" />
+			{:else}
+				{branding.productName}
+			{/if}
+		</a>
 	</div>
 
 	<!-- Center/Main: SearchBar -->
@@ -29,6 +36,3 @@
 </NavigationMenu.Root>
 
 {@render children()}
-
-<style lang="less">
-</style>
