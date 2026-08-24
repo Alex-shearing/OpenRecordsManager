@@ -32,7 +32,7 @@ public class WebServerMvcConfigurer implements WebMvcConfigurer {
                         Resource requestedResource = location.createRelative(resourcePath);
 
                         // If the browser requests a real stream (like CSS, JS, images) or an API endpoint, serve it normally
-                        if (requestedResource.exists() && requestedResource.isReadable() || resourcePath.startsWith("api/")) {
+                        if ((requestedResource.exists() && requestedResource.isReadable()) || resourcePath.startsWith("api/")) {
                             return requestedResource;
                         }
 
