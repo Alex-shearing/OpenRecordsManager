@@ -32,6 +32,29 @@ subprojects.each { pluginProject ->
     evaluationDependsOn pluginProject.path
 }
 
+// Build the SvelteKit static SPA (adapter-static output under server-web/build)
+tasks.register('buildWeb', Exec) {
+    group = 'build'
+    description = 'Builds the server-web static SPA with npm'
+
+    workingDir = file('server-web')
+
+    inputs.dir file('server-web/src')
+    inputs.dir file('server-web/static')
+    inputs.dir file('server-web/deploy')
+    inputs.file file('server-web/package.json')
+    inputs.file file('server-web/package-lock.json')
+    inputs.file file('server-web/vite.config.ts')
+    inputs.file file('server-web/tsconfig.json')
+    outputs.dir file('server-web/build')
+
+    if (System.getProperty('os.name').toLowerCase().contains('windows')) {
+        commandLine 'cmd', '/c', 'npm ci --legacy-peer-deps && npm run build'
+    } else {
+        commandLine 'sh', '-c', 'npm ci --legacy-peer-deps && npm run build'
+    }
+}
+
 distributions {
     main {
         distributionBaseName = 'open-records-manager'
@@ -50,6 +73,28 @@ distributions {
             }
         }
     }
+
+    // Separate static web client distribution (SPA + sample host configs)
+    web {
+        distributionBaseName = 'orm-web-static'
+
+        contents {
+            from file('server-web/build')
+            into('deploy') {
+                from 'server-web/deploy'
+            }
+        }
+    }
+}
+
+tasks.named('webDistZip').configure {
+    dependsOn tasks.named('buildWeb')
+}
+tasks.named('webDistTar').configure {
+    dependsOn tasks.named('buildWeb')
+}
+tasks.named('assembleWebDist').configure {
+    dependsOn tasks.named('buildWeb')
 }
 
 // Primary run task for the API

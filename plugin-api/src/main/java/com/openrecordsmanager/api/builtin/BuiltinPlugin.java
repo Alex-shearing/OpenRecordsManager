@@ -20,7 +20,12 @@ public class BuiltinPlugin implements Plugin {
                 BuiltinConfigs.DEFAULT_FILE_STORE,
                 BuiltinConfigs.DEBUG_DETAILED_ERRORS,
                 BuiltinConfigs.PLUGINS_DIRECTORY,
-                BuiltinConfigs.PLUGINS_SKIP_STARTUP_CHECK
+                BuiltinConfigs.PLUGINS_SKIP_STARTUP_CHECK,
+                BuiltinConfigs.WEB_PRODUCT_NAME,
+                BuiltinConfigs.WEB_LOGO_URL,
+                BuiltinConfigs.WEB_FAVICON_URL,
+                BuiltinConfigs.WEB_PRIMARY_COLOR,
+                BuiltinConfigs.WEB_SUPPORT_URL
         );
 
         registry.registerComponent("notes", BuiltinProperties.NOTES);

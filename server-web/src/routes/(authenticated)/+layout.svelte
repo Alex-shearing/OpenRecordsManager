@@ -1,11 +1,12 @@
 <script lang="ts">
 	import { NavigationMenu } from 'bits-ui';
 	import SearchBar from '$lib/components/SearchBar.svelte';
-	import { getRuntimeConfigSync } from '$lib/runtime-config';
+	import { page } from '$app/state';
+	import { config } from '$lib/config.svelte';
 
 	let { children } = $props();
 
-	const branding = $derived(getRuntimeConfigSync().branding);
+	const branding = config.getConfig();
 </script>
 
 <NavigationMenu.Root

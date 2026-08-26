@@ -14,7 +14,7 @@
     "generate-types": "openapi-typescript http://localhost:8080/v3/api-docs -o src/lib/types/schema.d.ts"
   },
   "devDependencies": {
-    "@sveltejs/adapter-node": "^5.5.7",
+    "@sveltejs/adapter-static": "^3.0.10",
     "@sveltejs/kit": "^2.63.0",
     "@sveltejs/vite-plugin-svelte": "^7.1.2",
     "@tailwindcss/forms": "^0.5.11",

@@ -17,7 +17,8 @@ server:
     directory: ./plugins
     skip_startup_check: false
   web:
-    # Optional static SPA directory. Leave empty when UI is hosted separately.
+    # Optional static SPA directory (e.g. ./static after unpacking orm-web-static-*.zip).
+    # Leave empty when the UI is hosted separately (nginx/IIS/etc.).
     directory:
 
 app:
@@ -30,7 +31,6 @@ app:
     cookie-secure: true
     cors:
       allowed-origins:
-        - http://localhost:5173
         - http://localhost:3000
       allowed-methods:
         - GET
@@ -52,3 +52,10 @@ app:
       max-history: 7
       total-size-cap: 100MB
       clean-history-on-start: false
+  # Centralised web branding
+  #web:
+  #  product_name: Open Records Manager
+  #  logo_url:
+  #  favicon_url: /favicon.ico
+  #  primary_color: "#1d4ed8"
+  #  support_url:

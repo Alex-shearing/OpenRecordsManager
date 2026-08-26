@@ -3,7 +3,7 @@ import type { paths } from './types/schema';
 import { browser } from '$app/environment';
 import { page } from '$app/state';
 import { goto } from '$app/navigation';
-import { getRuntimeConfigSync } from './runtime-config';
+import { config } from '$lib/config.svelte';
 
 function getCookie(name: string): string | null {
 	if (typeof document === 'undefined') return null;
@@ -19,7 +19,7 @@ export function getClient() {
 	if (cachedClient) return cachedClient;
 
 	cachedClient = createClient<paths>({
-		baseUrl: getRuntimeConfigSync().apiBaseUrl,
+		baseUrl: config.apiUrl(),
 		headers: {
 			'X-Client-Platform': 'Web-Client'
 		},

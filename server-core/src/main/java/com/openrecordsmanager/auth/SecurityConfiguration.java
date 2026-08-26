@@ -86,7 +86,7 @@ public class SecurityConfiguration {
                             String authHeader = request.getHeader("Authorization");
                             return authHeader != null && authHeader.startsWith("Bearer ");
                         })
-                        .ignoringRequestMatchers("/api/auth/**", "/v3/api-docs/**")
+                        .ignoringRequestMatchers("/api/auth/**", "/api/web/**", "/v3/api-docs/**")
                         .csrfTokenRepository(csrfTokenRepository)
                         .csrfTokenRequestHandler(new CsrfTokenRequestAttributeHandler() {
                             @Override
@@ -101,7 +101,7 @@ public class SecurityConfiguration {
                 )
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                        .requestMatchers("/api/auth/**", "/v3/api-docs/**").permitAll()
+                        .requestMatchers("/api/auth/**", "/api/web/**", "/v3/api-docs/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(new DatabaseTokenAuthenticationFilter(this.repository.authTokenRepo, this.authService), UsernamePasswordAuthenticationFilter.class)

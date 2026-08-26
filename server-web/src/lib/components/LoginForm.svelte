@@ -4,7 +4,7 @@
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
 	import { onMount } from 'svelte';
-	import { apiUrl } from '$lib/runtime-config';
+	import { config } from '$lib/config.svelte';
 
 	type AuthProvider = components['schemas']['AuthProviderListResponse'];
 	type LoginJsonSchema = components['schemas']['InputFormSchema'];
@@ -198,7 +198,7 @@
 
 		{#each redirectProviders as provider (provider.id)}
 			<a
-				href={apiUrl(`/api/auth/redirect/${provider.id}`)}
+				href={config.apiUrl(`/api/auth/redirect/${provider.id}`)}
 				class="inline-block rounded border border-gray-300 px-4 py-2 text-center hover:bg-gray-50 dark:border-gray-600"
 			>
 				Continue with {providerLabel(provider)}

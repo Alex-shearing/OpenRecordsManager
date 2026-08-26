@@ -328,6 +328,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/web": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get centralised web UI branding */
+        get: operations["branding"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/user/{id}/actions": {
         parameters: {
             query?: never;
@@ -812,6 +829,13 @@ export interface components {
             token: string;
             /** Format: date-time */
             expires: string;
+        };
+        WebBrandingResponse: {
+            productName: string;
+            logoUrl: string;
+            faviconUrl: string;
+            primaryColor: string;
+            supportUrl: string;
         };
         ActionResponse: {
             id: string;
@@ -5089,6 +5113,55 @@ export interface operations {
                         timestamp: unknown;
                         error: string;
                         errorData?: Record<string, never>;
+                    };
+                };
+            };
+            /** @description Internal Server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "Internal Server Error",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                        errorData?: Record<string, never>;
+                    };
+                };
+            };
+        };
+    };
+    branding: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @constant */
+                        success: true;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        data: components["schemas"]["WebBrandingResponse"];
                     };
                 };
             };

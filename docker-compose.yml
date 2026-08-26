@@ -28,8 +28,6 @@ services:
       - "3000:3000"
     environment:
       UI_API_BASE_URL: http://localhost:8080
-      UI_PRODUCT_NAME: Open Records Manager
-      UI_PRIMARY_COLOR: "#1d4ed8"
     depends_on:
       - api
 

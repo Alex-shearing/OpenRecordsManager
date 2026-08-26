@@ -1,8 +1,11 @@
 # Deploying Open Records Manager
 
-Self-hosting uses two containers: **api** (Spring Boot) and **web** (SvelteKit / Node).
+Deploying ORM takes two components:
 
-## Quick start
+- **API** (Spring Boot JAR)
+- **Web Client** (Static Web App, optionally deployed by the API)
+
+## Quick start (Docker)
 
 ```bash
 docker compose up --build
@@ -11,46 +14,45 @@ docker compose up --build
 - Web UI: http://localhost:3000
 - API: http://localhost:8080
 
-## Configuration
+## Quick start (no Docker)
 
-Configure both services with environment variables in [`docker-compose.yml`](docker-compose.yml) (or your orchestrator).
+1. Build distributions: `./gradlew distZip webDistZip`
+2. Unpack `build/distributions/open-records-manager-*.zip` for the API
+3. Run the API with `./start.sh` or `.\start.ps1` (Java 25+)
+4. Host the UI from `build/distributions/orm-web-static-*.zip` using one of the options below
 
-### API (Spring Boot relaxed binding)
+### Option A — Co-host UI from the API process
 
-| Variable                               | Purpose                                     |
-|----------------------------------------|---------------------------------------------|
-| `SERVER_DATABASE_PRIMARY_URL`          | JDBC URL for the primary database           |
-| `SERVER_DATABASE_READ_ONLY_URL`        | JDBC URL for read replica (optional)        |
-| `SERVER_PLUGINS_DIRECTORY`             | Plugin jar directory                        |
-| `APP_SECURITY_COOKIE_SECURE`           | `true` behind HTTPS; `false` for local HTTP |
-| `APP_SECURITY_CORS_ALLOWED_ORIGINS`    | Comma-separated web origins                 |
-| `APP_SECURITY_CORS_ALLOWED_HEADERS`    | Comma-separated request headers             |
-| `APP_LOGGING_PATH`                     | Log file path                               |
-| `AUTH_AUTH_LOCAL_ENABLE_DEFAULT_ADMIN` | Enable default local admin                  |
+```bash
+mkdir -p static
+unzip orm-web-static-*.zip -d static
+./start.sh
+```
 
-You can still place a `config.yml` next to the API process for non-Docker installs; env vars override it.
+Browse http://localhost:8080. Leave `apiBaseUrl` empty in `static/config.json` for same-origin API calls.
 
-### Web
+### Option B — Host the static files yourself
 
-| Variable           | Purpose                                                                                                    |
-|--------------------|------------------------------------------------------------------------------------------------------------|
-| `UI_API_BASE_URL`  | **Required.** Public API URL the browser calls (e.g. `http://localhost:8080` or `https://api.example.com`) |
-| `UI_PRODUCT_NAME`  | Product name / logo text                                                                                   |
-| `UI_LOGO_URL`      | Optional logo image URL                                                                                    |
-| `UI_FAVICON_URL`   | Optional favicon URL                                                                                       |
-| `UI_PRIMARY_COLOR` | Brand color (CSS)                                                                                          |
-| `UI_SUPPORT_URL`   | Optional support link                                                                                      |
-| `ORIGIN`           | Public UI URL for SvelteKit (default in image: `http://localhost:3000`)                                    |
+Unpack `orm-web-static-*.zip` into your web root and use the samples shipped inside that zip:
 
-The web app always calls the API at `UI_API_BASE_URL` (cross-origin). Set `APP_SECURITY_CORS_ALLOWED_ORIGINS` to the web
-origin. For production HTTPS, set `APP_SECURITY_COOKIE_SECURE=true`.
+- `deploy/orm-web.conf` — nginx + SPA fallback + `/api` proxy
+- `deploy/web.config` — IIS URL Rewrite + ARR proxy
+
+For a **same-origin** setup, proxy `/api` to the JAR and leave `apiBaseUrl` empty in `config.json`.
+
+For a **cross-origin** setup, set `apiBaseUrl` in the shipped `config.json` to the public API URL and allow the UI
+origin in `app.security.cors` settings.
+
+You can still place a `config.yml` next to the API process for non-Docker installs; env vars override it. Web branding
+keys are **not** under `server.*`, so they can also be set centrally in the database via the config API.
+
+Only the API URL is host-local. Branding always comes from the API (`GET /api/web`).
 
 ## Production notes
 
 - Terminate TLS at a reverse proxy or load balancer.
-- Set web `ORIGIN` to the public UI URL.
-- Set `UI_API_BASE_URL` to the public API URL.
-- Cross-origin auth cookies need `Secure` (HTTPS) in real browsers.
+- Prefer same-origin (API + UI behind one hostname) for simpler cookies.
+- Cross-origin auth cookies need `Secure` (HTTPS) and matching CORS origins.
 
 ## Local development (without Docker)
 
@@ -58,6 +60,6 @@ origin. For production HTTPS, set `APP_SECURITY_COOKIE_SECURE=true`.
 # Terminal 1 — API
 ./gradlew bootRun
 
-# Terminal 2 — UI (point the browser at the API)
-cd server-web && UI_API_BASE_URL=http://localhost:8080 npm run dev
+# Terminal 2 — UI (Vite proxies /api to :8080; local config.json has empty apiBaseUrl)
+cd server-web && npm run dev
 ```

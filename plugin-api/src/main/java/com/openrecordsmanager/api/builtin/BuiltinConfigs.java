@@ -57,4 +57,36 @@ public class BuiltinConfigs {
             .defaultValue(false)
             .build();
 
+    // Web UI branding
+
+    public static final ConfigType<String> WEB_PRODUCT_NAME = ConfigType.builder("app.web.product_name", ConfigValueType.STRING)
+            .name("Product Name")
+            .description("Product name shown in the web client.")
+            .defaultValue("Open Records Manager")
+            .build();
+
+    public static final ConfigType<String> WEB_LOGO_URL = ConfigType.builder("app.web.logo_url", ConfigValueType.STRING)
+            .name("Logo URL")
+            .description("Optional logo image URL for the web client.")
+            .defaultValue("")
+            .build();
+
+    public static final ConfigType<String> WEB_FAVICON_URL = ConfigType.builder("app.web.favicon_url", ConfigValueType.STRING)
+            .name("Favicon URL")
+            .description("Optional favicon URL for the web client.")
+            .defaultValue("/favicon.ico")
+            .build();
+
+    public static final ConfigType<String> WEB_PRIMARY_COLOR = ConfigType.builder("app.web.primary_color", ConfigValueType.STRING)
+            .name("Primary Color")
+            .description("Primary brand color (CSS) for the web client.")
+            .defaultValue("#1d4ed8")
+            .build();
+
+    public static final ConfigType<String> WEB_SUPPORT_URL = ConfigType.builder("app.web.support_url", ConfigValueType.STRING)
+            .name("Support URL")
+            .description("Optional support link shown in the web client.")
+            .defaultValue("")
+            .build();
+
 }
