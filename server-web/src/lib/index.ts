@@ -1,6 +1,5 @@
 import createClient from 'openapi-fetch';
 import type { paths } from './types/schema';
-import { browser } from '$app/environment';
 import { page } from '$app/state';
 import { goto } from '$app/navigation';
 import { config } from '$lib/config.svelte';
@@ -37,10 +36,21 @@ export function getClient() {
 			return request;
 		},
 		onResponse({ response, schemaPath }) {
+			// Handle the schema required response
 			if (
-				browser &&
+				response.status === 503 &&
+				response.headers.get('X-ORM-Schema-Upgrade-Required') === 'true' &&
+				['/maintenance', '/setup'].includes(page.url.pathname)
+			) {
+				const redirect = encodeURIComponent(page.url.pathname + page.url.search);
+				throw goto(`/maintenance?redirect=${redirect}`);
+			}
+
+			// Handle user unauthenticated response
+			if (
 				response.status === 401 &&
-				schemaPath !== '/api/auth/login/{provider}'
+				schemaPath !== '/api/auth/login/{provider}' &&
+				!schemaPath.startsWith('/api/database/')
 			) {
 				throw goto(`/login?redirect=${page.url.pathname}`);
 			}

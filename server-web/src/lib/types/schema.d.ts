@@ -294,6 +294,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/database/validate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Validate the database matches the expected schema */
+        post: operations["validate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/database/upgrade": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Apply pending database schema migrations */
+        post: operations["upgrade"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/auth/signup": {
         parameters: {
             query?: never;
@@ -565,6 +599,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/database/status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get database schema migration status */
+        get: operations["status"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/config": {
         parameters: {
             query?: never;
@@ -824,6 +875,17 @@ export interface components {
             properties: {
                 [key: string]: unknown;
             };
+        };
+        SchemaValidationResponse: {
+            validated: boolean;
+            message?: string;
+        };
+        SetupStatusResponse: {
+            /** @enum {string} */
+            state: "READY" | "UPGRADE_REQUIRED";
+            currentVersion?: string;
+            pendingMigrations: string[];
+            message?: string;
         };
         LoginResponse: {
             token: string;
@@ -4932,6 +4994,104 @@ export interface operations {
             };
         };
     };
+    validate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @constant */
+                        success: true;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        data: components["schemas"]["SchemaValidationResponse"];
+                    };
+                };
+            };
+            /** @description Internal Server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "Internal Server Error",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                        errorData?: Record<string, never>;
+                    };
+                };
+            };
+        };
+    };
+    upgrade: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @constant */
+                        success: true;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        data: components["schemas"]["SetupStatusResponse"];
+                    };
+                };
+            };
+            /** @description Internal Server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "Internal Server Error",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                        errorData?: Record<string, never>;
+                    };
+                };
+            };
+        };
+    };
     signup: {
         parameters: {
             query?: never;
@@ -6575,6 +6735,55 @@ export interface operations {
                         timestamp: unknown;
                         error: string;
                         errorData?: Record<string, never>;
+                    };
+                };
+            };
+            /** @description Internal Server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "Internal Server Error",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                        errorData?: Record<string, never>;
+                    };
+                };
+            };
+        };
+    };
+    status: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @constant */
+                        success: true;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        data: components["schemas"]["SetupStatusResponse"];
                     };
                 };
             };

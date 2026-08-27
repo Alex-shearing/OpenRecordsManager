@@ -1,6 +1,8 @@
 package com.openrecordsmanager.auth;
 
 import com.openrecordsmanager.database.DataRepository;
+import com.openrecordsmanager.database.SchemaUpgradeGateFilter;
+import com.openrecordsmanager.database.schema.SchemaMigrationState;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Value;
@@ -21,6 +23,7 @@ import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.util.List;
 import java.util.function.Supplier;
@@ -69,13 +72,24 @@ public class SecurityConfiguration {
     }
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) {
+    public SecurityFilterChain securityFilterChain(
+            HttpSecurity http,
+            SchemaMigrationState migrationState,
+            JsonMapper mapper
+    ) {
         CookieCsrfTokenRepository csrfTokenRepository = CookieCsrfTokenRepository.withHttpOnlyFalse();
         csrfTokenRepository.setCookieCustomizer(cookie -> {
             cookie.secure(this.cookieSecure);
             cookie.sameSite(this.cookieSecure ? "None" : "Lax");
             cookie.path("/");
         });
+
+        DatabaseTokenAuthenticationFilter tokenAuthenticationFilter = new DatabaseTokenAuthenticationFilter(
+                this.repository.authTokenRepo,
+                this.authService
+        );
+
+        SchemaUpgradeGateFilter schemaUpgradeFilter = new SchemaUpgradeGateFilter(migrationState, mapper);
 
         http
                 .securityMatcher("/api/**")
@@ -86,7 +100,7 @@ public class SecurityConfiguration {
                             String authHeader = request.getHeader("Authorization");
                             return authHeader != null && authHeader.startsWith("Bearer ");
                         })
-                        .ignoringRequestMatchers("/api/auth/**", "/api/web/**", "/v3/api-docs/**")
+                        .ignoringRequestMatchers("/api/auth/**", "/api/web/**", "/api/database/**", "/v3/api-docs/**")
                         .csrfTokenRepository(csrfTokenRepository)
                         .csrfTokenRequestHandler(new CsrfTokenRequestAttributeHandler() {
                             @Override
@@ -101,10 +115,11 @@ public class SecurityConfiguration {
                 )
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                        .requestMatchers("/api/auth/**", "/api/web/**", "/v3/api-docs/**").permitAll()
+                        .requestMatchers("/api/auth/**", "/api/web/**", "/api/database/**", "/v3/api-docs/**").permitAll()
                         .anyRequest().authenticated()
                 )
-                .addFilterBefore(new DatabaseTokenAuthenticationFilter(this.repository.authTokenRepo, this.authService), UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(tokenAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(schemaUpgradeFilter, DatabaseTokenAuthenticationFilter.class)
                 .authenticationProvider(this.authService.authenticationProvider())
                 .exceptionHandling(exception -> exception
                         // Force 401 Unauthorized for unauthenticated requests

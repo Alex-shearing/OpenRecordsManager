@@ -1,6 +1,7 @@
 package com.openrecordsmanager.database;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.boot.flyway.autoconfigure.FlywayDataSource;
 import org.springframework.boot.jdbc.autoconfigure.DataSourceProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -22,6 +23,7 @@ public class DataSourceConfig {
     }
 
     @Bean
+    @FlywayDataSource
     public DataSource writeDataSource() {
         return primaryDataSourceProperties()
                 .initializeDataSourceBuilder()

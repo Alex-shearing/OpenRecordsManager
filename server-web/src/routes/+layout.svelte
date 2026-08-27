@@ -16,7 +16,7 @@
 
 {#await loadCfg}
 	<div class="flex min-h-screen items-center justify-center text-sm text-gray-500">Loading…</div>
-{:then cfg} 
+{:then cfg}
 	<div style:--color-primary={cfg.primaryColor} style="display: contents">
 		{@render children()}
 	</div>
