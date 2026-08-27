@@ -16,7 +16,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import java.util.HashSet;
-import java.util.UUID;
 
 @SpringBootTest
 class RecordTest {
@@ -26,7 +25,7 @@ class RecordTest {
 
     @BeforeEach
     void setUp() {
-        this.testUser = new User(UUID.randomUUID(), "test_user");
+        this.testUser = new User("test_user", null);
 
         // Number property
         ObjectProperty<Long> numberProperty = new ObjectProperty<>(

@@ -42,7 +42,7 @@ class ExpressionsServiceTest {
 
     @BeforeEach
     void setUp() {
-        this.testUser = new User(UUID.randomUUID(), "test");
+        this.testUser = new User("test", null);
 
         // Number property
         ObjectProperty<Long> numberProperty = new ObjectProperty<>(
@@ -131,7 +131,7 @@ class ExpressionsServiceTest {
                 new HashSet<>()
         );
         recordType.properties.add(new RecordTypeProperty<>(recordProperty, false));
-        
+
         Record record = new Record("Record title", recordType);
         record.setProperty(recordProperty, false);
 

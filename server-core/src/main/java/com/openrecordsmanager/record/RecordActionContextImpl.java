@@ -37,7 +37,7 @@ class RecordActionContextImpl implements RecordActionContext {
 
     @Override
     public UUID getActorId() {
-        return this.actor.id;
+        return this.actor.getId();
     }
 
     @Override

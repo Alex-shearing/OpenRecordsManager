@@ -35,8 +35,10 @@ public class SchemaMigrationService {
         MigrationInfo[] applied = this.flyway.info().applied();
 
         if (applied.length == 0) {
-            // This is a brand-new database, apply the schema to create the database
+            // Brand-new database: apply schema now. JPA is not available yet during Flyway init,
+            // so bootstrap rows are seeded later via InitialDatabaseSeeder.
             this.upgrade();
+            this.state.markInitialSeedPending();
         } else if (pending.length > 0) {
             this.state.markUpgradeRequired(
                     currentVersion(applied),

@@ -36,7 +36,7 @@ class UserActionContextImpl implements UserActionContext {
 
     @Override
     public UUID getActorId() {
-        return this.actor.id;
+        return this.actor.getId();
     }
 
     @Override
@@ -46,7 +46,7 @@ class UserActionContextImpl implements UserActionContext {
 
     @Override
     public UUID getTargetUserId() {
-        return this.target.id;
+        return this.target.getId();
     }
 
     @Override

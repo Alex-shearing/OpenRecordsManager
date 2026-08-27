@@ -8,6 +8,6 @@ import java.util.UUID;
 
 public record UserResponse(@NotBlank UUID id, @NotBlank String username, @NotBlank Map<String, Object> properties) {
     public static UserResponse of(User user) {
-        return new UserResponse(user.id, user.getUsername(), user.toPropertyMap(true));
+        return new UserResponse(user.getId(), user.getUsername(), user.toPropertyMap(true));
     }
 }

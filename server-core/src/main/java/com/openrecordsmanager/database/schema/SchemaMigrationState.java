@@ -18,6 +18,7 @@ public final class SchemaMigrationState {
     private @Nullable String currentVersion;
     private List<String> pendingMigrations = List.of();
     private @Nullable String message;
+    private boolean initialSeedPending;
 
     public Status getStatus() {
         return this.status;
@@ -51,5 +52,24 @@ public final class SchemaMigrationState {
         this.currentVersion = currentVersion;
         this.pendingMigrations = List.copyOf(pending);
         this.message = message;
+    }
+
+    /**
+     * Mark that this process created a brand-new schema and should seed bootstrap data
+     * once JPA repositories are available (after Flyway / EntityManagerFactory startup).
+     */
+    public void markInitialSeedPending() {
+        this.initialSeedPending = true;
+    }
+
+    /**
+     * @return true once if an initial seed was requested; subsequent calls return false
+     */
+    public boolean consumeInitialSeedPending() {
+        if (!this.initialSeedPending) {
+            return false;
+        }
+        this.initialSeedPending = false;
+        return true;
     }
 }

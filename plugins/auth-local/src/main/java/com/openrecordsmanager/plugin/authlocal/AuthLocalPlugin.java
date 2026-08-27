@@ -2,8 +2,6 @@ package com.openrecordsmanager.plugin.authlocal;
 
 import com.openrecordsmanager.api.Plugin;
 import com.openrecordsmanager.api.RegistrationContext;
-import com.openrecordsmanager.api.config.ConfigType;
-import com.openrecordsmanager.api.config.ConfigValueType;
 import com.openrecordsmanager.api.template.property.ObjectPropertyTemplate;
 import com.openrecordsmanager.api.template.property.PropertyType;
 import org.slf4j.Logger;
@@ -11,16 +9,10 @@ import org.slf4j.LoggerFactory;
 
 public class AuthLocalPlugin implements Plugin {
     public static final Logger LOGGER = LoggerFactory.getLogger(AuthLocalPlugin.class);
-
-    public static final LocalAuthProviderType LOCAL_AUTH_PROVIDER_TYPE = new LocalAuthProviderType();
+    
     public static final ObjectPropertyTemplate<String> PASSWORD_HASH_PROPERTY = ObjectPropertyTemplate.builder("Password Hash", PropertyType.STRING)
             .description("Hashed password for the user")
             .userHidden()
-            .build();
-    public static final ConfigType<Boolean> CONFIG_ADMIN_ENABLED = ConfigType.builder("auth.auth_local.enable_default_admin", ConfigValueType.BOOL)
-            .name("Enable Default Admin Account")
-            .description("Enables the default admin account with basic, well known credentials.")
-            .defaultValue(false)
             .build();
 
     @Override
@@ -32,9 +24,8 @@ public class AuthLocalPlugin implements Plugin {
     public void initialise(RegistrationContext registry) {
         LOGGER.info("Initializing plugin...");
 
-        registry.registerConfig(CONFIG_ADMIN_ENABLED);
         registry.registerComponent("password_hash", PASSWORD_HASH_PROPERTY);
-        registry.registerComponent("local_auth", LOCAL_AUTH_PROVIDER_TYPE);
+        registry.registerComponent("local_auth", new LocalAuthProviderType());
         registry.registerComponent("reset_password", new ResetLocalPasswordAction());
     }
 }

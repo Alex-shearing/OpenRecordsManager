@@ -34,10 +34,6 @@ public class LocalAuthProviderType extends InputAuthProviderType<LocalAuthProvid
             AuthProviderInstance instance,
             LocalAuthInputs inputs
     ) {
-        if (!config.getOrDefault(AuthLocalPlugin.CONFIG_ADMIN_ENABLED, false)) {
-            return null;
-        }
-
         Optional<String> hash = context.getUserProperty(inputs.username(), AuthLocalPlugin.PASSWORD_HASH_PROPERTY);
         if (hash.isEmpty()) {
             AuthLocalPlugin.LOGGER.info("Failed to validate password for user {} (no password set)", inputs.username());

@@ -65,7 +65,7 @@ public class PluginAuthenticationProvider implements AuthenticationProvider {
                 .orElseThrow(() -> UsernameNotFoundException.fromUsername(authDetails.getName()));
 
         // Ensure the authentication provider used is the same one the user signed up with
-        if (user.authProvider != provider) {
+        if (user.getAuthProvider() != provider) {
             throw new BadCredentialsException("The authentication provider used is not valid for this user");
         }
 

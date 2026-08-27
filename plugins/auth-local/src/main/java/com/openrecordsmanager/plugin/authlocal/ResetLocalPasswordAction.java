@@ -13,7 +13,7 @@ public class ResetLocalPasswordAction extends UserActionType<ResetLocalPasswordA
     }
 
     public record Inputs(
-            @SchemaField(title = "New Password", format = SchemaFieldFormat.PASSWORD, minLength = 8) String newPassword
+            @SchemaField(title = "New Password", format = SchemaFieldFormat.PASSWORD) String newPassword
     ) {
     }
 

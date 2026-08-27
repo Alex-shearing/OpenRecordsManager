@@ -15,15 +15,15 @@ import java.util.*;
 @SuppressWarnings({"NotNullFieldNotInitialized", "CanBeFinal"})
 public class User implements ObjectPropertyHolder<UserPropertyValue<?>>, UserDetails {
     @Id
-    public UUID id;
+    private UUID id;
 
     @Column(unique = true, nullable = false)
-    public String username;
+    private String username;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn
     @Nullable
-    public AuthProvider authProvider;
+    private AuthProvider authProvider;
 
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "user", fetch = FetchType.EAGER)
     @MapKey(name = "property")
@@ -33,9 +33,18 @@ public class User implements ObjectPropertyHolder<UserPropertyValue<?>>, UserDet
     protected User() {
     }
 
-    public User(UUID id, String username) {
-        this.id = id;
+    public User(String username, @Nullable AuthProvider authProvider) {
+        this.id = UUID.randomUUID();
         this.username = username;
+        this.authProvider = authProvider;
+    }
+
+    public UUID getId() {
+        return this.id;
+    }
+
+    public @Nullable AuthProvider getAuthProvider() {
+        return this.authProvider;
     }
 
     @Override
