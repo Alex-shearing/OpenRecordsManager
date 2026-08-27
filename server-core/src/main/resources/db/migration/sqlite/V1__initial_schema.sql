@@ -25,7 +25,7 @@ CREATE TABLE object_property (
     validator VARCHAR(255),
     security_filter VARCHAR(255),
     default_value CLOB,
-    user_hidden INTEGER NOT NULL,
+    user_hidden BOOLEAN NOT NULL,
     CONSTRAINT fk_object_property_list_type FOREIGN KEY (list_type_id) REFERENCES list_type (id)
 );
 

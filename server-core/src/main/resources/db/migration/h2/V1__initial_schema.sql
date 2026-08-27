@@ -8,7 +8,7 @@ CREATE TABLE auth_provider (
     id UUID NOT NULL PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
     provider_type VARCHAR(255) NOT NULL,
-    settings CHARACTER LARGE OBJECT NOT NULL
+    settings JSON NOT NULL
 );
 
 CREATE TABLE list_type (
@@ -24,7 +24,7 @@ CREATE TABLE object_property (
     list_type_id VARCHAR(255),
     validator VARCHAR(255),
     security_filter VARCHAR(255),
-    default_value CHARACTER LARGE OBJECT,
+    default_value JSON,
     user_hidden BOOLEAN NOT NULL,
     CONSTRAINT fk_object_property_list_type FOREIGN KEY (list_type_id) REFERENCES list_type (id)
 );
@@ -51,13 +51,13 @@ CREATE TABLE record_type (
     description VARCHAR(255) NOT NULL,
     security_filter VARCHAR(255),
     security_filter_usage SMALLINT NOT NULL CHECK (security_filter_usage BETWEEN 0 AND 2),
-    content_types CHARACTER LARGE OBJECT
+    content_types JSON
 );
 
 CREATE TABLE record_type_property (
     record_type VARCHAR(255) NOT NULL,
     property_id VARCHAR(255) NOT NULL,
-    default_value CHARACTER LARGE OBJECT,
+    default_value JSON,
     CONSTRAINT fk_rtp_record_type FOREIGN KEY (record_type) REFERENCES record_type (id),
     CONSTRAINT fk_rtp_property FOREIGN KEY (property_id) REFERENCES object_property (id)
 );
@@ -73,7 +73,7 @@ CREATE TABLE user_property_value (
     id UUID NOT NULL PRIMARY KEY,
     user_id UUID NOT NULL,
     property_id VARCHAR(255) NOT NULL,
-    property_value CHARACTER LARGE OBJECT,
+    property_value JSON,
     CONSTRAINT fk_upv_user FOREIGN KEY (user_id) REFERENCES user_details (id),
     CONSTRAINT fk_upv_property FOREIGN KEY (property_id) REFERENCES object_property (id)
 );
@@ -88,13 +88,13 @@ CREATE TABLE auth_token (
 CREATE TABLE file_store (
     id UUID NOT NULL PRIMARY KEY,
     type VARCHAR(255) NOT NULL,
-    properties CHARACTER LARGE OBJECT NOT NULL
+    properties JSON NOT NULL
 );
 
 CREATE TABLE file_store_middleware (
     id UUID NOT NULL PRIMARY KEY,
     type VARCHAR(255) NOT NULL,
-    properties CHARACTER LARGE OBJECT NOT NULL
+    properties JSON NOT NULL
 );
 
 CREATE TABLE file_store_middleware_usage (
@@ -134,7 +134,7 @@ CREATE TABLE record_property_value (
     id UUID NOT NULL PRIMARY KEY,
     record_id UUID NOT NULL,
     property_id VARCHAR(255) NOT NULL,
-    property_value CHARACTER LARGE OBJECT,
+    property_value JSON,
     CONSTRAINT fk_rpv_record FOREIGN KEY (record_id) REFERENCES record (id),
     CONSTRAINT fk_rpv_property FOREIGN KEY (property_id) REFERENCES object_property (id)
 );
