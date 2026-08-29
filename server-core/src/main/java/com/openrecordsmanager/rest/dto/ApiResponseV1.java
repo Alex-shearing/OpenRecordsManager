@@ -1,4 +1,4 @@
-package com.openrecordsmanager.rest;
+package com.openrecordsmanager.rest.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;

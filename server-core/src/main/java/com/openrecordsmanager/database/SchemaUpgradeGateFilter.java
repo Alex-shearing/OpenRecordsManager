@@ -1,7 +1,7 @@
 package com.openrecordsmanager.database;
 
 import com.openrecordsmanager.database.schema.SchemaMigrationState;
-import com.openrecordsmanager.rest.ApiResponseV1;
+import com.openrecordsmanager.rest.dto.ApiResponseV1;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;

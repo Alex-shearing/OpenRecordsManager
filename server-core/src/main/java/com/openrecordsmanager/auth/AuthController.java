@@ -8,7 +8,7 @@ import com.openrecordsmanager.auth.dto.NewAuthProviderRequest;
 import com.openrecordsmanager.auth.entity.AuthProvider;
 import com.openrecordsmanager.database.DataRepository;
 import com.openrecordsmanager.plugin.registry.ComponentCatalog;
-import com.openrecordsmanager.rest.ApiResponseV1;
+import com.openrecordsmanager.rest.dto.ApiResponseV1;
 import com.openrecordsmanager.rest.errors.ResourceNotFoundException;
 import com.openrecordsmanager.rest.swagger.*;
 import io.swagger.v3.oas.annotations.Operation;

@@ -1,4 +1,4 @@
-package com.openrecordsmanager.rest;
+package com.openrecordsmanager.rest.dto;
 
 import org.jspecify.annotations.Nullable;
 

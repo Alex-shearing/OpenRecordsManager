@@ -1,7 +1,7 @@
 package com.openrecordsmanager.user;
 
 import com.openrecordsmanager.api.ResourceIdentifier;
-import com.openrecordsmanager.dto.ActionResponse;
+import com.openrecordsmanager.rest.dto.ActionResponse;
 import com.openrecordsmanager.rest.swagger.DefaultApiResponses;
 import com.openrecordsmanager.rest.swagger.NotFoundApiResponse;
 import com.openrecordsmanager.user.dto.UserResponse;

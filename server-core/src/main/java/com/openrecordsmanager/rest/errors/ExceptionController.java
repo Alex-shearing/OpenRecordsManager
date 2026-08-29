@@ -3,7 +3,7 @@ package com.openrecordsmanager.rest.errors;
 import com.openrecordsmanager.api.builtin.BuiltinConfigs;
 import com.openrecordsmanager.api.errors.InputValidationException;
 import com.openrecordsmanager.config.ConfigService;
-import com.openrecordsmanager.rest.ApiResponseV1;
+import com.openrecordsmanager.rest.dto.ApiResponseV1;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;

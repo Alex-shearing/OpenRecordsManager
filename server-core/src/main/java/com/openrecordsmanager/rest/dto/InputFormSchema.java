@@ -1,4 +1,4 @@
-package com.openrecordsmanager.rest;
+package com.openrecordsmanager.rest.dto;
 
 import com.networknt.schema.Schema;
 import com.openrecordsmanager.api.schema.JsonSchemaValidator;

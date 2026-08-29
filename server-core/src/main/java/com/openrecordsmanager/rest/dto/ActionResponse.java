@@ -1,11 +1,10 @@
-package com.openrecordsmanager.dto;
+package com.openrecordsmanager.rest.dto;
 
 import com.openrecordsmanager.api.ResourceIdentifier;
 import com.openrecordsmanager.api.record.RecordActionType;
 import com.openrecordsmanager.api.types.ComponentTypes;
 import com.openrecordsmanager.api.user.UserActionType;
 import com.openrecordsmanager.plugin.registry.ComponentCatalog;
-import com.openrecordsmanager.rest.InputFormSchema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 

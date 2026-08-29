@@ -1,6 +1,6 @@
 package com.openrecordsmanager.rest.swagger;
 
-import com.openrecordsmanager.rest.ApiResponseV1;
+import com.openrecordsmanager.rest.dto.ApiResponseV1;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;

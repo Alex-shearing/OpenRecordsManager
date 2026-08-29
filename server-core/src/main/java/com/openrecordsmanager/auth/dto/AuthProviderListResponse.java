@@ -5,7 +5,7 @@ import com.openrecordsmanager.api.auth.InputAuthProviderType;
 import com.openrecordsmanager.auth.entity.AuthProvider;
 import com.openrecordsmanager.plugin.registry.ComponentCatalog;
 import com.openrecordsmanager.plugin.registry.mapper.ComponentReferenceSerializer;
-import com.openrecordsmanager.rest.InputFormSchema;
+import com.openrecordsmanager.rest.dto.InputFormSchema;
 import io.swagger.v3.oas.annotations.StringToClassMapItem;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;

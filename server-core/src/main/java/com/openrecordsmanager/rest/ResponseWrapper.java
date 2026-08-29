@@ -1,5 +1,6 @@
 package com.openrecordsmanager.rest;
 
+import com.openrecordsmanager.rest.dto.ApiResponseV1;
 import org.jspecify.annotations.Nullable;
 import org.springframework.core.MethodParameter;
 import org.springframework.core.io.Resource;
