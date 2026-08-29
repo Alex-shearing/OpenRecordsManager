@@ -1,12 +1,13 @@
 package com.openrecordsmanager.auth;
 
+import com.openrecordsmanager.api.builtin.BuiltinConfigs;
 import com.openrecordsmanager.audit.AuditContextFilter;
+import com.openrecordsmanager.config.ConfigService;
 import com.openrecordsmanager.database.DataRepository;
 import com.openrecordsmanager.database.SchemaUpgradeGateFilter;
 import com.openrecordsmanager.database.schema.SchemaMigrationState;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -35,34 +36,32 @@ import java.util.function.Supplier;
 public class SecurityConfiguration {
     private final DataRepository repository;
     private final AuthService authService;
-    private final List<String> allowedOrigins;
-    private final List<String> allowedMethods;
-    private final List<String> allowedHeaders;
+    private final String[] allowedOrigins;
+    private final String[] allowedHeaders;
     private final boolean cookieSecure;
 
     public SecurityConfiguration(
             DataRepository repository,
             AuthService authService,
-            @Value("${app.security.cors.allowed-origins:http://localhost:5173,http://localhost:3000}") List<String> allowedOrigins,
-            @Value("${app.security.cors.allowed-methods:GET,POST,PUT,PATCH,DELETE,OPTIONS}") List<String> allowedMethods,
-            @Value("${app.security.cors.allowed-headers:Authorization,Content-Type,X-XSRF-TOKEN,X-Client-Platform,X-ORM-Audit-Comment}") List<String> allowedHeaders,
-            @Value("${app.security.cookie-secure:true}") boolean cookieSecure
+            ConfigService configService
     ) {
         this.repository = repository;
         this.authService = authService;
-        this.allowedOrigins = allowedOrigins;
-        this.allowedMethods = allowedMethods;
-        this.allowedHeaders = allowedHeaders;
-        this.cookieSecure = cookieSecure;
+        this.allowedOrigins = configService.getOrThrow(BuiltinConfigs.CORS_ALLOWED_ORIGINS);
+        this.allowedHeaders = configService.getOrThrow(BuiltinConfigs.CORS_ALLOWED_HEADERS);
+        this.cookieSecure = configService.getOrThrow(BuiltinConfigs.COOKIE_SECURE);
     }
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
 
-        configuration.setAllowedOrigins(this.allowedOrigins);
-        configuration.setAllowedMethods(this.allowedMethods);
-        configuration.setAllowedHeaders(this.allowedHeaders);
+        for (HttpMethod value : HttpMethod.values()) {
+            configuration.addAllowedMethod(value);
+        }
+
+        configuration.setAllowedOrigins(List.of(this.allowedOrigins));
+        configuration.setAllowedHeaders(List.of(this.allowedHeaders));
         configuration.setAllowCredentials(true);
         // Required for browser preflights from localhost / private-network contexts
         configuration.setAllowPrivateNetwork(true);

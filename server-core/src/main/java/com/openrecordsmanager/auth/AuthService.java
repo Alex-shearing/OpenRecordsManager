@@ -5,6 +5,7 @@ import com.openrecordsmanager.api.audit.AuditEntityType;
 import com.openrecordsmanager.api.audit.AuditOperation;
 import com.openrecordsmanager.api.auth.AuthProviderType;
 import com.openrecordsmanager.api.auth.UserAuthContext;
+import com.openrecordsmanager.api.builtin.BuiltinConfigs;
 import com.openrecordsmanager.api.template.property.ObjectPropertyTemplate;
 import com.openrecordsmanager.audit.AuditService;
 import com.openrecordsmanager.audit.RequiresAuditComment;
@@ -22,7 +23,6 @@ import com.openrecordsmanager.user.User;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -36,7 +36,7 @@ import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.Base64;
 import java.util.Map;
 import java.util.Optional;
@@ -60,19 +60,17 @@ public class AuthService implements UserAuthContext {
             ComponentCatalog catalog,
             ConfigService config,
             ExpressionsService expressions,
-            AuditService auditService,
-            @Value("${app.security.cookie-name:ORM-Authentication}") String cookieName,
-            @Value("${app.security.expiration-time:3600000}") long tokenDuration,
-            @Value("${app.security.cookie-secure:true}") boolean cookieSecure
+            AuditService auditService
     ) {
         this.repository = repository;
         this.catalog = catalog;
         this.config = config;
         this.expressions = expressions;
         this.auditService = auditService;
-        this.cookieName = cookieName;
-        this.tokenDuration = tokenDuration;
-        this.cookieSecure = cookieSecure;
+        // Cache these configuration options at startup, don't query sources each time its used
+        this.cookieName = config.getOrThrow(BuiltinConfigs.COOKIE_NAME);
+        this.tokenDuration = config.getOrThrow(BuiltinConfigs.TOKEN_EXPIRATION_TIME);
+        this.cookieSecure = config.getOrThrow(BuiltinConfigs.COOKIE_SECURE);
     }
 
     @Bean
@@ -128,7 +126,7 @@ public class AuthService implements UserAuthContext {
     }
 
     private AuthToken generateToken(User details) {
-        AuthToken token = new AuthToken(generateToken(), details, LocalDateTime.now().plusSeconds(this.tokenDuration));
+        AuthToken token = new AuthToken(generateToken(), details, Instant.now().plusSeconds(this.tokenDuration));
         return this.repository.authTokenRepo.save(token);
     }
 

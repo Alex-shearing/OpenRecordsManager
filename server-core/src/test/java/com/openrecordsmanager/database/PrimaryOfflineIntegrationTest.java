@@ -1,5 +1,7 @@
 package com.openrecordsmanager.database;
 
+import com.openrecordsmanager.api.builtin.BuiltinConfigs;
+import com.openrecordsmanager.database.schema.SchemaMigrationState;
 import org.flywaydb.core.Flyway;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,9 +11,6 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
-
-import com.openrecordsmanager.audit.DatabaseWritableProbe;
-import com.openrecordsmanager.database.schema.SchemaMigrationState;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -44,9 +43,9 @@ class PrimaryOfflineIntegrationTest {
         registry.add("server.database.read-only.username", () -> "sa");
         registry.add("server.database.read-only.password", () -> "");
         registry.add("server.database.read-only.driver-class-name", () -> "org.h2.Driver");
-        registry.add("server.plugins.skip_startup_check", () -> "true");
-        registry.add("audit.probe.interval-ms", () -> "60000");
-        registry.add("audit.drain.fixed-delay-ms", () -> "60000");
+        registry.add(BuiltinConfigs.PLUGINS_SKIP_STARTUP_CHECK.key(), () -> "true");
+        registry.add(BuiltinConfigs.DATABASE_PROBE_INTERVAL_MS.key(), () -> "60000");
+        registry.add(BuiltinConfigs.AUDIT_SPOOL_DRAIN_INTERVAL_SECONDS.key(), () -> "60000");
     }
 
     @Autowired

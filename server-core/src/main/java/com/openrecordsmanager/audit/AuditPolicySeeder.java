@@ -1,5 +1,6 @@
 package com.openrecordsmanager.audit;
 
+import com.openrecordsmanager.database.DatabaseWritableProbe;
 import com.openrecordsmanager.database.schema.SchemaMigrationReadyEvent;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;

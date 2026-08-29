@@ -10,6 +10,7 @@ import com.openrecordsmanager.audit.persistence.AuditPolicyEntity;
 import com.openrecordsmanager.audit.spool.AuditSpoolDrainer;
 import com.openrecordsmanager.audit.spool.AuditSpoolWriter;
 import com.openrecordsmanager.database.DataRepository;
+import com.openrecordsmanager.database.DatabaseWritableProbe;
 import com.openrecordsmanager.rest.errors.ResourceNotFoundException;
 import com.openrecordsmanager.user.User;
 import org.jspecify.annotations.Nullable;

@@ -1,5 +1,6 @@
-package com.openrecordsmanager.audit;
+package com.openrecordsmanager.database;
 
+import com.openrecordsmanager.api.builtin.BuiltinConfigs;
 import com.openrecordsmanager.database.schema.SchemaMigrationState;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -62,7 +63,7 @@ public class DatabaseWritableProbe {
         this.probe();
     }
 
-    @Scheduled(fixedDelayString = "${audit.probe.interval-ms:30000}")
+    @Scheduled(fixedDelayString = "${" + BuiltinConfigs.DATABASE_PROBE_INTERVAL_MS_KEY + ":30000}")
     public void probe() {
         if (this.migrationState.isUpgradeRequired()) {
             this.writable.set(false);

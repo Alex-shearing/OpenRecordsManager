@@ -3,6 +3,7 @@ package com.openrecordsmanager.audit;
 import com.openrecordsmanager.api.audit.AuditEntityType;
 import com.openrecordsmanager.api.audit.AuditOperation;
 import com.openrecordsmanager.audit.persistence.AuditEventRepository;
+import com.openrecordsmanager.database.DatabaseWritableProbe;
 import org.hibernate.Session;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.resource.jdbc.spi.PhysicalConnectionHandlingMode;

@@ -6,6 +6,7 @@ import com.openrecordsmanager.api.audit.AuditOperation;
 import com.openrecordsmanager.audit.persistence.AuditEventEntity;
 import com.openrecordsmanager.audit.persistence.AuditEventRepository;
 import com.openrecordsmanager.audit.spool.AuditSpoolWriter;
+import com.openrecordsmanager.database.DatabaseWritableProbe;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

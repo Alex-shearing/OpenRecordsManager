@@ -23,7 +23,7 @@ RUN ./gradlew :server-core:bootJar :copyPlugins --no-daemon -x test
 FROM eclipse-temurin:25-jre
 WORKDIR /app
 
-RUN mkdir -p /app/data /app/plugins /app/logs
+RUN mkdir -p /app/data /app/plugins
 
 COPY --from=build /workspace/server-core/build/libs/server-core-*.jar /app/server-core.jar
 COPY --from=build /workspace/server-core/plugins/ /app/plugins/
@@ -32,8 +32,7 @@ COPY server-core/config.yml /app/config.yml
 ENV SERVER_PLUGINS_DIRECTORY=/app/plugins \
     SERVER_DATABASE_PRIMARY_URL=jdbc:sqlite:/app/data/orm_system.db \
     SERVER_DATABASE_READ_ONLY_URL=jdbc:sqlite:/app/data/orm_system.db \
-    APP_LOGGING_PATH=/app/logs/openrecordsmanager.log \
-    SERVER_WEB_DIRECTORY=
+    APP_LOGGING_PATH=/app/data/logs/openrecordsmanager.log
 
 EXPOSE 8080
 VOLUME ["/app/data", "/app/plugins", "/app/logs"]

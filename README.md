@@ -16,7 +16,7 @@ To build sources locally, use the following instructions.
 There are multiple tasks that can be used to assist in the development workflow:
 
 - `gradlew runApp` / `gradlew bootRun` - runs the Spring Boot API (plugins included with `runApp`)
-- `gradlew copyPlugins` - builds all the plugins and places them in the `server-core/plugins` directory
+- `gradlew copyPlugins` - builds all the plugins and places them in the `server-core/data/plugins` directory
 - `gradlew buildWeb` / `gradlew webDistZip` - builds the static web client distribution
 - `gradlew bootJar` / `gradlew distZip` - API distribution zip (JAR, plugins, scripts)
 - `cd server-web && npm run dev` - SvelteKit UI in development mode (proxies `/api` to `:8080`)

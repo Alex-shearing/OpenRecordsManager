@@ -2,7 +2,7 @@ package com.openrecordsmanager.audit.spool;
 
 import com.openrecordsmanager.audit.AuditEventPayload;
 import com.openrecordsmanager.audit.AuditService;
-import com.openrecordsmanager.audit.DatabaseWritableProbe;
+import com.openrecordsmanager.database.DatabaseWritableProbe;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;

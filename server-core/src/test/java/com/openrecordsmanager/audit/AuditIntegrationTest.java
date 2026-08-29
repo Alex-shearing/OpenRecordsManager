@@ -2,11 +2,13 @@ package com.openrecordsmanager.audit;
 
 import com.openrecordsmanager.api.audit.AuditEntityType;
 import com.openrecordsmanager.api.audit.AuditOperation;
+import com.openrecordsmanager.api.builtin.BuiltinConfigs;
 import com.openrecordsmanager.audit.persistence.AuditPolicyEntity;
 import com.openrecordsmanager.audit.persistence.AuditPolicyId;
 import com.openrecordsmanager.audit.spool.AuditSpoolDrainer;
 import com.openrecordsmanager.audit.spool.AuditSpoolWriter;
 import com.openrecordsmanager.database.DataRepository;
+import com.openrecordsmanager.database.DatabaseWritableProbe;
 import com.openrecordsmanager.list.ListService;
 import com.openrecordsmanager.rest.errors.AuditCommentRequiredException;
 import org.junit.jupiter.api.BeforeEach;
@@ -33,8 +35,8 @@ class AuditIntegrationTest {
     @DynamicPropertySource
     static void auditProperties(DynamicPropertyRegistry registry) {
         spoolDirectory = Path.of("build/test-audit-" + UUID.randomUUID());
-        registry.add("audit.spool.directory", () -> spoolDirectory.toString());
-        registry.add("audit.drain.fixed-delay-ms", () -> "60000");
+        registry.add(BuiltinConfigs.AUDIT_SPOOL_DIRECTORY.key(), () -> spoolDirectory.toString());
+        registry.add(BuiltinConfigs.AUDIT_SPOOL_DRAIN_INTERVAL_SECONDS.key(), () -> "60000");
         registry.add("audit.probe.interval-ms", () -> "60000");
     }
 

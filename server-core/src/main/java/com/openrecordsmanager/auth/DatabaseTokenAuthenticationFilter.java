@@ -33,7 +33,7 @@ public class DatabaseTokenAuthenticationFilter extends OncePerRequestFilter {
                                     FilterChain filterChain) throws ServletException, IOException {
 
         String tokenValue = this.extractTokenFromRequest(request);
-        
+
         if (tokenValue != null) {
             this.tokenRepository.findById(tokenValue).ifPresent(userToken -> {
                 if (!userToken.isExpired()) {
@@ -54,7 +54,14 @@ public class DatabaseTokenAuthenticationFilter extends OncePerRequestFilter {
     }
 
     private @Nullable String extractTokenFromRequest(HttpServletRequest request) {
-        String token = null;
+        String authHeader = request.getHeader("Authorization");
+
+        if (authHeader != null) {
+            if (authHeader.startsWith("Bearer ")) {
+                return authHeader.substring(7);
+            }
+            return null;
+        }
 
         Cookie[] cookies = request.getCookies();
         if (cookies != null) {
@@ -63,18 +70,10 @@ public class DatabaseTokenAuthenticationFilter extends OncePerRequestFilter {
                     .findFirst();
 
             if (authCookie.isPresent() && !authCookie.get().getValue().isBlank()) {
-                token = authCookie.get().getValue();
+                return authCookie.get().getValue();
             }
         }
 
-        if (token == null) {
-            String authHeader = request.getHeader("Authorization");
-
-            if (authHeader != null && authHeader.startsWith("Bearer ")) {
-                token = authHeader.substring(7);
-            }
-        }
-
-        return token;
+        return null;
     }
 }
