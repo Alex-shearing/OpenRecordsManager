@@ -2,7 +2,6 @@ package com.openrecordsmanager.auth;
 
 import com.openrecordsmanager.api.ComponentReference;
 import com.openrecordsmanager.api.auth.RedirectAuthProviderType;
-import com.openrecordsmanager.api.audit.AuditEntityType;
 import com.openrecordsmanager.audit.AuditService;
 import com.openrecordsmanager.auth.dto.AuthProviderListResponse;
 import com.openrecordsmanager.auth.dto.LoginResponse;
@@ -58,11 +57,9 @@ public class AuthController {
     @GetMapping(value = "/providers", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "List all supported authentication providers.")
     public Set<AuthProviderListResponse> providers_listAll() {
-        Set<AuthProviderListResponse> providers = this.repository.authProviderRepo.findAll().stream()
+        return this.repository.authProviderRepo.findAll().stream()
                 .map(provider -> AuthProviderListResponse.of(this.catalog, provider))
                 .collect(Collectors.toSet());
-        this.auditService.recordCollectionRead(AuditEntityType.AUTH_PROVIDER, providers.size());
-        return providers;
     }
 
     @PutMapping(value = "/providers", produces = MediaType.APPLICATION_JSON_VALUE)

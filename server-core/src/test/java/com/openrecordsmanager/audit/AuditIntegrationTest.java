@@ -161,7 +161,7 @@ class AuditIntegrationTest {
         AuditEventPayload payload = samplePayload(AuditEntityType.USER, UUID.randomUUID().toString());
 
         this.probe.markWriteFailed();
-        this.auditService.persistImmediately(payload);
+        this.auditService.persist(payload);
 
         assertEquals(1, this.spoolWriter.pendingCount());
         assertFalse(this.repository.auditEventRepo.existsById(payload.id()));
@@ -193,7 +193,7 @@ class AuditIntegrationTest {
         AuditEventPayload spooled = samplePayload(AuditEntityType.RECORD, targetId);
 
         this.probe.markWriteFailed();
-        this.auditService.persistImmediately(spooled);
+        this.auditService.persist(spooled);
 
         List<AuditEventPayload> pending = this.spoolWriter.readForTarget(AuditEntityType.RECORD, targetId);
         assertEquals(1, pending.size());

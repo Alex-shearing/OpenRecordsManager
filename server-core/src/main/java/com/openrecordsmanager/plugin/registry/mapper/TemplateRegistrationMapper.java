@@ -5,6 +5,7 @@ import com.openrecordsmanager.api.ComponentReference;
 import com.openrecordsmanager.api.ResourceIdentifier;
 import com.openrecordsmanager.api.template.TemplateComponent;
 import com.openrecordsmanager.api.types.ComponentType;
+import com.openrecordsmanager.audit.AuditService;
 import com.openrecordsmanager.database.DataRepository;
 import com.openrecordsmanager.plugin.ExpressionsService;
 import com.openrecordsmanager.plugin.registry.ComponentCatalog;
@@ -23,55 +24,66 @@ public abstract class TemplateRegistrationMapper<T extends TemplateComponent, D>
      *
      * @param repository          the data repository
      * @param catalog             the component catalog
-     * @param expressions         expressions service
+     * @param expressions         the expressions service
+     * @param auditService        the audit service
      * @param id                  id to register as
-     * @param component           the component
+     * @param component           the component to register
      * @param includeDependencies if true, all dependencies of the component will be registered before registration
      */
     public final void register(
             DataRepository repository,
             ComponentCatalog catalog,
             ExpressionsService expressions,
+            AuditService auditService,
             ResourceIdentifier id,
             T component,
             boolean includeDependencies
     ) {
         if (includeDependencies) {
-            registerDependencies(repository, catalog, expressions, component);
+            registerDependencies(repository, catalog, expressions, auditService, component);
         }
 
         // Validate all dependencies exist
         validateAllDependenciesRegistered(component, repository, catalog);
 
-        this.register(repository, catalog, expressions, id, component);
+        this.register(repository, catalog, expressions, auditService, id, component);
     }
 
     /**
      * Register the dependencies of a component. Does not register the component itself,
-     * see {@link TemplateRegistrationMapper#register(DataRepository, ComponentCatalog, ExpressionsService, ResourceIdentifier, TemplateComponent, boolean)}.
+     * see {@link TemplateRegistrationMapper#register(DataRepository, ComponentCatalog, ExpressionsService, AuditService, ResourceIdentifier, TemplateComponent, boolean)}.
      *
-     * @param repository  the data repository
-     * @param catalog     the component catalog
-     * @param expressions expressions service
-     * @param component   the component
+     * @param repository   the data repository
+     * @param catalog      the component catalog
+     * @param expressions  the expressions service
+     * @param auditService the audit service
+     * @param component    the component to register
      */
     public static void registerDependencies(
             DataRepository repository,
             ComponentCatalog catalog,
             ExpressionsService expressions,
+            AuditService auditService,
             Component component
     ) {
         for (ComponentReference<? extends TemplateComponent> dependencyRef : component.getDependencies()) {
-            registerDependency(repository, catalog, expressions, dependencyRef);
+            registerDependency(repository, catalog, expressions, auditService, dependencyRef);
         }
     }
 
-    private static <K extends TemplateComponent> void registerDependency(DataRepository repository, ComponentCatalog catalog, ExpressionsService expressions, ComponentReference<K> reference) {
+    private static <K extends TemplateComponent> void registerDependency(
+            DataRepository repository,
+            ComponentCatalog catalog,
+            ExpressionsService expressions,
+            AuditService auditService,
+            ComponentReference<K> reference
+    ) {
         catalog.getTemplateRegistry(ComponentCatalog.mapperFromComponent(reference.getType()))
                 .register(
                         repository,
                         catalog,
                         expressions,
+                        auditService,
                         reference,
                         true
                 );
@@ -80,16 +92,18 @@ public abstract class TemplateRegistrationMapper<T extends TemplateComponent, D>
     /**
      * Register the component template to the database
      *
-     * @param repository  the data repository
-     * @param catalog     the component catalog
-     * @param expressions expressions service
-     * @param id          id to register as
-     * @param component   the component
+     * @param repository   the data repository
+     * @param catalog      the component catalog
+     * @param expressions  expressions service
+     * @param auditService the audit service
+     * @param id           id to register as
+     * @param component    the component
      */
     protected abstract void register(
             DataRepository repository,
             ComponentCatalog catalog,
             ExpressionsService expressions,
+            AuditService auditService,
             ResourceIdentifier id,
             T component
     );

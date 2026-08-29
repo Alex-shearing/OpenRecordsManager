@@ -4,6 +4,7 @@ import com.openrecordsmanager.api.ResourceIdentifier;
 import com.openrecordsmanager.api.template.list.ListElementTemplate;
 import com.openrecordsmanager.api.types.ComponentType;
 import com.openrecordsmanager.api.types.ComponentTypes;
+import com.openrecordsmanager.audit.AuditService;
 import com.openrecordsmanager.database.DataRepository;
 import com.openrecordsmanager.list.ListElement;
 import com.openrecordsmanager.list.ListType;
@@ -24,6 +25,7 @@ public class ListElementTemplateRegistrationMapper extends TemplateRegistrationM
             DataRepository repository,
             ComponentCatalog catalog,
             ExpressionsService expressions,
+            AuditService auditService,
             ResourceIdentifier id,
             ListElementTemplate component
     ) {

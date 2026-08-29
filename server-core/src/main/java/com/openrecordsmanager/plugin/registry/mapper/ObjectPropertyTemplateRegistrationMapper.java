@@ -4,6 +4,7 @@ import com.openrecordsmanager.api.ResourceIdentifier;
 import com.openrecordsmanager.api.template.property.ObjectPropertyTemplate;
 import com.openrecordsmanager.api.types.ComponentType;
 import com.openrecordsmanager.api.types.ComponentTypes;
+import com.openrecordsmanager.audit.AuditService;
 import com.openrecordsmanager.database.DataRepository;
 import com.openrecordsmanager.list.ListType;
 import com.openrecordsmanager.plugin.ExpressionsService;
@@ -24,6 +25,7 @@ public class ObjectPropertyTemplateRegistrationMapper extends TemplateRegistrati
             DataRepository repository,
             ComponentCatalog catalog,
             ExpressionsService expressions,
+            AuditService auditService,
             ResourceIdentifier id,
             ObjectPropertyTemplate<?> component
     ) {

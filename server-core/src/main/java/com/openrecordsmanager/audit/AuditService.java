@@ -192,31 +192,18 @@ public class AuditService {
                 AuditContext.comment().orElse(null),
                 metadata
         );
-        this.publish(payload);
-    }
-
-    private void publish(AuditEventPayload payload) {
-        this.publisher.publishEvent(new AuditRecordRequested(payload));
+        this.publisher.publishEvent(payload);
     }
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT, fallbackExecution = true)
-    public void onAuditRecordRequested(AuditRecordRequested event) {
-        this.persist(event.payload());
+    public void onAuditRecordRequested(AuditEventPayload event) {
+        this.persist(event);
     }
 
-    public void persistImmediately(AuditEventPayload payload) {
-        if (!this.policyService.isEventEnabled(payload.targetType(), payload.operation())) {
-            return;
-        }
-        this.persist(payload);
-    }
+    public void persist(AuditEventPayload payload) {
+        LOGGER.debug("New audit event: {}", payload);
 
-    private void persist(AuditEventPayload payload) {
         this.spoolWriter.append(payload);
-
-        if (!this.probe.isWritable()) {
-            return;
-        }
 
         if (this.trySaveToDatabase(payload)) {
             this.spoolWriter.removeByIds(Set.of(payload.id()));
@@ -226,6 +213,10 @@ public class AuditService {
     }
 
     public boolean trySaveToDatabase(AuditEventPayload payload) {
+        if (!this.probe.isWritable()) {
+            return false;
+        }
+
         try {
             this.self.saveIfAbsent(this.toEntity(payload));
             return true;

@@ -2,7 +2,10 @@ package com.openrecordsmanager.plugin.registry;
 
 import com.openrecordsmanager.api.ComponentReference;
 import com.openrecordsmanager.api.ResourceIdentifier;
+import com.openrecordsmanager.api.audit.AuditEntityType;
+import com.openrecordsmanager.api.audit.AuditOperation;
 import com.openrecordsmanager.api.template.TemplateComponent;
+import com.openrecordsmanager.audit.AuditService;
 import com.openrecordsmanager.database.DataRepository;
 import com.openrecordsmanager.plugin.ExpressionsService;
 import com.openrecordsmanager.plugin.registry.mapper.TemplateRegistrationMapper;
@@ -16,18 +19,47 @@ public class TemplateComponentRegistry<T extends TemplateComponent, D> extends C
         this.mapper = mapper;
     }
 
-    public void register(DataRepository repository, ComponentCatalog catalog, ExpressionsService expressions, ResourceIdentifier templateId, T template, boolean includeDependencies) {
-        this.mapper.register(repository, catalog, expressions, templateId, template, includeDependencies);
+    public void register(
+            DataRepository repository,
+            ComponentCatalog catalog,
+            ExpressionsService expressions,
+            AuditService auditService,
+            ResourceIdentifier templateId,
+            T template,
+            boolean includeDependencies
+    ) {
+        this.mapper.register(repository, catalog, expressions, auditService, templateId, template, includeDependencies);
+
+        auditService.addEvent(
+                AuditOperation.CREATE,
+                AuditEntityType.fromComponentType(this.mapper.componentType()),
+                templateId
+        );
     }
 
-    public void register(DataRepository repository, ComponentCatalog catalog, ExpressionsService expressions, ComponentReference<T> reference, boolean includeDependencies) {
+    public void register(
+            DataRepository repository,
+            ComponentCatalog catalog,
+            ExpressionsService expressions,
+            AuditService auditService,
+            ComponentReference<T> reference,
+            boolean includeDependencies
+    ) {
         ResourceIdentifier dependencyId = reference.getId(catalog)
                 .orElseThrow(() -> new IllegalStateException("Cannot find dependency " + reference));
 
         T template = reference.getComponent(catalog)
                 .orElseThrow(() -> new IllegalStateException("Cannot find referenced dependency " + reference));
 
-        this.mapper.register(repository, catalog, expressions, dependencyId, template, includeDependencies);
+        this.register(
+                repository,
+                catalog,
+                expressions,
+                auditService,
+                dependencyId,
+                template,
+                includeDependencies
+        );
     }
 
     public Optional<D> getRegistered(ResourceIdentifier id, DataRepository repository) {

@@ -55,10 +55,7 @@ public class TemplateService {
     public Set<ResourceIdentifier> listTemplates(String typeName) {
         TemplateRegistrationMapper<?, ?> mapper = resolveMapper(typeName);
         Set<ResourceIdentifier> ids = this.catalog.getTemplateRegistry(mapper).getIds();
-        this.auditService.recordCollectionRead(
-                AuditEntityType.fromComponentType(mapper.componentType()),
-                ids.size()
-        );
+        this.auditService.recordCollectionRead(AuditEntityType.TEMPLATE, ids.size());
         return ids;
     }
 
@@ -70,7 +67,7 @@ public class TemplateService {
         TemplateComponent template = registry.get(templateId)
                 .orElseThrow(() -> new ResourceNotFoundException(type.componentType(), templateId));
 
-        this.auditService.addReadEvent(AuditEntityType.fromComponentType(type.componentType()), templateId);
+        this.auditService.addReadEvent(AuditEntityType.TEMPLATE, templateId);
         return template;
     }
 
@@ -100,7 +97,14 @@ public class TemplateService {
     ) {
         TemplateComponentRegistry<T, ?> registry = this.catalog.getTemplateRegistry(type);
         ComponentReference<T> ref = ComponentReference.of(type.componentType(), templateId);
-        registry.register(this.repository, this.catalog, this.expressions, ref, includeDependencies);
+        registry.register(
+                this.repository,
+                this.catalog,
+                this.expressions,
+                this.auditService,
+                ref,
+                includeDependencies
+        );
     }
 
     private TemplateRegistrationMapper<?, ?> resolveMapper(String typeName) {

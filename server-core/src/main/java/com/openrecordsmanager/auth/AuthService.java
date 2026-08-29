@@ -87,7 +87,8 @@ public class AuthService implements UserAuthContext {
     public LoginResponse login(
             PluginAuthenticationProvider.AbstractPluginToken token,
             HttpServletRequest request,
-            HttpServletResponse response) throws AuthenticationException {
+            HttpServletResponse response
+    ) throws AuthenticationException {
         Authentication authenticatedUser = this.authenticationProvider().authenticate(token);
         if (authenticatedUser == null || !authenticatedUser.isAuthenticated() || authenticatedUser.getDetails() == null) {
             throw new BadCredentialsException("Username or password is incorrect");
@@ -154,7 +155,10 @@ public class AuthService implements UserAuthContext {
     public AuthProviderListResponse createProvider(String name, ComponentReference<? extends AuthProviderType> type, Map<String, Object> settings) {
         // Ensure any pre-requisite templates are registered
         TemplateRegistrationMapper.registerDependencies(
-                this.repository, this.catalog, this.expressions,
+                this.repository,
+                this.catalog,
+                this.expressions,
+                this.auditService,
                 type.getComponent(this.catalog)
                         .orElseThrow(() -> new IllegalArgumentException("unknown auth provider type " + type))
         );

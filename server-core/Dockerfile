@@ -35,6 +35,6 @@ ENV SERVER_PLUGINS_DIRECTORY=/app/plugins \
     APP_LOGGING_PATH=/app/data/logs/openrecordsmanager.log
 
 EXPOSE 8080
-VOLUME ["/app/data", "/app/plugins", "/app/logs"]
+VOLUME ["/app/data"]
 
 CMD ["java", "-jar", "/app/server-core.jar"]

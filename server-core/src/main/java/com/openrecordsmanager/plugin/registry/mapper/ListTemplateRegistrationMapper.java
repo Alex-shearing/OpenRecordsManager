@@ -4,6 +4,7 @@ import com.openrecordsmanager.api.ResourceIdentifier;
 import com.openrecordsmanager.api.template.list.ListTemplate;
 import com.openrecordsmanager.api.types.ComponentType;
 import com.openrecordsmanager.api.types.ComponentTypes;
+import com.openrecordsmanager.audit.AuditService;
 import com.openrecordsmanager.database.DataRepository;
 import com.openrecordsmanager.list.ListType;
 import com.openrecordsmanager.plugin.ExpressionsService;
@@ -23,6 +24,7 @@ public class ListTemplateRegistrationMapper extends TemplateRegistrationMapper<L
             DataRepository repository,
             ComponentCatalog catalog,
             ExpressionsService expressions,
+            AuditService auditService,
             ResourceIdentifier id,
             ListTemplate component
     ) {
@@ -33,7 +35,7 @@ public class ListTemplateRegistrationMapper extends TemplateRegistrationMapper<L
             ResourceIdentifier childId = new ResourceIdentifier(id.source(), s);
 
             catalog.getTemplateRegistry(ComponentCatalog.LIST_ELEMENT_MAPPER)
-                    .register(repository, catalog, expressions, childId, listItem, false);
+                    .register(repository, catalog, expressions, auditService, childId, listItem, false);
         });
 
     }
