@@ -3,6 +3,7 @@ package com.openrecordsmanager.audit.spool;
 import com.openrecordsmanager.audit.AuditEventPayload;
 import com.openrecordsmanager.audit.AuditService;
 import com.openrecordsmanager.database.DatabaseWritableProbe;
+import jakarta.annotation.PreDestroy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -42,6 +43,29 @@ public class AuditSpoolDrainer {
 
     public Instant getLastSuccessfulDrain() {
         return this.lastSuccessfulDrain.get();
+    }
+
+    /**
+     * Best-effort flush of pending spool events before the application context is destroyed.
+     * If the primary DB is offline, events remain on disk for the next startup drain.
+     */
+    @PreDestroy
+    void drainOnShutdown() {
+        int pending = this.spoolWriter.pendingCount();
+        if (pending == 0) {
+            return;
+        }
+
+        LOGGER.info("Shutting down: attempting to drain {} pending audit event(s) to the database", pending);
+        int synced = this.drain();
+        int remaining = this.spoolWriter.pendingCount();
+        if (remaining > 0) {
+            LOGGER.warn(
+                    "Shutdown drain left {} audit event(s) on disk (synced {}); they will retry on next startup",
+                    remaining,
+                    synced
+            );
+        }
     }
 
     @Scheduled(fixedDelayString = "${audit.drain.fixed-delay-ms:30000}")
