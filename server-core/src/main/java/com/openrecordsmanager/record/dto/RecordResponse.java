@@ -5,28 +5,25 @@ import com.openrecordsmanager.record.Record;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
+import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 public record RecordResponse(
         @NotBlank UUID id,
         @NotBlank String title,
         @NotBlank ResourceIdentifier type,
         @NotNull Map<String, Object> properties,
-        @NotNull Set<String> revisions
+        @NotNull List<String> revisions
 ) {
 
     public static RecordResponse of(Record record) {
         return new RecordResponse(
-                record.id,
-                record.title,
+                record.getId(),
+                record.getTitle(),
                 record.getType().id,
                 record.toPropertyMap(true),
-                record.revisions.stream()
-                        .map(recordRevision -> recordRevision.version)
-                        .collect(Collectors.toSet())
+                record.getRevisionList()
         );
     }
 }

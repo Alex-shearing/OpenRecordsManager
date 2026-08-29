@@ -1,7 +1,9 @@
 package com.openrecordsmanager.recordtype;
 
 import com.openrecordsmanager.api.ResourceIdentifier;
+import com.openrecordsmanager.api.audit.AuditEntityType;
 import com.openrecordsmanager.api.types.ComponentTypes;
+import com.openrecordsmanager.audit.AuditService;
 import com.openrecordsmanager.database.DataRepository;
 import com.openrecordsmanager.recordtype.dto.RecordTypeResponse;
 import com.openrecordsmanager.rest.errors.ResourceNotFoundException;
@@ -14,20 +16,26 @@ import java.util.List;
 public class RecordTypeService {
 
     private final DataRepository repository;
+    private final AuditService auditService;
 
-    public RecordTypeService(DataRepository repository) {
+    public RecordTypeService(DataRepository repository, AuditService auditService) {
         this.repository = repository;
+        this.auditService = auditService;
     }
 
     @Transactional(readOnly = true)
     public List<ResourceIdentifier> getAllIds() {
-        return this.repository.recordTypeRepo.findAllIds();
+        List<ResourceIdentifier> ids = this.repository.recordTypeRepo.findAllIds();
+        this.auditService.recordCollectionRead(AuditEntityType.RECORD_TYPE, ids.size());
+        return ids;
     }
 
     @Transactional(readOnly = true)
     public RecordTypeResponse get(ResourceIdentifier id) {
-        return this.repository.recordTypeRepo.findById(id)
-                .map(RecordTypeResponse::of)
+        RecordType recordType = this.repository.recordTypeRepo.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(ComponentTypes.RECORD_TYPE, id));
+
+        this.auditService.addReadEvent(AuditEntityType.RECORD_TYPE, id);
+        return RecordTypeResponse.of(recordType);
     }
 }

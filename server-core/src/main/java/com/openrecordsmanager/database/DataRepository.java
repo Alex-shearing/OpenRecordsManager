@@ -1,5 +1,7 @@
 package com.openrecordsmanager.database;
 
+import com.openrecordsmanager.audit.persistence.AuditEventRepository;
+import com.openrecordsmanager.audit.persistence.AuditPolicyRepository;
 import com.openrecordsmanager.auth.AuthProviderRepository;
 import com.openrecordsmanager.auth.entity.AuthTokenRepository;
 import com.openrecordsmanager.config.ConfigRepository;
@@ -15,6 +17,8 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class DataRepository {
+    public final AuditEventRepository auditEventRepo;
+    public final AuditPolicyRepository auditPolicyRepo;
     public final AuthProviderRepository authProviderRepo;
     public final ConfigRepository configRepo;
     public final ListElementRepository listElementRepo;
@@ -28,6 +32,8 @@ public class DataRepository {
     public final AuthTokenRepository authTokenRepo;
 
     public DataRepository(
+            AuditEventRepository auditEventRepo,
+            AuditPolicyRepository auditPolicyRepo,
             AuthProviderRepository authProviderRepo,
             ConfigRepository configRepo,
             ListElementRepository listElementRepo,
@@ -40,6 +46,8 @@ public class DataRepository {
             UserRepository userRepo,
             AuthTokenRepository authTokenRepo
     ) {
+        this.auditEventRepo = auditEventRepo;
+        this.auditPolicyRepo = auditPolicyRepo;
         this.authProviderRepo = authProviderRepo;
         this.configRepo = configRepo;
         this.listElementRepo = listElementRepo;

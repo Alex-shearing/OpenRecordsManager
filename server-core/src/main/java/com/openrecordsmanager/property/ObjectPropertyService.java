@@ -1,9 +1,14 @@
 package com.openrecordsmanager.property;
 
 import com.openrecordsmanager.api.ResourceIdentifier;
+import com.openrecordsmanager.api.audit.AuditEntityType;
+import com.openrecordsmanager.api.audit.AuditOperation;
 import com.openrecordsmanager.api.errors.InputValidationException;
 import com.openrecordsmanager.api.template.property.PropertyType;
 import com.openrecordsmanager.api.types.ComponentTypes;
+import com.openrecordsmanager.audit.AuditEventDescriptions;
+import com.openrecordsmanager.audit.AuditService;
+import com.openrecordsmanager.audit.RequiresAuditComment;
 import com.openrecordsmanager.database.DataRepository;
 import com.openrecordsmanager.list.ListType;
 import com.openrecordsmanager.property.dto.NewObjectPropertyRequest;
@@ -24,26 +29,33 @@ import java.util.stream.Collectors;
 public class ObjectPropertyService {
 
     private final DataRepository repository;
+    private final AuditService auditService;
 
-    public ObjectPropertyService(DataRepository repository) {
+    public ObjectPropertyService(DataRepository repository, AuditService auditService) {
         this.repository = repository;
+        this.auditService = auditService;
     }
 
     @Transactional(readOnly = true)
     public Set<SimpleObjectPropertyResponse> getAll() {
-        return this.repository.objectPropertyRepo.findAll().stream()
+        Set<SimpleObjectPropertyResponse> results = this.repository.objectPropertyRepo.findAll().stream()
                 .map(SimpleObjectPropertyResponse::of)
                 .collect(Collectors.toSet());
+        this.auditService.recordCollectionRead(AuditEntityType.OBJECT_PROPERTY, results.size());
+        return results;
     }
 
     @Transactional(readOnly = true)
     public ObjectPropertyResponse get(ResourceIdentifier id) throws ResourceNotFoundException {
-        return this.repository.objectPropertyRepo.findById(id)
-                .map(ObjectPropertyResponse::of)
+        ObjectProperty<?> property = this.repository.objectPropertyRepo.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(ComponentTypes.OBJECT_PROPERTY, id));
+
+        this.auditService.addReadEvent(AuditEntityType.OBJECT_PROPERTY, id);
+        return ObjectPropertyResponse.of(property);
     }
 
     @Transactional
+    @RequiresAuditComment(operation = AuditOperation.CREATE, targetType = AuditEntityType.OBJECT_PROPERTY)
     public ObjectPropertyResponse create(NewObjectPropertyRequest input) throws ResourceNotFoundException {
         if (this.repository.objectPropertyRepo.existsById(input.id())) {
             throw new ResourceInUseException("object property already exists: " + input.id());
@@ -63,22 +75,36 @@ public class ObjectPropertyService {
 
         this.repository.objectPropertyRepo.saveAndFlush(property);
 
+        this.auditService.addEvent(AuditOperation.CREATE, AuditEntityType.OBJECT_PROPERTY, property.getId());
+
         return ObjectPropertyResponse.of(property);
     }
 
     @Transactional
+    @RequiresAuditComment(operation = AuditOperation.UPDATE, targetType = AuditEntityType.OBJECT_PROPERTY)
     public ObjectPropertyResponse update(ResourceIdentifier id, UpdateObjectPropertyRequest input) throws ResourceNotFoundException {
         ObjectProperty<?> property = this.repository.objectPropertyRepo.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(ComponentTypes.OBJECT_PROPERTY, id));
 
+        String oldName = property.getName();
         applyUpdate(property, input);
 
         this.repository.objectPropertyRepo.saveAndFlush(property);
+
+        this.auditService.addEvent(
+                AuditOperation.UPDATE,
+                AuditEntityType.OBJECT_PROPERTY,
+                id.toString(),
+                AuditEventDescriptions.singleChange("name", oldName, input.name()),
+                null,
+                null
+        );
 
         return ObjectPropertyResponse.of(property);
     }
 
     @Transactional
+    @RequiresAuditComment(operation = AuditOperation.DELETE, targetType = AuditEntityType.OBJECT_PROPERTY)
     public void delete(ResourceIdentifier id) throws ResourceNotFoundException, ResourceInUseException {
         ObjectProperty<?> property = this.repository.objectPropertyRepo.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(ComponentTypes.OBJECT_PROPERTY, id));
@@ -90,6 +116,8 @@ public class ObjectPropertyService {
         }
 
         this.repository.objectPropertyRepo.delete(property);
+
+        this.auditService.addEvent(AuditOperation.DELETE, AuditEntityType.OBJECT_PROPERTY, id);
     }
 
     private ObjectProperty<?> buildProperty(

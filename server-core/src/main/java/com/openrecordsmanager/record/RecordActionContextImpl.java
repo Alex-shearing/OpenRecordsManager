@@ -1,9 +1,13 @@
 package com.openrecordsmanager.record;
 
+import com.openrecordsmanager.api.audit.AuditEmitter;
+import com.openrecordsmanager.api.audit.AuditEntityType;
 import com.openrecordsmanager.api.config.ConfigStore;
 import com.openrecordsmanager.api.record.RecordActionContext;
 import com.openrecordsmanager.api.template.property.ObjectPropertyTemplate;
 import com.openrecordsmanager.api.types.ComponentTypes;
+import com.openrecordsmanager.audit.AuditEmitterImpl;
+import com.openrecordsmanager.audit.AuditService;
 import com.openrecordsmanager.database.DataRepository;
 import com.openrecordsmanager.plugin.registry.ComponentCatalog;
 import com.openrecordsmanager.property.ObjectProperty;
@@ -18,6 +22,7 @@ class RecordActionContextImpl implements RecordActionContext {
     private final DataRepository repository;
     private final ComponentCatalog catalog;
     private final ConfigStore config;
+    private final AuditService auditService;
     private final User actor;
     private final Record target;
 
@@ -25,12 +30,14 @@ class RecordActionContextImpl implements RecordActionContext {
             DataRepository repository,
             ComponentCatalog catalog,
             ConfigStore config,
+            AuditService auditService,
             User actor,
             Record target
     ) {
         this.repository = repository;
         this.catalog = catalog;
         this.config = config;
+        this.auditService = auditService;
         this.actor = actor;
         this.target = target;
     }
@@ -47,7 +54,7 @@ class RecordActionContextImpl implements RecordActionContext {
 
     @Override
     public UUID getTargetRecordId() {
-        return this.target.id;
+        return this.target.getId();
     }
 
     @Override
@@ -84,7 +91,14 @@ class RecordActionContextImpl implements RecordActionContext {
                 .orElseThrow(() -> new ResourceNotFoundException(ComponentTypes.OBJECT_PROPERTY, property.getClass()));
 
         ObjectProperty<T> typedProp = (ObjectProperty<T>) prop;
+        T oldValue = this.target.getProperty(typedProp);
         this.target.setProperty(typedProp, value);
         this.repository.recordRepo.saveAndFlush(this.target);
+        getAudit().addPropertyChangeEvent(typedProp.getId().toString(), oldValue, value);
+    }
+
+    @Override
+    public AuditEmitter getAudit() {
+        return new AuditEmitterImpl(this.auditService, AuditEntityType.RECORD, this.target.getId().toString());
     }
 }

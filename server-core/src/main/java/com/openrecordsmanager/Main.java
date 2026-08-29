@@ -7,11 +7,13 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.http.support.JacksonHandlerInstantiator;
+import org.springframework.scheduling.annotation.EnableScheduling;
 import tools.jackson.databind.json.JsonMapper;
 
 @SpringBootApplication
 @EnableJpaRepositories(basePackages = "com.openrecordsmanager")
 @EntityScan(basePackages = "com.openrecordsmanager")
+@EnableScheduling
 public class Main {
     static void main(String[] args) {
         SpringApplication.run(Main.class, args);

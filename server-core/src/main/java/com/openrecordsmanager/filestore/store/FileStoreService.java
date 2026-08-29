@@ -2,8 +2,12 @@ package com.openrecordsmanager.filestore.store;
 
 import com.google.common.hash.HashFunction;
 import com.google.common.hash.Hashing;
+import com.openrecordsmanager.api.audit.AuditEntityType;
+import com.openrecordsmanager.api.audit.AuditOperation;
 import com.openrecordsmanager.api.filestore.FileStoreType;
 import com.openrecordsmanager.api.types.ComponentTypes;
+import com.openrecordsmanager.audit.AuditService;
+import com.openrecordsmanager.audit.RequiresAuditComment;
 import com.openrecordsmanager.database.DataRepository;
 import com.openrecordsmanager.filestore.dto.FileStoreResponse;
 import com.openrecordsmanager.filestore.dto.FileStoreTypeResponse;
@@ -27,10 +31,12 @@ public class FileStoreService {
 
     private final DataRepository repository;
     private final ComponentCatalog catalog;
+    private final AuditService auditService;
 
-    public FileStoreService(DataRepository repository, ComponentCatalog catalog) {
+    public FileStoreService(DataRepository repository, ComponentCatalog catalog, AuditService auditService) {
         this.repository = repository;
         this.catalog = catalog;
+        this.auditService = auditService;
     }
 
     public static HashFunction getHashFunction(String algorithm) {
@@ -43,19 +49,24 @@ public class FileStoreService {
 
     @Transactional(readOnly = true)
     public Set<SimpleFileStoreResponse> getAll() {
-        return this.repository.fileStoreRepo.findAll().stream()
+        Set<SimpleFileStoreResponse> results = this.repository.fileStoreRepo.findAll().stream()
                 .map(fileStore -> SimpleFileStoreResponse.of(this.catalog, fileStore))
                 .collect(Collectors.toSet());
+        this.auditService.recordCollectionRead(AuditEntityType.FILE_STORE, results.size());
+        return results;
     }
 
     @Transactional(readOnly = true)
     public FileStoreResponse get(UUID id) throws ResourceNotFoundException {
-        return this.repository.fileStoreRepo.findById(id)
-                .map(fileStore -> FileStoreResponse.of(this.catalog, fileStore))
+        FileStore store = this.repository.fileStoreRepo.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("file store", id.toString()));
+
+        this.auditService.addReadEvent(AuditEntityType.FILE_STORE, id);
+        return FileStoreResponse.of(this.catalog, store);
     }
 
     @Transactional
+    @RequiresAuditComment(operation = AuditOperation.CREATE, targetType = AuditEntityType.FILE_STORE)
     public SimpleFileStoreResponse create(NewFileStoreRequest input) throws ResourceNotFoundException {
         FileStoreType<?> type = this.catalog.getRegistry(ComponentTypes.FILE_STORE).get(input.type())
                 .orElseThrow(() -> new ResourceNotFoundException(ComponentTypes.FILE_STORE, input.type()));
@@ -71,10 +82,13 @@ public class FileStoreService {
 
         this.repository.fileStoreRepo.saveAndFlush(store);
 
+        this.auditService.addEvent(AuditOperation.CREATE, AuditEntityType.FILE_STORE, store.getId());
+
         return SimpleFileStoreResponse.of(this.catalog, store);
     }
 
     @Transactional
+    @RequiresAuditComment(operation = AuditOperation.UPDATE, targetType = AuditEntityType.FILE_STORE)
     public SimpleFileStoreResponse update(UUID id, Map<String, ?> properties) throws ResourceNotFoundException {
         FileStore store = this.repository.fileStoreRepo.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("file store", id));
@@ -82,10 +96,13 @@ public class FileStoreService {
 
         this.repository.fileStoreRepo.saveAndFlush(store);
 
+        this.auditService.addEvent(AuditOperation.UPDATE, AuditEntityType.FILE_STORE, id);
+
         return SimpleFileStoreResponse.of(this.catalog, store);
     }
 
     @Transactional
+    @RequiresAuditComment(operation = AuditOperation.DELETE, targetType = AuditEntityType.FILE_STORE)
     public void delete(UUID id) throws ResourceNotFoundException, ResourceInUseException {
         FileStore store = this.repository.fileStoreRepo.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("file store", id));
@@ -95,6 +112,8 @@ public class FileStoreService {
         }
 
         this.repository.fileStoreRepo.delete(store);
+
+        this.auditService.addEvent(AuditOperation.DELETE, AuditEntityType.FILE_STORE, id);
     }
 
     @Transactional(readOnly = true)

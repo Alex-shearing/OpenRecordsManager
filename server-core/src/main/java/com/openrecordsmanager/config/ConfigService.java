@@ -1,13 +1,20 @@
 package com.openrecordsmanager.config;
 
+import com.openrecordsmanager.api.audit.AuditEntityType;
+import com.openrecordsmanager.api.audit.AuditOperation;
 import com.openrecordsmanager.api.config.ConfigStore;
 import com.openrecordsmanager.api.config.ConfigType;
 import com.openrecordsmanager.api.types.ComponentTypes;
+import com.openrecordsmanager.audit.AuditContext;
+import com.openrecordsmanager.audit.AuditEventDescriptions;
+import com.openrecordsmanager.audit.AuditPolicyService;
+import com.openrecordsmanager.audit.AuditService;
 import com.openrecordsmanager.config.dto.ConfigResponse;
 import com.openrecordsmanager.database.DataRepository;
 import com.openrecordsmanager.plugin.registry.ComponentCatalog;
 import com.openrecordsmanager.rest.errors.ResourceNotFoundException;
 import org.jspecify.annotations.Nullable;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,22 +30,46 @@ public class ConfigService implements ConfigStore {
     private final Environment environment;
     private final DataRepository repository;
     private final ComponentCatalog catalog;
+    private final AuditService auditService;
+    private final AuditPolicyService auditPolicyService;
 
-    public ConfigService(Environment environment, DataRepository repository, ComponentCatalog catalog) {
+    public ConfigService(
+            Environment environment,
+            DataRepository repository,
+            ComponentCatalog catalog,
+            @Lazy AuditService auditService,
+            @Lazy AuditPolicyService auditPolicyService
+    ) {
         this.environment = environment;
         this.repository = repository;
         this.catalog = catalog;
+        this.auditService = auditService;
+        this.auditPolicyService = auditPolicyService;
     }
 
     @Transactional
     public ConfigResponse setConfig(String id, String value) {
-        ConfigItem config = this.repository.configRepo.findByConfigKey(id)
-                .orElseGet(() -> new ConfigItem(this.catalog, id, value));
-        config.setValue(catalog, value);
+        if (AuditContext.isCaptureEnabled()) {
+            this.auditPolicyService.validateCommentRequired(AuditEntityType.CONFIG, AuditOperation.UPDATE);
+        }
+        ConfigItem oldConfig = this.repository.configRepo.findByConfigKey(id).orElse(null);
+        String oldValue = oldConfig == null ? null : oldConfig.configValue;
 
-        this.repository.configRepo.saveAndFlush(config);
+        ConfigItem configItem = oldConfig != null ? oldConfig : new ConfigItem(this.catalog, id, value);
+        configItem.setValue(catalog, value);
 
-        return ConfigResponse.of(config);
+        this.repository.configRepo.saveAndFlush(configItem);
+
+        this.auditService.addEvent(
+                AuditOperation.UPDATE,
+                AuditEntityType.CONFIG,
+                id,
+                AuditEventDescriptions.singleChange("configValue", oldValue, value),
+                null,
+                null
+        );
+
+        return ConfigResponse.of(configItem);
     }
 
     @Override
@@ -55,9 +86,11 @@ public class ConfigService implements ConfigStore {
 
     @Transactional(readOnly = true)
     public Map<String, Optional<?>> getAllConfig() {
-        return this.repository.configRepo.findAll().stream()
+        Map<String, Optional<?>> results = this.repository.configRepo.findAll().stream()
                 .map(def -> Map.entry(def.configKey, this.getOptional(def.getConfigKey(this.catalog))))
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+        this.auditService.recordCollectionRead(AuditEntityType.CONFIG, results.size());
+        return results;
     }
 
     @Transactional(readOnly = true)
@@ -65,15 +98,16 @@ public class ConfigService implements ConfigStore {
         ConfigType<?> config = this.getConfigByKey(id)
                 .orElseThrow(() -> new ResourceNotFoundException(ComponentTypes.CONFIG.name, id));
 
-        ConfigItem configItem = this.repository.configRepo.findByConfigKey(config.key())
+        this.repository.configRepo.findByConfigKey(config.key())
                 .orElseThrow(() -> new ResourceNotFoundException("config value", id));
 
-        return config.type().fromString(configItem.configValue);
+        this.auditService.addReadEvent(AuditEntityType.CONFIG, config.key());
+        return this.getOptional(config);
     }
 
     @Transactional(readOnly = true)
     public Map<String, ?> getServerConfig() {
-        return this.catalog.getRegistry(ComponentTypes.CONFIG).stream()
+        Map<String, ?> results = this.catalog.getRegistry(ComponentTypes.CONFIG).stream()
                 .map(config -> {
                     Object value = this.getValue(config);
                     if (value == null) return null;
@@ -81,6 +115,8 @@ public class ConfigService implements ConfigStore {
                 })
                 .filter(Objects::nonNull)
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+        this.auditService.recordCollectionRead(AuditEntityType.CONFIG, results.size());
+        return results;
     }
 
     @Transactional(readOnly = true)
@@ -88,8 +124,11 @@ public class ConfigService implements ConfigStore {
         ConfigType<?> config = this.getConfigByKey(id)
                 .orElseThrow(() -> new ResourceNotFoundException(ComponentTypes.CONFIG.name, id));
 
-        return this.getOptional(config)
+        Object value = this.getOptional(config)
                 .orElseThrow(() -> new ResourceNotFoundException("config value", id));
+
+        this.auditService.addReadEvent(AuditEntityType.CONFIG, config.key());
+        return value;
     }
 
 }

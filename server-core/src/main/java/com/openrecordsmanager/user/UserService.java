@@ -1,8 +1,12 @@
 package com.openrecordsmanager.user;
 
 import com.openrecordsmanager.api.ResourceIdentifier;
+import com.openrecordsmanager.api.audit.AuditEntityType;
+import com.openrecordsmanager.api.audit.AuditOperation;
 import com.openrecordsmanager.api.types.ComponentTypes;
 import com.openrecordsmanager.api.user.UserActionType;
+import com.openrecordsmanager.audit.AuditPolicyService;
+import com.openrecordsmanager.audit.AuditService;
 import com.openrecordsmanager.config.ConfigService;
 import com.openrecordsmanager.database.DataRepository;
 import com.openrecordsmanager.plugin.registry.ComponentCatalog;
@@ -22,11 +26,21 @@ public class UserService {
     private final DataRepository repository;
     private final ConfigService config;
     private final ComponentCatalog catalog;
+    private final AuditService auditService;
+    private final AuditPolicyService auditPolicyService;
 
-    public UserService(DataRepository repository, ConfigService config, ComponentCatalog catalog) {
+    public UserService(
+            DataRepository repository,
+            ConfigService config,
+            ComponentCatalog catalog,
+            AuditService auditService,
+            AuditPolicyService auditPolicyService
+    ) {
         this.repository = repository;
         this.config = config;
         this.catalog = catalog;
+        this.auditService = auditService;
+        this.auditPolicyService = auditPolicyService;
     }
 
     @Transactional(readOnly = true)
@@ -34,12 +48,22 @@ public class UserService {
         User target = this.repository.userRepo.findById(targetUserId)
                 .orElseThrow(() -> new ResourceNotFoundException("user", targetUserId));
 
-        UserActionContextImpl context = new UserActionContextImpl(this.repository, this.catalog, this.config, actor, target);
+        UserActionContextImpl context = new UserActionContextImpl(
+                this.repository,
+                this.catalog,
+                this.config,
+                this.auditService,
+                actor,
+                target
+        );
 
-        return this.catalog.getRegistry(ComponentTypes.USER_ACTION).stream()
+        Set<ActionResponse> actions = this.catalog.getRegistry(ComponentTypes.USER_ACTION).stream()
                 .filter(action -> action.isAvailable(context))
-                .map(action -> ActionResponse.ofUser(this.catalog, action))
+                .map(action -> ActionResponse.ofUser(this.catalog, action, this.auditPolicyService))
                 .collect(Collectors.toSet());
+
+        this.auditService.addReadEvent(AuditEntityType.USER, targetUserId);
+        return actions;
     }
 
     @Transactional
@@ -50,12 +74,28 @@ public class UserService {
         User target = this.repository.userRepo.findById(targetUserId)
                 .orElseThrow(() -> new ResourceNotFoundException("user", targetUserId));
 
-        UserActionContextImpl context = new UserActionContextImpl(this.repository, this.catalog, this.config, actor, target);
+        UserActionContextImpl context = new UserActionContextImpl(
+                this.repository,
+                this.catalog,
+                this.config,
+                this.auditService,
+                actor,
+                target
+        );
 
         if (!action.isAvailable(context)) {
             throw new IllegalArgumentException("Action " + actionId + " is not available for user " + targetUserId);
         }
 
+        this.auditPolicyService.validateCommentRequired(AuditEntityType.USER, AuditOperation.ACTION);
+
         action.executeUntyped(context, inputs);
+
+        this.auditService.addActionRanEvent(
+                actionId,
+                AuditEntityType.USER,
+                targetUserId,
+                Map.of("inputs", inputs.keySet())
+        );
     }
 }

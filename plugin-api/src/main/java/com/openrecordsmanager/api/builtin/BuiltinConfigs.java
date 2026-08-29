@@ -89,4 +89,36 @@ public class BuiltinConfigs {
             .defaultValue("")
             .build();
 
+    // Audit settings
+
+    public static final ConfigType<Boolean> AUDIT_ENABLED = ConfigType.builder("audit.enabled", ConfigValueType.BOOL)
+            .name("Audit Enabled")
+            .description("Master switch for the audit system.")
+            .defaultValue(true)
+            .build();
+
+    public static final ConfigType<String> AUDIT_SPOOL_DIRECTORY = ConfigType.builder("audit.spool.directory", ConfigValueType.STRING)
+            .name("Audit Spool Directory")
+            .description("Local directory for audit spool and archive log files.")
+            .defaultValue("./data/audit")
+            .build();
+
+    public static final ConfigType<Integer> AUDIT_SPOOL_DRAIN_INTERVAL_SECONDS = ConfigType.builder(
+                    "audit.spool.drain_interval_seconds",
+                    ConfigValueType.INT
+            )
+            .name("Audit Spool Drain Interval")
+            .description("Seconds between background attempts to drain the audit spool into the database.")
+            .defaultValue(30)
+            .build();
+
+    public static final ConfigType<Boolean> AUDIT_FILE_ARCHIVE_ENABLED = ConfigType.builder(
+                    "audit.file.archive_enabled",
+                    ConfigValueType.BOOL
+            )
+            .name("Audit Archive Log Enabled")
+            .description("When enabled, synced audit events are also appended to a daily rotating archive log file.")
+            .defaultValue(true)
+            .build();
+
 }

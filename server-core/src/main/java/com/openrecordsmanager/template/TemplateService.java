@@ -2,8 +2,13 @@ package com.openrecordsmanager.template;
 
 import com.openrecordsmanager.api.ComponentReference;
 import com.openrecordsmanager.api.ResourceIdentifier;
+import com.openrecordsmanager.api.audit.AuditEntityType;
+import com.openrecordsmanager.api.audit.AuditOperation;
 import com.openrecordsmanager.api.template.TemplateComponent;
 import com.openrecordsmanager.api.types.ComponentType;
+import com.openrecordsmanager.audit.AuditContext;
+import com.openrecordsmanager.audit.AuditPolicyService;
+import com.openrecordsmanager.audit.AuditService;
 import com.openrecordsmanager.database.DataRepository;
 import com.openrecordsmanager.plugin.ExpressionsService;
 import com.openrecordsmanager.plugin.registry.ComponentCatalog;
@@ -22,11 +27,21 @@ public class TemplateService {
     private final ComponentCatalog catalog;
     private final DataRepository repository;
     private final ExpressionsService expressions;
+    private final AuditService auditService;
+    private final AuditPolicyService auditPolicyService;
 
-    public TemplateService(ComponentCatalog catalog, DataRepository repository, ExpressionsService expressions) {
+    public TemplateService(
+            ComponentCatalog catalog,
+            DataRepository repository,
+            ExpressionsService expressions,
+            AuditService auditService,
+            AuditPolicyService auditPolicyService
+    ) {
         this.catalog = catalog;
         this.repository = repository;
         this.expressions = expressions;
+        this.auditService = auditService;
+        this.auditPolicyService = auditPolicyService;
     }
 
     @Transactional(readOnly = true)
@@ -38,7 +53,13 @@ public class TemplateService {
 
     @Transactional(readOnly = true)
     public Set<ResourceIdentifier> listTemplates(String typeName) {
-        return this.catalog.getTemplateRegistry(resolveMapper(typeName)).getIds();
+        TemplateRegistrationMapper<?, ?> mapper = resolveMapper(typeName);
+        Set<ResourceIdentifier> ids = this.catalog.getTemplateRegistry(mapper).getIds();
+        this.auditService.recordCollectionRead(
+                AuditEntityType.fromComponentType(mapper.componentType()),
+                ids.size()
+        );
+        return ids;
     }
 
     @Transactional(readOnly = true)
@@ -46,8 +67,11 @@ public class TemplateService {
         TemplateRegistrationMapper<?, ?> type = resolveMapper(typeName);
         TemplateComponentRegistry<?, ?> registry = this.catalog.getTemplateRegistry(type);
 
-        return registry.get(templateId)
+        TemplateComponent template = registry.get(templateId)
                 .orElseThrow(() -> new ResourceNotFoundException(type.componentType(), templateId));
+
+        this.auditService.addReadEvent(AuditEntityType.fromComponentType(type.componentType()), templateId);
+        return template;
     }
 
     @Transactional
@@ -56,7 +80,17 @@ public class TemplateService {
             ResourceIdentifier templateId,
             boolean includeDependencies
     ) {
-        registerTyped(resolveMapper(typeName), templateId, includeDependencies);
+        TemplateRegistrationMapper<?, ?> mapper = this.resolveMapper(typeName);
+
+        // Audit logic
+        AuditEntityType targetType = AuditEntityType.fromComponentType(mapper.componentType());
+        if (AuditContext.isCaptureEnabled()) {
+            this.auditPolicyService.validateCommentRequired(targetType, AuditOperation.CREATE);
+        }
+
+        this.registerTyped(mapper, templateId, includeDependencies);
+
+        this.auditService.addEvent(AuditOperation.CREATE, targetType, templateId);
     }
 
     private <T extends TemplateComponent> void registerTyped(

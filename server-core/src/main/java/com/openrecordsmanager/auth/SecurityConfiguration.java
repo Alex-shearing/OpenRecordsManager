@@ -1,5 +1,6 @@
 package com.openrecordsmanager.auth;
 
+import com.openrecordsmanager.audit.AuditContextFilter;
 import com.openrecordsmanager.database.DataRepository;
 import com.openrecordsmanager.database.SchemaUpgradeGateFilter;
 import com.openrecordsmanager.database.schema.SchemaMigrationState;
@@ -44,7 +45,7 @@ public class SecurityConfiguration {
             AuthService authService,
             @Value("${app.security.cors.allowed-origins:http://localhost:5173,http://localhost:3000}") List<String> allowedOrigins,
             @Value("${app.security.cors.allowed-methods:GET,POST,PUT,PATCH,DELETE,OPTIONS}") List<String> allowedMethods,
-            @Value("${app.security.cors.allowed-headers:Authorization,Content-Type,X-XSRF-TOKEN,X-Client-Platform}") List<String> allowedHeaders,
+            @Value("${app.security.cors.allowed-headers:Authorization,Content-Type,X-XSRF-TOKEN,X-Client-Platform,X-ORM-Audit-Comment}") List<String> allowedHeaders,
             @Value("${app.security.cookie-secure:true}") boolean cookieSecure
     ) {
         this.repository = repository;
@@ -75,7 +76,8 @@ public class SecurityConfiguration {
     public SecurityFilterChain securityFilterChain(
             HttpSecurity http,
             SchemaMigrationState migrationState,
-            JsonMapper mapper
+            JsonMapper mapper,
+            AuditContextFilter auditContextFilter
     ) {
         CookieCsrfTokenRepository csrfTokenRepository = CookieCsrfTokenRepository.withHttpOnlyFalse();
         csrfTokenRepository.setCookieCustomizer(cookie -> {
@@ -119,6 +121,7 @@ public class SecurityConfiguration {
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(tokenAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterAfter(auditContextFilter, DatabaseTokenAuthenticationFilter.class)
                 .addFilterBefore(schemaUpgradeFilter, DatabaseTokenAuthenticationFilter.class)
                 .authenticationProvider(this.authService.authenticationProvider())
                 .exceptionHandling(exception -> exception

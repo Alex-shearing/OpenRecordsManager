@@ -1,9 +1,15 @@
 package com.openrecordsmanager.record;
 
 import com.openrecordsmanager.api.ResourceIdentifier;
+import com.openrecordsmanager.api.audit.AuditEntityType;
+import com.openrecordsmanager.api.audit.AuditOperation;
 import com.openrecordsmanager.api.builtin.BuiltinConfigs;
 import com.openrecordsmanager.api.record.RecordActionType;
 import com.openrecordsmanager.api.types.ComponentTypes;
+import com.openrecordsmanager.audit.AuditEventDescriptions;
+import com.openrecordsmanager.audit.AuditPolicyService;
+import com.openrecordsmanager.audit.AuditService;
+import com.openrecordsmanager.audit.RequiresAuditComment;
 import com.openrecordsmanager.config.ConfigService;
 import com.openrecordsmanager.database.DataRepository;
 import com.openrecordsmanager.filestore.store.FileStore;
@@ -35,28 +41,38 @@ public class RecordService {
     private final ConfigService config;
     private final ComponentCatalog catalog;
     private final ExpressionsService expressions;
+    private final AuditService auditService;
+    private final AuditPolicyService auditPolicyService;
 
     public RecordService(
             DataRepository repository,
             ConfigService config,
             ComponentCatalog catalog,
-            ExpressionsService expressions
+            ExpressionsService expressions,
+            AuditService auditService,
+            AuditPolicyService auditPolicyService
     ) {
         this.repository = repository;
         this.config = config;
         this.catalog = catalog;
         this.expressions = expressions;
+        this.auditService = auditService;
+        this.auditPolicyService = auditPolicyService;
     }
 
     @Transactional(readOnly = true)
     public RecordResponse get(User user, UUID id) {
-        return this.repository.recordRepo.findById(id)
-                .filter(record -> record.securityFilter(this.expressions, user, record).canSeeMetadata())
-                .map(RecordResponse::of)
+        Record record = this.repository.recordRepo.findById(id)
+                .filter(r -> r.securityFilter(this.expressions, user, r).canSeeMetadata())
                 .orElseThrow(() -> new ResourceNotFoundException("record", id));
+
+        this.auditService.addEvent(AuditOperation.READ, AuditEntityType.RECORD, record.getId());
+
+        return RecordResponse.of(record);
     }
 
     @Transactional
+    @RequiresAuditComment(operation = AuditOperation.CREATE, targetType = AuditEntityType.RECORD)
     public RecordResponse create(NewRecordRequest input) {
         RecordType type = this.repository.recordTypeRepo.findById(input.type())
                 .orElseThrow(() -> new ResourceNotFoundException(ComponentTypes.RECORD_TYPE, input.type()));
@@ -71,6 +87,15 @@ public class RecordService {
 
         this.repository.recordRepo.saveAndFlush(record);
 
+        this.auditService.addEvent(
+                AuditOperation.CREATE,
+                AuditEntityType.RECORD,
+                record.getId().toString(),
+                null,
+                AuditEventDescriptions.forRecord(record),
+                null
+        );
+
         return RecordResponse.of(record);
     }
 
@@ -79,6 +104,7 @@ public class RecordService {
     }
 
     @Transactional
+    @RequiresAuditComment(operation = AuditOperation.CREATE, targetType = AuditEntityType.RECORD_REVISION)
     public RecordResponse createRevision(User user, UUID id, String version, String fileExtension, InputStream file) {
         Record record = this.repository.recordRepo.findById(id)
                 .filter(r -> r.securityFilter(this.expressions, user, r).canSeeFiles())
@@ -96,7 +122,19 @@ public class RecordService {
 
         record.addRevision(version, fileStore.newFile(this.catalog, file, fileExtension));
 
-        return RecordResponse.of(this.repository.recordRepo.saveAndFlush(record));
+        Record saved = this.repository.recordRepo.saveAndFlush(record);
+        RecordRevision revision = saved.getCurrentRevision();
+
+        this.auditService.addEvent(
+                AuditOperation.CREATE,
+                AuditEntityType.RECORD_REVISION,
+                revision.id.toString(),
+                AuditEventDescriptions.singleChange("version", null, version),
+                AuditEventDescriptions.forRecordRevision(revision),
+                null
+        );
+
+        return RecordResponse.of(saved);
     }
 
     @Transactional(readOnly = true)
@@ -104,6 +142,12 @@ public class RecordService {
         RecordRevision rev = this.repository.recordRepo.findByRecordId(id, version)
                 .filter(r -> r.record.securityFilter(this.expressions, user, r.record).canSeeFiles())
                 .orElseThrow(() -> new ResourceNotFoundException("record revision", id + "/" + version));
+
+        this.auditService.addReadEvent(
+                AuditEntityType.RECORD_REVISION,
+                rev.id.toString(),
+                AuditEventDescriptions.forRecordRevision(rev)
+        );
 
         return RecordRevisionResponse.of(this.catalog, rev);
     }
@@ -114,12 +158,22 @@ public class RecordService {
                 .filter(r -> r.securityFilter(this.expressions, user, r).canSeeMetadata())
                 .orElseThrow(() -> new ResourceNotFoundException("record", recordId));
 
-        RecordActionContextImpl context = new RecordActionContextImpl(this.repository, this.catalog, this.config, user, record);
+        RecordActionContextImpl context = new RecordActionContextImpl(
+                this.repository,
+                this.catalog,
+                this.config,
+                this.auditService,
+                user,
+                record
+        );
 
-        return this.catalog.getRegistry(ComponentTypes.RECORD_ACTION).stream()
+        Set<ActionResponse> actions = this.catalog.getRegistry(ComponentTypes.RECORD_ACTION).stream()
                 .filter(action -> action.isAvailable(context))
-                .map(action -> ActionResponse.ofRecord(this.catalog, action))
+                .map(action -> ActionResponse.ofRecord(this.catalog, action, this.auditPolicyService))
                 .collect(Collectors.toSet());
+
+        this.auditService.addReadEvent(AuditEntityType.RECORD, recordId);
+        return actions;
     }
 
     @Transactional
@@ -131,12 +185,28 @@ public class RecordService {
                 .filter(r -> r.securityFilter(this.expressions, user, r).canSeeMetadata())
                 .orElseThrow(() -> new ResourceNotFoundException("record", recordId));
 
-        RecordActionContextImpl context = new RecordActionContextImpl(this.repository, this.catalog, this.config, user, record);
+        RecordActionContextImpl context = new RecordActionContextImpl(
+                this.repository,
+                this.catalog,
+                this.config,
+                this.auditService,
+                user,
+                record
+        );
 
         if (!action.isAvailable(context)) {
             throw new IllegalArgumentException("Action " + actionId + " is not available for record " + recordId);
         }
 
+        this.auditPolicyService.validateCommentRequired(AuditEntityType.RECORD, AuditOperation.ACTION);
+
         action.executeUntyped(context, inputs);
+
+        this.auditService.addActionRanEvent(
+                actionId,
+                AuditEntityType.RECORD,
+                recordId,
+                Map.of("inputs", inputs.keySet())
+        );
     }
 }

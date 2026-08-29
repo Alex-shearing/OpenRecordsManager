@@ -1,9 +1,13 @@
 package com.openrecordsmanager.auth;
 
 import com.openrecordsmanager.api.ComponentReference;
+import com.openrecordsmanager.api.audit.AuditEntityType;
+import com.openrecordsmanager.api.audit.AuditOperation;
 import com.openrecordsmanager.api.auth.AuthProviderType;
 import com.openrecordsmanager.api.auth.UserAuthContext;
 import com.openrecordsmanager.api.template.property.ObjectPropertyTemplate;
+import com.openrecordsmanager.audit.AuditService;
+import com.openrecordsmanager.audit.RequiresAuditComment;
 import com.openrecordsmanager.auth.dto.AuthProviderListResponse;
 import com.openrecordsmanager.auth.dto.LoginResponse;
 import com.openrecordsmanager.auth.entity.AuthProvider;
@@ -46,6 +50,7 @@ public class AuthService implements UserAuthContext {
     private final ComponentCatalog catalog;
     private final ConfigService config;
     private final ExpressionsService expressions;
+    private final AuditService auditService;
     private final String cookieName;
     private final long tokenDuration;
     private final boolean cookieSecure;
@@ -55,6 +60,7 @@ public class AuthService implements UserAuthContext {
             ComponentCatalog catalog,
             ConfigService config,
             ExpressionsService expressions,
+            AuditService auditService,
             @Value("${app.security.cookie-name:ORM-Authentication}") String cookieName,
             @Value("${app.security.expiration-time:3600000}") long tokenDuration,
             @Value("${app.security.cookie-secure:true}") boolean cookieSecure
@@ -63,6 +69,7 @@ public class AuthService implements UserAuthContext {
         this.catalog = catalog;
         this.config = config;
         this.expressions = expressions;
+        this.auditService = auditService;
         this.cookieName = cookieName;
         this.tokenDuration = tokenDuration;
         this.cookieSecure = cookieSecure;
@@ -145,6 +152,7 @@ public class AuthService implements UserAuthContext {
                 .map(user -> user.getProperty(typedProp));
     }
 
+    @RequiresAuditComment(operation = AuditOperation.CREATE, targetType = AuditEntityType.AUTH_PROVIDER)
     public AuthProviderListResponse createProvider(String name, ComponentReference<? extends AuthProviderType> type, Map<String, Object> settings) {
         // Ensure any pre-requisite templates are registered
         TemplateRegistrationMapper.registerDependencies(
@@ -156,6 +164,8 @@ public class AuthService implements UserAuthContext {
         AuthProvider provider = new AuthProvider(name, type, settings);
 
         this.repository.authProviderRepo.save(provider);
+
+        this.auditService.addEvent(AuditOperation.CREATE, AuditEntityType.AUTH_PROVIDER, provider.getId());
 
         return AuthProviderListResponse.of(this.catalog, provider);
     }

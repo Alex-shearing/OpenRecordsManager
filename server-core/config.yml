@@ -10,7 +10,7 @@ auth:
 server:
   database:
     primary:
-      url: jdbc:sqlite:orm_system.db
+      url:
     read_only:
       url: jdbc:sqlite:orm_system.db
   plugins:

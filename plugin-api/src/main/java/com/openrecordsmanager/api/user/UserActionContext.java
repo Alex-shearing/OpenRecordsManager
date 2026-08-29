@@ -1,5 +1,6 @@
 package com.openrecordsmanager.api.user;
 
+import com.openrecordsmanager.api.audit.AuditEmitter;
 import com.openrecordsmanager.api.config.ConfigStore;
 import com.openrecordsmanager.api.template.property.ObjectPropertyTemplate;
 import org.jspecify.annotations.Nullable;
@@ -23,4 +24,6 @@ public interface UserActionContext {
     <T> Optional<T> getTargetProperty(ObjectPropertyTemplate<T> property);
 
     <T> void setTargetProperty(ObjectPropertyTemplate<T> property, @Nullable T value);
+
+    AuditEmitter getAudit();
 }

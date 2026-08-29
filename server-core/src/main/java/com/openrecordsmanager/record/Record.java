@@ -19,17 +19,17 @@ import java.util.stream.Collectors;
 @SuppressWarnings({"NotNullFieldNotInitialized", "CanBeFinal"})
 public class Record implements ObjectPropertyHolder<RecordPropertyValue<?>> {
     @Id
-    public UUID id;
+    private UUID id;
 
     @Column(nullable = false)
-    public String title;
+    private String title;
 
     @ManyToOne(optional = false)
     @JoinColumn(nullable = false)
     private RecordType type;
 
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "record", fetch = FetchType.LAZY)
-    public List<RecordRevision> revisions = new ArrayList<>();
+    private List<RecordRevision> revisions = new ArrayList<>();
 
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "record", fetch = FetchType.EAGER)
     @MapKey(name = "property")
@@ -48,6 +48,18 @@ public class Record implements ObjectPropertyHolder<RecordPropertyValue<?>> {
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 
+    public UUID getId() {
+        return this.id;
+    }
+
+    public String getTitle() {
+        return this.title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
     public RecordType getType() {
         return this.type;
     }
@@ -57,6 +69,16 @@ public class Record implements ObjectPropertyHolder<RecordPropertyValue<?>> {
         this.properties = type.properties.stream()
                 .map(prop -> Map.entry(prop.property, newProperty(prop, this.properties.get(prop.property))))
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+    }
+
+    public RecordRevision getCurrentRevision() {
+        return this.revisions.getLast();
+    }
+
+    public List<String> getRevisionList() {
+        return this.revisions.stream()
+                .map(recordRevision -> recordRevision.version)
+                .collect(Collectors.toList());
     }
 
     @Override

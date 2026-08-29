@@ -1,5 +1,6 @@
 package com.openrecordsmanager.database.schema;
 
+import com.openrecordsmanager.audit.AuditContext;
 import com.openrecordsmanager.api.ComponentReference;
 import com.openrecordsmanager.api.ResourceIdentifier;
 import com.openrecordsmanager.api.types.ComponentTypes;
@@ -66,6 +67,15 @@ public class InitialDatabaseSeeder {
 
         LOGGER.info("Seeding default local auth provider and admin user");
 
+        AuditContext.disableCapture();
+        try {
+            seedData();
+        } finally {
+            AuditContext.clear();
+        }
+    }
+
+    private void seedData() {
         AuthProviderListResponse created = this.authService.createProvider(
                 "Local Authentication",
                 ComponentReference.of(ComponentTypes.INPUT_AUTH_PROVIDER, LOCAL_AUTH_TYPE),

@@ -5,6 +5,7 @@ import org.flywaydb.core.Flyway;
 import org.flywaydb.core.api.MigrationInfo;
 import org.flywaydb.core.api.output.MigrateResult;
 import org.jspecify.annotations.Nullable;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
 import java.util.Arrays;
@@ -15,10 +16,16 @@ public class SchemaMigrationService {
 
     private final Flyway flyway;
     private final SchemaMigrationState state;
+    private final ApplicationEventPublisher events;
 
-    public SchemaMigrationService(Flyway flyway, SchemaMigrationState state) {
+    public SchemaMigrationService(
+            Flyway flyway,
+            SchemaMigrationState state,
+            ApplicationEventPublisher events
+    ) {
         this.flyway = flyway;
         this.state = state;
+        this.events = events;
     }
 
     public SetupStatusResponse upgrade() {
@@ -27,6 +34,7 @@ public class SchemaMigrationService {
         if (this.state.isUpgradeRequired()) {
             throw new IllegalStateException("Schema upgrade completed but pending migrations remain");
         }
+        this.events.publishEvent(new SchemaMigrationReadyEvent());
         return this.toStatusResponse("Applied " + result.migrationsExecuted + " migration(s)");
     }
 

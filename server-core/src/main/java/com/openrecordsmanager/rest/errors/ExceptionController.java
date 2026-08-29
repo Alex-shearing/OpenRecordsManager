@@ -66,4 +66,11 @@ public class ExceptionController {
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(ApiResponseV1.error(ex.getMessage()));
     }
+
+    @ExceptionHandler(AuditCommentRequiredException.class)
+    public ResponseEntity<ApiResponseV1<Void>> auditCommentRequired(AuditCommentRequiredException ex) {
+        return ResponseEntity.status(HttpStatus.UNPROCESSABLE_CONTENT)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(ApiResponseV1.error("audit_comment_required", ex.getMessage()));
+    }
 }

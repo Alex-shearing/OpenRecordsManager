@@ -1,6 +1,8 @@
 package com.openrecordsmanager.user;
 
 import com.openrecordsmanager.api.ResourceIdentifier;
+import com.openrecordsmanager.api.audit.AuditEntityType;
+import com.openrecordsmanager.audit.AuditService;
 import com.openrecordsmanager.rest.dto.ActionResponse;
 import com.openrecordsmanager.rest.swagger.DefaultApiResponses;
 import com.openrecordsmanager.rest.swagger.NotFoundApiResponse;
@@ -22,13 +24,16 @@ import java.util.UUID;
 public class UserController {
 
     private final UserService service;
+    private final AuditService auditService;
 
-    public UserController(UserService service) {
+    public UserController(UserService service, AuditService auditService) {
         this.service = service;
+        this.auditService = auditService;
     }
 
     @GetMapping(value = "/me")
     public UserResponse me(@AuthenticationPrincipal User user) {
+        this.auditService.addReadEvent(AuditEntityType.USER, user.getId());
         return UserResponse.of(user);
     }
 

@@ -10,6 +10,7 @@ import java.lang.annotation.*;
 @InternalServerErrorApiResponse
 @ForbiddenApiResponse
 @UnauthorizedApiResponse
+@AuditCommentRequiredApiResponse
 @ApiResponse(responseCode = "200")
 public @interface DefaultApiResponses {
 }

@@ -25,7 +25,11 @@ public class BuiltinPlugin implements Plugin {
                 BuiltinConfigs.WEB_LOGO_URL,
                 BuiltinConfigs.WEB_FAVICON_URL,
                 BuiltinConfigs.WEB_PRIMARY_COLOR,
-                BuiltinConfigs.WEB_SUPPORT_URL
+                BuiltinConfigs.WEB_SUPPORT_URL,
+                BuiltinConfigs.AUDIT_ENABLED,
+                BuiltinConfigs.AUDIT_SPOOL_DIRECTORY,
+                BuiltinConfigs.AUDIT_SPOOL_DRAIN_INTERVAL_SECONDS,
+                BuiltinConfigs.AUDIT_FILE_ARCHIVE_ENABLED
         );
 
         registry.registerComponent("notes", BuiltinProperties.NOTES);
