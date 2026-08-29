@@ -41,7 +41,7 @@ public class DatabaseDialectConfiguration {
         if (StringUtils.hasText(primaryProperties.getUrl())) {
             return primaryProperties.getUrl();
         }
-        if (readOnlyProperties != null && StringUtils.hasText(readOnlyProperties.getUrl())) {
+        if (StringUtils.hasText(readOnlyProperties.getUrl())) {
             return readOnlyProperties.getUrl();
         }
         throw new IllegalStateException("No JDBC URL configured for Hibernate dialect resolution");

@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Stream;
 
 @Component
 public class AuditSpoolWriter {
@@ -83,8 +84,8 @@ public class AuditSpoolWriter {
         }
 
         synchronized (this.paths.lock()) {
-            try {
-                return (int) Files.lines(pending).filter(line -> !line.isBlank()).count();
+            try (Stream<String> lines = Files.lines(pending)) {
+                return (int) lines.filter(line -> !line.isBlank()).count();
             } catch (IOException e) {
                 LOGGER.warn("Failed to count pending audit spool entries", e);
                 return 0;
