@@ -12,7 +12,7 @@ server:
     primary:
       url: jdbc:sqlite:./data/orm_system.db
     read_only:
-      url: jdbc:sqlite:./data/orm_system.db
+      url: jdbc:sqlite:./data/orm_system.db?open_mode=1
   plugins:
     directory: ./plugins
     skip_startup_check: false

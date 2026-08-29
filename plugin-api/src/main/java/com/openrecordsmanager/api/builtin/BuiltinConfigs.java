@@ -10,13 +10,18 @@ public class BuiltinConfigs {
     // Server only settings
 
     public static final ConfigType<Object> DATABASE_PRIMARY = ConfigType.builder("server.database.primary", ConfigValueType.OBJECT)
-            .name("Primary Database")
+            .name("Primary Database Connection")
             .description("The primary connection to the database, this connection will be used for read/write operations.")
             .build();
 
     public static final ConfigType<String> DATABASE_PRIMARY_URL = ConfigType.builder("server.database.primary.url", ConfigValueType.STRING)
             .name("Primary Database URL")
             .description("A JDBC URL to the connect to the database, this connection will be used for read/write operations.")
+            .build();
+
+    public static final ConfigType<Object> DATABASE_READ_ONLY = ConfigType.builder("server.database.read-only", ConfigValueType.OBJECT)
+            .name("Read-Only Database Connection")
+            .description("A connection to a secondary/read-only database, this connection will only be used for read operations.")
             .build();
 
     public static final ConfigType<String> DATABASE_READ_ONLY_URL = ConfigType.builder("server.database.read-only.url", ConfigValueType.STRING)

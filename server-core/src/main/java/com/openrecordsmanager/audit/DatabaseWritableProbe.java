@@ -4,6 +4,9 @@ import com.openrecordsmanager.database.schema.SchemaMigrationState;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.event.EventListener;
+import org.springframework.core.annotation.Order;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -20,7 +23,7 @@ public class DatabaseWritableProbe {
 
     private final DataSource writeDataSource;
     private final SchemaMigrationState migrationState;
-    private final AtomicBoolean writable = new AtomicBoolean(true);
+    private final AtomicBoolean writable = new AtomicBoolean(false);
     private final AtomicReference<Instant> lastChecked = new AtomicReference<>(Instant.EPOCH);
     private final AtomicReference<Instant> lastSuccessfulWrite = new AtomicReference<>(Instant.EPOCH);
 
@@ -33,7 +36,7 @@ public class DatabaseWritableProbe {
     }
 
     public boolean isWritable() {
-        return this.writable.get();
+        return this.writable.get() && !this.migrationState.isUpgradeRequired();
     }
 
     public Instant getLastChecked() {
@@ -53,6 +56,12 @@ public class DatabaseWritableProbe {
         this.writable.set(false);
     }
 
+    @Order(0)
+    @EventListener(ApplicationReadyEvent.class)
+    public void probeOnStartup() {
+        this.probe();
+    }
+
     @Scheduled(fixedDelayString = "${audit.probe.interval-ms:30000}")
     public void probe() {
         if (this.migrationState.isUpgradeRequired()) {
@@ -68,7 +77,7 @@ public class DatabaseWritableProbe {
             connection.createStatement().execute("SELECT 1");
             this.writable.set(true);
         } catch (Exception e) {
-            LOGGER.debug("Primary database is not writable: {}", e.getMessage());
+            LOGGER.debug("Primary database is offline: {}", e.getMessage());
             this.writable.set(false);
         }
     }

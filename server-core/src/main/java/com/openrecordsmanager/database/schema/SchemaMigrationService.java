@@ -5,9 +5,11 @@ import org.flywaydb.core.Flyway;
 import org.flywaydb.core.api.MigrationInfo;
 import org.flywaydb.core.api.output.MigrateResult;
 import org.jspecify.annotations.Nullable;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
+import javax.sql.DataSource;
 import java.util.Arrays;
 import java.util.List;
 
@@ -15,21 +17,24 @@ import java.util.List;
 public class SchemaMigrationService {
 
     private final Flyway flyway;
+    private final DataSource writeDataSource;
     private final SchemaMigrationState state;
     private final ApplicationEventPublisher events;
 
     public SchemaMigrationService(
             Flyway flyway,
+            @Qualifier("writeDataSource") DataSource writeDataSource,
             SchemaMigrationState state,
             ApplicationEventPublisher events
     ) {
         this.flyway = flyway;
+        this.writeDataSource = writeDataSource;
         this.state = state;
         this.events = events;
     }
 
     public SetupStatusResponse upgrade() {
-        MigrateResult result = this.flyway.migrate();
+        MigrateResult result = this.writableFlyway().migrate();
         this.evaluate();
         if (this.state.isUpgradeRequired()) {
             throw new IllegalStateException("Schema upgrade completed but pending migrations remain");
@@ -45,8 +50,9 @@ public class SchemaMigrationService {
         if (applied.length == 0) {
             // Brand-new database: apply schema now. JPA is not available yet during Flyway init,
             // so bootstrap rows are seeded later via InitialDatabaseSeeder.
-            this.upgrade();
+            this.writableFlyway().migrate();
             this.state.markInitialSeedPending();
+            this.evaluate();
         } else if (pending.length > 0) {
             this.state.markUpgradeRequired(
                     currentVersion(applied),
@@ -56,6 +62,13 @@ public class SchemaMigrationService {
         } else {
             this.state.markReady(currentVersion(applied));
         }
+    }
+
+    private Flyway writableFlyway() {
+        return Flyway.configure()
+                .configuration(this.flyway.getConfiguration())
+                .dataSource(this.writeDataSource)
+                .load();
     }
 
     public SetupStatusResponse toStatusResponse(@Nullable String messageOverride) {
