@@ -30,9 +30,9 @@ public class ResponseWrapper implements ResponseBodyAdvice<Object> {
             return body;
         }
 
-        // Do not attempt to transform the swagger endpoints
+        // Do not transform swagger or actuator health
         String path = request.getURI().getPath();
-        if (path.contains("/v3/api-docs") || path.contains("/swagger-ui")) {
+        if (path.contains("/v3/api-docs") || path.contains("/swagger-ui") || path.startsWith("/api/health")) {
             return body;
         }
 

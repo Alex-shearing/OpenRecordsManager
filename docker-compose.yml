@@ -13,6 +13,12 @@ services:
       SERVER_PLUGINS_DIRECTORY: /app/plugins
       SERVER_WEB_DIRECTORY: ""
       APP_LOGGING_PATH: /app/data/logs/openrecordsmanager.log
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://127.0.0.1:8080/api/health/liveness"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 60s
 
   web:
     build:
@@ -23,7 +29,8 @@ services:
     environment:
       UI_API_BASE_URL: http://localhost:8080
     depends_on:
-      - api
+      api:
+        condition: service_healthy
 
 volumes:
   api-data:

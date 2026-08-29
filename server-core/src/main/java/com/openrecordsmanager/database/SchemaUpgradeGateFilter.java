@@ -38,7 +38,8 @@ public class SchemaUpgradeGateFilter extends OncePerRequestFilter {
         }
         return !path.startsWith("/api/")
                 || path.startsWith("/api/database/")
-                || path.startsWith("/api/web");
+                || path.startsWith("/api/web")
+                || path.startsWith("/api/health");
     }
 
     @Override
