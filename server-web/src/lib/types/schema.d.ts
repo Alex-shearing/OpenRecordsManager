@@ -154,6 +154,24 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/audit/policies": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List audit policies */
+        get: operations["listPolicies"];
+        /** Update an audit policy */
+        put: operations["updatePolicy"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/user/{id}/actions/{action}": {
         parameters: {
             query?: never;
@@ -701,6 +719,57 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/audit/status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get audit subsystem status */
+        get: operations["status_1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/audit/events": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List audit events for an entity */
+        get: operations["listEvents"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/audit/events/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get a single audit event */
+        get: operations["getEvent"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -829,6 +898,20 @@ export interface components {
             pattern?: string;
             contentEncoding?: string;
         };
+        UpdateAuditPolicyRequest: {
+            enabled: boolean;
+            requiresComment: boolean;
+        };
+        AuditPolicyResponse: {
+            /** @enum {string} */
+            entityType?: "record" | "user" | "record_type" | "config" | "list" | "list_element" | "object_property" | "file_store" | "auth_provider" | "record_revision" | "file_store_middleware" | "template";
+            /** @enum {string} */
+            operation?: "CREATE" | "READ" | "UPDATE" | "DELETE" | "ACTION";
+            enabled?: boolean;
+            requiresComment?: boolean;
+            displayName?: string;
+            description?: string;
+        };
         NewRecordRequest: {
             type: string;
             properties: {
@@ -904,6 +987,7 @@ export interface components {
             name: string;
             description: string;
             inputSchema: components["schemas"]["InputFormSchema"];
+            requiresAuditComment?: boolean;
         };
         UserResponse: {
             /** Format: uuid */
@@ -965,6 +1049,52 @@ export interface components {
         MiddlewareTypeResponse: {
             id: string;
             settingsSchema: components["schemas"]["InputFormSchema"];
+        };
+        AuditStatusResponse: {
+            primaryWritable?: boolean;
+            /** Format: int32 */
+            pendingSpoolCount?: number;
+            /** Format: date-time */
+            lastProbeAt?: string;
+            /** Format: date-time */
+            lastSuccessfulWriteAt?: string;
+            /** Format: date-time */
+            lastDrainAttemptAt?: string;
+            /** Format: date-time */
+            lastSuccessfulDrainAt?: string;
+        };
+        AuditEventResponse: {
+            /** Format: uuid */
+            id?: string;
+            /** Format: date-time */
+            occurredAt?: string;
+            /** Format: uuid */
+            actorId?: string;
+            actorUsername?: string;
+            /** @enum {string} */
+            operation?: "CREATE" | "READ" | "UPDATE" | "DELETE" | "ACTION";
+            /** @enum {string} */
+            targetType?: "record" | "user" | "record_type" | "config" | "list" | "list_element" | "object_property" | "file_store" | "auth_provider" | "record_revision" | "file_store_middleware" | "template";
+            targetId?: string;
+            actionId?: string;
+            summary?: string;
+            changes?: components["schemas"]["AuditPropertyChange"][];
+            relationships?: components["schemas"]["AuditRelationship"][];
+            comment?: string;
+            metadata?: {
+                [key: string]: unknown;
+            };
+        };
+        AuditPropertyChange: {
+            property?: string;
+            oldValue?: unknown;
+            newValue?: unknown;
+        };
+        AuditRelationship: {
+            /** @enum {string} */
+            type?: "record" | "user" | "record_type" | "config" | "list" | "list_element" | "object_property" | "file_store" | "auth_provider" | "record_revision" | "file_store_middleware" | "template";
+            id?: string;
+            role?: string;
         };
     };
     responses: never;
@@ -1038,6 +1168,23 @@ export interface operations {
                      * @example {
                      *       "success": false,
                      *       "error": "object {0} of type {1} not found",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ApiResponseV1"];
+                };
+            };
+            /** @description Audit comment required */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "audit_comment_required",
+                     *       "error_data": "An audit comment is required for this action (provide the X-ORM-Audit-Comment header)",
                      *       "timestamp": "2026-06-29T23:05:00Z"
                      *     }
                      */
@@ -1175,6 +1322,30 @@ export interface operations {
                     };
                 };
             };
+            /** @description Audit comment required */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "audit_comment_required",
+                     *       "error_data": "An audit comment is required for this action (provide the X-ORM-Audit-Comment header)",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                        errorData?: Record<string, never>;
+                    };
+                };
+            };
             /** @description Internal Server error */
             500: {
                 headers: {
@@ -1282,6 +1453,30 @@ export interface operations {
                      * @example {
                      *       "success": false,
                      *       "error": "object {0} of type {1} not found",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                        errorData?: Record<string, never>;
+                    };
+                };
+            };
+            /** @description Audit comment required */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "audit_comment_required",
+                     *       "error_data": "An audit comment is required for this action (provide the X-ORM-Audit-Comment header)",
                      *       "timestamp": "2026-06-29T23:05:00Z"
                      *     }
                      */
@@ -1406,6 +1601,30 @@ export interface operations {
                      * @example {
                      *       "success": false,
                      *       "error": "object {0} of type {1} not found",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                        errorData?: Record<string, never>;
+                    };
+                };
+            };
+            /** @description Audit comment required */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "audit_comment_required",
+                     *       "error_data": "An audit comment is required for this action (provide the X-ORM-Audit-Comment header)",
                      *       "timestamp": "2026-06-29T23:05:00Z"
                      *     }
                      */
@@ -1561,6 +1780,30 @@ export interface operations {
                     };
                 };
             };
+            /** @description Audit comment required */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "audit_comment_required",
+                     *       "error_data": "An audit comment is required for this action (provide the X-ORM-Audit-Comment header)",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                        errorData?: Record<string, never>;
+                    };
+                };
+            };
             /** @description Internal Server error */
             500: {
                 headers: {
@@ -1668,6 +1911,30 @@ export interface operations {
                      * @example {
                      *       "success": false,
                      *       "error": "object {0} of type {1} not found",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                        errorData?: Record<string, never>;
+                    };
+                };
+            };
+            /** @description Audit comment required */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "audit_comment_required",
+                     *       "error_data": "An audit comment is required for this action (provide the X-ORM-Audit-Comment header)",
                      *       "timestamp": "2026-06-29T23:05:00Z"
                      *     }
                      */
@@ -1792,6 +2059,30 @@ export interface operations {
                      * @example {
                      *       "success": false,
                      *       "error": "object {0} of type {1} not found",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                        errorData?: Record<string, never>;
+                    };
+                };
+            };
+            /** @description Audit comment required */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "audit_comment_required",
+                     *       "error_data": "An audit comment is required for this action (provide the X-ORM-Audit-Comment header)",
                      *       "timestamp": "2026-06-29T23:05:00Z"
                      *     }
                      */
@@ -1952,6 +2243,30 @@ export interface operations {
                     };
                 };
             };
+            /** @description Audit comment required */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "audit_comment_required",
+                     *       "error_data": "An audit comment is required for this action (provide the X-ORM-Audit-Comment header)",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                        errorData?: Record<string, never>;
+                    };
+                };
+            };
             /** @description Internal Server error */
             500: {
                 headers: {
@@ -2094,6 +2409,30 @@ export interface operations {
                     };
                 };
             };
+            /** @description Audit comment required */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "audit_comment_required",
+                     *       "error_data": "An audit comment is required for this action (provide the X-ORM-Audit-Comment header)",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                        errorData?: Record<string, never>;
+                    };
+                };
+            };
             /** @description Internal Server error */
             500: {
                 headers: {
@@ -2202,6 +2541,30 @@ export interface operations {
                      * @example {
                      *       "success": false,
                      *       "error": "object {0} of type {1} not found",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                        errorData?: Record<string, never>;
+                    };
+                };
+            };
+            /** @description Audit comment required */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "audit_comment_required",
+                     *       "error_data": "An audit comment is required for this action (provide the X-ORM-Audit-Comment header)",
                      *       "timestamp": "2026-06-29T23:05:00Z"
                      *     }
                      */
@@ -2340,6 +2703,30 @@ export interface operations {
                     };
                 };
             };
+            /** @description Audit comment required */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "audit_comment_required",
+                     *       "error_data": "An audit comment is required for this action (provide the X-ORM-Audit-Comment header)",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                        errorData?: Record<string, never>;
+                    };
+                };
+            };
             /** @description Internal Server error */
             500: {
                 headers: {
@@ -2447,6 +2834,30 @@ export interface operations {
                      * @example {
                      *       "success": false,
                      *       "error": "object {0} of type {1} not found",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                        errorData?: Record<string, never>;
+                    };
+                };
+            };
+            /** @description Audit comment required */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "audit_comment_required",
+                     *       "error_data": "An audit comment is required for this action (provide the X-ORM-Audit-Comment header)",
                      *       "timestamp": "2026-06-29T23:05:00Z"
                      *     }
                      */
@@ -2580,6 +2991,30 @@ export interface operations {
                     };
                 };
             };
+            /** @description Audit comment required */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "audit_comment_required",
+                     *       "error_data": "An audit comment is required for this action (provide the X-ORM-Audit-Comment header)",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                        errorData?: Record<string, never>;
+                    };
+                };
+            };
             /** @description Internal Server error */
             500: {
                 headers: {
@@ -2693,6 +3128,30 @@ export interface operations {
                      * @example {
                      *       "success": false,
                      *       "error": "object {0} of type {1} not found",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                        errorData?: Record<string, never>;
+                    };
+                };
+            };
+            /** @description Audit comment required */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "audit_comment_required",
+                     *       "error_data": "An audit comment is required for this action (provide the X-ORM-Audit-Comment header)",
                      *       "timestamp": "2026-06-29T23:05:00Z"
                      *     }
                      */
@@ -2848,6 +3307,30 @@ export interface operations {
                     };
                 };
             };
+            /** @description Audit comment required */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "audit_comment_required",
+                     *       "error_data": "An audit comment is required for this action (provide the X-ORM-Audit-Comment header)",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                        errorData?: Record<string, never>;
+                    };
+                };
+            };
             /** @description Internal Server error */
             500: {
                 headers: {
@@ -2955,6 +3438,30 @@ export interface operations {
                      * @example {
                      *       "success": false,
                      *       "error": "object {0} of type {1} not found",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                        errorData?: Record<string, never>;
+                    };
+                };
+            };
+            /** @description Audit comment required */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "audit_comment_required",
+                     *       "error_data": "An audit comment is required for this action (provide the X-ORM-Audit-Comment header)",
                      *       "timestamp": "2026-06-29T23:05:00Z"
                      *     }
                      */
@@ -3081,6 +3588,30 @@ export interface operations {
                      * @example {
                      *       "success": false,
                      *       "error": "object {0} of type {1} not found",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                        errorData?: Record<string, never>;
+                    };
+                };
+            };
+            /** @description Audit comment required */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "audit_comment_required",
+                     *       "error_data": "An audit comment is required for this action (provide the X-ORM-Audit-Comment header)",
                      *       "timestamp": "2026-06-29T23:05:00Z"
                      *     }
                      */
@@ -3236,6 +3767,30 @@ export interface operations {
                     };
                 };
             };
+            /** @description Audit comment required */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "audit_comment_required",
+                     *       "error_data": "An audit comment is required for this action (provide the X-ORM-Audit-Comment header)",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                        errorData?: Record<string, never>;
+                    };
+                };
+            };
             /** @description Internal Server error */
             500: {
                 headers: {
@@ -3320,6 +3875,30 @@ export interface operations {
                      * @example {
                      *       "success": false,
                      *       "error": "Forbidden",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                        errorData?: Record<string, never>;
+                    };
+                };
+            };
+            /** @description Audit comment required */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "audit_comment_required",
+                     *       "error_data": "An audit comment is required for this action (provide the X-ORM-Audit-Comment header)",
                      *       "timestamp": "2026-06-29T23:05:00Z"
                      *     }
                      */
@@ -3421,6 +4000,30 @@ export interface operations {
                      * @example {
                      *       "success": false,
                      *       "error": "Forbidden",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                        errorData?: Record<string, never>;
+                    };
+                };
+            };
+            /** @description Audit comment required */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "audit_comment_required",
+                     *       "error_data": "An audit comment is required for this action (provide the X-ORM-Audit-Comment header)",
                      *       "timestamp": "2026-06-29T23:05:00Z"
                      *     }
                      */
@@ -3607,6 +4210,274 @@ export interface operations {
             };
         };
     };
+    listPolicies: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @constant */
+                        success: true;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        data: components["schemas"]["AuditPolicyResponse"][];
+                    };
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "Unauthorized",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                        errorData?: Record<string, never>;
+                    };
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "Forbidden",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                        errorData?: Record<string, never>;
+                    };
+                };
+            };
+            /** @description Audit comment required */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "audit_comment_required",
+                     *       "error_data": "An audit comment is required for this action (provide the X-ORM-Audit-Comment header)",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                        errorData?: Record<string, never>;
+                    };
+                };
+            };
+            /** @description Internal Server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "Internal Server Error",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                        errorData?: Record<string, never>;
+                    };
+                };
+            };
+        };
+    };
+    updatePolicy: {
+        parameters: {
+            query: {
+                entityType: string;
+                operation: "CREATE" | "READ" | "UPDATE" | "DELETE" | "ACTION";
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateAuditPolicyRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @constant */
+                        success: true;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        data: components["schemas"]["AuditPolicyResponse"];
+                    };
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "Unauthorized",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                        errorData?: Record<string, never>;
+                    };
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "Forbidden",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                        errorData?: Record<string, never>;
+                    };
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "object {0} of type {1} not found",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                        errorData?: Record<string, never>;
+                    };
+                };
+            };
+            /** @description Audit comment required */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "audit_comment_required",
+                     *       "error_data": "An audit comment is required for this action (provide the X-ORM-Audit-Comment header)",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                        errorData?: Record<string, never>;
+                    };
+                };
+            };
+            /** @description Internal Server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "Internal Server Error",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                        errorData?: Record<string, never>;
+                    };
+                };
+            };
+        };
+    };
     executeAction: {
         parameters: {
             query?: never;
@@ -3695,6 +4566,30 @@ export interface operations {
                      * @example {
                      *       "success": false,
                      *       "error": "object {0} of type {1} not found",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                        errorData?: Record<string, never>;
+                    };
+                };
+            };
+            /** @description Audit comment required */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "audit_comment_required",
+                     *       "error_data": "An audit comment is required for this action (provide the X-ORM-Audit-Comment header)",
                      *       "timestamp": "2026-06-29T23:05:00Z"
                      *     }
                      */
@@ -3830,6 +4725,30 @@ export interface operations {
                     };
                 };
             };
+            /** @description Audit comment required */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "audit_comment_required",
+                     *       "error_data": "An audit comment is required for this action (provide the X-ORM-Audit-Comment header)",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                        errorData?: Record<string, never>;
+                    };
+                };
+            };
             /** @description Internal Server error */
             500: {
                 headers: {
@@ -3939,6 +4858,30 @@ export interface operations {
                      * @example {
                      *       "success": false,
                      *       "error": "object {0} of type {1} not found",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                        errorData?: Record<string, never>;
+                    };
+                };
+            };
+            /** @description Audit comment required */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "audit_comment_required",
+                     *       "error_data": "An audit comment is required for this action (provide the X-ORM-Audit-Comment header)",
                      *       "timestamp": "2026-06-29T23:05:00Z"
                      *     }
                      */
@@ -4078,6 +5021,30 @@ export interface operations {
                     };
                 };
             };
+            /** @description Audit comment required */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "audit_comment_required",
+                     *       "error_data": "An audit comment is required for this action (provide the X-ORM-Audit-Comment header)",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                        errorData?: Record<string, never>;
+                    };
+                };
+            };
             /** @description Internal Server error */
             500: {
                 headers: {
@@ -4160,6 +5127,30 @@ export interface operations {
                      * @example {
                      *       "success": false,
                      *       "error": "Forbidden",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                        errorData?: Record<string, never>;
+                    };
+                };
+            };
+            /** @description Audit comment required */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "audit_comment_required",
+                     *       "error_data": "An audit comment is required for this action (provide the X-ORM-Audit-Comment header)",
                      *       "timestamp": "2026-06-29T23:05:00Z"
                      *     }
                      */
@@ -4318,6 +5309,30 @@ export interface operations {
                     };
                 };
             };
+            /** @description Audit comment required */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "audit_comment_required",
+                     *       "error_data": "An audit comment is required for this action (provide the X-ORM-Audit-Comment header)",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                        errorData?: Record<string, never>;
+                    };
+                };
+            };
             /** @description Internal Server error */
             500: {
                 headers: {
@@ -4400,6 +5415,30 @@ export interface operations {
                      * @example {
                      *       "success": false,
                      *       "error": "Forbidden",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                        errorData?: Record<string, never>;
+                    };
+                };
+            };
+            /** @description Audit comment required */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "audit_comment_required",
+                     *       "error_data": "An audit comment is required for this action (provide the X-ORM-Audit-Comment header)",
                      *       "timestamp": "2026-06-29T23:05:00Z"
                      *     }
                      */
@@ -4535,6 +5574,30 @@ export interface operations {
                     };
                 };
             };
+            /** @description Audit comment required */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "audit_comment_required",
+                     *       "error_data": "An audit comment is required for this action (provide the X-ORM-Audit-Comment header)",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                        errorData?: Record<string, never>;
+                    };
+                };
+            };
             /** @description Internal Server error */
             500: {
                 headers: {
@@ -4617,6 +5680,30 @@ export interface operations {
                      * @example {
                      *       "success": false,
                      *       "error": "Forbidden",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                        errorData?: Record<string, never>;
+                    };
+                };
+            };
+            /** @description Audit comment required */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "audit_comment_required",
+                     *       "error_data": "An audit comment is required for this action (provide the X-ORM-Audit-Comment header)",
                      *       "timestamp": "2026-06-29T23:05:00Z"
                      *     }
                      */
@@ -4752,6 +5839,30 @@ export interface operations {
                     };
                 };
             };
+            /** @description Audit comment required */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "audit_comment_required",
+                     *       "error_data": "An audit comment is required for this action (provide the X-ORM-Audit-Comment header)",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                        errorData?: Record<string, never>;
+                    };
+                };
+            };
             /** @description Internal Server error */
             500: {
                 headers: {
@@ -4834,6 +5945,30 @@ export interface operations {
                      * @example {
                      *       "success": false,
                      *       "error": "Forbidden",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                        errorData?: Record<string, never>;
+                    };
+                };
+            };
+            /** @description Audit comment required */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "audit_comment_required",
+                     *       "error_data": "An audit comment is required for this action (provide the X-ORM-Audit-Comment header)",
                      *       "timestamp": "2026-06-29T23:05:00Z"
                      *     }
                      */
@@ -4956,6 +6091,30 @@ export interface operations {
                      * @example {
                      *       "success": false,
                      *       "error": "object {0} of type {1} not found",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                        errorData?: Record<string, never>;
+                    };
+                };
+            };
+            /** @description Audit comment required */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "audit_comment_required",
+                     *       "error_data": "An audit comment is required for this action (provide the X-ORM-Audit-Comment header)",
                      *       "timestamp": "2026-06-29T23:05:00Z"
                      *     }
                      */
@@ -5445,6 +6604,30 @@ export interface operations {
                     };
                 };
             };
+            /** @description Audit comment required */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "audit_comment_required",
+                     *       "error_data": "An audit comment is required for this action (provide the X-ORM-Audit-Comment header)",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                        errorData?: Record<string, never>;
+                    };
+                };
+            };
             /** @description Internal Server error */
             500: {
                 headers: {
@@ -5540,6 +6723,30 @@ export interface operations {
                     };
                 };
             };
+            /** @description Audit comment required */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "audit_comment_required",
+                     *       "error_data": "An audit comment is required for this action (provide the X-ORM-Audit-Comment header)",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                        errorData?: Record<string, never>;
+                    };
+                };
+            };
             /** @description Internal Server error */
             500: {
                 headers: {
@@ -5622,6 +6829,30 @@ export interface operations {
                      * @example {
                      *       "success": false,
                      *       "error": "Forbidden",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                        errorData?: Record<string, never>;
+                    };
+                };
+            };
+            /** @description Audit comment required */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "audit_comment_required",
+                     *       "error_data": "An audit comment is required for this action (provide the X-ORM-Audit-Comment header)",
                      *       "timestamp": "2026-06-29T23:05:00Z"
                      *     }
                      */
@@ -5742,6 +6973,30 @@ export interface operations {
                      * @example {
                      *       "success": false,
                      *       "error": "object {0} of type {1} not found",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                        errorData?: Record<string, never>;
+                    };
+                };
+            };
+            /** @description Audit comment required */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "audit_comment_required",
+                     *       "error_data": "An audit comment is required for this action (provide the X-ORM-Audit-Comment header)",
                      *       "timestamp": "2026-06-29T23:05:00Z"
                      *     }
                      */
@@ -5876,6 +7131,30 @@ export interface operations {
                     };
                 };
             };
+            /** @description Audit comment required */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "audit_comment_required",
+                     *       "error_data": "An audit comment is required for this action (provide the X-ORM-Audit-Comment header)",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                        errorData?: Record<string, never>;
+                    };
+                };
+            };
             /** @description Internal Server error */
             500: {
                 headers: {
@@ -5983,6 +7262,30 @@ export interface operations {
                      * @example {
                      *       "success": false,
                      *       "error": "object {0} of type {1} not found",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                        errorData?: Record<string, never>;
+                    };
+                };
+            };
+            /** @description Audit comment required */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "audit_comment_required",
+                     *       "error_data": "An audit comment is required for this action (provide the X-ORM-Audit-Comment header)",
                      *       "timestamp": "2026-06-29T23:05:00Z"
                      *     }
                      */
@@ -6116,6 +7419,30 @@ export interface operations {
                     };
                 };
             };
+            /** @description Audit comment required */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "audit_comment_required",
+                     *       "error_data": "An audit comment is required for this action (provide the X-ORM-Audit-Comment header)",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                        errorData?: Record<string, never>;
+                    };
+                };
+            };
             /** @description Internal Server error */
             500: {
                 headers: {
@@ -6198,6 +7525,30 @@ export interface operations {
                      * @example {
                      *       "success": false,
                      *       "error": "Forbidden",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                        errorData?: Record<string, never>;
+                    };
+                };
+            };
+            /** @description Audit comment required */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "audit_comment_required",
+                     *       "error_data": "An audit comment is required for this action (provide the X-ORM-Audit-Comment header)",
                      *       "timestamp": "2026-06-29T23:05:00Z"
                      *     }
                      */
@@ -6331,6 +7682,30 @@ export interface operations {
                     };
                 };
             };
+            /** @description Audit comment required */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "audit_comment_required",
+                     *       "error_data": "An audit comment is required for this action (provide the X-ORM-Audit-Comment header)",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                        errorData?: Record<string, never>;
+                    };
+                };
+            };
             /** @description Internal Server error */
             500: {
                 headers: {
@@ -6413,6 +7788,30 @@ export interface operations {
                      * @example {
                      *       "success": false,
                      *       "error": "Forbidden",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                        errorData?: Record<string, never>;
+                    };
+                };
+            };
+            /** @description Audit comment required */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "audit_comment_required",
+                     *       "error_data": "An audit comment is required for this action (provide the X-ORM-Audit-Comment header)",
                      *       "timestamp": "2026-06-29T23:05:00Z"
                      *     }
                      */
@@ -6548,6 +7947,30 @@ export interface operations {
                     };
                 };
             };
+            /** @description Audit comment required */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "audit_comment_required",
+                     *       "error_data": "An audit comment is required for this action (provide the X-ORM-Audit-Comment header)",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                        errorData?: Record<string, never>;
+                    };
+                };
+            };
             /** @description Internal Server error */
             500: {
                 headers: {
@@ -6643,6 +8066,30 @@ export interface operations {
                     };
                 };
             };
+            /** @description Audit comment required */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "audit_comment_required",
+                     *       "error_data": "An audit comment is required for this action (provide the X-ORM-Audit-Comment header)",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                        errorData?: Record<string, never>;
+                    };
+                };
+            };
             /** @description Internal Server error */
             500: {
                 headers: {
@@ -6725,6 +8172,30 @@ export interface operations {
                      * @example {
                      *       "success": false,
                      *       "error": "Forbidden",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                        errorData?: Record<string, never>;
+                    };
+                };
+            };
+            /** @description Audit comment required */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "audit_comment_required",
+                     *       "error_data": "An audit comment is required for this action (provide the X-ORM-Audit-Comment header)",
                      *       "timestamp": "2026-06-29T23:05:00Z"
                      *     }
                      */
@@ -6884,6 +8355,30 @@ export interface operations {
                     };
                 };
             };
+            /** @description Audit comment required */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "audit_comment_required",
+                     *       "error_data": "An audit comment is required for this action (provide the X-ORM-Audit-Comment header)",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                        errorData?: Record<string, never>;
+                    };
+                };
+            };
             /** @description Internal Server error */
             500: {
                 headers: {
@@ -6981,6 +8476,30 @@ export interface operations {
                     };
                 };
             };
+            /** @description Audit comment required */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "audit_comment_required",
+                     *       "error_data": "An audit comment is required for this action (provide the X-ORM-Audit-Comment header)",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                        errorData?: Record<string, never>;
+                    };
+                };
+            };
             /** @description Internal Server error */
             500: {
                 headers: {
@@ -7065,6 +8584,30 @@ export interface operations {
                      * @example {
                      *       "success": false,
                      *       "error": "Forbidden",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                        errorData?: Record<string, never>;
+                    };
+                };
+            };
+            /** @description Audit comment required */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "audit_comment_required",
+                     *       "error_data": "An audit comment is required for this action (provide the X-ORM-Audit-Comment header)",
                      *       "timestamp": "2026-06-29T23:05:00Z"
                      *     }
                      */
@@ -7214,6 +8757,393 @@ export interface operations {
                      * @example {
                      *       "success": false,
                      *       "error": "object {0} of type {1} not found",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                        errorData?: Record<string, never>;
+                    };
+                };
+            };
+            /** @description Internal Server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "Internal Server Error",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                        errorData?: Record<string, never>;
+                    };
+                };
+            };
+        };
+    };
+    status_1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @constant */
+                        success: true;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        data: components["schemas"]["AuditStatusResponse"];
+                    };
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "Unauthorized",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                        errorData?: Record<string, never>;
+                    };
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "Forbidden",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                        errorData?: Record<string, never>;
+                    };
+                };
+            };
+            /** @description Audit comment required */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "audit_comment_required",
+                     *       "error_data": "An audit comment is required for this action (provide the X-ORM-Audit-Comment header)",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                        errorData?: Record<string, never>;
+                    };
+                };
+            };
+            /** @description Internal Server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "Internal Server Error",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                        errorData?: Record<string, never>;
+                    };
+                };
+            };
+        };
+    };
+    listEvents: {
+        parameters: {
+            query: {
+                targetType: string;
+                targetId: string;
+                before?: string;
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @constant */
+                        success: true;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        data: components["schemas"]["AuditEventResponse"][];
+                    };
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "Unauthorized",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                        errorData?: Record<string, never>;
+                    };
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "Forbidden",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                        errorData?: Record<string, never>;
+                    };
+                };
+            };
+            /** @description Audit comment required */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "audit_comment_required",
+                     *       "error_data": "An audit comment is required for this action (provide the X-ORM-Audit-Comment header)",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                        errorData?: Record<string, never>;
+                    };
+                };
+            };
+            /** @description Internal Server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "Internal Server Error",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                        errorData?: Record<string, never>;
+                    };
+                };
+            };
+        };
+    };
+    getEvent: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @constant */
+                        success: true;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        data: components["schemas"]["AuditEventResponse"];
+                    };
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "Unauthorized",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                        errorData?: Record<string, never>;
+                    };
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "Forbidden",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                        errorData?: Record<string, never>;
+                    };
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "object {0} of type {1} not found",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                        errorData?: Record<string, never>;
+                    };
+                };
+            };
+            /** @description Audit comment required */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "audit_comment_required",
+                     *       "error_data": "An audit comment is required for this action (provide the X-ORM-Audit-Comment header)",
                      *       "timestamp": "2026-06-29T23:05:00Z"
                      *     }
                      */
