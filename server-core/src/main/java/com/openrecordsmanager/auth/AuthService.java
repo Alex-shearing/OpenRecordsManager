@@ -4,6 +4,7 @@ import com.openrecordsmanager.api.ComponentReference;
 import com.openrecordsmanager.api.audit.AuditEntityType;
 import com.openrecordsmanager.api.audit.AuditOperation;
 import com.openrecordsmanager.api.auth.AuthProviderType;
+import com.openrecordsmanager.api.auth.RedirectAuthProviderType;
 import com.openrecordsmanager.api.auth.UserAuthContext;
 import com.openrecordsmanager.api.builtin.BuiltinConfigs;
 import com.openrecordsmanager.api.template.property.ObjectPropertyTemplate;
@@ -19,27 +20,25 @@ import com.openrecordsmanager.plugin.ExpressionsService;
 import com.openrecordsmanager.plugin.registry.ComponentCatalog;
 import com.openrecordsmanager.plugin.registry.mapper.TemplateRegistrationMapper;
 import com.openrecordsmanager.property.ObjectProperty;
+import com.openrecordsmanager.rest.errors.ResourceNotFoundException;
 import com.openrecordsmanager.user.User;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.context.annotation.Bean;
-import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
+import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.time.Instant;
-import java.util.Base64;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class AuthService implements UserAuthContext {
@@ -48,9 +47,9 @@ public class AuthService implements UserAuthContext {
 
     private final DataRepository repository;
     private final ComponentCatalog catalog;
-    private final ConfigService config;
     private final ExpressionsService expressions;
     private final AuditService auditService;
+    private final PluginAuthenticationProvider authenticationProvider;
     private final String cookieName;
     private final long tokenDuration;
     private final boolean cookieSecure;
@@ -60,28 +59,31 @@ public class AuthService implements UserAuthContext {
             ComponentCatalog catalog,
             ConfigService config,
             ExpressionsService expressions,
-            AuditService auditService
+            AuditService auditService,
+            @Lazy PluginAuthenticationProvider authenticationProvider
     ) {
         this.repository = repository;
         this.catalog = catalog;
-        this.config = config;
         this.expressions = expressions;
         this.auditService = auditService;
+        this.authenticationProvider = authenticationProvider;
         // Cache these configuration options at startup, don't query sources each time its used
         this.cookieName = config.getOrThrow(BuiltinConfigs.COOKIE_NAME);
         this.tokenDuration = config.getOrThrow(BuiltinConfigs.TOKEN_EXPIRATION_TIME);
         this.cookieSecure = config.getOrThrow(BuiltinConfigs.COOKIE_SECURE);
     }
 
-    @Bean
-    UserDetailsService userDetailsService() {
-        return username -> this.repository.userRepo.findByUsername(username)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+    public Set<AuthProviderListResponse> listProviders() {
+        return this.repository.authProviderRepo.findAll().stream()
+                .map(provider -> AuthProviderListResponse.of(this.catalog, provider))
+                .collect(Collectors.toSet());
     }
 
-    @Bean
-    AuthenticationProvider authenticationProvider() {
-        return new PluginAuthenticationProvider(this.repository, this.catalog, this.config, this);
+    public URI getRedirectLocation(UUID authProviderId) {
+        AuthProvider provider = this.repository.authProviderRepo.findById(authProviderId)
+                .orElseThrow(() -> new ResourceNotFoundException("authentication provider", authProviderId.toString()));
+        RedirectAuthProviderType type = provider.getProviderType(this.catalog, RedirectAuthProviderType.class);
+        return type.getRedirectTo(provider);
     }
 
     public LoginResponse login(
@@ -89,8 +91,8 @@ public class AuthService implements UserAuthContext {
             HttpServletRequest request,
             HttpServletResponse response
     ) throws AuthenticationException {
-        Authentication authenticatedUser = this.authenticationProvider().authenticate(token);
-        if (authenticatedUser == null || !authenticatedUser.isAuthenticated() || authenticatedUser.getDetails() == null) {
+        Authentication authenticatedUser = this.authenticationProvider.authenticate(token);
+        if (!authenticatedUser.isAuthenticated() || authenticatedUser.getDetails() == null) {
             throw new BadCredentialsException("Username or password is incorrect");
         }
 

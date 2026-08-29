@@ -6,6 +6,7 @@ import com.openrecordsmanager.config.ConfigService;
 import com.openrecordsmanager.database.DataRepository;
 import com.openrecordsmanager.database.SchemaUpgradeGateFilter;
 import com.openrecordsmanager.database.schema.SchemaMigrationState;
+import com.openrecordsmanager.plugin.registry.ComponentCatalog;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.context.annotation.Bean;
@@ -16,6 +17,8 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
@@ -53,6 +56,20 @@ public class SecurityConfiguration {
     }
 
     @Bean
+    UserDetailsService userDetailsService() {
+        return username -> this.repository.userRepo.findByUsername(username)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+    }
+
+    @Bean
+    PluginAuthenticationProvider authenticationProvider(
+            ComponentCatalog catalog,
+            ConfigService config
+    ) {
+        return new PluginAuthenticationProvider(this.repository, catalog, config, this.authService);
+    }
+
+    @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
 
@@ -76,7 +93,8 @@ public class SecurityConfiguration {
             HttpSecurity http,
             SchemaMigrationState migrationState,
             JsonMapper mapper,
-            AuditContextFilter auditContextFilter
+            AuditContextFilter auditContextFilter,
+            PluginAuthenticationProvider authenticationProvider
     ) {
         CookieCsrfTokenRepository csrfTokenRepository = CookieCsrfTokenRepository.withHttpOnlyFalse();
         csrfTokenRepository.setCookieCustomizer(cookie -> {
@@ -122,7 +140,7 @@ public class SecurityConfiguration {
                 .addFilterBefore(tokenAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .addFilterAfter(auditContextFilter, DatabaseTokenAuthenticationFilter.class)
                 .addFilterBefore(schemaUpgradeFilter, DatabaseTokenAuthenticationFilter.class)
-                .authenticationProvider(this.authService.authenticationProvider())
+                .authenticationProvider(authenticationProvider)
                 .exceptionHandling(exception -> exception
                         // Force 401 Unauthorized for unauthenticated requests
                         .authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED))

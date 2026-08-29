@@ -1,16 +1,10 @@
 package com.openrecordsmanager.auth;
 
 import com.openrecordsmanager.api.ComponentReference;
-import com.openrecordsmanager.api.auth.RedirectAuthProviderType;
-import com.openrecordsmanager.audit.AuditService;
 import com.openrecordsmanager.auth.dto.AuthProviderListResponse;
 import com.openrecordsmanager.auth.dto.LoginResponse;
 import com.openrecordsmanager.auth.dto.NewAuthProviderRequest;
-import com.openrecordsmanager.auth.entity.AuthProvider;
-import com.openrecordsmanager.database.DataRepository;
-import com.openrecordsmanager.plugin.registry.ComponentCatalog;
 import com.openrecordsmanager.rest.dto.ApiResponseV1;
-import com.openrecordsmanager.rest.errors.ResourceNotFoundException;
 import com.openrecordsmanager.rest.swagger.*;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -29,7 +23,6 @@ import java.net.URI;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -37,29 +30,16 @@ import java.util.stream.Collectors;
 @ApiResponse(responseCode = "200")
 public class AuthController {
 
-    private final ComponentCatalog catalog;
-    private final DataRepository repository;
     private final AuthService authService;
-    private final AuditService auditService;
 
-    public AuthController(
-            ComponentCatalog catalog,
-            DataRepository repository,
-            AuthService authService,
-            AuditService auditService
-    ) {
-        this.catalog = catalog;
-        this.repository = repository;
+    public AuthController(AuthService authService) {
         this.authService = authService;
-        this.auditService = auditService;
     }
 
     @GetMapping(value = "/providers", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "List all supported authentication providers.")
     public Set<AuthProviderListResponse> providers_listAll() {
-        return this.repository.authProviderRepo.findAll().stream()
-                .map(provider -> AuthProviderListResponse.of(this.catalog, provider))
-                .collect(Collectors.toSet());
+        return this.authService.listProviders();
     }
 
     @PutMapping(value = "/providers", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -102,18 +82,18 @@ public class AuthController {
             HttpServletRequest request,
             HttpServletResponse response
     ) {
-        return this.authService.login(new PluginAuthenticationProvider.InputToken(provider, inputs), request, response);
+        return this.authService.login(
+                new PluginAuthenticationProvider.InputToken(provider, inputs),
+                request,
+                response
+        );
     }
 
     @PostMapping(value = "/signup", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Trigger a signup to an authentication provider, implementations vary depending on the provider.")
     @NotFoundApiResponse
     public UUID signup(@RequestBody Map<String, String> loginRequest) {
-        String username = loginRequest.get("username");
-        String password = loginRequest.get("password");
-
-//        User authenticatedUser = this.authService.signup(username, password);
-
+        // TODO: wire signup through AuthService
         return null;
     }
 
@@ -121,13 +101,10 @@ public class AuthController {
     @Operation(summary = "Trigger a redirect from an authentication provider, implementations vary depending on the provider.")
     @NotFoundApiResponse
     public ResponseEntity<Void> redirect(@PathVariable("auth_provider") UUID authProvider) {
-        AuthProvider provider = this.repository.authProviderRepo.findById(authProvider)
-                .orElseThrow(() -> new ResourceNotFoundException("authentication provider", authProvider.toString()));
-        RedirectAuthProviderType type = provider.getProviderType(this.catalog, RedirectAuthProviderType.class);
-
-        return ResponseEntity.status(HttpStatus.FOUND).location(type.getRedirectTo(provider)).build();
+        return ResponseEntity.status(HttpStatus.FOUND)
+                .location(this.authService.getRedirectLocation(authProvider))
+                .build();
     }
-
 
     @GetMapping(value = "/callback/{auth_provider}", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Trigger a callback authentication provider, implementations vary depending on the provider.")
@@ -154,7 +131,13 @@ public class AuthController {
             HttpServletRequest request,
             HttpServletResponse response
     ) {
-        PluginAuthenticationProvider.AbstractPluginToken auth = new PluginAuthenticationProvider.RedirectToken(provider, URI.create(request.getRequestURI()));
-        return this.authService.login(auth, request, response);
+        return this.authService.login(
+                new PluginAuthenticationProvider.RedirectToken(
+                        provider,
+                        URI.create(request.getRequestURI())
+                ),
+                request,
+                response
+        );
     }
 }

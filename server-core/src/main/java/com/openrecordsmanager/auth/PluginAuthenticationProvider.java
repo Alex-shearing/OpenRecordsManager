@@ -79,7 +79,7 @@ public class PluginAuthenticationProvider implements AuthenticationProvider {
 
     @Override
     public boolean supports(Class<?> authentication) {
-        return authentication.equals(InputToken.class);
+        return AbstractPluginToken.class.isAssignableFrom(authentication);
     }
 
     public static abstract class AbstractPluginToken extends AbstractAuthenticationToken {
