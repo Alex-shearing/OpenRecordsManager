@@ -5,6 +5,7 @@ target/
 .kotlin
 server-core/plugins/
 server-core/logs/
+server-core/data/
 server-core/store/
 dependency-reduced-pom.xml
 *.db
