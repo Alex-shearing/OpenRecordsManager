@@ -5,7 +5,6 @@ import com.openrecordsmanager.audit.AuditContextFilter;
 import com.openrecordsmanager.config.ConfigService;
 import com.openrecordsmanager.database.DataRepository;
 import com.openrecordsmanager.database.SchemaUpgradeGateFilter;
-import com.openrecordsmanager.database.schema.SchemaMigrationState;
 import com.openrecordsmanager.plugin.registry.ComponentCatalog;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -17,8 +16,6 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
@@ -28,7 +25,6 @@ import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-import tools.jackson.databind.json.JsonMapper;
 
 import java.util.List;
 import java.util.function.Supplier;
@@ -37,6 +33,24 @@ import java.util.function.Supplier;
 @EnableWebSecurity
 @EnableMethodSecurity
 public class SecurityConfiguration {
+
+    private static final String[] PUBLIC_API_PATHS = {
+            "/api/auth/**",
+            "/api/web/**",
+            "/api/database/**",
+            "/api/health",
+            "/api/health/**"
+    };
+
+    private static final HttpMethod[] CORS_METHODS = {
+            HttpMethod.GET,
+            HttpMethod.POST,
+            HttpMethod.PUT,
+            HttpMethod.PATCH,
+            HttpMethod.DELETE,
+            HttpMethod.OPTIONS
+    };
+
     private final DataRepository repository;
     private final AuthService authService;
     private final String[] allowedOrigins;
@@ -56,12 +70,6 @@ public class SecurityConfiguration {
     }
 
     @Bean
-    UserDetailsService userDetailsService() {
-        return username -> this.repository.userRepo.findByUsername(username)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
-    }
-
-    @Bean
     PluginAuthenticationProvider authenticationProvider(
             ComponentCatalog catalog,
             ConfigService config
@@ -73,8 +81,8 @@ public class SecurityConfiguration {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
 
-        for (HttpMethod value : HttpMethod.values()) {
-            configuration.addAllowedMethod(value);
+        for (HttpMethod method : CORS_METHODS) {
+            configuration.addAllowedMethod(method);
         }
 
         configuration.setAllowedOrigins(List.of(this.allowedOrigins));
@@ -91,10 +99,9 @@ public class SecurityConfiguration {
     @Bean
     public SecurityFilterChain securityFilterChain(
             HttpSecurity http,
-            SchemaMigrationState migrationState,
-            JsonMapper mapper,
-            AuditContextFilter auditContextFilter,
-            PluginAuthenticationProvider authenticationProvider
+            DatabaseTokenAuthenticationFilter tokenAuthenticationFilter,
+            SchemaUpgradeGateFilter schemaUpgradeFilter,
+            AuditContextFilter auditContextFilter
     ) {
         CookieCsrfTokenRepository csrfTokenRepository = CookieCsrfTokenRepository.withHttpOnlyFalse();
         csrfTokenRepository.setCookieCustomizer(cookie -> {
@@ -102,13 +109,6 @@ public class SecurityConfiguration {
             cookie.sameSite(this.cookieSecure ? "None" : "Lax");
             cookie.path("/");
         });
-
-        DatabaseTokenAuthenticationFilter tokenAuthenticationFilter = new DatabaseTokenAuthenticationFilter(
-                this.repository.authTokenRepo,
-                this.authService
-        );
-
-        SchemaUpgradeGateFilter schemaUpgradeFilter = new SchemaUpgradeGateFilter(migrationState, mapper);
 
         http
                 .securityMatcher("/api/**")
@@ -119,14 +119,7 @@ public class SecurityConfiguration {
                             String authHeader = request.getHeader("Authorization");
                             return authHeader != null && authHeader.startsWith("Bearer ");
                         })
-                        .ignoringRequestMatchers(
-                                "/api/auth/**",
-                                "/api/web/**",
-                                "/api/database/**",
-                                "/api/health",
-                                "/api/health/**",
-                                "/v3/api-docs/**"
-                        )
+                        .ignoringRequestMatchers(PUBLIC_API_PATHS)
                         .csrfTokenRepository(csrfTokenRepository)
                         .csrfTokenRequestHandler(new CsrfTokenRequestAttributeHandler() {
                             @Override
@@ -137,24 +130,16 @@ public class SecurityConfiguration {
                         })
                 )
                 .sessionManagement(session ->
-                        session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
+                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                        .requestMatchers(
-                                "/api/auth/**",
-                                "/api/web/**",
-                                "/api/database/**",
-                                "/api/health",
-                                "/api/health/**",
-                                "/v3/api-docs/**"
-                        ).permitAll()
+                        .requestMatchers(PUBLIC_API_PATHS).permitAll()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(tokenAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .addFilterAfter(auditContextFilter, DatabaseTokenAuthenticationFilter.class)
                 .addFilterBefore(schemaUpgradeFilter, DatabaseTokenAuthenticationFilter.class)
-                .authenticationProvider(authenticationProvider)
                 .exceptionHandling(exception -> exception
                         // Force 401 Unauthorized for unauthenticated requests
                         .authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED))

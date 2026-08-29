@@ -7,6 +7,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.MediaType;
+import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 import tools.jackson.databind.json.JsonMapper;
 
@@ -17,6 +18,7 @@ import java.io.IOException;
  * Registered in the Spring Security filter chain before token authentication so
  * auth lookups do not hit the database while an upgrade is required.
  */
+@Component
 public class SchemaUpgradeGateFilter extends OncePerRequestFilter {
 
     public static final String UPGRADE_REQUIRED_HEADER = "X-ORM-Schema-Upgrade-Required";
