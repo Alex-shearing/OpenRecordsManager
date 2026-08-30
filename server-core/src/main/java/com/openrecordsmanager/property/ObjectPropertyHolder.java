@@ -86,6 +86,7 @@ public interface ObjectPropertyHolder<T extends ObjectPropertyHolder.ObjectPrope
         }
 
         @Override
+        @SuppressWarnings("DataFlowIssue") // IDEA things SimpleEntry cannot take a null value
         public Set<Entry<String, Object>> entrySet() {
             return this.holder.getProperties().entrySet().stream()
                     .filter(entry -> !this.forUser || !entry.getKey().isUserHidden())

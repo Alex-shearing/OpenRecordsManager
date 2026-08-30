@@ -12,6 +12,7 @@ import dev.cel.common.CelAbstractSyntaxTree;
 import dev.cel.common.CelFunctionDecl;
 import dev.cel.common.CelOverloadDecl;
 import dev.cel.common.CelValidationException;
+import dev.cel.common.exceptions.CelAttributeNotFoundException;
 import dev.cel.common.types.CelProtoTypes;
 import dev.cel.common.types.SimpleType;
 import dev.cel.compiler.CelCompiler;
@@ -93,6 +94,9 @@ public class ExpressionsService {
             LOGGER.error("Failed to compile filter: {}", filter, e);
             return false;
         } catch (CelEvaluationException e) {
+            if (e.getCause() instanceof CelAttributeNotFoundException) {
+                return false;
+            }
             LOGGER.error("Failed to evaluate filter: {}", filter, e);
             return false;
         }

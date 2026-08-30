@@ -32,7 +32,7 @@ public class AuditAccessService {
 
     private void assertCanViewRecord(User actor, UUID recordId) {
         this.repository.recordRepo.findById(recordId)
-                .filter(record -> record.securityFilter(this.expressions, actor, record).canSeeMetadata())
+                .filter(record -> record.securityFilter(this.expressions, actor).canSeeMetadata())
                 .orElseThrow(() -> new ResourceNotFoundException("record", recordId));
     }
 

@@ -1,6 +1,9 @@
 .git
 **/.gradle
 **/build
+**/data
+server-core/plugins
+**/target
 **/node_modules
 **/.svelte-kit
 server-web

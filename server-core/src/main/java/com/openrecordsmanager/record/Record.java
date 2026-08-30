@@ -103,21 +103,21 @@ public class Record implements ObjectPropertyHolder<RecordPropertyValue<?>> {
         return this.properties;
     }
 
-    public SecurityFilterUsage securityFilter(ExpressionsService expressions, User user, @Nullable Record record) {
+    public SecurityFilterUsage securityFilter(ExpressionsService expressions, User user) {
         // Check record type filter
         if (this.type.securityFilter != null && !expressions.checkPropertyExpression(
                 this.id,
                 this.type.securityFilter,
                 null,
                 user,
-                record)
+                this)
         ) {
             return this.type.securityFilterUsage;
         }
 
         // Check all properties
         for (RecordPropertyValue<?> property : this.properties.values()) {
-            if (!property.securityFilter(expressions, user, record)) {
+            if (!property.securityFilter(expressions, user, this)) {
                 return this.type.securityFilterUsage;
             }
         }

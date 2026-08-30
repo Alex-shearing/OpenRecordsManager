@@ -5,6 +5,7 @@ import com.openrecordsmanager.api.audit.AuditEntityType;
 import com.openrecordsmanager.api.audit.AuditOperation;
 import com.openrecordsmanager.api.builtin.BuiltinConfigs;
 import com.openrecordsmanager.api.record.RecordActionType;
+import com.openrecordsmanager.api.template.recordtype.SecurityFilterUsage;
 import com.openrecordsmanager.api.types.ComponentTypes;
 import com.openrecordsmanager.audit.AuditEventDescriptions;
 import com.openrecordsmanager.audit.AuditPolicyService;
@@ -23,13 +24,13 @@ import com.openrecordsmanager.recordtype.RecordType;
 import com.openrecordsmanager.rest.dto.ActionResponse;
 import com.openrecordsmanager.rest.errors.ResourceNotFoundException;
 import com.openrecordsmanager.user.User;
+import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.InputStream;
 import java.text.MessageFormat;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -63,7 +64,7 @@ public class RecordService {
     @Transactional(readOnly = true)
     public RecordResponse get(User user, UUID id) {
         Record record = this.repository.recordRepo.findById(id)
-                .filter(r -> r.securityFilter(this.expressions, user, r).canSeeMetadata())
+                .filter(r -> r.securityFilter(this.expressions, user).canSeeMetadata())
                 .orElseThrow(() -> new ResourceNotFoundException("record", id));
 
         this.auditService.addEvent(AuditOperation.READ, AuditEntityType.RECORD, record.getId());
@@ -99,16 +100,23 @@ public class RecordService {
         return RecordResponse.of(record);
     }
 
-    private static <K> void setProperty(Record record, ObjectProperty<K> property, Object value) {
-        record.setProperty(property, Objects.requireNonNull(property.getType().cast(value)));
+    private static <K> void setProperty(Record record, ObjectProperty<K> property, @Nullable Object value) {
+        record.setProperty(property, property.getType().cast(value));
     }
 
     @Transactional
     @RequiresAuditComment(operation = AuditOperation.CREATE, targetType = AuditEntityType.RECORD_REVISION)
     public RecordResponse createRevision(User user, UUID id, String version, String fileExtension, InputStream file) {
         Record record = this.repository.recordRepo.findById(id)
-                .filter(r -> r.securityFilter(this.expressions, user, r).canSeeFiles())
                 .orElseThrow(() -> new ResourceNotFoundException("record", id));
+        SecurityFilterUsage filter = record.securityFilter(this.expressions, user);
+
+        if (!filter.canSeeMetadata()) {
+            throw new ResourceNotFoundException("record", id);
+        }
+        if (!filter.canSeeFiles()) {
+            throw new IllegalArgumentException("you don't have the rights to upload files");
+        }
 
         if (!record.getType().supportsFile()) {
             throw new IllegalArgumentException(MessageFormat.format("Record type {0} does not support attaching a file", record.getType().id));
@@ -140,7 +148,7 @@ public class RecordService {
     @Transactional(readOnly = true)
     public RecordRevisionResponse getRevision(User user, UUID id, String version) {
         RecordRevision rev = this.repository.recordRepo.findByRecordId(id, version)
-                .filter(r -> r.record.securityFilter(this.expressions, user, r.record).canSeeFiles())
+                .filter(r -> r.record.securityFilter(this.expressions, user).canSeeFiles())
                 .orElseThrow(() -> new ResourceNotFoundException("record revision", id + "/" + version));
 
         this.auditService.addReadEvent(
@@ -155,7 +163,7 @@ public class RecordService {
     @Transactional(readOnly = true)
     public Set<ActionResponse> listActions(User user, UUID recordId) {
         Record record = this.repository.recordRepo.findById(recordId)
-                .filter(r -> r.securityFilter(this.expressions, user, r).canSeeMetadata())
+                .filter(r -> r.securityFilter(this.expressions, user).canSeeMetadata())
                 .orElseThrow(() -> new ResourceNotFoundException("record", recordId));
 
         RecordActionContextImpl context = new RecordActionContextImpl(
@@ -182,7 +190,7 @@ public class RecordService {
                 .orElseThrow(() -> new ResourceNotFoundException(ComponentTypes.RECORD_ACTION, actionId));
 
         Record record = this.repository.recordRepo.findById(recordId)
-                .filter(r -> r.securityFilter(this.expressions, user, r).canSeeMetadata())
+                .filter(r -> r.securityFilter(this.expressions, user).canSeeMetadata())
                 .orElseThrow(() -> new ResourceNotFoundException("record", recordId));
 
         RecordActionContextImpl context = new RecordActionContextImpl(
