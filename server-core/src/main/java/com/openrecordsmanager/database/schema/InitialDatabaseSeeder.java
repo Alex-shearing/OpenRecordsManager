@@ -1,15 +1,22 @@
 package com.openrecordsmanager.database.schema;
 
-import com.openrecordsmanager.audit.AuditContext;
 import com.openrecordsmanager.api.ComponentReference;
 import com.openrecordsmanager.api.ResourceIdentifier;
+import com.openrecordsmanager.api.template.property.ObjectPropertyTemplate;
 import com.openrecordsmanager.api.types.ComponentTypes;
+import com.openrecordsmanager.audit.AuditContext;
+import com.openrecordsmanager.audit.AuditService;
 import com.openrecordsmanager.auth.AuthService;
 import com.openrecordsmanager.auth.dto.AuthProviderListResponse;
 import com.openrecordsmanager.auth.entity.AuthProvider;
 import com.openrecordsmanager.database.DataRepository;
+import com.openrecordsmanager.database.DatabaseWritableProbe;
+import com.openrecordsmanager.plugin.ExpressionsService;
 import com.openrecordsmanager.plugin.registry.ComponentCatalog;
+import com.openrecordsmanager.plugin.registry.TemplateComponentRegistry;
+import com.openrecordsmanager.property.ObjectProperty;
 import com.openrecordsmanager.user.User;
+import com.openrecordsmanager.user.UserBuiltinColumnPropertyRegistry;
 import com.openrecordsmanager.user.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,28 +45,52 @@ public class InitialDatabaseSeeder {
     private final UserService userService;
     private final DataRepository repository;
     private final ComponentCatalog catalog;
+    private final ExpressionsService expressions;
+    private final AuditService auditService;
+    private final DatabaseWritableProbe probe;
+    private final UserBuiltinColumnPropertyRegistry builtinPropertyRegistry;
 
     public InitialDatabaseSeeder(
             SchemaMigrationState state,
             AuthService authService,
             UserService userService,
             DataRepository repository,
-            ComponentCatalog catalog
+            ComponentCatalog catalog, ExpressionsService expressions, AuditService auditService, DatabaseWritableProbe probe, UserBuiltinColumnPropertyRegistry builtinPopertyRegistry
     ) {
         this.state = state;
         this.authService = authService;
         this.userService = userService;
         this.repository = repository;
         this.catalog = catalog;
+        this.expressions = expressions;
+        this.auditService = auditService;
+        this.probe = probe;
+        this.builtinPropertyRegistry = builtinPopertyRegistry;
     }
 
-    @EventListener(ApplicationReadyEvent.class)
+    @EventListener({ApplicationReadyEvent.class, SchemaMigrationReadyEvent.class})
     @Transactional
     public void seedIfNeeded() {
-        if (!this.state.consumeInitialSeedPending()) {
+        if (!this.probe.isWritable()) {
+            LOGGER.warn("Database is not writable on startup, data seeding will not occur");
             return;
         }
 
+        AuditContext.disableCapture();
+        try {
+            this.seedBuiltinProperties();
+
+            if (!this.state.consumeInitialSeedPending()) {
+                return;
+            }
+
+            this.seedInitialAuth();
+        } finally {
+            AuditContext.clear();
+        }
+    }
+
+    private void seedInitialAuth() {
         if (this.catalog.getRegistry(ComponentTypes.INPUT_AUTH_PROVIDER).get(LOCAL_AUTH_TYPE).isEmpty()) {
             LOGGER.warn("Skipping initial database seed: {} is not registered", LOCAL_AUTH_TYPE);
             return;
@@ -67,15 +98,6 @@ public class InitialDatabaseSeeder {
 
         LOGGER.info("Seeding default local auth provider and admin user");
 
-        AuditContext.disableCapture();
-        try {
-            seedData();
-        } finally {
-            AuditContext.clear();
-        }
-    }
-
-    private void seedData() {
         AuthProviderListResponse created = this.authService.createProvider(
                 "Local Authentication",
                 ComponentReference.of(ComponentTypes.INPUT_AUTH_PROVIDER, LOCAL_AUTH_TYPE),
@@ -96,5 +118,27 @@ public class InitialDatabaseSeeder {
         );
 
         LOGGER.info("Seeded local auth provider {} and admin user {}", provider.getId(), admin.getId());
+    }
+
+    public void seedBuiltinProperties() {
+        TemplateComponentRegistry<ObjectPropertyTemplate<?>, ObjectProperty<?>> registry =
+                this.catalog.getTemplateRegistry(ComponentCatalog.OBJECT_PROPERTY_MAPPER);
+
+        for (ResourceIdentifier id : registry.getIds()) {
+            if (!id.isBuiltin()) {
+                continue;
+            }
+
+            registry.register(
+                    this.repository,
+                    this.catalog,
+                    this.expressions,
+                    this.auditService,
+                    ComponentReference.of(ComponentTypes.OBJECT_PROPERTY, id),
+                    true
+            );
+        }
+
+        this.builtinPropertyRegistry.load(this.repository);
     }
 }

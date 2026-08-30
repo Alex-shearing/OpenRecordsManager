@@ -2,6 +2,7 @@ package com.openrecordsmanager.api;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
+import com.openrecordsmanager.api.builtin.BuiltinPlugin;
 
 import java.io.Serializable;
 import java.util.regex.Pattern;
@@ -44,6 +45,10 @@ public record ResourceIdentifier(String source, String item) implements Serializ
         }
 
         return input;
+    }
+
+    public boolean isBuiltin() {
+        return this.source.equals(BuiltinPlugin.BUILTIN_PLUGIN_NAME);
     }
 
 }

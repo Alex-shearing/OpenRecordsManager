@@ -853,7 +853,6 @@ export interface components {
             };
         };
         UpdateRecordRequest: {
-            title?: string;
             type?: string;
             properties?: {
                 [key: string]: unknown;
@@ -862,7 +861,6 @@ export interface components {
         RecordResponse: {
             /** Format: uuid */
             id: string;
-            title: string;
             type: string;
             properties: {
                 [key: string]: unknown;

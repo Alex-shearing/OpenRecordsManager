@@ -77,6 +77,12 @@ CREATE TABLE user_details (
     id UNIQUEIDENTIFIER NOT NULL PRIMARY KEY,
     username NVARCHAR(255) NOT NULL UNIQUE,
     auth_provider_id UNIQUEIDENTIFIER NULL,
+    date_created DATETIME2 NOT NULL,
+    date_modified DATETIME2 NOT NULL,
+    given_name NVARCHAR(255) NULL,
+    surname NVARCHAR(255) NULL,
+    honorific NVARCHAR(255) NULL,
+    email NVARCHAR(255) NULL,
     CONSTRAINT fk_user_auth_provider FOREIGN KEY (auth_provider_id) REFERENCES auth_provider (id)
 );
 GO
@@ -146,6 +152,12 @@ CREATE TABLE record (
     id UNIQUEIDENTIFIER NOT NULL PRIMARY KEY,
     title NVARCHAR(255) NOT NULL,
     type_id NVARCHAR(255) NOT NULL,
+    notes NVARCHAR(MAX) NULL,
+    date_created DATETIME2 NOT NULL,
+    date_registered DATETIME2 NULL,
+    date_modified DATETIME2 NOT NULL,
+    keywords NVARCHAR(MAX) NULL,
+    mime_types NVARCHAR(MAX) NULL,
     CONSTRAINT fk_record_type FOREIGN KEY (type_id) REFERENCES record_type (id)
 );
 GO
@@ -169,5 +181,39 @@ CREATE TABLE record_revision (
     CONSTRAINT uk_record_version UNIQUE (record_id, version),
     CONSTRAINT fk_rr_record FOREIGN KEY (record_id) REFERENCES record (id),
     CONSTRAINT fk_rr_file FOREIGN KEY (file_id) REFERENCES file_store_entry (id)
+);
+GO
+
+CREATE TABLE audit_event (
+    id UNIQUEIDENTIFIER NOT NULL PRIMARY KEY,
+    occurred_at DATETIMEOFFSET NOT NULL,
+    actor_id UNIQUEIDENTIFIER NULL,
+    actor_username NVARCHAR(255) NULL,
+    operation NVARCHAR(50) NOT NULL,
+    target_type NVARCHAR(100) NOT NULL,
+    target_id NVARCHAR(255) NOT NULL,
+    action_id NVARCHAR(255) NULL,
+    summary NVARCHAR(1000) NOT NULL,
+    changes NVARCHAR(MAX) NULL,
+    relationships NVARCHAR(MAX) NULL,
+    comment NVARCHAR(2000) NULL,
+    metadata NVARCHAR(MAX) NULL
+);
+GO
+
+CREATE INDEX idx_audit_event_target ON audit_event (target_type, target_id, occurred_at DESC);
+GO
+
+CREATE INDEX idx_audit_event_actor ON audit_event (actor_id, occurred_at DESC);
+GO
+
+CREATE TABLE audit_policy (
+    entity_type NVARCHAR(100) NOT NULL,
+    operation NVARCHAR(50) NOT NULL,
+    enabled BIT NOT NULL,
+    requires_comment BIT NOT NULL,
+    display_name NVARCHAR(255) NOT NULL,
+    description NVARCHAR(1000) NULL,
+    PRIMARY KEY (entity_type, operation)
 );
 GO

@@ -4,11 +4,12 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.openrecordsmanager.api.template.list.IListElement;
 import org.jspecify.annotations.Nullable;
 
+import java.time.Instant;
 import java.util.*;
 
 @SuppressWarnings("unused")
 public abstract class PropertyType<T> {
-    public static final Map<String, PropertyType<?>> TYPES = new HashMap<>(7);
+    public static final Map<String, PropertyType<?>> TYPES = new HashMap<>(8);
 
     public static final PropertyType<String> CALCULATED = new PropertyType<>("calculated") {
         @Override
@@ -71,10 +72,32 @@ public abstract class PropertyType<T> {
         }
     };
 
-    public static final PropertyType<Date> DATE = new PropertyType<>("date") {
+    public static final PropertyType<Instant> DATE = new PropertyType<>("date") {
         @Override
-        public @Nullable Date cast(@Nullable Object value) {
-            return value instanceof Date v ? v : null;
+        public @Nullable Instant cast(@Nullable Object value) {
+            if (value instanceof Instant instant) {
+                return instant;
+            }
+            if (value instanceof Date date) {
+                return date.toInstant();
+            }
+            return null;
+        }
+    };
+
+    public static final PropertyType<List<String>> STRING_LIST = new PropertyType<>("string_list") {
+        @Override
+        public @Nullable List<String> cast(@Nullable Object value) {
+            if (value == null) {
+                return null;
+            }
+            if (value instanceof List<?> list) {
+                return list.stream().map(Object::toString).toList();
+            }
+            if (value instanceof Collection<?> collection) {
+                return collection.stream().map(Object::toString).toList();
+            }
+            return List.of(value.toString());
         }
     };
 

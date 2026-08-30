@@ -85,6 +85,7 @@ public class UserService {
             changes.add(AuditPropertyChange.newProperty(identifier.toString(), newValue));
         });
 
+        user.touchDateModified();
         this.repository.userRepo.saveAndFlush(user);
 
         this.auditService.addEvent(
@@ -140,6 +141,7 @@ public class UserService {
             });
         }
 
+        user.touchDateModified();
         this.repository.userRepo.saveAndFlush(user);
 
         this.auditService.addEvent(

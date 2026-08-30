@@ -77,7 +77,6 @@ public class RecordService {
 
         List<AuditPropertyChange> changes = new ArrayList<>();
         changes.add(AuditPropertyChange.newProperty("type", input.type()));
-        changes.add(AuditPropertyChange.newProperty("title", recordTitle));
 
         Record record = new Record(recordTitle, type);
         input.properties().forEach((identifier, value) -> {
@@ -88,6 +87,7 @@ public class RecordService {
             changes.add(AuditPropertyChange.newProperty(identifier.toString(), newValue));
         });
 
+        record.touchDateModified();
         this.repository.recordRepo.saveAndFlush(record);
 
         this.auditService.addEvent(
@@ -111,12 +111,6 @@ public class RecordService {
 
         List<AuditPropertyChange> changes = new ArrayList<>();
 
-        if (input.title() != null && !input.title().equals(record.getTitle())) {
-            String oldTitle = record.getTitle();
-            record.setTitle(input.title());
-            changes.add(new AuditPropertyChange("title", oldTitle, input.title()));
-        }
-
         if (input.type() != null && !input.type().equals(record.getType().id)) {
             RecordType newType = this.repository.recordTypeRepo.findById(input.type())
                     .orElseThrow(() -> new ResourceNotFoundException(ComponentTypes.RECORD_TYPE, input.type()));
@@ -139,6 +133,7 @@ public class RecordService {
             });
         }
 
+        record.touchDateModified();
         this.repository.recordRepo.saveAndFlush(record);
 
         this.auditService.addEvent(

@@ -48,7 +48,7 @@ class SchemaMigrationIntegrationTest {
         assertTrue(tableExists("flyway_schema_history"));
 
         SchemaValidationResponse validationResponse = this.schemaValidationService.validate();
-        assertTrue(validationResponse.validated());
+        assertTrue(validationResponse.validated(), validationResponse.message());
         assertNull(validationResponse.message());
     }
 

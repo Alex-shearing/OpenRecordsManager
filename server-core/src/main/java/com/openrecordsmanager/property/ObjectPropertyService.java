@@ -61,6 +61,10 @@ public class ObjectPropertyService {
             throw new ResourceInUseException("object property already exists: " + input.id());
         }
 
+        if (input.id().isBuiltin()) {
+            throw new IllegalArgumentException("builtin object properties cannot be modified");
+        }
+
         ObjectProperty<?> property = buildProperty(
                 input.id(),
                 input.name(),
@@ -86,6 +90,10 @@ public class ObjectPropertyService {
         ObjectProperty<?> property = this.repository.objectPropertyRepo.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(ComponentTypes.OBJECT_PROPERTY, id));
 
+        if (id.isBuiltin()) {
+            throw new IllegalArgumentException("builtin object properties cannot be modified");
+        }
+
         String oldName = property.getName();
         applyUpdate(property, input);
 
@@ -108,6 +116,10 @@ public class ObjectPropertyService {
     public void delete(ResourceIdentifier id) throws ResourceNotFoundException, ResourceInUseException {
         ObjectProperty<?> property = this.repository.objectPropertyRepo.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(ComponentTypes.OBJECT_PROPERTY, id));
+
+        if (id.isBuiltin()) {
+            throw new IllegalArgumentException("builtin object properties cannot be modified");
+        }
 
         if (this.repository.objectPropertyRepo.isAssignedToRecordType(property)
                 || this.repository.objectPropertyRepo.isUsedByRecords(property)

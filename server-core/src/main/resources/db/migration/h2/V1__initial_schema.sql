@@ -66,6 +66,12 @@ CREATE TABLE user_details (
     id UUID NOT NULL PRIMARY KEY,
     username VARCHAR(255) NOT NULL UNIQUE,
     auth_provider_id UUID,
+    date_created TIMESTAMP NOT NULL,
+    date_modified TIMESTAMP NOT NULL,
+    given_name VARCHAR(255),
+    surname VARCHAR(255),
+    honorific VARCHAR(255),
+    email VARCHAR(255),
     CONSTRAINT fk_user_auth_provider FOREIGN KEY (auth_provider_id) REFERENCES auth_provider (id)
 );
 
@@ -127,6 +133,12 @@ CREATE TABLE record (
     id UUID NOT NULL PRIMARY KEY,
     title VARCHAR(255) NOT NULL,
     type_id VARCHAR(255) NOT NULL,
+    notes CLOB,
+    date_created TIMESTAMP NOT NULL,
+    date_registered TIMESTAMP,
+    date_modified TIMESTAMP NOT NULL,
+    keywords CLOB,
+    mime_types JSON,
     CONSTRAINT fk_record_type FOREIGN KEY (type_id) REFERENCES record_type (id)
 );
 
@@ -148,4 +160,33 @@ CREATE TABLE record_revision (
     CONSTRAINT uk_record_version UNIQUE (record_id, version),
     CONSTRAINT fk_rr_record FOREIGN KEY (record_id) REFERENCES record (id),
     CONSTRAINT fk_rr_file FOREIGN KEY (file_id) REFERENCES file_store_entry (id)
+);
+
+CREATE TABLE audit_event (
+    id UUID NOT NULL PRIMARY KEY,
+    occurred_at TIMESTAMP NOT NULL,
+    actor_id UUID,
+    actor_username VARCHAR(255),
+    operation VARCHAR(50) NOT NULL,
+    target_type VARCHAR(100) NOT NULL,
+    target_id VARCHAR(255) NOT NULL,
+    action_id VARCHAR(255),
+    summary VARCHAR(1000) NOT NULL,
+    changes CLOB,
+    relationships CLOB,
+    comment VARCHAR(2000),
+    metadata CLOB
+);
+
+CREATE INDEX idx_audit_event_target ON audit_event (target_type, target_id, occurred_at DESC);
+CREATE INDEX idx_audit_event_actor ON audit_event (actor_id, occurred_at DESC);
+
+CREATE TABLE audit_policy (
+    entity_type VARCHAR(100) NOT NULL,
+    operation VARCHAR(50) NOT NULL,
+    enabled BOOLEAN NOT NULL,
+    requires_comment BOOLEAN NOT NULL,
+    display_name VARCHAR(255) NOT NULL,
+    description VARCHAR(1000),
+    PRIMARY KEY (entity_type, operation)
 );
