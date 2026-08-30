@@ -1,5 +1,5 @@
-import { getClient } from "$lib";
-import type { components } from "./types/schema";
+import { getClient } from '$lib';
+import type { components } from './types/schema';
 
 type UiHostConfig = {
 	/** Empty string = same origin (relative API calls). */
@@ -8,69 +8,67 @@ type UiHostConfig = {
 
 type BrandingConfig = components['schemas']['WebBrandingResponse'];
 
-const defaultBranding = {
-    productName: 'Open Records Manager',
-    logoUrl: '',
-    faviconUrl: '',
-    primaryColor: '#1d4ed8',
-    supportUrl: ''
+const defaultBranding: BrandingConfig = {
+	productName: 'Open Records Manager',
+	logoUrl: '',
+	faviconUrl: '',
+	primaryColor: '#1d4ed8',
+	supportUrl: ''
 };
 
 class WebConfig {
-    #apiUrl = $state<string>();
-    #brandingData = $state<BrandingConfig>();
+	#apiUrl = $state<string>();
+	#brandingData = $state<BrandingConfig>();
 
-    async loadApiBase() {
-        if (this.#apiUrl !== undefined) return this.#apiUrl;
+	async loadApiBase() {
+		if (this.#apiUrl !== undefined) return this.#apiUrl;
 
-        try {
-            const response = await fetch('/config.json', { cache: 'no-store' });
-            if (!response.ok) return '';
-            const body = (await response.json()) as UiHostConfig;
-            this.#apiUrl = body.apiBaseUrl?.replace(/\/$/, '') ?? '';
-        } catch {
-            this.#apiUrl = ''
-        }
+		try {
+			const response = await fetch('/config.json', { cache: 'no-store' });
+			if (!response.ok) {
+				this.#apiUrl = '';
+				return this.#apiUrl;
+			}
+			const body = (await response.json()) as UiHostConfig;
+			this.#apiUrl = body.apiBaseUrl?.replace(/\/$/, '') ?? '';
+		} catch {
+			this.#apiUrl = '';
+		}
 
-        return this.#apiUrl;
-    }
+		return this.#apiUrl;
+	}
 
-    apiUrl(path?: string) {
-        const normalized = path?.startsWith('/') ? path : `/${path || ''}`;
-        const apiBase = this.#apiUrl ?? '';
+	apiUrl(path?: string) {
+		const normalized = path?.startsWith('/') ? path : `/${path || ''}`;
+		const apiBase = this.#apiUrl ?? '';
 
-        if (!apiBase) {
-            return normalized;
-        }
-        return `${apiBase}${normalized}`;
-    }
+		if (!apiBase) {
+			return normalized;
+		}
+		return `${apiBase}${normalized}`;
+	}
 
-    getConfig() {
-        if (this.#brandingData !== undefined) return this.#brandingData;
+	getConfig() {
+		if (this.#brandingData !== undefined) return this.#brandingData;
 
-        return defaultBranding;
-    }
+		return defaultBranding;
+	}
 
-    async loadConfig() {
-        if (this.#brandingData !== undefined) return this.#brandingData;
+	async loadConfig() {
+		if (this.#brandingData !== undefined) return this.#brandingData;
 
-        await this.loadApiBase();
+		await this.loadApiBase();
 
-        const { data } = await getClient().GET('/api/web');
-        
-        if (data) {
-            return data.data;
-        }
+		const { data } = await getClient().GET('/api/web');
 
-        return {
-            productName: 'Open Records Manager',
-            logoUrl: '',
-            faviconUrl: '',
-            primaryColor: '#1d4ed8',
-            supportUrl: ''
-        };
-    }
+		if (data?.data) {
+			this.#brandingData = data.data;
+			return this.#brandingData;
+		}
+
+		this.#brandingData = defaultBranding;
+		return this.#brandingData;
+	}
 }
 
-// Export a single instance to share globally
 export const config = new WebConfig();
