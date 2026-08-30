@@ -89,6 +89,12 @@ public class AuthController {
         );
     }
 
+    @PostMapping(value = "/logout", produces = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(summary = "Log out and invalidate the current session token")
+    public void logout(HttpServletRequest request, HttpServletResponse response) {
+        this.authService.logout(request, response);
+    }
+
     @PostMapping(value = "/signup", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Trigger a signup to an authentication provider, implementations vary depending on the provider.")
     @NotFoundApiResponse

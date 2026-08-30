@@ -25,10 +25,12 @@ import com.openrecordsmanager.user.User;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.jspecify.annotations.Nullable;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.net.URI;
@@ -100,17 +102,54 @@ public class AuthService implements UserAuthContext {
 
         // Add the token as a cookie if the request has come from the web client
         if ("Web-Client".equals(request.getHeader("X-Client-Platform"))) {
-            Cookie cookie = new Cookie(this.getCookieName(), persistedToken.getToken());
-            cookie.setMaxAge((int) this.tokenDuration);
-            cookie.setHttpOnly(true);
-            cookie.setSecure(this.cookieSecure);
-            cookie.setPath("/");
-            // SameSite=None requires Secure; use Lax for local HTTP deployments
-            cookie.setAttribute("SameSite", this.cookieSecure ? "None" : "Lax");
-            response.addCookie(cookie);
+            this.setAuthCookie(response, persistedToken.getToken(), this.tokenDuration);
         }
 
         return LoginResponse.of(persistedToken);
+    }
+
+    public void logout(HttpServletRequest request, HttpServletResponse response) {
+        String tokenValue = this.extractTokenFromRequest(request);
+        if (tokenValue != null) {
+            this.repository.authTokenRepo.deleteById(tokenValue);
+        }
+
+        this.setAuthCookie(response, "", 0);
+        SecurityContextHolder.clearContext();
+    }
+
+    public @Nullable String extractTokenFromRequest(HttpServletRequest request) {
+        String authHeader = request.getHeader("Authorization");
+
+        if (authHeader != null) {
+            if (authHeader.startsWith("Bearer ")) {
+                return authHeader.substring(7);
+            }
+            return null;
+        }
+
+        Cookie[] cookies = request.getCookies();
+        if (cookies != null) {
+            Optional<Cookie> authCookie = Arrays.stream(cookies)
+                    .filter(cookie -> cookie.getName().equals(this.cookieName))
+                    .findFirst();
+
+            if (authCookie.isPresent() && !authCookie.get().getValue().isBlank()) {
+                return authCookie.get().getValue();
+            }
+        }
+
+        return null;
+    }
+
+    private void setAuthCookie(HttpServletResponse response, String value, long duration) {
+        Cookie cookie = new Cookie(this.cookieName, value);
+        cookie.setMaxAge((int) duration);
+        cookie.setHttpOnly(true);
+        cookie.setSecure(this.cookieSecure);
+        cookie.setPath("/");
+        cookie.setAttribute("SameSite", this.cookieSecure ? "None" : "Lax");
+        response.addCookie(cookie);
     }
 
     public static String generateToken() {

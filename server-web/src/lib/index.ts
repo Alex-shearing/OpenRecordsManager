@@ -50,6 +50,7 @@ export function getClient() {
 			if (
 				response.status === 401 &&
 				schemaPath !== '/api/auth/login/{provider}' &&
+				schemaPath !== '/api/auth/logout' &&
 				!schemaPath.startsWith('/api/database/')
 			) {
 				throw goto(`/login?redirect=${page.url.pathname}`);

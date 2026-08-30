@@ -363,6 +363,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/auth/logout": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Log out and invalidate the current session token */
+        post: operations["logout"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/auth/login/{provider}": {
         parameters: {
             query?: never;
@@ -6302,6 +6319,54 @@ export interface operations {
                         timestamp: unknown;
                         error: string;
                         errorData?: Record<string, never>;
+                    };
+                };
+            };
+            /** @description Internal Server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "Internal Server Error",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                        errorData?: Record<string, never>;
+                    };
+                };
+            };
+        };
+    };
+    logout: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @constant */
+                        success: true;
+                        /** Format: date-time */
+                        timestamp: unknown;
                     };
                 };
             };
