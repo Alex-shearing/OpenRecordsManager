@@ -17,6 +17,7 @@ import com.openrecordsmanager.property.ObjectProperty;
 import com.openrecordsmanager.record.dto.NewRecordRequest;
 import com.openrecordsmanager.record.dto.RecordResponse;
 import com.openrecordsmanager.record.dto.RecordRevisionResponse;
+import com.openrecordsmanager.record.dto.UpdateRecordRequest;
 import com.openrecordsmanager.recordtype.RecordType;
 import com.openrecordsmanager.rest.dto.ActionResponse;
 import com.openrecordsmanager.rest.errors.ResourceNotFoundException;
@@ -94,6 +95,57 @@ public class RecordService {
                 AuditEntityType.RECORD,
                 record.getId().toString(),
                 changes,
+                null,
+                null
+        );
+
+        return RecordResponse.of(record);
+    }
+
+    @Transactional
+    @RequiresAuditComment(operation = AuditOperation.UPDATE, targetType = AuditEntityType.RECORD)
+    public RecordResponse update(User actor, UUID id, UpdateRecordRequest input) {
+        Record record = this.repository.recordRepo.findById(id)
+                .filter(r -> r.securityFilter(this.expressions, actor).canSeeMetadata())
+                .orElseThrow(() -> new ResourceNotFoundException("record", id));
+
+        List<AuditPropertyChange> changes = new ArrayList<>();
+
+        if (input.title() != null && !input.title().equals(record.getTitle())) {
+            String oldTitle = record.getTitle();
+            record.setTitle(input.title());
+            changes.add(new AuditPropertyChange("title", oldTitle, input.title()));
+        }
+
+        if (input.type() != null && !input.type().equals(record.getType().id)) {
+            RecordType newType = this.repository.recordTypeRepo.findById(input.type())
+                    .orElseThrow(() -> new ResourceNotFoundException(ComponentTypes.RECORD_TYPE, input.type()));
+
+            ResourceIdentifier oldType = record.getType().id;
+            record.setType(newType);
+            changes.add(new AuditPropertyChange("type", oldType, input.type()));
+        }
+
+        if (input.properties() != null) {
+            input.properties().forEach((identifier, value) -> {
+                ObjectProperty<?> property = this.repository.objectPropertyRepo.findById(identifier)
+                        .orElseThrow(() -> new ResourceNotFoundException(ComponentTypes.OBJECT_PROPERTY, identifier));
+
+                Object oldValue = record.getProperty(property);
+                Object newValue = record.setPropertyUntyped(property, value);
+                if (oldValue != newValue) {
+                    changes.add(new AuditPropertyChange(identifier.toString(), oldValue, newValue));
+                }
+            });
+        }
+
+        this.repository.recordRepo.saveAndFlush(record);
+
+        this.auditService.addEvent(
+                AuditOperation.UPDATE,
+                AuditEntityType.RECORD,
+                id.toString(),
+                changes.isEmpty() ? null : changes,
                 null,
                 null
         );

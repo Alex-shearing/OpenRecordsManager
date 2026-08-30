@@ -4,6 +4,7 @@ import com.openrecordsmanager.api.ResourceIdentifier;
 import com.openrecordsmanager.record.dto.NewRecordRequest;
 import com.openrecordsmanager.record.dto.RecordResponse;
 import com.openrecordsmanager.record.dto.RecordRevisionResponse;
+import com.openrecordsmanager.record.dto.UpdateRecordRequest;
 import com.openrecordsmanager.rest.dto.ActionResponse;
 import com.openrecordsmanager.rest.swagger.DefaultApiResponses;
 import com.openrecordsmanager.rest.swagger.NotFoundApiResponse;
@@ -71,6 +72,17 @@ public class RecordController {
     @NotFoundApiResponse
     public RecordResponse newRecord(@RequestBody NewRecordRequest input) {
         return this.service.create(input);
+    }
+
+    @PutMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(summary = "Update a record")
+    @NotFoundApiResponse
+    public RecordResponse update(
+            @AuthenticationPrincipal User user,
+            @PathVariable("id") UUID id,
+            @RequestBody UpdateRecordRequest input
+    ) {
+        return this.service.update(user, id, input);
     }
 
     @PutMapping(

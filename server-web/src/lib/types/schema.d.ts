@@ -4,6 +4,42 @@
  */
 
 export interface paths {
+    "/api/user/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get user details */
+        get: operations["get"];
+        /** Update a user */
+        put: operations["update"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/records/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get record details */
+        get: operations["get_1"];
+        /** Update a record */
+        put: operations["update_1"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/records/{id}/{version}": {
         parameters: {
             query?: never;
@@ -172,6 +208,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/user": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Create a new user */
+        post: operations["create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/user/{id}/actions/{action}": {
         parameters: {
             query?: never;
@@ -183,41 +236,6 @@ export interface paths {
         put?: never;
         /** Execute an action on a user */
         post: operations["executeAction"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/user/{id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Get user details */
-        get: operations["getUser"];
-        /** Update a user */
-        put: operations["updateUser"];
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/user": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Create a new user */
-        post: operations["createUser"];
         delete?: never;
         options?: never;
         head?: never;
@@ -473,6 +491,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
+        /** Get details of the currently authenticated user */
         get: operations["me"];
         put?: never;
         post?: never;
@@ -525,23 +544,6 @@ export interface paths {
         };
         /** Get template details */
         get: operations["getTemplate"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/records/{id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Get record details */
-        get: operations["get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -826,6 +828,14 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        UpdateUserRequest: {
+            username?: string;
+            /** Format: uuid */
+            authProvider?: string;
+            properties?: {
+                [key: string]: unknown;
+            };
+        };
         ApiResponseV1: {
             success: boolean;
             error?: string;
@@ -833,6 +843,21 @@ export interface components {
             timestamp: string;
             data?: unknown;
             errorData?: unknown;
+        };
+        UserResponse: {
+            /** Format: uuid */
+            id: string;
+            username: string;
+            properties: {
+                [key: string]: unknown;
+            };
+        };
+        UpdateRecordRequest: {
+            title?: string;
+            type?: string;
+            properties?: {
+                [key: string]: unknown;
+            };
         };
         RecordResponse: {
             /** Format: uuid */
@@ -964,27 +989,19 @@ export interface components {
             displayName?: string;
             description?: string;
         };
+        NewUserRequest: {
+            username: string;
+            /** Format: uuid */
+            authProvider?: string;
+            properties: {
+                [key: string]: unknown;
+            };
+        };
         NewRecordRequest: {
             type: string;
             properties: {
                 [key: string]: unknown;
             };
-        };
-        NewUserRequest: {
-            username: string;
-            /** Format: uuid */
-            authProvider?: string | null;
-            properties: {
-                [key: string]: unknown;
-            };
-        };
-        UpdateUserRequest: {
-            username?: string | null;
-            /** Format: uuid */
-            authProvider?: string | null;
-            properties?: {
-                [key: string]: unknown;
-            } | null;
         };
         NewObjectPropertyRequest: {
             id: string;
@@ -1056,14 +1073,6 @@ export interface components {
             description: string;
             inputSchema: components["schemas"]["InputFormSchema"];
             requiresAuditComment?: boolean;
-        };
-        UserResponse: {
-            /** Format: uuid */
-            id: string;
-            username: string;
-            properties: {
-                [key: string]: unknown;
-            };
         };
         ComponentReferenceTemplateComponent: {
             type?: components["schemas"]["ComponentTypeTemplateComponent"];
@@ -1173,6 +1182,613 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @constant */
+                        success: true;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        data: components["schemas"]["UserResponse"];
+                    };
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "Unauthorized",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                        errorData?: Record<string, never>;
+                    };
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "Forbidden",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                        errorData?: Record<string, never>;
+                    };
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "object {0} of type {1} not found",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                        errorData?: Record<string, never>;
+                    };
+                };
+            };
+            /** @description Audit comment required */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "audit_comment_required",
+                     *       "error_data": "An audit comment is required for this action (provide the X-ORM-Audit-Comment header)",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                        errorData?: Record<string, never>;
+                    };
+                };
+            };
+            /** @description Internal Server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "Internal Server Error",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                        errorData?: Record<string, never>;
+                    };
+                };
+            };
+        };
+    };
+    update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateUserRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @constant */
+                        success: true;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        data: components["schemas"]["UserResponse"];
+                    };
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "Unauthorized",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                        errorData?: Record<string, never>;
+                    };
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "Forbidden",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                        errorData?: Record<string, never>;
+                    };
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "object {0} of type {1} not found",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                        errorData?: Record<string, never>;
+                    };
+                };
+            };
+            /** @description Resource in use */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "Cannot delete a store that contains files",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                        errorData?: Record<string, never>;
+                    };
+                };
+            };
+            /** @description Audit comment required */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "audit_comment_required",
+                     *       "error_data": "An audit comment is required for this action (provide the X-ORM-Audit-Comment header)",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                        errorData?: Record<string, never>;
+                    };
+                };
+            };
+            /** @description Internal Server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "Internal Server Error",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                        errorData?: Record<string, never>;
+                    };
+                };
+            };
+        };
+    };
+    get_1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @constant */
+                        success: true;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        data: components["schemas"]["RecordResponse"];
+                    };
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "Unauthorized",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                        errorData?: Record<string, never>;
+                    };
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "Forbidden",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                        errorData?: Record<string, never>;
+                    };
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "object {0} of type {1} not found",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                        errorData?: Record<string, never>;
+                    };
+                };
+            };
+            /** @description Audit comment required */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "audit_comment_required",
+                     *       "error_data": "An audit comment is required for this action (provide the X-ORM-Audit-Comment header)",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                        errorData?: Record<string, never>;
+                    };
+                };
+            };
+            /** @description Internal Server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "Internal Server Error",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                        errorData?: Record<string, never>;
+                    };
+                };
+            };
+        };
+    };
+    update_1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateRecordRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @constant */
+                        success: true;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        data: components["schemas"]["RecordResponse"];
+                    };
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "Unauthorized",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                        errorData?: Record<string, never>;
+                    };
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "Forbidden",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                        errorData?: Record<string, never>;
+                    };
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "object {0} of type {1} not found",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                        errorData?: Record<string, never>;
+                    };
+                };
+            };
+            /** @description Audit comment required */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "audit_comment_required",
+                     *       "error_data": "An audit comment is required for this action (provide the X-ORM-Audit-Comment header)",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                        errorData?: Record<string, never>;
+                    };
+                };
+            };
+            /** @description Internal Server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "Internal Server Error",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                        errorData?: Record<string, never>;
+                    };
+                };
+            };
+        };
+    };
     getRevision: {
         parameters: {
             query?: never;
@@ -4546,6 +5162,152 @@ export interface operations {
             };
         };
     };
+    create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["NewUserRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @constant */
+                        success: true;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        data: components["schemas"]["UserResponse"];
+                    };
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "Unauthorized",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                        errorData?: Record<string, never>;
+                    };
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "Forbidden",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                        errorData?: Record<string, never>;
+                    };
+                };
+            };
+            /** @description Resource in use */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "Cannot delete a store that contains files",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                        errorData?: Record<string, never>;
+                    };
+                };
+            };
+            /** @description Audit comment required */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "audit_comment_required",
+                     *       "error_data": "An audit comment is required for this action (provide the X-ORM-Audit-Comment header)",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                        errorData?: Record<string, never>;
+                    };
+                };
+            };
+            /** @description Internal Server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "error": "Internal Server Error",
+                     *       "timestamp": "2026-06-29T23:05:00Z"
+                     *     }
+                     */
+                    "application/json": {
+                        /** @constant */
+                        success: false;
+                        /** Format: date-time */
+                        timestamp: unknown;
+                        error: string;
+                        errorData?: Record<string, never>;
+                    };
+                };
+            };
+        };
+    };
     executeAction: {
         parameters: {
             query?: never;
@@ -6769,160 +7531,6 @@ export interface operations {
             };
         };
     };
-    createUser: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["NewUserRequest"];
-            };
-        };
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": {
-                        /** @constant */
-                        success: true;
-                        /** Format: date-time */
-                        timestamp: unknown;
-                        data: components["schemas"]["UserResponse"];
-                    };
-                };
-            };
-            /** @description Conflict */
-            409: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": {
-                        /** @constant */
-                        success: false;
-                        /** Format: date-time */
-                        timestamp: unknown;
-                        error: string;
-                        errorData?: Record<string, never>;
-                    };
-                };
-            };
-        };
-    };
-    getUser: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": {
-                        /** @constant */
-                        success: true;
-                        /** Format: date-time */
-                        timestamp: unknown;
-                        data: components["schemas"]["UserResponse"];
-                    };
-                };
-            };
-            /** @description Not Found */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": {
-                        /** @constant */
-                        success: false;
-                        /** Format: date-time */
-                        timestamp: unknown;
-                        error: string;
-                        errorData?: Record<string, never>;
-                    };
-                };
-            };
-        };
-    };
-    updateUser: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["UpdateUserRequest"];
-            };
-        };
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": {
-                        /** @constant */
-                        success: true;
-                        /** Format: date-time */
-                        timestamp: unknown;
-                        data: components["schemas"]["UserResponse"];
-                    };
-                };
-            };
-            /** @description Not Found */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": {
-                        /** @constant */
-                        success: false;
-                        /** Format: date-time */
-                        timestamp: unknown;
-                        error: string;
-                        errorData?: Record<string, never>;
-                    };
-                };
-            };
-            /** @description Conflict */
-            409: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": {
-                        /** @constant */
-                        success: false;
-                        /** Format: date-time */
-                        timestamp: unknown;
-                        error: string;
-                        errorData?: Record<string, never>;
-                    };
-                };
-            };
-        };
-    };
     me: {
         parameters: {
             query?: never;
@@ -6938,12 +7546,12 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["UserResponse"];
                     "application/json": {
                         /** @constant */
                         success: true;
                         /** Format: date-time */
                         timestamp: unknown;
+                        data: components["schemas"]["UserResponse"];
                     };
                 };
             };
@@ -7329,150 +7937,6 @@ export interface operations {
                         /** Format: date-time */
                         timestamp: unknown;
                         data: components["schemas"]["TemplateComponent"];
-                    };
-                };
-            };
-            /** @description Unauthorized */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "success": false,
-                     *       "error": "Unauthorized",
-                     *       "timestamp": "2026-06-29T23:05:00Z"
-                     *     }
-                     */
-                    "application/json": {
-                        /** @constant */
-                        success: false;
-                        /** Format: date-time */
-                        timestamp: unknown;
-                        error: string;
-                        errorData?: Record<string, never>;
-                    };
-                };
-            };
-            /** @description Forbidden */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "success": false,
-                     *       "error": "Forbidden",
-                     *       "timestamp": "2026-06-29T23:05:00Z"
-                     *     }
-                     */
-                    "application/json": {
-                        /** @constant */
-                        success: false;
-                        /** Format: date-time */
-                        timestamp: unknown;
-                        error: string;
-                        errorData?: Record<string, never>;
-                    };
-                };
-            };
-            /** @description Not Found */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "success": false,
-                     *       "error": "object {0} of type {1} not found",
-                     *       "timestamp": "2026-06-29T23:05:00Z"
-                     *     }
-                     */
-                    "application/json": {
-                        /** @constant */
-                        success: false;
-                        /** Format: date-time */
-                        timestamp: unknown;
-                        error: string;
-                        errorData?: Record<string, never>;
-                    };
-                };
-            };
-            /** @description Audit comment required */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "success": false,
-                     *       "error": "audit_comment_required",
-                     *       "error_data": "An audit comment is required for this action (provide the X-ORM-Audit-Comment header)",
-                     *       "timestamp": "2026-06-29T23:05:00Z"
-                     *     }
-                     */
-                    "application/json": {
-                        /** @constant */
-                        success: false;
-                        /** Format: date-time */
-                        timestamp: unknown;
-                        error: string;
-                        errorData?: Record<string, never>;
-                    };
-                };
-            };
-            /** @description Internal Server error */
-            500: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "success": false,
-                     *       "error": "Internal Server Error",
-                     *       "timestamp": "2026-06-29T23:05:00Z"
-                     *     }
-                     */
-                    "application/json": {
-                        /** @constant */
-                        success: false;
-                        /** Format: date-time */
-                        timestamp: unknown;
-                        error: string;
-                        errorData?: Record<string, never>;
-                    };
-                };
-            };
-        };
-    };
-    get: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": {
-                        /** @constant */
-                        success: true;
-                        /** Format: date-time */
-                        timestamp: unknown;
-                        data: components["schemas"]["RecordResponse"];
                     };
                 };
             };
