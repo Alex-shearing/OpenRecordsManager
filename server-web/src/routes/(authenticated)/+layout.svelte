@@ -25,10 +25,12 @@
 
 	<!-- Right Side: Sign In (Hidden on mobile) -->
 	<a
-		href="/login"
+		href="/logout"
 		class="hidden h-8 w-max items-center justify-center rounded-[7px] bg-transparent px-4 py-2 text-sm font-medium transition-colors hover:bg-white hover:text-accent-foreground focus:bg-muted focus:text-accent-foreground focus:outline-hidden disabled:pointer-events-none disabled:opacity-50 data-[state=open]:bg-white data-[state=open]:shadow-mini dark:hover:bg-muted dark:data-[state=open]:bg-muted group sm:inline-flex"
+		data-sveltekit-preload-code="off"
+		data-sveltekit-preload-data="off"
 	>
-		Sign In
+		{data.me.username}
 	</a>
 </NavigationMenu.Root>
 

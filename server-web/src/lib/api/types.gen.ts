@@ -133,17 +133,17 @@ export type AuthProviderListResponse = {
 };
 
 export type InputFormSchema = {
-    type?: string;
-    additionalProperties?: boolean;
-    properties?: {
+    type: string;
+    additionalProperties: boolean;
+    properties: {
         [key: string]: InputFormSchemaField;
     };
-    required?: Array<string>;
+    required: Array<string>;
 };
 
 export type InputFormSchemaField = {
-    type?: string;
-    title?: string;
+    type: string;
+    title: string;
     description?: string;
     writeOnly?: boolean;
     format?: string;

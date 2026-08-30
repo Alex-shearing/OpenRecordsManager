@@ -2,15 +2,17 @@ package com.openrecordsmanager.rest.dto;
 
 import com.networknt.schema.Schema;
 import com.openrecordsmanager.api.schema.JsonSchemaValidator;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 
 import java.util.List;
 import java.util.Map;
 
 public record InputFormSchema(
-        String type,
-        boolean additionalProperties,
-        Map<String, InputFormSchemaField> properties,
-        List<String> required
+        @NotBlank String type,
+        @NotBlank boolean additionalProperties,
+        @NotNull Map<String, InputFormSchemaField> properties,
+        @NotNull List<String> required
 ) {
 
     public static InputFormSchema from(Schema schema) {

@@ -1,10 +1,11 @@
 package com.openrecordsmanager.rest.dto;
 
+import jakarta.validation.constraints.NotBlank;
 import org.jspecify.annotations.Nullable;
 
 public record InputFormSchemaField(
-        @Nullable String type,
-        @Nullable String title,
+        @NotBlank String type,
+        @NotBlank String title,
         @Nullable String description,
         @Nullable Boolean writeOnly,
         @Nullable String format,
