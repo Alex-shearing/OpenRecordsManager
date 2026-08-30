@@ -6,7 +6,7 @@
 </script>
 
 <NavigationMenu.Root
-	class="relative z-15 flex w-full items-center justify-between gap-4 bg-pink-300 p-2 shadow"
+	class="z-15 flex w-full items-center justify-between gap-4 bg-pink-300 p-2 shadow sticky top-0"
 >
 	<!-- Left Side: Logo (Hidden on mobile) -->
 	<div class="hidden items-center sm:flex">
@@ -32,4 +32,6 @@
 	</a>
 </NavigationMenu.Root>
 
-{@render children()}
+<div class="w-full lg:max-w-6xl mx-auto mb-5 mt-1">
+	{@render children()}
+</div>
