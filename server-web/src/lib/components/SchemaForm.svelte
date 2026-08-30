@@ -70,7 +70,7 @@
 				pattern={field.pattern ?? undefined}
 				autocomplete={field.writeOnly ? 'current-password' : undefined}
 				disabled={submitting}
-				class="rounded border border-gray-300 px-3 py-2 dark:border-gray-600"
+				class="rounded border border-gray-300 bg-white px-3 py-2"
 				aria-invalid={fieldErrors[key] ? 'true' : undefined}
 				aria-describedby={fieldErrors[key] ? `${idPrefix}-${key}-error` : undefined}
 			/>
@@ -91,7 +91,7 @@
 	<button
 		type="submit"
 		disabled={submitting || disabled}
-		class="rounded bg-blue-600 px-4 py-2 text-white disabled:opacity-50"
+		class="rounded bg-blue-600 px-4 py-2 text-white hover:bg-blue-700 disabled:opacity-50"
 	>
 		{submitting ? submittingLabel : submitLabel}
 	</button>

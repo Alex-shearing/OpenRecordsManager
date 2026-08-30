@@ -1,38 +1,24 @@
 <script lang="ts">
-	import { NavigationMenu } from 'bits-ui';
 	import SearchBar from '$lib/components/SearchBar.svelte';
+	import BrandingHeader from '$lib/components/BrandingHeader.svelte';
 
 	let { children, data } = $props();
 </script>
 
-<NavigationMenu.Root
-	class="z-15 flex w-full items-center justify-between gap-4 p-2 shadow sticky top-0"
-	style={{'background-color': data.branding.primaryColor}}
->
-	<!-- Left Side: Logo (Hidden on mobile) -->
-	<div class="hidden items-center sm:flex">
-		<a href="/" class="text-xl font-bold">
-			{#if data.branding.logoUrl}
-				<img src={data.branding.logoUrl} alt={data.branding.productName} class="h-8" />
-			{:else}
-				{data.branding.productName}
-			{/if}
+<BrandingHeader branding={data.branding}>
+	{#snippet center()}
+		<SearchBar class="w-full sm:w-1/2" />
+	{/snippet}
+	{#snippet end()}
+		<a
+			href="/profile"
+			class="hidden h-8 w-max items-center justify-center rounded-[7px] bg-transparent px-4 py-2 text-sm font-medium transition-colors hover:bg-white focus:outline-hidden sm:inline-flex"
+		>
+			{data.me.username}
 		</a>
-	</div>
+	{/snippet}
+</BrandingHeader>
 
-	<!-- Center/Main: SearchBar -->
-	<!-- w-full makes it full width on mobile. sm:max-w-[333px] or sm:w-1/3 limits it on desktop -->
-	<SearchBar class="w-full sm:w-1/2" />
-
-	<!-- Right Side: Profile (Hidden on mobile) -->
-	<a
-		href="/profile"
-		class="hidden h-8 w-max items-center justify-center rounded-[7px] bg-transparent px-4 py-2 text-sm font-medium transition-colors hover:bg-white hover:text-accent-foreground focus:bg-muted focus:text-accent-foreground focus:outline-hidden disabled:pointer-events-none disabled:opacity-50 data-[state=open]:bg-white data-[state=open]:shadow-mini dark:hover:bg-muted dark:data-[state=open]:bg-muted group sm:inline-flex"
-	>
-		{data.me.username}
-	</a>
-</NavigationMenu.Root>
-
-<div class="w-full lg:max-w-6xl mx-auto mb-5 mt-3">
+<div class="mx-auto mb-5 mt-3 w-full lg:max-w-6xl">
 	{@render children()}
 </div>

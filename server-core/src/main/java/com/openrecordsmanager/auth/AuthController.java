@@ -1,7 +1,7 @@
 package com.openrecordsmanager.auth;
 
 import com.openrecordsmanager.api.ComponentReference;
-import com.openrecordsmanager.auth.dto.AuthProviderListResponse;
+import com.openrecordsmanager.auth.dto.AuthProviderResponse;
 import com.openrecordsmanager.auth.dto.LoginResponse;
 import com.openrecordsmanager.auth.dto.NewAuthProviderRequest;
 import com.openrecordsmanager.rest.dto.ApiResponseV1;
@@ -38,7 +38,7 @@ public class AuthController {
 
     @GetMapping(value = "/providers", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "List all supported authentication providers.")
-    public Set<AuthProviderListResponse> providers_listAll() {
+    public Set<AuthProviderResponse> providers_listAll() {
         return this.authService.listProviders();
     }
 
@@ -47,7 +47,7 @@ public class AuthController {
     @PreAuthorize("isAuthenticated()")
     @ForbiddenApiResponse
     @UnauthorizedApiResponse
-    public AuthProviderListResponse createProvider(@RequestBody NewAuthProviderRequest provider) {
+    public AuthProviderResponse createProvider(@RequestBody NewAuthProviderRequest provider) {
         return this.authService.createProvider(
                 provider.name(),
                 ComponentReference.of(provider.type().type, provider.typeId()),

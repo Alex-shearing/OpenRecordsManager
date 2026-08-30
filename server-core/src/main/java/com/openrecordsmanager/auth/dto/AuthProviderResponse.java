@@ -1,11 +1,13 @@
 package com.openrecordsmanager.auth.dto;
 
 import com.openrecordsmanager.api.ComponentReference;
+import com.openrecordsmanager.api.auth.AuthProviderType;
 import com.openrecordsmanager.api.auth.InputAuthProviderType;
 import com.openrecordsmanager.auth.entity.AuthProvider;
 import com.openrecordsmanager.plugin.registry.ComponentCatalog;
 import com.openrecordsmanager.plugin.registry.mapper.ComponentReferenceSerializer;
 import com.openrecordsmanager.rest.dto.InputFormSchema;
+import com.openrecordsmanager.rest.errors.ResourceNotFoundException;
 import io.swagger.v3.oas.annotations.StringToClassMapItem;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
@@ -15,7 +17,7 @@ import tools.jackson.databind.annotation.JsonSerialize;
 import java.util.Map;
 import java.util.UUID;
 
-public record AuthProviderListResponse(
+public record AuthProviderResponse(
         @NotBlank UUID id,
         @NotBlank String name,
         @JsonSerialize(using = ComponentReferenceSerializer.class)
@@ -29,16 +31,23 @@ public record AuthProviderListResponse(
                 requiredProperties = {"id", "type"}
         )
         @NotNull ComponentReference<?> type,
-        @NotNull InputFormSchema loginSchema
+        InputFormSchema loginSchema
 ) {
-    public static AuthProviderListResponse of(ComponentCatalog catalog, AuthProvider provider) {
-        InputAuthProviderType<?> loginSchema = provider.getProviderType(catalog, InputAuthProviderType.class);
+    public static AuthProviderResponse of(ComponentCatalog catalog, AuthProvider provider) {
+        AuthProviderType type = provider.getProviderType().getComponent(catalog)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        provider.getProviderType().getType(),
+                        provider.getProviderType().getId(catalog).orElseThrow())
+                );
+        InputFormSchema schema = type instanceof InputAuthProviderType<?> inputType
+                ? InputFormSchema.from(inputType.getInputClass())
+                : null;
 
-        return new AuthProviderListResponse(
+        return new AuthProviderResponse(
                 provider.getId(),
                 provider.getName(),
                 provider.getProviderType(),
-                InputFormSchema.from(loginSchema.getInputClass())
+                schema
         );
     }
 }

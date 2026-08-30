@@ -28,9 +28,9 @@ client.interceptors.response.use((response, request) => {
     const path = new URL(request.url).pathname;
     if (
         response.status === 401 &&
-        !path.startsWith('/api/auth/login/') &&
-        path !== '/api/auth/logout' &&
-        !path.startsWith('/api/database/')
+        !path.startsWith('/api/auth/') &&
+        !path.startsWith('/api/database/') &&
+        !path.startsWith('/api/web/')
     ) {
         throw goto(`/login?redirect=${page.url.pathname}`);
     }

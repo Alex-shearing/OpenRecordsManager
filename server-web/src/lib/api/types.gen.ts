@@ -121,7 +121,7 @@ export type NewAuthProviderRequest = {
     };
 };
 
-export type AuthProviderListResponse = {
+export type AuthProviderResponse = {
     id: string;
     name: string;
     type: {
@@ -129,7 +129,7 @@ export type AuthProviderListResponse = {
         type: string;
         [key: string]: unknown | string;
     };
-    loginSchema: InputFormSchema;
+    loginSchema?: InputFormSchema;
 };
 
 export type InputFormSchema = {
@@ -2379,7 +2379,7 @@ export type ProvidersListAllResponses = {
     200: {
         success: true;
         timestamp: unknown;
-        data: Array<AuthProviderListResponse>;
+        data: Array<AuthProviderResponse>;
     };
 };
 
@@ -2437,7 +2437,7 @@ export type CreateProviderResponses = {
     200: {
         success: true;
         timestamp: unknown;
-        data: AuthProviderListResponse;
+        data: AuthProviderResponse;
     };
 };
 

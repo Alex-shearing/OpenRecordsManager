@@ -10,7 +10,7 @@ import com.openrecordsmanager.api.builtin.BuiltinConfigs;
 import com.openrecordsmanager.api.template.property.ObjectPropertyTemplate;
 import com.openrecordsmanager.audit.AuditService;
 import com.openrecordsmanager.audit.RequiresAuditComment;
-import com.openrecordsmanager.auth.dto.AuthProviderListResponse;
+import com.openrecordsmanager.auth.dto.AuthProviderResponse;
 import com.openrecordsmanager.auth.dto.LoginResponse;
 import com.openrecordsmanager.auth.entity.AuthProvider;
 import com.openrecordsmanager.auth.entity.AuthToken;
@@ -75,9 +75,9 @@ public class AuthService implements UserAuthContext {
         this.cookieSecure = config.getOrThrow(BuiltinConfigs.COOKIE_SECURE);
     }
 
-    public Set<AuthProviderListResponse> listProviders() {
+    public Set<AuthProviderResponse> listProviders() {
         return this.repository.authProviderRepo.findAll().stream()
-                .map(provider -> AuthProviderListResponse.of(this.catalog, provider))
+                .map(provider -> AuthProviderResponse.of(this.catalog, provider))
                 .collect(Collectors.toSet());
     }
 
@@ -193,7 +193,7 @@ public class AuthService implements UserAuthContext {
     }
 
     @RequiresAuditComment(operation = AuditOperation.CREATE, targetType = AuditEntityType.AUTH_PROVIDER)
-    public AuthProviderListResponse createProvider(String name, ComponentReference<? extends AuthProviderType> type, Map<String, Object> settings) {
+    public AuthProviderResponse createProvider(String name, ComponentReference<? extends AuthProviderType> type, Map<String, Object> settings) {
         // Ensure any pre-requisite templates are registered
         TemplateRegistrationMapper.registerDependencies(
                 this.repository,
@@ -201,7 +201,7 @@ public class AuthService implements UserAuthContext {
                 this.expressions,
                 this.auditService,
                 type.getComponent(this.catalog)
-                        .orElseThrow(() -> new IllegalArgumentException("unknown auth provider type " + type))
+                        .orElseThrow(() -> new ResourceNotFoundException("authentication provider", type.toString()))
         );
 
         AuthProvider provider = new AuthProvider(name, type, settings);
@@ -210,6 +210,6 @@ public class AuthService implements UserAuthContext {
 
         this.auditService.addEvent(AuditOperation.CREATE, AuditEntityType.AUTH_PROVIDER, provider.getId());
 
-        return AuthProviderListResponse.of(this.catalog, provider);
+        return AuthProviderResponse.of(this.catalog, provider);
     }
 }
