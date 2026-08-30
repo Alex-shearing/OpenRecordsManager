@@ -72,6 +72,7 @@ CREATE TABLE user_details (
     surname VARCHAR(255),
     honorific VARCHAR(255),
     email VARCHAR(255),
+    notes VARCHAR(255),
     CONSTRAINT fk_user_auth_provider FOREIGN KEY (auth_provider_id) REFERENCES auth_provider (id)
 );
 

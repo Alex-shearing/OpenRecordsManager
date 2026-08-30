@@ -24,7 +24,8 @@ public class User implements ObjectPropertyHolder<UserPropertyValue<?>>, UserDet
             BuiltinProperties.GIVEN_NAME_ID, BuiltinPropertyMapper.of(User::getGivenName, User::setGivenName),
             BuiltinProperties.SURNAME_ID, BuiltinPropertyMapper.of(User::getSurname, User::setSurname),
             BuiltinProperties.HONORIFIC_ID, BuiltinPropertyMapper.of(User::getHonorific, User::setHonorific),
-            BuiltinProperties.EMAIL_ID, BuiltinPropertyMapper.of(User::getEmail, User::setEmail)
+            BuiltinProperties.EMAIL_ID, BuiltinPropertyMapper.of(User::getEmail, User::setEmail),
+            BuiltinProperties.NOTES_ID, BuiltinPropertyMapper.of(User::getNotes, User::setNotes)
     );
 
     @Id
@@ -59,6 +60,10 @@ public class User implements ObjectPropertyHolder<UserPropertyValue<?>>, UserDet
     @Column
     @Nullable
     private String email;
+
+    @Column
+    @Nullable
+    private String notes;
 
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "user", fetch = FetchType.EAGER)
     @MapKey(name = "property")
@@ -138,6 +143,14 @@ public class User implements ObjectPropertyHolder<UserPropertyValue<?>>, UserDet
 
     public void setEmail(@Nullable String email) {
         this.email = email;
+    }
+
+    public @Nullable String getNotes() {
+        return this.notes;
+    }
+
+    public void setNotes(@Nullable String notes) {
+        this.notes = notes;
     }
 
     public void touchDateModified() {
