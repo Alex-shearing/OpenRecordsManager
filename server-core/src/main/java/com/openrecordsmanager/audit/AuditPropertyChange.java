@@ -7,4 +7,7 @@ public record AuditPropertyChange(
         @Nullable Object oldValue,
         @Nullable Object newValue
 ) {
+    public static AuditPropertyChange newProperty(String property, @Nullable Object newValue) {
+        return new AuditPropertyChange(property, null, newValue);
+    }
 }

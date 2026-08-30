@@ -46,8 +46,15 @@ public class ExceptionController {
                 .body(ApiResponseV1.error(message));
     }
 
+    @ExceptionHandler(ResourceNotFoundException.class)
+    public ResponseEntity<ApiResponseV1<Void>> notFound(ResourceNotFoundException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(ApiResponseV1.error(ex.getMessage()));
+    }
+
     @ExceptionHandler(ResourceInUseException.class)
-    public ResponseEntity<ApiResponseV1<Void>> inUse(ResourceNotFoundException ex) {
+    public ResponseEntity<ApiResponseV1<Void>> inUse(ResourceInUseException ex) {
         return ResponseEntity.status(HttpStatus.CONFLICT)
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(ApiResponseV1.error(ex.getMessage()));

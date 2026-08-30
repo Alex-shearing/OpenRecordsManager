@@ -48,6 +48,12 @@ public interface ObjectPropertyHolder<T extends ObjectPropertyHolder.ObjectPrope
         holder.setValueRaw(value);
     }
 
+    default <K> @Nullable K setPropertyUntyped(ObjectProperty<K> property, @Nullable Object value) {
+        K newValue = property.getType().cast(value);
+        this.setProperty(property, newValue);
+        return newValue;
+    }
+
     interface ObjectPropertyValue<T> {
         ObjectProperty<T> getProperty();
 

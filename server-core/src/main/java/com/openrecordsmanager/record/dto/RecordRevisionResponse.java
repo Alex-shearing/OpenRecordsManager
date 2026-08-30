@@ -7,21 +7,24 @@ import org.springframework.http.ContentDisposition;
 
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.time.Instant;
 import java.util.Locale;
 
 public record RecordRevisionResponse(
         InputStream stream,
         String version,
+        Instant createdDate,
         String extension,
         long sizeBytes,
         String hash,
         String hashAlgorithm
 ) {
     public static RecordRevisionResponse of(ComponentCatalog catalog, RecordRevision revision) {
-        FileStoreEntry file = revision.file;
+        FileStoreEntry file = revision.getFile();
         return new RecordRevisionResponse(
                 file.getFile(catalog),
-                revision.version,
+                revision.getVersion(),
+                revision.getCreatedDate(),
                 file.extension,
                 file.sizeBytes,
                 file.hash,

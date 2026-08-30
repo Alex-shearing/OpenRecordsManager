@@ -73,11 +73,11 @@ class RecordTest {
         Record record = new Record("Record", recordType);
         record.setProperty(stringProperty, "test value");
 
-        Assertions.assertEquals(SecurityFilterUsage.SHOW_ALL, record.securityFilter(this.expressionsService, this.testUser, record), "User should have access");
+        Assertions.assertEquals(SecurityFilterUsage.SHOW_ALL, record.securityFilter(this.expressionsService, this.testUser), "User should have access");
 
         record.setProperty(stringProperty, "other value");
 
-        Assertions.assertEquals(SecurityFilterUsage.HIDE_RECORD, record.securityFilter(this.expressionsService, this.testUser, record), "User should not have access");
+        Assertions.assertEquals(SecurityFilterUsage.HIDE_RECORD, record.securityFilter(this.expressionsService, this.testUser), "User should not have access");
     }
 
     @Test
@@ -94,9 +94,9 @@ class RecordTest {
 
         com.openrecordsmanager.record.Record record = new Record("Record", recordType);
 
-        Assertions.assertEquals(SecurityFilterUsage.HIDE_RECORD, record.securityFilter(this.expressionsService, this.testUser, record), "User should not have access");
+        Assertions.assertEquals(SecurityFilterUsage.HIDE_RECORD, record.securityFilter(this.expressionsService, this.testUser), "User should not have access");
 
-        Assertions.assertNotEquals(SecurityFilterUsage.SHOW_ALL, record.securityFilter(this.expressionsService, this.testUser, record), "User should not have access");
-        Assertions.assertNotEquals(SecurityFilterUsage.HIDE_FILES, record.securityFilter(this.expressionsService, this.testUser, record), "User should not have access");
+        Assertions.assertNotEquals(SecurityFilterUsage.SHOW_ALL, record.securityFilter(this.expressionsService, this.testUser), "User should not have access");
+        Assertions.assertNotEquals(SecurityFilterUsage.HIDE_FILES, record.securityFilter(this.expressionsService, this.testUser), "User should not have access");
     }
 }

@@ -20,25 +20,25 @@ import java.util.UUID;
 @SuppressWarnings("NotNullFieldNotInitialized")
 public class RecordRevision {
     @Id
-    public UUID id;
+    private UUID id;
 
     @Column(nullable = false)
     @Pattern(
             regexp = "^[0-9.]+$",
             message = "Version must only contain numeric digits and decimals"
     )
-    public String version;
+    private String version;
 
     @Column(nullable = false)
-    public Instant createdDate;
+    private Instant createdDate;
 
     @ManyToOne
     @JoinColumn(nullable = false, name = "record_id")
-    public Record record;
+    private Record record;
 
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(nullable = false)
-    public FileStoreEntry file;
+    private FileStoreEntry file;
 
     @Deprecated
     protected RecordRevision() {
@@ -52,4 +52,23 @@ public class RecordRevision {
         this.createdDate = Instant.now();
     }
 
+    public UUID getId() {
+        return this.id;
+    }
+
+    public String getVersion() {
+        return this.version;
+    }
+
+    public Instant getCreatedDate() {
+        return this.createdDate;
+    }
+
+    public Record getRecord() {
+        return this.record;
+    }
+
+    public FileStoreEntry getFile() {
+        return this.file;
+    }
 }

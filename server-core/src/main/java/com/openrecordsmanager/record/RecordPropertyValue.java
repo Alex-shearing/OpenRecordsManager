@@ -42,12 +42,12 @@ public class RecordPropertyValue<T> implements ObjectPropertyHolder.ObjectProper
         this.value = value;
     }
 
-    public boolean securityFilter(ExpressionsService expressions, User user, @Nullable Record record) {
+    public boolean securityFilter(ExpressionsService expressions, User actor, @Nullable Record record) {
         if (this.property.getSecurityFilter() == null) {
             return true;
         }
 
-        return expressions.checkPropertyExpression(this.id, this.property.getSecurityFilter(), this.value, user, record);
+        return expressions.checkPropertyExpression(this.id, this.property.getSecurityFilter(), this.value, actor, record);
     }
 
     @Override

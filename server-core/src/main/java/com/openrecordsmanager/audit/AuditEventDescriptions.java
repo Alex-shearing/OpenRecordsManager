@@ -3,7 +3,6 @@ package com.openrecordsmanager.audit;
 import com.openrecordsmanager.api.audit.AuditEntityType;
 import com.openrecordsmanager.api.audit.AuditOperation;
 import com.openrecordsmanager.list.ListElement;
-import com.openrecordsmanager.record.Record;
 import com.openrecordsmanager.record.RecordRevision;
 import org.jspecify.annotations.Nullable;
 
@@ -28,12 +27,8 @@ public final class AuditEventDescriptions {
         };
     }
 
-    public static List<AuditRelationship> forRecord(Record record) {
-        return List.of(new AuditRelationship(AuditEntityType.RECORD_TYPE, record.getType().id.toString(), "type"));
-    }
-
     public static List<AuditRelationship> forRecordRevision(RecordRevision revision) {
-        return List.of(new AuditRelationship(AuditEntityType.RECORD, revision.record.getId().toString(), "record"));
+        return List.of(new AuditRelationship(AuditEntityType.RECORD, revision.getRecord().getId().toString(), "record"));
     }
 
     public static List<AuditRelationship> forListElement(ListElement element) {

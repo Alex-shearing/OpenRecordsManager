@@ -47,6 +47,14 @@ public class User implements ObjectPropertyHolder<UserPropertyValue<?>>, UserDet
         return this.authProvider;
     }
 
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public void setAuthProvider(@Nullable AuthProvider authProvider) {
+        this.authProvider = authProvider;
+    }
+
     @Override
     public Map<ObjectProperty<?>, UserPropertyValue<?>> getProperties() {
         return this.properties;

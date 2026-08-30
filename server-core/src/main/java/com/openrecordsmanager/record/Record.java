@@ -77,7 +77,7 @@ public class Record implements ObjectPropertyHolder<RecordPropertyValue<?>> {
 
     public List<String> getRevisionList() {
         return this.revisions.stream()
-                .map(recordRevision -> recordRevision.version)
+                .map(RecordRevision::getVersion)
                 .collect(Collectors.toList());
     }
 
@@ -103,13 +103,13 @@ public class Record implements ObjectPropertyHolder<RecordPropertyValue<?>> {
         return this.properties;
     }
 
-    public SecurityFilterUsage securityFilter(ExpressionsService expressions, User user) {
+    public SecurityFilterUsage securityFilter(ExpressionsService expressions, User actor) {
         // Check record type filter
         if (this.type.securityFilter != null && !expressions.checkPropertyExpression(
                 this.id,
                 this.type.securityFilter,
                 null,
-                user,
+                actor,
                 this)
         ) {
             return this.type.securityFilterUsage;
@@ -117,7 +117,7 @@ public class Record implements ObjectPropertyHolder<RecordPropertyValue<?>> {
 
         // Check all properties
         for (RecordPropertyValue<?> property : this.properties.values()) {
-            if (!property.securityFilter(expressions, user, this)) {
+            if (!property.securityFilter(expressions, actor, this)) {
                 return this.type.securityFilterUsage;
             }
         }
@@ -125,10 +125,12 @@ public class Record implements ObjectPropertyHolder<RecordPropertyValue<?>> {
         return SecurityFilterUsage.SHOW_ALL;
     }
 
-    public void addRevision(String version, FileStoreEntry file) {
-        if (this.revisions.stream().anyMatch(rev -> rev.version.equals(version))) {
+    public RecordRevision addRevision(String version, FileStoreEntry file) {
+        if (this.revisions.stream().anyMatch(rev -> rev.getVersion().equals(version))) {
             throw new IllegalArgumentException("Revision already exists");
         }
-        this.revisions.add(new RecordRevision(version, this, file));
+        RecordRevision recordRevision = new RecordRevision(version, this, file);
+        this.revisions.add(recordRevision);
+        return recordRevision;
     }
 }
