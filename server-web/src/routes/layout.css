@@ -1,3 +1,19 @@
 @import 'tailwindcss';
 @plugin '@tailwindcss/forms';
 @plugin '@tailwindcss/typography';
+
+@layer base {
+	button:not(:disabled),
+	input[type='button']:not(:disabled),
+	input[type='submit']:not(:disabled),
+	input[type='reset']:not(:disabled) {
+		cursor: pointer;
+	}
+
+	button:disabled,
+	input[type='button']:disabled,
+	input[type='submit']:disabled,
+	input[type='reset']:disabled {
+		cursor: not-allowed;
+	}
+}
