@@ -1,12 +1,8 @@
 <script lang="ts">
 	import { NavigationMenu } from 'bits-ui';
 	import SearchBar from '$lib/components/SearchBar.svelte';
-	import { page } from '$app/state';
-	import { config } from '$lib/config.svelte';
 
-	let { children } = $props();
-
-	const branding = config.getConfig();
+	let { children, data } = $props();
 </script>
 
 <NavigationMenu.Root
@@ -15,10 +11,10 @@
 	<!-- Left Side: Logo (Hidden on mobile) -->
 	<div class="hidden items-center sm:flex">
 		<a href="/" class="text-xl font-bold">
-			{#if branding.logoUrl}
-				<img src={branding.logoUrl} alt={branding.productName} class="h-8" />
+			{#if data.branding.logoUrl}
+				<img src={data.branding.logoUrl} alt={data.branding.productName} class="h-8" />
 			{:else}
-				{branding.productName}
+				{data.branding.productName}
 			{/if}
 		</a>
 	</div>

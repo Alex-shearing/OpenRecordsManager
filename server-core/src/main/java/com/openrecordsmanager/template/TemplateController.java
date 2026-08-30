@@ -25,7 +25,7 @@ public class TemplateController {
 
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "List templates types available")
-    public Set<String> getTemplatesForType() {
+    public Set<String> getTemplateTypes() {
         return this.service.listTemplateTypes();
     }
 

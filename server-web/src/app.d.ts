@@ -8,6 +8,13 @@ declare global {
 		// interface PageState {}
 		// interface Platform {}
 	}
+
+	interface Window {
+		__ORM_UI__?: {
+			/** Empty string = same origin (relative API calls). */
+			apiBaseUrl?: string;
+		};
+	}
 }
 
 export {};

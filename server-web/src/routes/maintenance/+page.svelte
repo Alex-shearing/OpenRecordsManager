@@ -1,15 +1,12 @@
 <script lang="ts">
-	import { getClient } from '$lib';
+	import { DatabaseController } from '$lib';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
-	import { config } from '$lib/config.svelte';
 
-	const branding = config.getConfig();
+	let { data } = $props();
+	let view = $state<'checking' | 'waiting' | 'unavailable' | 'ready'>('checking');
+
 	const pollIntervalMs = 3000;
-
-	type View = 'checking' | 'waiting' | 'unavailable' | 'ready';
-
-	let view = $state<View>('checking');
 
 	function returnPath() {
 		const redirect = page.url.searchParams.get('redirect');
@@ -21,7 +18,7 @@
 
 	async function checkStatus() {
 		try {
-			const { data, error } = await getClient().GET('/api/database/status');
+			const { data, error } = await DatabaseController.status();
 			if (error) {
 				return 'unavailable';
 			}
@@ -56,12 +53,12 @@
 	class="flex min-h-screen flex-col items-center justify-center bg-linear-to-b from-slate-50 to-slate-100 px-4 py-16"
 >
 	<div class="w-full max-w-md text-center">
-		{#if branding.logoUrl}
-			<img src={branding.logoUrl} alt={branding.productName} class="mx-auto mb-6 h-12 w-auto" />
+		{#if data.branding.logoUrl}
+			<img src={data.branding.logoUrl} alt={data.branding.productName} class="mx-auto mb-6 h-12 w-auto" />
 		{/if}
 
 		<p class="mb-2 text-sm font-medium tracking-wide text-slate-500 uppercase">
-			{branding.productName}
+			{data.branding.productName}
 		</p>
 
 		{#if view === 'checking'}
@@ -70,7 +67,7 @@
 		{:else if view === 'waiting'}
 			<h1 class="mb-3 text-2xl font-semibold text-slate-900">Temporarily unavailable</h1>
 			<p class="mb-2 text-slate-600">
-				{branding.productName} is being updated and will be back shortly.
+				{data.branding.productName} is being updated and will be back shortly.
 			</p>
 			<p class="text-sm text-slate-500">
 				This page will bring you back automatically when the update is finished. You don't need to do
@@ -83,11 +80,11 @@
 			</p>
 		{/if}
 
-		{#if branding.supportUrl}
+		{#if data.branding.supportUrl}
 			<p class="mt-10 text-sm text-slate-500">
 				Need help?
 				<a
-					href={branding.supportUrl}
+					href={data.branding.supportUrl}
 					class="font-medium text-(--color-primary) underline-offset-2 hover:underline"
 				>
 					Contact support

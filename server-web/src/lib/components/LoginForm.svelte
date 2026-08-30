@@ -1,14 +1,17 @@
 <script lang="ts">
-	import { getClient } from '$lib';
-	import type { components } from '$lib/types/schema';
+	import { client, AuthController } from '$lib';
+	import type {
+		AuthProviderListResponse,
+		InputFormSchema,
+		InputFormSchemaField
+	} from '$lib/api/types.gen';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
 	import { onMount } from 'svelte';
-	import { config } from '$lib/config.svelte';
 
-	type AuthProvider = components['schemas']['AuthProviderListResponse'];
-	type LoginJsonSchema = components['schemas']['InputFormSchema'];
-	type JsonSchemaProperty = components['schemas']['InputFormSchemaField'];
+	type AuthProvider = AuthProviderListResponse;
+	type LoginJsonSchema = InputFormSchema;
+	type JsonSchemaProperty = InputFormSchemaField;
 
 	let {
 		inputProviders,
@@ -100,16 +103,15 @@
 		fieldErrors = {};
 		authError = '';
 
-		const { data, error } = await getClient().POST('/api/auth/login/{provider}', {
-			params: { path: { provider: provider.id } },
+		const { data, error } = await AuthController.login({
+			path: { provider: provider.id },
 			body: values
 		});
 
 		submitting = false;
 
 		if (error) {
-			fieldErrors = error.errorData || {};
-			console.log(fieldErrors)
+			fieldErrors = (error.errorData ?? {}) as Record<string, string>;
 			return;
 		}
 
@@ -198,7 +200,7 @@
 
 		{#each redirectProviders as provider (provider.id)}
 			<a
-				href={config.apiUrl(`/api/auth/redirect/${provider.id}`)}
+				href={`${client.getConfig().baseUrl || ''}/api/auth/redirect/${provider.id}`}
 				class="inline-block rounded border border-gray-300 px-4 py-2 text-center hover:bg-gray-50 dark:border-gray-600"
 			>
 				Continue with {providerLabel(provider)}

@@ -1,18 +1,17 @@
 <script lang="ts">
-	import { getClient } from '$lib';
+	import { DatabaseController } from '$lib';
 	import { goto } from '$app/navigation';
-	import { config } from '$lib/config.svelte';
 
-	const branding = config.getConfig();
+	let { data } = $props();
 
-	let statusPromise = $state(getClient().GET('/api/database/status'));
+	let statusPromise = $state(DatabaseController.status());
 	let upgrading = $state(false);
 	let upgradeError = $state<string | null>(null);
 
 	async function upgrade() {
 		upgrading = true;
 		upgradeError = null;
-		const { data, error } = await getClient().POST('/api/database/upgrade');
+		const { data, error } = await DatabaseController.upgrade();
 		upgrading = false;
 
 		if (error) {
@@ -25,12 +24,12 @@
 			return;
 		}
 
-		statusPromise = Promise.resolve({ data, error: undefined, response: new Response() });
+		statusPromise = DatabaseController.status();
 	}
 </script>
 
 <div class="mx-auto flex min-h-screen max-w-lg flex-col justify-center px-4 py-12">
-	<h1 class="mb-2 text-2xl font-semibold">{branding.productName}</h1>
+	<h1 class="mb-2 text-2xl font-semibold">{data.branding.productName}</h1>
 	<p class="mb-8 text-sm text-gray-600">Database schema upgrade</p>
 
 	{#await statusPromise}

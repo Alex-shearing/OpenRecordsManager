@@ -29,7 +29,7 @@ unzip orm-web-static-*.zip -d static
 ./start.sh
 ```
 
-Browse http://localhost:8080. Leave `apiBaseUrl` empty in `static/config.json` for same-origin API calls.
+Browse http://localhost:8080. Same-origin API calls use the empty `apiBaseUrl` baked into `index.html`.
 
 ### Option B — Host the static files yourself
 
@@ -38,9 +38,9 @@ Unpack `orm-web-static-*.zip` into your web root and use the samples shipped ins
 - `deploy/orm-web.conf` — nginx + SPA fallback + `/api` proxy
 - `deploy/web.config` — IIS URL Rewrite + ARR proxy
 
-For a **same-origin** setup, proxy `/api` to the JAR and leave `apiBaseUrl` empty in `config.json`.
+For a **same-origin** setup, proxy `/api` to the JAR and leave `apiBaseUrl` empty in `index.html` (`window.__ORM_UI__`).
 
-For a **cross-origin** setup, set `apiBaseUrl` in the shipped `config.json` to the public API URL and allow the UI
+For a **cross-origin** setup, patch `apiBaseUrl` in `index.html` to the public API URL and allow the UI
 origin in `app.security.cors` settings.
 
 You can still place a `config.yml` next to the API process for non-Docker installs; env vars override it. Web branding
@@ -60,6 +60,6 @@ Only the API URL is host-local. Branding always comes from the API (`GET /api/we
 # Terminal 1 — API
 ./gradlew bootRun
 
-# Terminal 2 — UI (Vite proxies /api to :8080; local config.json has empty apiBaseUrl)
+# Terminal 2 — UI (Vite proxies /api to :8080; index.html has empty apiBaseUrl)
 cd server-web && npm run dev
 ```

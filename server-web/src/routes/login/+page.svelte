@@ -1,11 +1,11 @@
 <script lang="ts">
-	import { getClient } from '$lib';
+	import { AuthController } from '$lib';
 	import LoginForm from '$lib/components/LoginForm.svelte';
-	import type { components } from '$lib/types/schema';
+	import type { AuthProviderListResponse } from '$lib/api/types.gen';
 
-	type AuthProvider = components['schemas']['AuthProviderListResponse'];
+	type AuthProvider = AuthProviderListResponse;
 
-	let providers = getClient().GET('/api/auth/providers');
+	let providers = AuthController.providersListAll();
 </script>
 
 <h1 class="mb-6 text-2xl font-semibold">Sign in</h1>
