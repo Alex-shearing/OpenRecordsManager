@@ -23,12 +23,10 @@
 	<!-- w-full makes it full width on mobile. sm:max-w-[333px] or sm:w-1/3 limits it on desktop -->
 	<SearchBar class="w-full sm:w-1/2" />
 
-	<!-- Right Side: Sign In (Hidden on mobile) -->
+	<!-- Right Side: Profile (Hidden on mobile) -->
 	<a
-		href="/logout"
+		href="/profile"
 		class="hidden h-8 w-max items-center justify-center rounded-[7px] bg-transparent px-4 py-2 text-sm font-medium transition-colors hover:bg-white hover:text-accent-foreground focus:bg-muted focus:text-accent-foreground focus:outline-hidden disabled:pointer-events-none disabled:opacity-50 data-[state=open]:bg-white data-[state=open]:shadow-mini dark:hover:bg-muted dark:data-[state=open]:bg-muted group sm:inline-flex"
-		data-sveltekit-preload-code="off"
-		data-sveltekit-preload-data="off"
 	>
 		{data.me.username}
 	</a>

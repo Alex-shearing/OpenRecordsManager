@@ -13,7 +13,8 @@
 		idPrefix = 'form',
 		disabled = false,
 		before,
-		onsubmit
+		after,
+		onsubmit,
 	}: {
 		schema: InputFormSchema;
 		values?: Record<string, string>;
@@ -25,6 +26,7 @@
 		idPrefix?: string;
 		disabled?: boolean;
 		before?: Snippet;
+		after?: Snippet;
 		onsubmit?: (event: SubmitEvent) => void | Promise<void>;
 	} = $props();
 
@@ -79,6 +81,8 @@
 			{/if}
 		</label>
 	{/each}
+
+	{@render after?.()}
 
 	{#if formError}
 		<p class="text-sm text-red-600" role="alert">{formError}</p>
