@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { client, AuthController } from '$lib';
-	import type { AuthProviderListResponse } from '$lib/api/types.gen';
+	import type { AuthProviderResponse } from '$lib/api/types.gen';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
 	import SchemaForm from './SchemaForm.svelte';
@@ -9,11 +9,11 @@
 		inputProviders,
 		redirectProviders
 	}: {
-		inputProviders: AuthProviderListResponse[];
-		redirectProviders: AuthProviderListResponse[];
+		inputProviders: AuthProviderResponse[];
+		redirectProviders: AuthProviderResponse[];
 	} = $props();
 
-	function providerLabel(provider: AuthProviderListResponse): string {
+	function providerLabel(provider: AuthProviderResponse): string {
 		return provider.name || provider.type.type;
 	}
 
@@ -49,7 +49,7 @@
 			return;
 		}
 
-		let redirect = page.url.searchParams.get('redirect') ?? '/';
+		let redirect = page.url.searchParams.get('redirect') || '/';
 		if (redirect.startsWith('/login')) {
 			redirect = '/';
 		}

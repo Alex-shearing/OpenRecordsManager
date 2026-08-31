@@ -4,6 +4,7 @@ import com.openrecordsmanager.api.ComponentReference;
 import com.openrecordsmanager.auth.dto.AuthProviderResponse;
 import com.openrecordsmanager.auth.dto.LoginResponse;
 import com.openrecordsmanager.auth.dto.NewAuthProviderRequest;
+import com.openrecordsmanager.auth.dto.UpdateAuthProviderRequest;
 import com.openrecordsmanager.rest.dto.ApiResponseV1;
 import com.openrecordsmanager.rest.swagger.*;
 import io.swagger.v3.oas.annotations.Operation;
@@ -37,9 +38,9 @@ public class AuthController {
     }
 
     @GetMapping(value = "/providers", produces = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(summary = "List all supported authentication providers.")
-    public Set<AuthProviderResponse> providers_listAll() {
-        return this.authService.listProviders();
+    @Operation(summary = "List supported authentication providers.")
+    public Set<AuthProviderResponse> getAll(@RequestParam(defaultValue = "false") boolean includeDisabled) {
+        return this.authService.listProviders(includeDisabled);
     }
 
     @PutMapping(value = "/providers", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -53,6 +54,19 @@ public class AuthController {
                 ComponentReference.of(provider.type().type, provider.typeId()),
                 provider.settings()
         );
+    }
+
+    @PutMapping(value = "/providers/{id}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(summary = "Update an authentication provider")
+    @PreAuthorize("isAuthenticated()")
+    @ForbiddenApiResponse
+    @UnauthorizedApiResponse
+    @NotFoundApiResponse
+    public AuthProviderResponse updateProvider(
+            @PathVariable("id") UUID id,
+            @RequestBody UpdateAuthProviderRequest input
+    ) {
+        return this.authService.updateProvider(id, input);
     }
 
     @PostMapping(value = "/login/{provider}", produces = MediaType.APPLICATION_JSON_VALUE)

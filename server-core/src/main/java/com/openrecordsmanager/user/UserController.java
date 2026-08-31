@@ -54,8 +54,12 @@ public class UserController {
     @Operation(summary = "Update a user")
     @NotFoundApiResponse
     @ConflictApiResponse
-    public UserResponse update(@PathVariable("id") UUID id, @RequestBody UpdateUserRequest input) {
-        return this.service.update(id, input);
+    public UserResponse update(
+            @AuthenticationPrincipal User actor,
+            @PathVariable("id") UUID id,
+            @RequestBody UpdateUserRequest input
+    ) {
+        return this.service.update(actor, id, input);
     }
 
     @GetMapping(value = "/{id}/actions", produces = MediaType.APPLICATION_JSON_VALUE)

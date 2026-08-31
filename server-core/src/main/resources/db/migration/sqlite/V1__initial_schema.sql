@@ -8,7 +8,8 @@ CREATE TABLE auth_provider (
     id BLOB NOT NULL PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
     provider_type VARCHAR(255) NOT NULL,
-    settings CLOB NOT NULL
+    settings CLOB NOT NULL,
+    enabled BOOLEAN NOT NULL DEFAULT TRUE
 );
 
 CREATE TABLE list_type (
@@ -73,6 +74,7 @@ CREATE TABLE user_details (
     honorific VARCHAR(255),
     email VARCHAR(255),
     notes VARCHAR(255),
+    enabled BOOLEAN NOT NULL DEFAULT TRUE,
     CONSTRAINT fk_user_auth_provider FOREIGN KEY (auth_provider_id) REFERENCES auth_provider (id)
 );
 

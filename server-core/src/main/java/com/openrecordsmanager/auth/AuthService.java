@@ -8,10 +8,12 @@ import com.openrecordsmanager.api.auth.RedirectAuthProviderType;
 import com.openrecordsmanager.api.auth.UserAuthContext;
 import com.openrecordsmanager.api.builtin.BuiltinConfigs;
 import com.openrecordsmanager.api.template.property.ObjectPropertyTemplate;
+import com.openrecordsmanager.audit.AuditPropertyChange;
 import com.openrecordsmanager.audit.AuditService;
 import com.openrecordsmanager.audit.RequiresAuditComment;
 import com.openrecordsmanager.auth.dto.AuthProviderResponse;
 import com.openrecordsmanager.auth.dto.LoginResponse;
+import com.openrecordsmanager.auth.dto.UpdateAuthProviderRequest;
 import com.openrecordsmanager.auth.entity.AuthProvider;
 import com.openrecordsmanager.auth.entity.AuthToken;
 import com.openrecordsmanager.config.ConfigService;
@@ -32,6 +34,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
@@ -75,19 +78,26 @@ public class AuthService implements UserAuthContext {
         this.cookieSecure = config.getOrThrow(BuiltinConfigs.COOKIE_SECURE);
     }
 
-    public Set<AuthProviderResponse> listProviders() {
+    @Transactional(readOnly = true)
+    public Set<AuthProviderResponse> listProviders(boolean includeDisabled) {
         return this.repository.authProviderRepo.findAll().stream()
+                .filter(p -> includeDisabled || p.isEnabled())
                 .map(provider -> AuthProviderResponse.of(this.catalog, provider))
                 .collect(Collectors.toSet());
     }
 
+    @Transactional(readOnly = true)
     public URI getRedirectLocation(UUID authProviderId) {
         AuthProvider provider = this.repository.authProviderRepo.findById(authProviderId)
                 .orElseThrow(() -> new ResourceNotFoundException("authentication provider", authProviderId.toString()));
+        if (!provider.isEnabled()) {
+            throw new ResourceNotFoundException("authentication provider", authProviderId.toString());
+        }
         RedirectAuthProviderType type = provider.getProviderType(this.catalog, RedirectAuthProviderType.class);
         return type.getRedirectTo(provider);
     }
 
+    @Transactional
     public LoginResponse login(
             PluginAuthenticationProvider.AbstractPluginToken token,
             HttpServletRequest request,
@@ -108,6 +118,7 @@ public class AuthService implements UserAuthContext {
         return LoginResponse.of(persistedToken);
     }
 
+    @Transactional
     public void logout(HttpServletRequest request, HttpServletResponse response) {
         String tokenValue = this.extractTokenFromRequest(request);
         if (tokenValue != null) {
@@ -173,7 +184,7 @@ public class AuthService implements UserAuthContext {
     }
 
     public String getCookieName() {
-        return cookieName;
+        return this.cookieName;
     }
 
     @Override
@@ -209,6 +220,50 @@ public class AuthService implements UserAuthContext {
         this.repository.authProviderRepo.save(provider);
 
         this.auditService.addEvent(AuditOperation.CREATE, AuditEntityType.AUTH_PROVIDER, provider.getId());
+
+        return AuthProviderResponse.of(this.catalog, provider);
+    }
+
+    @Transactional
+    @RequiresAuditComment(operation = AuditOperation.UPDATE, targetType = AuditEntityType.AUTH_PROVIDER)
+    public AuthProviderResponse updateProvider(UUID id, UpdateAuthProviderRequest input) {
+        AuthProvider provider = this.repository.authProviderRepo.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("authentication provider", id));
+
+        List<AuditPropertyChange> changes = new ArrayList<>();
+
+        if (input.name() != null && !input.name().equals(provider.name)) {
+            String oldName = provider.name;
+            provider.name = input.name();
+            changes.add(new AuditPropertyChange("name", oldName, input.name()));
+        }
+
+        if (input.settings() != null) {
+            Map<String, Object> oldSettings = new HashMap<>(provider.settings);
+            provider.settings = new HashMap<>(input.settings());
+            changes.add(new AuditPropertyChange("settings", oldSettings.keySet(), input.settings().keySet()));
+        }
+
+        if (input.enabled() != null && input.enabled() != provider.isEnabled()) {
+            boolean oldEnabled = provider.isEnabled();
+            provider.setEnabled(input.enabled());
+            changes.add(new AuditPropertyChange("enabled", oldEnabled, input.enabled()));
+
+            if (!input.enabled()) {
+                this.repository.authTokenRepo.deleteByUser_AuthProvider_Id(provider.getId());
+            }
+        }
+
+        this.repository.authProviderRepo.saveAndFlush(provider);
+
+        this.auditService.addEvent(
+                AuditOperation.UPDATE,
+                AuditEntityType.AUTH_PROVIDER,
+                provider.getId().toString(),
+                changes.isEmpty() ? null : changes,
+                null,
+                null
+        );
 
         return AuthProviderResponse.of(this.catalog, provider);
     }

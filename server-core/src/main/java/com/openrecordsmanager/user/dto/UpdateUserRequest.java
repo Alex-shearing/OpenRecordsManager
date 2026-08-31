@@ -9,6 +9,7 @@ import java.util.UUID;
 public record UpdateUserRequest(
         @Nullable String username,
         @Nullable UUID authProvider,
+        @Nullable Boolean enabled,
         @Nullable Map<ResourceIdentifier, Object> properties
 ) {
 }

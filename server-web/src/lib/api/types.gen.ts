@@ -7,6 +7,7 @@ export type ClientOptions = {
 export type UpdateUserRequest = {
     username?: string;
     authProvider?: string;
+    enabled?: boolean;
     properties?: {
         [key: string]: unknown;
     };
@@ -23,6 +24,7 @@ export type ApiResponseV1 = {
 export type UserResponse = {
     id: string;
     username: string;
+    enabled: boolean;
     properties: {
         [key: string]: unknown;
     };
@@ -151,6 +153,14 @@ export type InputFormSchemaField = {
     maxLength?: number;
     pattern?: string;
     contentEncoding?: string;
+};
+
+export type UpdateAuthProviderRequest = {
+    name?: string;
+    enabled?: boolean;
+    settings?: {
+        [key: string]: unknown;
+    };
 };
 
 export type UpdateAuditPolicyRequest = {
@@ -2349,14 +2359,16 @@ export type SetResponses = {
 
 export type SetResponse = SetResponses[keyof SetResponses];
 
-export type ProvidersListAllData = {
+export type GetAllData = {
     body?: never;
     path?: never;
-    query?: never;
+    query?: {
+        includeDisabled?: boolean;
+    };
     url: '/api/auth/providers';
 };
 
-export type ProvidersListAllErrors = {
+export type GetAllErrors = {
     /**
      * Internal Server error
      */
@@ -2370,9 +2382,9 @@ export type ProvidersListAllErrors = {
     };
 };
 
-export type ProvidersListAllError = ProvidersListAllErrors[keyof ProvidersListAllErrors];
+export type GetAllError = GetAllErrors[keyof GetAllErrors];
 
-export type ProvidersListAllResponses = {
+export type GetAllResponses = {
     /**
      * OK
      */
@@ -2383,7 +2395,7 @@ export type ProvidersListAllResponses = {
     };
 };
 
-export type ProvidersListAllResponse = ProvidersListAllResponses[keyof ProvidersListAllResponses];
+export type GetAllResponse = GetAllResponses[keyof GetAllResponses];
 
 export type CreateProviderData = {
     body: NewAuthProviderRequest;
@@ -2442,6 +2454,77 @@ export type CreateProviderResponses = {
 };
 
 export type CreateProviderResponse = CreateProviderResponses[keyof CreateProviderResponses];
+
+export type UpdateProviderData = {
+    body: UpdateAuthProviderRequest;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/auth/providers/{id}';
+};
+
+export type UpdateProviderErrors = {
+    /**
+     * Unauthorized
+     */
+    401: {
+        success: false;
+        timestamp: unknown;
+        error: string;
+        errorData?: {
+            [key: string]: unknown;
+        };
+    };
+    /**
+     * Forbidden
+     */
+    403: {
+        success: false;
+        timestamp: unknown;
+        error: string;
+        errorData?: {
+            [key: string]: unknown;
+        };
+    };
+    /**
+     * Not Found
+     */
+    404: {
+        success: false;
+        timestamp: unknown;
+        error: string;
+        errorData?: {
+            [key: string]: unknown;
+        };
+    };
+    /**
+     * Internal Server error
+     */
+    500: {
+        success: false;
+        timestamp: unknown;
+        error: string;
+        errorData?: {
+            [key: string]: unknown;
+        };
+    };
+};
+
+export type UpdateProviderError = UpdateProviderErrors[keyof UpdateProviderErrors];
+
+export type UpdateProviderResponses = {
+    /**
+     * OK
+     */
+    200: {
+        success: true;
+        timestamp: unknown;
+        data: AuthProviderResponse;
+    };
+};
+
+export type UpdateProviderResponse = UpdateProviderResponses[keyof UpdateProviderResponses];
 
 export type ListPoliciesData = {
     body?: never;

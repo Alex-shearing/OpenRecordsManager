@@ -33,6 +33,9 @@ public class AuthProvider implements AuthProviderInstance {
     @JdbcTypeCode(SqlTypes.JSON)
     public Map<String, Object> settings = new HashMap<>();
 
+    @Column(nullable = false)
+    private boolean enabled = true;
+
     @Override
     public UUID getId() {
         return this.id;
@@ -48,6 +51,14 @@ public class AuthProvider implements AuthProviderInstance {
         return this.settings;
     }
 
+    public boolean isEnabled() {
+        return this.enabled;
+    }
+
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
+    }
+
     @Deprecated
     protected AuthProvider() {
     }
@@ -57,6 +68,7 @@ public class AuthProvider implements AuthProviderInstance {
         this.name = name;
         this.providerType = providerType;
         this.settings = settings;
+        this.enabled = true;
     }
 
     public ComponentReference<? extends AuthProviderType> getProviderType() {

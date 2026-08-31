@@ -102,7 +102,7 @@ public class UserService {
 
     @Transactional
     @RequiresAuditComment(operation = AuditOperation.UPDATE, targetType = AuditEntityType.USER)
-    public UserResponse update(UUID id, UpdateUserRequest input) {
+    public UserResponse update(User actor, UUID id, UpdateUserRequest input) {
         User user = this.repository.userRepo.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("user", id));
 
@@ -118,13 +118,27 @@ public class UserService {
             changes.add(new AuditPropertyChange("username", oldUsername, input.username()));
         }
 
-        if (input.authProvider() != null && (user.getAuthProvider() == null || input.authProvider() != user.getAuthProvider().getId())) {
+        if (input.authProvider() != null && (user.getAuthProvider() == null || !input.authProvider().equals(user.getAuthProvider().getId()))) {
             AuthProvider authProvider = this.repository.authProviderRepo.findById(input.authProvider())
                     .orElseThrow(() -> new ResourceNotFoundException("authentication provider", input.authProvider()));
 
             UUID oldProviderId = user.getAuthProvider() != null ? user.getAuthProvider().getId() : null;
             user.setAuthProvider(authProvider);
             changes.add(new AuditPropertyChange("authProvider", oldProviderId, authProvider.getId()));
+        }
+
+        if (input.enabled() != null && input.enabled() != user.isEnabled()) {
+            if (!input.enabled() && actor.getId().equals(user.getId())) {
+                throw new ResourceInUseException("cannot disable your own account");
+            }
+
+            boolean oldEnabled = user.isEnabled();
+            user.setEnabled(input.enabled());
+            changes.add(new AuditPropertyChange("enabled", oldEnabled, input.enabled()));
+
+            if (!input.enabled()) {
+                this.repository.authTokenRepo.deleteByUser_Id(user.getId());
+            }
         }
 
         if (input.properties() != null) {

@@ -1,7 +1,7 @@
 import { AuthController } from '$lib';
 
 export async function load() {
-	const { data, error } = await AuthController.providersListAll();
+	const { data, error } = await AuthController.getAll();
 
 	if (error || !data?.success) {
 		return {

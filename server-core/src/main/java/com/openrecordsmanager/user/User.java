@@ -65,6 +65,9 @@ public class User implements ObjectPropertyHolder<UserPropertyValue<?>>, UserDet
     @Nullable
     private String notes;
 
+    @Column(nullable = false)
+    private boolean enabled = true;
+
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "user", fetch = FetchType.EAGER)
     @MapKey(name = "property")
     private Map<ObjectProperty<?>, UserPropertyValue<?>> properties = new HashMap<>();
@@ -79,6 +82,7 @@ public class User implements ObjectPropertyHolder<UserPropertyValue<?>>, UserDet
         this.authProvider = authProvider;
         this.dateCreated = Instant.now();
         this.dateModified = Instant.now();
+        this.enabled = true;
     }
 
     public UUID getId() {
@@ -151,6 +155,14 @@ public class User implements ObjectPropertyHolder<UserPropertyValue<?>>, UserDet
 
     public void setNotes(@Nullable String notes) {
         this.notes = notes;
+    }
+
+    public boolean isEnabled() {
+        return this.enabled;
+    }
+
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
     }
 
     public void touchDateModified() {

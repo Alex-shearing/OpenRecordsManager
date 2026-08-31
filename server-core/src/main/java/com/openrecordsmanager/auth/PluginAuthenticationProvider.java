@@ -47,6 +47,10 @@ public class PluginAuthenticationProvider implements AuthenticationProvider {
         AuthProvider provider = this.repository.authProviderRepo.findById(token.provider)
                 .orElseThrow(() -> new ProviderNotFoundException("Provider " + token.provider + " not found"));
 
+        if (!provider.isEnabled()) {
+            throw new DisabledException("Authentication provider is disabled");
+        }
+
         AuthProviderType type = provider.getProviderType(catalog, AuthProviderType.class);
 
         UserAuthDetails authDetails = switch (type) {
@@ -63,6 +67,10 @@ public class PluginAuthenticationProvider implements AuthenticationProvider {
 
         User user = this.repository.userRepo.findByUsername(authDetails.getName())
                 .orElseThrow(() -> UsernameNotFoundException.fromUsername(authDetails.getName()));
+
+        if (!user.isEnabled()) {
+            throw new DisabledException("User account is disabled");
+        }
 
         // Ensure the authentication provider used is the same one the user signed up with
         if (user.getAuthProvider() != provider) {

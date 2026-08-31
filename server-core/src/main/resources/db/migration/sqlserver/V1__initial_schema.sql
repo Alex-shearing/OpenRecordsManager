@@ -12,7 +12,8 @@ CREATE TABLE auth_provider (
     id UNIQUEIDENTIFIER NOT NULL PRIMARY KEY,
     name NVARCHAR(255) NOT NULL,
     provider_type NVARCHAR(255) NOT NULL,
-    settings NVARCHAR(MAX) NOT NULL
+    settings NVARCHAR(MAX) NOT NULL,
+    enabled BIT NOT NULL CONSTRAINT df_auth_provider_enabled DEFAULT 1
 );
 GO
 
@@ -84,6 +85,7 @@ CREATE TABLE user_details (
     honorific NVARCHAR(255) NULL,
     email NVARCHAR(255) NULL,
     notes NVARCHAR(255) NULL,
+    enabled BIT NOT NULL CONSTRAINT df_user_details_enabled DEFAULT 1,
     CONSTRAINT fk_user_auth_provider FOREIGN KEY (auth_provider_id) REFERENCES auth_provider (id)
 );
 GO
