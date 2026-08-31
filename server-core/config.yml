@@ -1,116 +1,14 @@
 #####################
 # ORM Configuration #
 #####################
-# Precedence: Environment Variables > this file > Database > Defaults.
 
-# These settings can only be set locally on the server, they are not loaded from the database
 server:
   database:
-    # The primary connection to the database, this connection will be used for read/write operations.
     primary:
-      # EXAMPLE CONNECTIONS
-      # SQLite File
       url: jdbc:sqlite:./data/orm_system.db?busy_timeout=5000
-      # PostgreSQL
-      # url: jdbc:postgresql://localhost:5432/orm
-      # username: orm
-      # password: orm
-
-      # MariaDB
-      # url: jdbc:mariadb://localhost:3306/orm
-      # username: orm
-      # password: orm
-
-      # SQL Server (SQL authentication)
-      # url: jdbc:sqlserver://localhost:1433;databaseName=orm;encrypt=true;trustServerCertificate=true
-      # username: orm
-      # password: orm
-
-      # SQL Server (Windows integrated authentication — JVM must run as the Windows user;
-      # requires mssql-jdbc_auth in java.library.path on Windows)
-      # url: jdbc:sqlserver://localhost:1433;databaseName=orm;integratedSecurity=true;encrypt=true;trustServerCertificate=true
-    # A connection to a secondary/read-only database, this connection will only be used for read operations.
-    read-only:
-      url:
   plugins:
-    # Defines the directory used to load plugins from.
     directory: ./plugins
-    # Disables the plugin startup check.
     skip-startup-check: false
-  # Local directory for audit spool and archive files
   audit-directory: ./data/audit
-  # Optional static SPA directory (e.g. ./static after unpacking orm-web-static-*.zip), leave empty when the UI is hosted separately (nginx/IIS/etc)
   web-directory: ./static
-
-  ####################
-  # Logging settings #
-  ####################
-  logging:
-    level: INFO
-    path: ./data/logs/openrecordsmanager.log
-    rolling:
-      max-file-size: 10MB
-      max-history: 7
-      total-size-cap: 100MB
-      clean-history-on-start: false
-
-# These settings can be loaded either locally or from the database
-app:
-  debug:
-    # If enabled, the API will return detailed errors when they occur. This should only be enabled for debugging.
-    detailed-errors: false
-    # If enabled, the API will log all SQL queries to the local log file
-    show-sql: false
-  database:
-    # Defines how frequently the application probes the primary database to update its health status. This is used for the audit process to ensure the database is ready to accept new audit events
-    probe-interval-ms: 30000
-
-  #####################
-  # Security settings #
-  #####################
-  security:
-    # How long issued authentication tokens are valid for after issuing
-    token-expiration-time: 3600000
-    cookie-auth:
-      # When using cookie-based authentication, the name of the cookie to use
-      name: ORM-Authentication
-      # When using cookie-based authentication, enforce the 'Secure' attribute
-      secure: true
-    cors:
-      # Origins that should be allowed to request resources from the API, this is your web client URL(s)
-      allowed-origins:
-        - http://localhost:5173
-        - http://localhost:3000
-      # Headers that should be allowed to when accessing the API
-      allowed-headers:
-        - Authorization
-        - Content-Type
-        - X-XSRF-TOKEN
-        - X-Client-Platform
-        - X-ORM-Audit-Comment
-
-  ##################
-  # Audit settings #
-  ##################
-  audit:
-    # Master switch for the audit system
-    enabled: true
-    # Seconds between background attempts to drain the audit spool into the database.
-    spool-drain-interval-seconds: 30
-    # When enabled, synced audit events are also appended to a daily rotating archive log file.
-    archive-enabled: true
-
-  ################
-  # Web branding #
-  ################
-  web:
-    # Product name shown in the web client.
-    product-name: Open Records Manager
-    # Optional logo image URL for the web client.
-    logo-url:
-    # Optional favicon URL for the web client.
-    favicon-url: /favicon.ico
-    # Primary brand color (CSS) for the web client.
-    primary-color: "#1d4ed8"
-    # Optional support link shown in the web client.
-    support-url:
+  

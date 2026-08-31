@@ -1,6 +1,7 @@
 package com.openrecordsmanager.config;
 
 import com.openrecordsmanager.config.dto.ConfigResponse;
+import com.openrecordsmanager.config.dto.ConfigTypeResponse;
 import com.openrecordsmanager.rest.swagger.DefaultApiResponses;
 import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.http.MediaType;
@@ -9,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 @RestController
 @RequestMapping("/api/config")
@@ -24,31 +26,31 @@ public class ConfigController {
 
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Get config values from the database")
-    public Map<String, Optional<?>> database_retrieve() {
-        return this.config.getAllConfig();
+    public Set<ConfigTypeResponse> getAllConfig() {
+        return this.config.getAllConfigTypes();
     }
 
     @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Get the value of the config from the database")
-    public Optional<?> database_retrieveOne(@PathVariable("id") String id) {
+    public Optional<?> getConfig(@PathVariable("id") String id) {
         return this.config.getDatabaseConfig(id);
     }
 
     @PutMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Set a config value in the database")
-    public ConfigResponse set(@PathVariable("id") String id, @RequestBody String value) {
+    public ConfigResponse setConfig(@PathVariable("id") String id, @RequestBody String value) {
         return this.config.setConfig(id, value);
     }
 
     @GetMapping(value = "/this_server", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Get the effective config values for this specific server")
-    public Map<String, ?> server_retrieveAll() {
+    public Map<String, ?> getAllLocalConfig() {
         return this.config.getServerConfig();
     }
 
     @GetMapping(value = "/this_server/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Get the effective value for the config this specific server")
-    public Object server_retrieveOne(@PathVariable("id") String id) {
+    public Object getLocalConfig(@PathVariable("id") String id) {
         return this.config.getServerConfig(id);
     }
 }

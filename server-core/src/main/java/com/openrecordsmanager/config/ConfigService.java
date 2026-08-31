@@ -10,6 +10,7 @@ import com.openrecordsmanager.audit.AuditEventDescriptions;
 import com.openrecordsmanager.audit.AuditPolicyService;
 import com.openrecordsmanager.audit.AuditService;
 import com.openrecordsmanager.config.dto.ConfigResponse;
+import com.openrecordsmanager.config.dto.ConfigTypeResponse;
 import com.openrecordsmanager.database.DataRepository;
 import com.openrecordsmanager.plugin.registry.ComponentCatalog;
 import com.openrecordsmanager.rest.errors.ResourceNotFoundException;
@@ -22,6 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -75,6 +77,7 @@ public class ConfigService implements ConfigStore {
     @Override
     public <T> @Nullable T getValue(ConfigType<T> key) {
         T value = this.environment.getProperty(key.key(), key.type().cType);
+        System.out.println(value);
         return value != null ? value : key.defaultValue();
     }
 
@@ -85,15 +88,18 @@ public class ConfigService implements ConfigStore {
     }
 
     @Transactional(readOnly = true)
-    public Map<String, Optional<?>> getAllConfig() {
-        Map<String, Optional<?>> results = this.catalog.getRegistry(ComponentTypes.CONFIG).stream()
+    public <T> Set<ConfigTypeResponse> getAllConfigTypes() {
+        Set<ConfigTypeResponse> results = this.catalog.getRegistry(ComponentTypes.CONFIG).stream()
                 .filter(configType -> !configType.key().startsWith("server."))
                 .map(cfg -> {
-                    Optional<?> db = this.repository.configRepo.findByConfigKey(cfg.key())
-                            .map(configItem -> cfg.type().fromString(configItem.configValue));
-                    return Map.entry(cfg.key(), db);
+                    ConfigType<T> cfgT = (ConfigType<T>) cfg;
+
+                    Optional<T> db = this.repository.configRepo.findByConfigKey(cfg.key())
+                            .map(configItem -> cfgT.type().fromString(configItem.configValue))
+                            .orElse(Optional.ofNullable(cfgT.defaultValue()));
+                    return ConfigTypeResponse.from(cfgT, db.orElse(null));
                 })
-                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+                .collect(Collectors.toSet());
         this.auditService.recordCollectionRead(AuditEntityType.CONFIG, results.size());
         return results;
     }

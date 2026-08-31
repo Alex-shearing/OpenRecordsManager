@@ -12,9 +12,11 @@ public class AuditSpoolPaths {
 
     private final ConfigService config;
     private final AtomicReference<Object> lock = new AtomicReference<>(new Object());
+    private final Path auditPath;
 
     public AuditSpoolPaths(ConfigService config) {
         this.config = config;
+        this.auditPath = Path.of(this.config.getOrDefault(BuiltinConfigs.AUDIT_SPOOL_DIRECTORY, "./data/audit"));
     }
 
     public Object lock() {
@@ -22,9 +24,7 @@ public class AuditSpoolPaths {
     }
 
     public Path directory() {
-        String configured = this.config.getOptional(BuiltinConfigs.AUDIT_SPOOL_DIRECTORY)
-                .orElse("./data/audit");
-        return Path.of(configured);
+        return this.auditPath;
     }
 
     public Path pendingFile() {

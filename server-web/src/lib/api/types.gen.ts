@@ -330,6 +330,15 @@ export type MiddlewareTypeResponse = {
     settingsSchema: InputFormSchema;
 };
 
+export type ConfigTypeResponse = {
+    key: string;
+    name: string;
+    currentValue?: unknown;
+    description: string;
+    defaultValue?: unknown;
+    type: 'STRING' | 'INT' | 'DOUBLE' | 'BOOL' | 'UUID' | 'STRING_LIST' | 'INT_LIST' | 'UNKNOWN';
+};
+
 export type AuditStatusResponse = {
     primaryWritable?: boolean;
     pendingSpoolCount?: number;
@@ -2215,7 +2224,7 @@ export type MiddlewareUpdateResponses = {
 
 export type MiddlewareUpdateResponse = MiddlewareUpdateResponses[keyof MiddlewareUpdateResponses];
 
-export type DatabaseRetrieveOneData = {
+export type GetConfigData = {
     body?: never;
     path: {
         id: string;
@@ -2224,7 +2233,7 @@ export type DatabaseRetrieveOneData = {
     url: '/api/config/{id}';
 };
 
-export type DatabaseRetrieveOneErrors = {
+export type GetConfigErrors = {
     /**
      * Unauthorized
      */
@@ -2271,9 +2280,9 @@ export type DatabaseRetrieveOneErrors = {
     };
 };
 
-export type DatabaseRetrieveOneError = DatabaseRetrieveOneErrors[keyof DatabaseRetrieveOneErrors];
+export type GetConfigError = GetConfigErrors[keyof GetConfigErrors];
 
-export type DatabaseRetrieveOneResponses = {
+export type GetConfigResponses = {
     /**
      * OK
      */
@@ -2286,9 +2295,9 @@ export type DatabaseRetrieveOneResponses = {
     };
 };
 
-export type DatabaseRetrieveOneResponse = DatabaseRetrieveOneResponses[keyof DatabaseRetrieveOneResponses];
+export type GetConfigResponse = GetConfigResponses[keyof GetConfigResponses];
 
-export type SetData = {
+export type SetConfigData = {
     body: string;
     path: {
         id: string;
@@ -2297,7 +2306,7 @@ export type SetData = {
     url: '/api/config/{id}';
 };
 
-export type SetErrors = {
+export type SetConfigErrors = {
     /**
      * Unauthorized
      */
@@ -2344,9 +2353,9 @@ export type SetErrors = {
     };
 };
 
-export type SetError = SetErrors[keyof SetErrors];
+export type SetConfigError = SetConfigErrors[keyof SetConfigErrors];
 
-export type SetResponses = {
+export type SetConfigResponses = {
     /**
      * OK
      */
@@ -2357,7 +2366,7 @@ export type SetResponses = {
     };
 };
 
-export type SetResponse = SetResponses[keyof SetResponses];
+export type SetConfigResponse = SetConfigResponses[keyof SetConfigResponses];
 
 export type GetAllData = {
     body?: never;
@@ -4907,14 +4916,14 @@ export type StatusResponses = {
 
 export type StatusResponse = StatusResponses[keyof StatusResponses];
 
-export type DatabaseRetrieveData = {
+export type GetAllConfigData = {
     body?: never;
     path?: never;
     query?: never;
     url: '/api/config';
 };
 
-export type DatabaseRetrieveErrors = {
+export type GetAllConfigErrors = {
     /**
      * Unauthorized
      */
@@ -4961,33 +4970,29 @@ export type DatabaseRetrieveErrors = {
     };
 };
 
-export type DatabaseRetrieveError = DatabaseRetrieveErrors[keyof DatabaseRetrieveErrors];
+export type GetAllConfigError = GetAllConfigErrors[keyof GetAllConfigErrors];
 
-export type DatabaseRetrieveResponses = {
+export type GetAllConfigResponses = {
     /**
      * OK
      */
     200: {
         success: true;
         timestamp: unknown;
-        data: {
-            [key: string]: {
-                [key: string]: unknown;
-            };
-        };
+        data: Array<ConfigTypeResponse>;
     };
 };
 
-export type DatabaseRetrieveResponse = DatabaseRetrieveResponses[keyof DatabaseRetrieveResponses];
+export type GetAllConfigResponse = GetAllConfigResponses[keyof GetAllConfigResponses];
 
-export type ServerRetrieveAllData = {
+export type GetAllLocalConfigData = {
     body?: never;
     path?: never;
     query?: never;
     url: '/api/config/this_server';
 };
 
-export type ServerRetrieveAllErrors = {
+export type GetAllLocalConfigErrors = {
     /**
      * Unauthorized
      */
@@ -5034,9 +5039,9 @@ export type ServerRetrieveAllErrors = {
     };
 };
 
-export type ServerRetrieveAllError = ServerRetrieveAllErrors[keyof ServerRetrieveAllErrors];
+export type GetAllLocalConfigError = GetAllLocalConfigErrors[keyof GetAllLocalConfigErrors];
 
-export type ServerRetrieveAllResponses = {
+export type GetAllLocalConfigResponses = {
     /**
      * OK
      */
@@ -5051,9 +5056,9 @@ export type ServerRetrieveAllResponses = {
     };
 };
 
-export type ServerRetrieveAllResponse = ServerRetrieveAllResponses[keyof ServerRetrieveAllResponses];
+export type GetAllLocalConfigResponse = GetAllLocalConfigResponses[keyof GetAllLocalConfigResponses];
 
-export type ServerRetrieveOneData = {
+export type GetLocalConfigData = {
     body?: never;
     path: {
         id: string;
@@ -5062,7 +5067,7 @@ export type ServerRetrieveOneData = {
     url: '/api/config/this_server/{id}';
 };
 
-export type ServerRetrieveOneErrors = {
+export type GetLocalConfigErrors = {
     /**
      * Unauthorized
      */
@@ -5109,9 +5114,9 @@ export type ServerRetrieveOneErrors = {
     };
 };
 
-export type ServerRetrieveOneError = ServerRetrieveOneErrors[keyof ServerRetrieveOneErrors];
+export type GetLocalConfigError = GetLocalConfigErrors[keyof GetLocalConfigErrors];
 
-export type ServerRetrieveOneResponses = {
+export type GetLocalConfigResponses = {
     /**
      * OK
      */
@@ -5124,7 +5129,7 @@ export type ServerRetrieveOneResponses = {
     };
 };
 
-export type ServerRetrieveOneResponse = ServerRetrieveOneResponses[keyof ServerRetrieveOneResponses];
+export type GetLocalConfigResponse = GetLocalConfigResponses[keyof GetLocalConfigResponses];
 
 export type RedirectData = {
     body?: never;
