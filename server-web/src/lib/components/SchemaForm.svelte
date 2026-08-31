@@ -57,7 +57,7 @@
 		<label class="flex flex-col gap-1">
 			<span>{field.title}</span>
 			{#if field.description}
-				<span class="text-sm text-gray-500">{field.description}</span>
+				<span class="text-hint">{field.description}</span>
 			{/if}
 			<input
 				id="{idPrefix}-{key}"
@@ -70,12 +70,12 @@
 				pattern={field.pattern ?? undefined}
 				autocomplete={field.writeOnly ? 'current-password' : undefined}
 				disabled={submitting}
-				class="rounded border border-gray-300 bg-white px-3 py-2"
+				class="input"
 				aria-invalid={fieldErrors[key] ? 'true' : undefined}
 				aria-describedby={fieldErrors[key] ? `${idPrefix}-${key}-error` : undefined}
 			/>
 			{#if fieldErrors[key]}
-				<span id="{idPrefix}-{key}-error" class="text-sm text-red-600" role="alert">
+				<span id="{idPrefix}-{key}-error" class="text-sm text-destructive" role="alert">
 					{fieldErrors[key]}
 				</span>
 			{/if}
@@ -85,14 +85,10 @@
 	{@render after?.()}
 
 	{#if formError}
-		<p class="text-sm text-red-600" role="alert">{formError}</p>
+		<p class="text-sm text-destructive" role="alert">{formError}</p>
 	{/if}
 
-	<button
-		type="submit"
-		disabled={submitting || disabled}
-		class="rounded bg-blue-600 px-4 py-2 text-white hover:bg-blue-700 disabled:opacity-50"
-	>
+	<button type="submit" disabled={submitting || disabled} class="btn-primary">
 		{submitting ? submittingLabel : submitLabel}
 	</button>
 </form>

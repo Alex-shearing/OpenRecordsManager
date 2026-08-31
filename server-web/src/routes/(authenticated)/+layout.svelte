@@ -12,7 +12,7 @@
 	{#snippet end()}
 		<a
 			href="/profile"
-			class="hidden h-8 w-max items-center justify-center rounded-[7px] bg-transparent px-4 py-2 text-sm font-medium transition-colors hover:bg-white focus:outline-hidden sm:inline-flex"
+			class="hidden h-8 w-max items-center justify-center rounded-[7px] bg-transparent px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-white/15 focus:outline-hidden sm:inline-flex"
 		>
 			{data.me.username}
 		</a>

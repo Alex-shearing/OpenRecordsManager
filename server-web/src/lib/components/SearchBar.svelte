@@ -23,43 +23,43 @@
 </script>
 
 <form
-	class="flex items-stretch overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm {className}"
+	class="card flex items-stretch overflow-hidden p-0 {className}"
 	onsubmit={handleSubmit}
 	{...rest}
 >
 	<Select.Root type="single" {items} bind:value={selected}>
 		<Select.Trigger
 			aria-label="Select a search type"
-			class="inline-flex w-28 shrink-0 items-center gap-1 border-r border-gray-200 px-3 py-2 text-sm font-medium text-gray-700 outline-none hover:bg-gray-50"
+			class="inline-flex w-28 shrink-0 items-center gap-1 border-r border-border px-3 py-2 text-sm font-medium text-foreground outline-none hover:bg-surface-hover"
 		>
 			<Select.Value placeholder="Type" />
-			<CaretUpDownIcon class="ml-auto size-4 text-gray-500" />
+			<CaretUpDownIcon class="ml-auto size-4 text-muted-foreground" />
 		</Select.Trigger>
 		<Select.Portal>
 			<Select.Content
-				class="z-50 min-w-28 rounded-lg border border-gray-200 bg-white p-1 shadow-lg"
+				class="z-50 min-w-28 rounded-lg border border-border bg-surface p-1 shadow-lg"
 				sideOffset={4}
 			>
-				<Select.ScrollUpButton class="flex w-full items-center justify-center py-1 text-gray-500">
+				<Select.ScrollUpButton class="flex w-full items-center justify-center py-1 text-muted-foreground">
 					<CaretUpIcon class="size-3" />
 				</Select.ScrollUpButton>
 				<Select.Viewport>
 					{#each items as item (item.value)}
 						<Select.Item
-							class="flex w-full items-center justify-between rounded px-2 py-1.5 text-sm text-gray-700 outline-none data-[highlighted]:bg-gray-100"
+							class="flex w-full items-center justify-between rounded px-2 py-1.5 text-sm text-foreground outline-none data-[highlighted]:bg-surface-muted"
 							value={item.value}
 							label={item.label}
 						>
 							{#snippet children({ selected })}
 								{item.label}
 								{#if selected}
-									<CheckIcon class="size-4 text-blue-600" aria-label="Selected" />
+									<CheckIcon class="size-4 text-primary" aria-label="Selected" />
 								{/if}
 							{/snippet}
 						</Select.Item>
 					{/each}
 				</Select.Viewport>
-				<Select.ScrollDownButton class="flex w-full items-center justify-center py-1 text-gray-500">
+				<Select.ScrollDownButton class="flex w-full items-center justify-center py-1 text-muted-foreground">
 					<CaretDownIcon class="size-3" />
 				</Select.ScrollDownButton>
 			</Select.Content>
@@ -67,18 +67,15 @@
 	</Select.Root>
 
 	<label class="flex min-w-0 flex-1 items-center gap-2 px-3">
-		<MagnifyingGlassIcon class="size-4 shrink-0 text-gray-400" aria-hidden="true" />
+		<MagnifyingGlassIcon class="size-4 shrink-0 text-subtle-foreground" aria-hidden="true" />
 		<input
 			type="search"
 			placeholder="Search {searchText}..."
-			class="min-w-0 flex-1 border-0 bg-transparent py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none"
+			class="min-w-0 flex-1 border-0 bg-transparent py-2 text-sm text-foreground placeholder:text-subtle-foreground focus:outline-none"
 		/>
 	</label>
 
-	<button
-		type="submit"
-		class="shrink-0 border-l border-gray-200 bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
-	>
+	<button type="submit" class="btn-primary shrink-0 rounded-none border-l border-border">
 		Search
 	</button>
 </form>

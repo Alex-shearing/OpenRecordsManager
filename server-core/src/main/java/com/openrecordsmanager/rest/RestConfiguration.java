@@ -1,7 +1,10 @@
-package com.openrecordsmanager.auth;
+package com.openrecordsmanager.rest;
 
 import com.openrecordsmanager.api.builtin.BuiltinConfigs;
 import com.openrecordsmanager.audit.AuditContextFilter;
+import com.openrecordsmanager.auth.AuthService;
+import com.openrecordsmanager.auth.DatabaseTokenAuthenticationFilter;
+import com.openrecordsmanager.auth.PluginAuthenticationProvider;
 import com.openrecordsmanager.config.ConfigService;
 import com.openrecordsmanager.database.DataRepository;
 import com.openrecordsmanager.database.SchemaUpgradeGateFilter;
@@ -32,7 +35,7 @@ import java.util.function.Supplier;
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
-public class SecurityConfiguration {
+public class RestConfiguration {
 
     private static final String[] PUBLIC_API_PATHS = {
             "/api/auth/**",
@@ -57,7 +60,7 @@ public class SecurityConfiguration {
     private final String[] allowedHeaders;
     private final boolean cookieSecure;
 
-    public SecurityConfiguration(
+    public RestConfiguration(
             DataRepository repository,
             AuthService authService,
             ConfigService configService

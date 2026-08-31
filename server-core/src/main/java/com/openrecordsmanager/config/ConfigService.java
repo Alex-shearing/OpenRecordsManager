@@ -86,8 +86,13 @@ public class ConfigService implements ConfigStore {
 
     @Transactional(readOnly = true)
     public Map<String, Optional<?>> getAllConfig() {
-        Map<String, Optional<?>> results = this.repository.configRepo.findAll().stream()
-                .map(def -> Map.entry(def.configKey, this.getOptional(def.getConfigKey(this.catalog))))
+        Map<String, Optional<?>> results = this.catalog.getRegistry(ComponentTypes.CONFIG).stream()
+                .filter(configType -> !configType.key().startsWith("server."))
+                .map(cfg -> {
+                    Optional<?> db = this.repository.configRepo.findByConfigKey(cfg.key())
+                            .map(configItem -> cfg.type().fromString(configItem.configValue));
+                    return Map.entry(cfg.key(), db);
+                })
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
         this.auditService.recordCollectionRead(AuditEntityType.CONFIG, results.size());
         return results;

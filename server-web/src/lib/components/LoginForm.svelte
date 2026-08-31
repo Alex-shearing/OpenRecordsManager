@@ -75,10 +75,10 @@
 			{#snippet before()}
 				{#if inputProviders.length > 1}
 					<label class="flex flex-col gap-1">
-						<span class="text-sm font-medium text-gray-700">Sign in with</span>
+						<span class="text-label">Sign in with</span>
 						<select
 							bind:value={selectedProviderId}
-							class="rounded border border-gray-300 bg-white px-3 py-2 text-sm"
+							class="input"
 							disabled={submitting}
 						>
 							{#each inputProviders as provider (provider.id)}
@@ -87,8 +87,8 @@
 						</select>
 					</label>
 				{:else}
-					<p class="text-sm text-gray-600">
-						Sign in with <span class="font-medium text-gray-900">{providerLabel(selectedProvider)}</span>
+					<p class="text-hint">
+						Sign in with <span class="font-medium text-foreground">{providerLabel(selectedProvider)}</span>
 					</p>
 				{/if}
 			{/snippet}
@@ -99,15 +99,15 @@
 {#if redirectProviders.length > 0}
 	<div class="mt-6 flex flex-col gap-3">
 		{#if inputProviders.length > 0}
-			<p class="text-sm text-gray-500">Or continue with</p>
+			<p class="text-hint">Or continue with</p>
 		{/if}
 
-		<ul class="divide-y divide-gray-200 overflow-hidden rounded-lg border border-gray-200">
+		<ul class="list-panel">
 			{#each redirectProviders as provider (provider.id)}
 				<li>
 					<a
 						href={`${client.getConfig().baseUrl || ''}/api/auth/redirect/${provider.id}`}
-						class="block px-4 py-3 text-center text-sm font-medium transition-colors hover:bg-gray-100"
+						class="list-panel-item text-center font-medium"
 					>
 						Continue with {providerLabel(provider)}
 					</a>

@@ -31,10 +31,7 @@
 				{:then { data, error }}
 					{#if data?.data}
 						{#each data.data as template}
-							<button
-								class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-								onclick={() => registerTemplate(type, template)}
-							>
+							<button class="btn-primary" onclick={() => registerTemplate(type, template)}>
 								{template}
 							</button>
 						{/each}

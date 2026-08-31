@@ -16,10 +16,9 @@
 </script>
 
 <header
-	class="sticky top-0 z-15 flex w-full items-center gap-4 p-2 shadow {center || end
+	class="sticky top-0 z-15 flex w-full items-center gap-4 bg-primary p-2 text-primary-foreground shadow {center || end
 		? 'justify-between'
 		: 'justify-center'}"
-	style:background-color={branding.primaryColor}
 >
 	<div class="items-center {showLogoOnMobile ? 'flex' : 'hidden sm:flex'}">
 		<a href="/" class="flex items-center gap-2 text-xl font-bold">
