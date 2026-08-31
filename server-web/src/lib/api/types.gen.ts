@@ -82,7 +82,7 @@ export type ListElementResponse = {
     description: string;
     aliases: Array<string>;
     index: number;
-    activeTo: string;
+    activeTo?: string;
 };
 
 export type ListTypeResponse = {
