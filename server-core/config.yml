@@ -8,10 +8,30 @@ server:
   database:
     # The primary connection to the database, this connection will be used for read/write operations.
     primary:
+      # EXAMPLE CONNECTIONS
+      # SQLite File
       url: jdbc:sqlite:./data/orm_system.db?busy_timeout=5000
+      # PostgreSQL
+      # url: jdbc:postgresql://localhost:5432/orm
+      # username: orm
+      # password: orm
+
+      # MariaDB
+      # url: jdbc:mariadb://localhost:3306/orm
+      # username: orm
+      # password: orm
+
+      # SQL Server (SQL authentication)
+      # url: jdbc:sqlserver://localhost:1433;databaseName=orm;encrypt=true;trustServerCertificate=true
+      # username: orm
+      # password: orm
+
+      # SQL Server (Windows integrated authentication — JVM must run as the Windows user;
+      # requires mssql-jdbc_auth in java.library.path on Windows)
+      # url: jdbc:sqlserver://localhost:1433;databaseName=orm;integratedSecurity=true;encrypt=true;trustServerCertificate=true
     # A connection to a secondary/read-only database, this connection will only be used for read operations.
     read-only:
-      url: jdbc:sqlite:./data/orm_system.db?open_mode=1
+      url:
   plugins:
     # Defines the directory used to load plugins from.
     directory: ./plugins

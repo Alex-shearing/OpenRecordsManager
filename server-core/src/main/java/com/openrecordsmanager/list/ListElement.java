@@ -7,7 +7,7 @@ import jakarta.persistence.*;
 import org.hibernate.annotations.JavaType;
 import org.jspecify.annotations.Nullable;
 
-import java.util.Date;
+import java.time.Instant;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -34,7 +34,7 @@ public class ListElement implements IListElement {
 
     @Column()
     @Nullable
-    private Date activeTo;
+    private Instant activeTo;
 
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(
@@ -53,7 +53,7 @@ public class ListElement implements IListElement {
             String name,
             String description,
             int elementIndex,
-            @Nullable Date activeTo,
+            @Nullable Instant activeTo,
             Set<String> aliases
     ) {
         this.id = id;
@@ -97,11 +97,11 @@ public class ListElement implements IListElement {
         this.elementIndex = elementIndex;
     }
 
-    public @Nullable Date getActiveTo() {
+    public @Nullable Instant getActiveTo() {
         return this.activeTo;
     }
 
-    public void setActiveTo(@Nullable Date activeTo) {
+    public void setActiveTo(@Nullable Instant activeTo) {
         this.activeTo = activeTo;
     }
 

@@ -4,14 +4,14 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import org.jspecify.annotations.Nullable;
 
-import java.util.Date;
+import java.time.Instant;
 import java.util.Set;
 
 public record UpdateListElementRequest(
         @NotBlank String name,
         @NotBlank String description,
         @NotBlank int index,
-        @Nullable Date activeTo,
+        @Nullable Instant activeTo,
         @NotNull Set<String> aliases
 ) {
 }

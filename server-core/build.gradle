@@ -24,6 +24,8 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-aspectj'
     implementation 'org.springframework.boot:spring-boot-starter-flyway'
     runtimeOnly 'org.flywaydb:flyway-sqlserver'
+    runtimeOnly 'org.flywaydb:flyway-database-postgresql'
+    runtimeOnly 'org.flywaydb:flyway-mysql'
 
     // JSON Web Tokens
     implementation 'io.jsonwebtoken:jjwt-api:0.13.0'
@@ -44,6 +46,8 @@ dependencies {
     // Database bundles
     runtimeOnly 'org.xerial:sqlite-jdbc:3.53.1.0'
     runtimeOnly 'com.microsoft.sqlserver:mssql-jdbc:13.4.0.jre11'
+    runtimeOnly 'org.postgresql:postgresql:42.7.10'
+    runtimeOnly 'org.mariadb.jdbc:mariadb-java-client:3.5.7'
 }
 
 testing {
@@ -52,18 +56,37 @@ testing {
             useJUnitJupiter '6.1.0'
 
             dependencies {
-                runtimeOnly 'com.h2database:h2'
                 implementation 'org.springframework.boot:spring-boot-starter-test'
                 implementation 'org.springframework.boot:spring-boot-starter-webmvc-test'
+                implementation 'org.springframework.boot:spring-boot-testcontainers'
+                implementation 'org.testcontainers:testcontainers-junit-jupiter:2.0.5'
+                implementation 'org.testcontainers:testcontainers-postgresql:2.0.5'
+                implementation 'org.testcontainers:testcontainers-mariadb:2.0.5'
+                implementation 'org.testcontainers:testcontainers-mssqlserver:2.0.5'
             }
         }
     }
 }
 
-tasks.withType(ProcessResources).configureEach {
-    duplicatesStrategy = DuplicatesStrategy.INCLUDE
+tasks.named('test', Test) {
+    useJUnitPlatform {
+        excludeTags 'database-migration'
+    }
+    dependsOn parent.tasks.named('copyPlugins')
 }
 
-tasks.named('test') {
+tasks.register('databaseMigrationTest', Test) {
+    group = 'verification'
+    description = 'Runs Flyway migration integration tests for all supported database vendors'
+
+    testClassesDirs = sourceSets.test.output.classesDirs
+    classpath = sourceSets.test.runtimeClasspath
+    useJUnitPlatform {
+        includeTags 'database-migration'
+    }
     dependsOn parent.tasks.named('copyPlugins')
+}
+
+tasks.withType(ProcessResources).configureEach {
+    duplicatesStrategy = DuplicatesStrategy.INCLUDE
 }

@@ -1,14 +1,14 @@
--- Initial schema matching current JPA entities (SQLite)
-CREATE TABLE IF NOT EXISTS system_configurations (
+-- Initial schema matching current JPA entities (MariaDB)
+CREATE TABLE system_configurations (
     config_key VARCHAR(255) NOT NULL PRIMARY KEY,
     config_value VARCHAR(1000)
 );
 
 CREATE TABLE auth_provider (
-    id BLOB NOT NULL PRIMARY KEY,
+    id BINARY(16) NOT NULL PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
     provider_type VARCHAR(255) NOT NULL,
-    settings CLOB NOT NULL,
+    settings JSON NOT NULL,
     enabled BOOLEAN NOT NULL DEFAULT TRUE
 );
 
@@ -25,24 +25,24 @@ CREATE TABLE object_property (
     list_type_id VARCHAR(255),
     validator VARCHAR(255),
     security_filter VARCHAR(255),
-    default_value CLOB,
+    default_value JSON,
     user_hidden BOOLEAN NOT NULL,
     CONSTRAINT fk_object_property_list_type FOREIGN KEY (list_type_id) REFERENCES list_type (id)
 );
 
-CREATE INDEX IF NOT EXISTS idx_object_property_list_type_id ON object_property (list_type_id);
+CREATE INDEX idx_object_property_list_type_id ON object_property (list_type_id);
 
 CREATE TABLE list_element (
     id VARCHAR(255) NOT NULL PRIMARY KEY,
     parent_id VARCHAR(255) NOT NULL,
     name VARCHAR(255) NOT NULL,
     description VARCHAR(255) NOT NULL,
-    element_index INTEGER NOT NULL,
-    active_to TIMESTAMP,
+    element_index INT NOT NULL,
+    active_to DATETIME(6),
     CONSTRAINT fk_list_element_parent FOREIGN KEY (parent_id) REFERENCES list_type (id)
 );
 
-CREATE INDEX IF NOT EXISTS idx_list_element_parent_order ON list_element (parent_id, element_index);
+CREATE INDEX idx_list_element_parent_order ON list_element (parent_id, element_index);
 
 CREATE TABLE list_element_alias (
     list_element_id VARCHAR(255) NOT NULL,
@@ -50,33 +50,33 @@ CREATE TABLE list_element_alias (
     CONSTRAINT fk_list_element_alias_element FOREIGN KEY (list_element_id) REFERENCES list_element (id)
 );
 
-CREATE INDEX IF NOT EXISTS idx_list_element_alias_element ON list_element_alias (list_element_id);
+CREATE INDEX idx_list_element_alias_element ON list_element_alias (list_element_id);
 
 CREATE TABLE record_type (
     id VARCHAR(255) NOT NULL PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
     description VARCHAR(255) NOT NULL,
     security_filter VARCHAR(255),
-    security_filter_usage TINYINT NOT NULL CHECK (security_filter_usage BETWEEN 0 AND 2),
-    content_types CLOB
+    security_filter_usage SMALLINT NOT NULL CHECK (security_filter_usage BETWEEN 0 AND 2),
+    content_types JSON
 );
 
 CREATE TABLE record_type_property (
     record_type VARCHAR(255) NOT NULL,
     property_id VARCHAR(255) NOT NULL,
-    default_value CLOB,
+    default_value JSON,
     CONSTRAINT fk_rtp_record_type FOREIGN KEY (record_type) REFERENCES record_type (id),
     CONSTRAINT fk_rtp_property FOREIGN KEY (property_id) REFERENCES object_property (id)
 );
 
-CREATE INDEX IF NOT EXISTS idx_rtp_property_id ON record_type_property (property_id);
+CREATE INDEX idx_rtp_property_id ON record_type_property (property_id);
 
 CREATE TABLE user_details (
-    id BLOB NOT NULL PRIMARY KEY,
+    id BINARY(16) NOT NULL PRIMARY KEY,
     username VARCHAR(255) NOT NULL UNIQUE,
-    auth_provider_id BLOB,
-    date_created TIMESTAMP NOT NULL,
-    date_modified TIMESTAMP NOT NULL,
+    auth_provider_id BINARY(16),
+    date_created DATETIME(6) NOT NULL,
+    date_modified DATETIME(6) NOT NULL,
     given_name VARCHAR(255),
     surname VARCHAR(255),
     honorific VARCHAR(255),
@@ -86,55 +86,55 @@ CREATE TABLE user_details (
     CONSTRAINT fk_user_auth_provider FOREIGN KEY (auth_provider_id) REFERENCES auth_provider (id)
 );
 
-CREATE INDEX IF NOT EXISTS idx_user_details_auth_provider_id ON user_details (auth_provider_id);
+CREATE INDEX idx_user_details_auth_provider_id ON user_details (auth_provider_id);
 
 CREATE TABLE user_property_value (
-    id BLOB NOT NULL PRIMARY KEY,
-    user_id BLOB NOT NULL,
+    id BINARY(16) NOT NULL PRIMARY KEY,
+    user_id BINARY(16) NOT NULL,
     property_id VARCHAR(255) NOT NULL,
-    property_value CLOB,
+    property_value JSON,
     CONSTRAINT fk_upv_user FOREIGN KEY (user_id) REFERENCES user_details (id),
     CONSTRAINT fk_upv_property FOREIGN KEY (property_id) REFERENCES object_property (id)
 );
 
-CREATE UNIQUE INDEX IF NOT EXISTS uk_user_property_value_user_property ON user_property_value (user_id, property_id);
-CREATE INDEX IF NOT EXISTS idx_upv_property_id ON user_property_value (property_id);
+CREATE UNIQUE INDEX uk_user_property_value_user_property ON user_property_value (user_id, property_id);
+CREATE INDEX idx_upv_property_id ON user_property_value (property_id);
 
 CREATE TABLE auth_token (
     token_value VARCHAR(255) NOT NULL PRIMARY KEY,
-    user_id BLOB NOT NULL,
-    expiry_date TIMESTAMP NOT NULL,
+    user_id BINARY(16) NOT NULL,
+    expiry_date DATETIME(6) NOT NULL,
     CONSTRAINT fk_auth_token_user FOREIGN KEY (user_id) REFERENCES user_details (id)
 );
 
-CREATE INDEX IF NOT EXISTS idx_auth_token_user_id ON auth_token (user_id);
-CREATE INDEX IF NOT EXISTS idx_auth_token_expiry_date ON auth_token (expiry_date);
+CREATE INDEX idx_auth_token_user_id ON auth_token (user_id);
+CREATE INDEX idx_auth_token_expiry_date ON auth_token (expiry_date);
 
 CREATE TABLE file_store (
-    id BLOB NOT NULL PRIMARY KEY,
+    id BINARY(16) NOT NULL PRIMARY KEY,
     type VARCHAR(255) NOT NULL,
-    properties CLOB NOT NULL
+    properties JSON NOT NULL
 );
 
 CREATE TABLE file_store_middleware (
-    id BLOB NOT NULL PRIMARY KEY,
+    id BINARY(16) NOT NULL PRIMARY KEY,
     type VARCHAR(255) NOT NULL,
-    properties CLOB NOT NULL
+    properties JSON NOT NULL
 );
 
 CREATE TABLE file_store_middleware_usage (
-    file_store_id BLOB NOT NULL,
-    middleware_id BLOB NOT NULL,
-    application_order INTEGER,
+    file_store_id BINARY(16) NOT NULL,
+    middleware_id BINARY(16) NOT NULL,
+    application_order INT,
     CONSTRAINT fk_fsmu_store FOREIGN KEY (file_store_id) REFERENCES file_store (id),
     CONSTRAINT fk_fsmu_middleware FOREIGN KEY (middleware_id) REFERENCES file_store_middleware (id)
 );
 
-CREATE INDEX IF NOT EXISTS idx_fsmu_file_store_id ON file_store_middleware_usage (file_store_id);
+CREATE INDEX idx_fsmu_file_store_id ON file_store_middleware_usage (file_store_id);
 
 CREATE TABLE file_store_entry (
-    id BLOB NOT NULL PRIMARY KEY,
-    store_id BLOB NOT NULL,
+    id BINARY(16) NOT NULL PRIMARY KEY,
+    store_id BINARY(16) NOT NULL,
     path VARCHAR(255) NOT NULL,
     hash_algorithm VARCHAR(255) NOT NULL,
     hash VARCHAR(255) NOT NULL,
@@ -143,71 +143,71 @@ CREATE TABLE file_store_entry (
     CONSTRAINT fk_fse_store FOREIGN KEY (store_id) REFERENCES file_store (id)
 );
 
-CREATE INDEX IF NOT EXISTS idx_fse_store_id ON file_store_entry (store_id);
+CREATE INDEX idx_fse_store_id ON file_store_entry (store_id);
 
 CREATE TABLE plugin (
     name VARCHAR(255) NOT NULL PRIMARY KEY,
     version VARCHAR(255) NOT NULL,
-    file_id BLOB NOT NULL UNIQUE,
+    file_id BINARY(16) NOT NULL UNIQUE,
     CONSTRAINT fk_plugin_file FOREIGN KEY (file_id) REFERENCES file_store_entry (id)
 );
 
-CREATE TABLE record (
-    id BLOB NOT NULL PRIMARY KEY,
+CREATE TABLE `record` (
+    id BINARY(16) NOT NULL PRIMARY KEY,
     title VARCHAR(255) NOT NULL,
     type_id VARCHAR(255) NOT NULL,
-    notes CLOB,
-    date_created TIMESTAMP NOT NULL,
-    date_registered TIMESTAMP,
-    date_modified TIMESTAMP NOT NULL,
-    keywords CLOB,
-    mime_types CLOB,
+    notes LONGTEXT,
+    date_created DATETIME(6) NOT NULL,
+    date_registered DATETIME(6),
+    date_modified DATETIME(6) NOT NULL,
+    keywords LONGTEXT,
+    mime_types JSON,
     CONSTRAINT fk_record_type FOREIGN KEY (type_id) REFERENCES record_type (id)
 );
 
-CREATE INDEX IF NOT EXISTS idx_record_type_id ON record (type_id);
+CREATE INDEX idx_record_type_id ON `record` (type_id);
 
 CREATE TABLE record_property_value (
-    id BLOB NOT NULL PRIMARY KEY,
-    record_id BLOB NOT NULL,
+    id BINARY(16) NOT NULL PRIMARY KEY,
+    record_id BINARY(16) NOT NULL,
     property_id VARCHAR(255) NOT NULL,
-    property_value CLOB,
-    CONSTRAINT fk_rpv_record FOREIGN KEY (record_id) REFERENCES record (id),
+    property_value JSON,
+    CONSTRAINT fk_rpv_record FOREIGN KEY (record_id) REFERENCES `record` (id),
     CONSTRAINT fk_rpv_property FOREIGN KEY (property_id) REFERENCES object_property (id)
 );
 
-CREATE UNIQUE INDEX IF NOT EXISTS uk_record_property_value_record_property ON record_property_value (record_id, property_id);
-CREATE INDEX IF NOT EXISTS idx_rpv_property_id ON record_property_value (property_id);
+CREATE UNIQUE INDEX uk_record_property_value_record_property ON record_property_value (record_id, property_id);
+CREATE INDEX idx_rpv_property_id ON record_property_value (property_id);
 
 CREATE TABLE record_revision (
-    id BLOB NOT NULL PRIMARY KEY,
+    id BINARY(16) NOT NULL PRIMARY KEY,
     version VARCHAR(255) NOT NULL,
-    created_date TIMESTAMP NOT NULL,
-    record_id BLOB NOT NULL,
-    file_id BLOB NOT NULL UNIQUE,
+    created_date DATETIME(6) NOT NULL,
+    record_id BINARY(16) NOT NULL,
+    file_id BINARY(16) NOT NULL UNIQUE,
     CONSTRAINT uk_record_version UNIQUE (record_id, version),
-    CONSTRAINT fk_rr_record FOREIGN KEY (record_id) REFERENCES record (id),
+    CONSTRAINT fk_rr_record FOREIGN KEY (record_id) REFERENCES `record` (id),
     CONSTRAINT fk_rr_file FOREIGN KEY (file_id) REFERENCES file_store_entry (id)
 );
 
 CREATE TABLE audit_event (
-    id BLOB NOT NULL PRIMARY KEY,
-    occurred_at TIMESTAMP NOT NULL,
-    actor_id BLOB,
+    id BINARY(16) NOT NULL PRIMARY KEY,
+    occurred_at DATETIME(6) NOT NULL,
+    actor_id BINARY(16),
     actor_username VARCHAR(255),
     operation VARCHAR(50) NOT NULL,
     target_type VARCHAR(100) NOT NULL,
     target_id VARCHAR(255) NOT NULL,
     action_id VARCHAR(255),
     summary VARCHAR(1000) NOT NULL,
-    changes CLOB,
-    relationships CLOB,
+    changes LONGTEXT,
+    relationships LONGTEXT,
     comment VARCHAR(2000),
-    metadata CLOB
+    metadata LONGTEXT
 );
 
-CREATE INDEX IF NOT EXISTS idx_audit_event_target ON audit_event (target_type, target_id, occurred_at DESC);
-CREATE INDEX IF NOT EXISTS idx_audit_event_actor ON audit_event (actor_id, occurred_at DESC);
+CREATE INDEX idx_audit_event_target ON audit_event (target_type, target_id, occurred_at DESC);
+CREATE INDEX idx_audit_event_actor ON audit_event (actor_id, occurred_at DESC);
 
 CREATE TABLE audit_policy (
     entity_type VARCHAR(100) NOT NULL,

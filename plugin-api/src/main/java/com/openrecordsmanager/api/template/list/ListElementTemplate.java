@@ -6,13 +6,17 @@ import com.openrecordsmanager.api.ComponentReference;
 import com.openrecordsmanager.api.template.TemplateComponent;
 import org.jspecify.annotations.Nullable;
 
-import java.util.*;
+import java.time.Instant;
+import java.util.Calendar;
+import java.util.HashSet;
+import java.util.Objects;
+import java.util.Set;
 
 public record ListElementTemplate(
         String name,
         @JsonSetter(nulls = Nulls.AS_EMPTY) String description,
         int index,
-        @Nullable Date activeTo,
+        @Nullable Instant activeTo,
         @JsonSetter(nulls = Nulls.AS_EMPTY) Set<String> aliases,
         ComponentReference<ListTemplate> parent
 ) implements TemplateComponent {
@@ -56,7 +60,7 @@ public record ListElementTemplate(
         private String description = "";
         private int index = 0;
         @Nullable
-        private Date activeTo = null;
+        private Instant activeTo = null;
 
         public Builder(ListTemplate.Builder parentBuilder, String id, String name) {
             this.parentBuilder = parentBuilder;
@@ -79,8 +83,13 @@ public record ListElementTemplate(
             return this;
         }
 
+        public Builder activeTo(Instant activeTo) {
+            this.activeTo = activeTo;
+            return this;
+        }
+
         public Builder activeTo(Calendar activeTo) {
-            this.activeTo = activeTo.getTime();
+            this.activeTo = activeTo.toInstant();
             return this;
         }
 

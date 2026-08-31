@@ -4,8 +4,9 @@ import com.openrecordsmanager.api.ResourceIdentifier;
 import com.openrecordsmanager.list.ListElement;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import org.jspecify.annotations.Nullable;
 
-import java.util.Date;
+import java.time.Instant;
 import java.util.Set;
 
 public record ListElementResponse(
@@ -14,7 +15,7 @@ public record ListElementResponse(
         @NotBlank String description,
         @NotNull Set<String> aliases,
         @NotNull int index,
-        @NotNull Date activeTo) {
+        @Nullable Instant activeTo) {
 
 
     public static ListElementResponse of(ListElement element) {

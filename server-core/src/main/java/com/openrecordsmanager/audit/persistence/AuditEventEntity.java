@@ -5,6 +5,8 @@ import com.openrecordsmanager.api.audit.AuditOperation;
 import com.openrecordsmanager.database.util.ResourceIdentifierJavaType;
 import jakarta.persistence.*;
 import org.hibernate.annotations.JavaType;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 import org.jspecify.annotations.Nullable;
 
 import java.time.Instant;
@@ -47,11 +49,13 @@ public class AuditEventEntity {
     @Column(nullable = false, length = 1000)
     public String summary;
 
-    @Column(columnDefinition = "CLOB")
+    @JdbcTypeCode(SqlTypes.LONG32VARCHAR)
+    @Column
     @Nullable
     public String changes;
 
-    @Column(columnDefinition = "CLOB")
+    @JdbcTypeCode(SqlTypes.LONG32VARCHAR)
+    @Column
     @Nullable
     public String relationships;
 
@@ -59,7 +63,8 @@ public class AuditEventEntity {
     @Nullable
     public String comment;
 
-    @Column(columnDefinition = "CLOB")
+    @JdbcTypeCode(SqlTypes.LONG32VARCHAR)
+    @Column
     @Nullable
     public String metadata;
 

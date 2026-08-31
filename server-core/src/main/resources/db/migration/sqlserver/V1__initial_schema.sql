@@ -12,7 +12,7 @@ CREATE TABLE auth_provider (
     id UNIQUEIDENTIFIER NOT NULL PRIMARY KEY,
     name NVARCHAR(255) NOT NULL,
     provider_type NVARCHAR(255) NOT NULL,
-    settings NVARCHAR(MAX) NOT NULL,
+    settings VARCHAR(MAX) NOT NULL,
     enabled BIT NOT NULL CONSTRAINT df_auth_provider_enabled DEFAULT 1
 );
 GO
@@ -31,10 +31,13 @@ CREATE TABLE object_property (
     list_type_id NVARCHAR(255) NULL,
     validator NVARCHAR(255) NULL,
     security_filter NVARCHAR(255) NULL,
-    default_value NVARCHAR(MAX) NULL,
+    default_value VARCHAR(MAX) NULL,
     user_hidden BIT NOT NULL,
     CONSTRAINT fk_object_property_list_type FOREIGN KEY (list_type_id) REFERENCES list_type (id)
 );
+GO
+
+CREATE INDEX idx_object_property_list_type_id ON object_property (list_type_id);
 GO
 
 CREATE TABLE list_element (
@@ -43,9 +46,12 @@ CREATE TABLE list_element (
     name NVARCHAR(255) NOT NULL,
     description NVARCHAR(255) NOT NULL,
     element_index INT NOT NULL,
-    active_to DATETIME2 NULL,
+    active_to DATETIMEOFFSET NULL,
     CONSTRAINT fk_list_element_parent FOREIGN KEY (parent_id) REFERENCES list_type (id)
 );
+GO
+
+CREATE INDEX idx_list_element_parent_order ON list_element (parent_id, element_index);
 GO
 
 CREATE TABLE list_element_alias (
@@ -55,31 +61,37 @@ CREATE TABLE list_element_alias (
 );
 GO
 
+CREATE INDEX idx_list_element_alias_element ON list_element_alias (list_element_id);
+GO
+
 CREATE TABLE record_type (
     id NVARCHAR(255) NOT NULL PRIMARY KEY,
     name NVARCHAR(255) NOT NULL,
     description NVARCHAR(255) NOT NULL,
     security_filter NVARCHAR(255) NULL,
     security_filter_usage TINYINT NOT NULL CHECK (security_filter_usage BETWEEN 0 AND 2),
-    content_types NVARCHAR(MAX) NULL
+    content_types VARCHAR(MAX) NULL
 );
 GO
 
 CREATE TABLE record_type_property (
     record_type NVARCHAR(255) NOT NULL,
     property_id NVARCHAR(255) NOT NULL,
-    default_value NVARCHAR(MAX) NULL,
+    default_value VARCHAR(MAX) NULL,
     CONSTRAINT fk_rtp_record_type FOREIGN KEY (record_type) REFERENCES record_type (id),
     CONSTRAINT fk_rtp_property FOREIGN KEY (property_id) REFERENCES object_property (id)
 );
+GO
+
+CREATE INDEX idx_rtp_property_id ON record_type_property (property_id);
 GO
 
 CREATE TABLE user_details (
     id UNIQUEIDENTIFIER NOT NULL PRIMARY KEY,
     username NVARCHAR(255) NOT NULL UNIQUE,
     auth_provider_id UNIQUEIDENTIFIER NULL,
-    date_created DATETIME2 NOT NULL,
-    date_modified DATETIME2 NOT NULL,
+    date_created DATETIMEOFFSET NOT NULL,
+    date_modified DATETIMEOFFSET NOT NULL,
     given_name NVARCHAR(255) NULL,
     surname NVARCHAR(255) NULL,
     honorific NVARCHAR(255) NULL,
@@ -90,35 +102,50 @@ CREATE TABLE user_details (
 );
 GO
 
+CREATE INDEX idx_user_details_auth_provider_id ON user_details (auth_provider_id);
+GO
+
 CREATE TABLE user_property_value (
     id UNIQUEIDENTIFIER NOT NULL PRIMARY KEY,
     user_id UNIQUEIDENTIFIER NOT NULL,
     property_id NVARCHAR(255) NOT NULL,
-    property_value NVARCHAR(MAX) NULL,
+    property_value VARCHAR(MAX) NULL,
     CONSTRAINT fk_upv_user FOREIGN KEY (user_id) REFERENCES user_details (id),
     CONSTRAINT fk_upv_property FOREIGN KEY (property_id) REFERENCES object_property (id)
 );
 GO
 
+CREATE UNIQUE INDEX uk_user_property_value_user_property ON user_property_value (user_id, property_id);
+GO
+
+CREATE INDEX idx_upv_property_id ON user_property_value (property_id);
+GO
+
 CREATE TABLE auth_token (
     token_value NVARCHAR(255) NOT NULL PRIMARY KEY,
     user_id UNIQUEIDENTIFIER NOT NULL,
-    expiry_date DATETIME2 NOT NULL,
+    expiry_date DATETIMEOFFSET NOT NULL,
     CONSTRAINT fk_auth_token_user FOREIGN KEY (user_id) REFERENCES user_details (id)
 );
+GO
+
+CREATE INDEX idx_auth_token_user_id ON auth_token (user_id);
+GO
+
+CREATE INDEX idx_auth_token_expiry_date ON auth_token (expiry_date);
 GO
 
 CREATE TABLE file_store (
     id UNIQUEIDENTIFIER NOT NULL PRIMARY KEY,
     type NVARCHAR(255) NOT NULL,
-    properties NVARCHAR(MAX) NOT NULL
+    properties VARCHAR(MAX) NOT NULL
 );
 GO
 
 CREATE TABLE file_store_middleware (
     id UNIQUEIDENTIFIER NOT NULL PRIMARY KEY,
     type NVARCHAR(255) NOT NULL,
-    properties NVARCHAR(MAX) NOT NULL
+    properties VARCHAR(MAX) NOT NULL
 );
 GO
 
@@ -129,6 +156,9 @@ CREATE TABLE file_store_middleware_usage (
     CONSTRAINT fk_fsmu_store FOREIGN KEY (file_store_id) REFERENCES file_store (id),
     CONSTRAINT fk_fsmu_middleware FOREIGN KEY (middleware_id) REFERENCES file_store_middleware (id)
 );
+GO
+
+CREATE INDEX idx_fsmu_file_store_id ON file_store_middleware_usage (file_store_id);
 GO
 
 CREATE TABLE file_store_entry (
@@ -143,6 +173,9 @@ CREATE TABLE file_store_entry (
 );
 GO
 
+CREATE INDEX idx_fse_store_id ON file_store_entry (store_id);
+GO
+
 CREATE TABLE plugin (
     name NVARCHAR(255) NOT NULL PRIMARY KEY,
     version NVARCHAR(255) NOT NULL,
@@ -155,24 +188,33 @@ CREATE TABLE record (
     id UNIQUEIDENTIFIER NOT NULL PRIMARY KEY,
     title NVARCHAR(255) NOT NULL,
     type_id NVARCHAR(255) NOT NULL,
-    notes NVARCHAR(MAX) NULL,
-    date_created DATETIME2 NOT NULL,
-    date_registered DATETIME2 NULL,
-    date_modified DATETIME2 NOT NULL,
-    keywords NVARCHAR(MAX) NULL,
-    mime_types NVARCHAR(MAX) NULL,
+    notes VARCHAR(MAX) NULL,
+    date_created DATETIMEOFFSET NOT NULL,
+    date_registered DATETIMEOFFSET NULL,
+    date_modified DATETIMEOFFSET NOT NULL,
+    keywords VARCHAR(MAX) NULL,
+    mime_types VARCHAR(MAX) NULL,
     CONSTRAINT fk_record_type FOREIGN KEY (type_id) REFERENCES record_type (id)
 );
+GO
+
+CREATE INDEX idx_record_type_id ON record (type_id);
 GO
 
 CREATE TABLE record_property_value (
     id UNIQUEIDENTIFIER NOT NULL PRIMARY KEY,
     record_id UNIQUEIDENTIFIER NOT NULL,
     property_id NVARCHAR(255) NOT NULL,
-    property_value NVARCHAR(MAX) NULL,
+    property_value VARCHAR(MAX) NULL,
     CONSTRAINT fk_rpv_record FOREIGN KEY (record_id) REFERENCES record (id),
     CONSTRAINT fk_rpv_property FOREIGN KEY (property_id) REFERENCES object_property (id)
 );
+GO
+
+CREATE UNIQUE INDEX uk_record_property_value_record_property ON record_property_value (record_id, property_id);
+GO
+
+CREATE INDEX idx_rpv_property_id ON record_property_value (property_id);
 GO
 
 CREATE TABLE record_revision (
@@ -197,10 +239,10 @@ CREATE TABLE audit_event (
     target_id NVARCHAR(255) NOT NULL,
     action_id NVARCHAR(255) NULL,
     summary NVARCHAR(1000) NOT NULL,
-    changes NVARCHAR(MAX) NULL,
-    relationships NVARCHAR(MAX) NULL,
+    changes VARCHAR(MAX) NULL,
+    relationships VARCHAR(MAX) NULL,
     comment NVARCHAR(2000) NULL,
-    metadata NVARCHAR(MAX) NULL
+    metadata VARCHAR(MAX) NULL
 );
 GO
 

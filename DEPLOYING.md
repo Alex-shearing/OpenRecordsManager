@@ -31,6 +31,31 @@ unzip orm-web-static-*.zip -d static
 
 Browse http://localhost:8080. Same-origin API calls use the empty `apiBaseUrl` baked into `index.html`.
 
+### PostgreSQL, MariaDB, or SQL Server (Docker)
+
+Each database runs as an optional Compose profile. Pass the matching env file so the API connects to that service:
+
+```bash
+# PostgreSQL
+docker compose --profile postgres --env-file docker/env/postgres.env up --build
+
+# MariaDB
+docker compose --profile mariadb --env-file docker/env/mariadb.env up --build
+
+# SQL Server (SQL authentication; schema migrates into master for local dev)
+docker compose --profile sqlserver --env-file docker/env/sqlserver.env up --build
+```
+
+Or set the same variables yourself (see commented examples in [`server-core/config.yml`](server-core/config.yml)):
+
+```bash
+export SERVER_DATABASE_PRIMARY_URL=jdbc:postgresql://localhost:5432/orm
+export SERVER_DATABASE_PRIMARY_USERNAME=orm
+export SERVER_DATABASE_PRIMARY_PASSWORD=orm
+export SERVER_DATABASE_READ_ONLY_URL=
+./gradlew bootRun
+```
+
 ### Option B — Host the static files yourself
 
 Unpack `orm-web-static-*.zip` into your web root and use the samples shipped inside that zip:
@@ -40,8 +65,8 @@ Unpack `orm-web-static-*.zip` into your web root and use the samples shipped ins
 
 For a **same-origin** setup, proxy `/api` to the JAR and leave `apiBaseUrl` empty in `index.html` (`window.__ORM_UI__`).
 
-For a **cross-origin** setup, patch `apiBaseUrl` in `index.html` to the public API URL and allow the UI
-origin in `app.security.cors` settings.
+For a **cross-origin** setup, patch `apiBaseUrl` in `index.html` to the public API URL and allow the UI origin in
+`app.security.cors` settings.
 
 You can still place a `config.yml` next to the API process for non-Docker installs; env vars override it. Web branding
 keys are **not** under `server.*`, so they can also be set centrally in the database via the config API.

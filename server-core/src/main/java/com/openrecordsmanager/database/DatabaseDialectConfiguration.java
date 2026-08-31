@@ -49,14 +49,17 @@ public class DatabaseDialectConfiguration {
 
     private static String dialectClassName(String jdbcUrl) {
         String url = jdbcUrl.toLowerCase();
-        if (url.contains(":h2:")) {
-            return "org.hibernate.dialect.H2Dialect";
-        }
         if (url.contains("sqlite")) {
             return "org.hibernate.community.dialect.SQLiteDialect";
         }
         if (url.contains("sqlserver")) {
             return "org.hibernate.dialect.SQLServerDialect";
+        }
+        if (url.contains("postgresql") || url.contains("postgres")) {
+            return "org.hibernate.dialect.PostgreSQLDialect";
+        }
+        if (url.contains("mariadb") || url.contains("mysql")) {
+            return "org.hibernate.dialect.MariaDBDialect";
         }
         throw new IllegalStateException("Unsupported database URL for Hibernate dialect: " + jdbcUrl);
     }

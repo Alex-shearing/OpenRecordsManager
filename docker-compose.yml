@@ -1,3 +1,10 @@
+# Default stack (SQLite):  docker compose up --build
+#
+# Other databases — start the matching profile and env file:
+#   docker compose --profile postgres --env-file docker/env/postgres.env up --build
+#   docker compose --profile mariadb  --env-file docker/env/mariadb.env  up --build
+#   docker compose --profile sqlserver --env-file docker/env/sqlserver.env up --build
+
 services:
   api:
     build:
@@ -8,17 +15,85 @@ services:
     volumes:
       - api-data:/app/data
     environment:
-      SERVER_DATABASE_PRIMARY_URL: jdbc:sqlite:/app/data/orm_system.db?busy_timeout=5000
-      SERVER_DATABASE_READ_ONLY_URL: jdbc:sqlite:/app/data/orm_system.db?open_mode=1
+      SERVER_DATABASE_PRIMARY_URL: ${SERVER_DATABASE_PRIMARY_URL:-jdbc:sqlite:/app/data/orm_system.db?busy_timeout=5000}
+      SERVER_DATABASE_PRIMARY_USERNAME: ${SERVER_DATABASE_PRIMARY_USERNAME:-}
+      SERVER_DATABASE_PRIMARY_PASSWORD: ${SERVER_DATABASE_PRIMARY_PASSWORD:-}
+      SERVER_DATABASE_READ_ONLY_URL: ${SERVER_DATABASE_READ_ONLY_URL:-jdbc:sqlite:/app/data/orm_system.db?open_mode=1}
       SERVER_PLUGINS_DIRECTORY: /app/plugins
       SERVER_WEB_DIRECTORY: ""
       APP_LOGGING_PATH: /app/data/logs/openrecordsmanager.log
+    depends_on:
+      postgres:
+        condition: service_healthy
+        required: false
+      mariadb:
+        condition: service_healthy
+        required: false
+      sqlserver:
+        condition: service_healthy
+        required: false
     healthcheck:
       test: ["CMD", "curl", "-fsS", "http://127.0.0.1:8080/api/health/liveness"]
       interval: 30s
       timeout: 5s
       retries: 3
-      start_period: 60s
+      start_period: 90s
+
+  postgres:
+    profiles: [postgres]
+    image: postgres:16-alpine
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: orm
+      POSTGRES_USER: orm
+      POSTGRES_PASSWORD: orm
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U orm -d orm"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  mariadb:
+    profiles: [mariadb]
+    image: mariadb:11
+    ports:
+      - "3306:3306"
+    environment:
+      MARIADB_DATABASE: orm
+      MARIADB_USER: orm
+      MARIADB_PASSWORD: orm
+      MARIADB_ROOT_PASSWORD: root
+    volumes:
+      - mariadb-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  sqlserver:
+    profiles: [sqlserver]
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    ports:
+      - "1433:1433"
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_SA_PASSWORD: "Orm_dev_password1!"
+    volumes:
+      - sqlserver-data:/var/opt/mssql
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          '/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P "$$MSSQL_SA_PASSWORD" -C -Q "SELECT 1" || exit 1',
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 40s
 
   web:
     build:
@@ -34,3 +109,6 @@ services:
 
 volumes:
   api-data:
+  postgres-data:
+  mariadb-data:
+  sqlserver-data:

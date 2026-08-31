@@ -68,7 +68,7 @@ public class Record extends ObjectPropertyHolder<Record, RecordPropertyValue<?>>
     private RecordType type;
 
     @Column
-    @Lob
+    @JdbcTypeCode(SqlTypes.LONG32VARCHAR)
     @Nullable
     private String notes;
 
@@ -83,7 +83,7 @@ public class Record extends ObjectPropertyHolder<Record, RecordPropertyValue<?>>
     private Instant dateModified;
 
     @Column
-    @Lob
+    @JdbcTypeCode(SqlTypes.LONG32VARCHAR)
     @Nullable
     private String keywords;
 
