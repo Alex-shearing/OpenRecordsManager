@@ -50,12 +50,12 @@ public class ConfigService implements ConfigStore {
     }
 
     @Transactional
-    public ConfigResponse setConfig(String id, String value) {
+    public ConfigResponse setConfig(String id, Object value) {
         if (AuditContext.isCaptureEnabled()) {
             this.auditPolicyService.validateCommentRequired(AuditEntityType.CONFIG, AuditOperation.UPDATE);
         }
         ConfigItem oldConfig = this.repository.configRepo.findByConfigKey(id).orElse(null);
-        String oldValue = oldConfig == null ? null : oldConfig.configValue;
+        Object oldValue = oldConfig == null ? null : oldConfig.getValue();
 
         ConfigItem configItem = oldConfig != null ? oldConfig : new ConfigItem(this.catalog, id, value);
         configItem.setValue(catalog, value);
@@ -66,7 +66,7 @@ public class ConfigService implements ConfigStore {
                 AuditOperation.UPDATE,
                 AuditEntityType.CONFIG,
                 id,
-                AuditEventDescriptions.singleChange("configValue", oldValue, value),
+                AuditEventDescriptions.singleChange("configValue", oldValue, configItem.getValue()),
                 null,
                 null
         );
@@ -76,9 +76,14 @@ public class ConfigService implements ConfigStore {
 
     @Override
     public <T> @Nullable T getValue(ConfigType<T> key) {
-        T value = this.environment.getProperty(key.key(), key.type().cType);
-        System.out.println(value);
-        return value != null ? value : key.defaultValue();
+        String envRaw = this.environment.getProperty(key.key());
+        if (envRaw != null) {
+            T fromEnv = key.type().parseValue(envRaw);
+            if (fromEnv != null) {
+                return fromEnv;
+            }
+        }
+        return key.defaultValue();
     }
 
     private Optional<ConfigType<?>> getConfigByKey(String key) {
@@ -94,10 +99,11 @@ public class ConfigService implements ConfigStore {
                 .map(cfg -> {
                     ConfigType<T> cfgT = (ConfigType<T>) cfg;
 
-                    Optional<T> db = this.repository.configRepo.findByConfigKey(cfg.key())
-                            .map(configItem -> cfgT.type().fromString(configItem.configValue))
-                            .orElse(Optional.ofNullable(cfgT.defaultValue()));
-                    return ConfigTypeResponse.from(cfgT, db.orElse(null));
+                    T current = this.repository.configRepo.findByConfigKey(cfg.key())
+                            .map(ConfigItem::getValue)
+                            .map(cfgT.type()::parseValue)
+                            .orElse(cfgT.defaultValue());
+                    return ConfigTypeResponse.from(cfgT, current);
                 })
                 .collect(Collectors.toSet());
         this.auditService.recordCollectionRead(AuditEntityType.CONFIG, results.size());

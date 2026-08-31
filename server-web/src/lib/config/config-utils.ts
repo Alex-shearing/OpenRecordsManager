@@ -48,40 +48,43 @@ export function formatConfigValueForInput(config: ConfigTypeResponse): string {
 	const value = config.currentValue ?? config.defaultValue;
 
 	switch (config.type) {
-		case 'BOOL':
+		case 'boolean':
 			return value === true || value === 'true' ? 'true' : 'false';
-		case 'STRING_LIST':
-		case 'INT_LIST':
+		case 'string_list':
+		case 'int_list':
 			if (Array.isArray(value)) {
 				return value.map(String).join('\n');
 			}
-			if (typeof value === 'string') {
-				return value
-					.split(';')
-					.map((entry) => entry.trim())
-					.filter(Boolean)
-					.join('\n');
-			}
 			return '';
-		case 'INT':
-		case 'DOUBLE':
+		case 'number':
+		case 'decimal':
 			return value == null || value === '' ? '' : String(value);
 		default:
 			return value == null ? '' : String(value);
 	}
 }
 
-export function serializeConfigValue(type: ConfigTypeResponse['type'], input: string): string {
+export function serializeConfigValue(type: ConfigTypeResponse['type'], input: string): unknown {
 	switch (type) {
-		case 'BOOL':
-			return input === 'true' ? 'true' : 'false';
-		case 'STRING_LIST':
-		case 'INT_LIST':
+		case 'boolean':
+			return input === 'true';
+		case 'string_list':
+			return input
+				.split(/\r?\n/)
+				.map((entry) => entry.trim())
+				.filter(Boolean);
+		case 'int_list':
 			return input
 				.split(/\r?\n/)
 				.map((entry) => entry.trim())
 				.filter(Boolean)
-				.join(';');
+				.map(Number);
+		case 'number':
+			return input.trim() === '' ? null : Number.parseInt(input.trim(), 10);
+		case 'decimal':
+			return input.trim() === '' ? null : Number.parseFloat(input.trim());
+		case 'uuid':
+			return input.trim();
 		default:
 			return input.trim();
 	}
@@ -92,12 +95,9 @@ export function formatConfigValueForDisplay(value: unknown, type: ConfigTypeResp
 		return '—';
 	}
 
-	if (type === 'STRING_LIST' || type === 'INT_LIST') {
+	if (type === 'string_list' || type === 'int_list') {
 		if (Array.isArray(value)) {
 			return value.map(String).join(', ');
-		}
-		if (typeof value === 'string') {
-			return value.split(';').join(', ');
 		}
 	}
 
@@ -128,5 +128,5 @@ export function configValuesEqual(
 	left: string,
 	right: string
 ): boolean {
-	return serializeConfigValue(type, left) === serializeConfigValue(type, right);
+	return JSON.stringify(serializeConfigValue(type, left)) === JSON.stringify(serializeConfigValue(type, right));
 }

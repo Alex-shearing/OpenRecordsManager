@@ -336,7 +336,7 @@ export type ConfigTypeResponse = {
     currentValue?: unknown;
     description: string;
     defaultValue?: unknown;
-    type: 'STRING' | 'INT' | 'DOUBLE' | 'BOOL' | 'UUID' | 'STRING_LIST' | 'INT_LIST' | 'UNKNOWN';
+    type: 'string' | 'boolean' | 'number' | 'decimal' | 'uuid' | 'string_list' | 'int_list' | 'object';
 };
 
 export type AuditStatusResponse = {
@@ -2298,7 +2298,7 @@ export type GetConfigResponses = {
 export type GetConfigResponse = GetConfigResponses[keyof GetConfigResponses];
 
 export type SetConfigData = {
-    body: string;
+    body: unknown;
     path: {
         id: string;
     };

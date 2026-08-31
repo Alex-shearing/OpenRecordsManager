@@ -56,8 +56,8 @@ public class RestConfiguration {
 
     private final DataRepository repository;
     private final AuthService authService;
-    private final String[] allowedOrigins;
-    private final String[] allowedHeaders;
+    private final List<String> allowedOrigins;
+    private final List<String> allowedHeaders;
     private final boolean cookieSecure;
 
     public RestConfiguration(
@@ -88,8 +88,8 @@ public class RestConfiguration {
             configuration.addAllowedMethod(method);
         }
 
-        configuration.setAllowedOrigins(List.of(this.allowedOrigins));
-        configuration.setAllowedHeaders(List.of(this.allowedHeaders));
+        configuration.setAllowedOrigins(this.allowedOrigins);
+        configuration.setAllowedHeaders(this.allowedHeaders);
         configuration.setAllowCredentials(true);
         // Required for browser preflights from localhost / private-network contexts
         configuration.setAllowPrivateNetwork(true);

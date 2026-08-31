@@ -182,7 +182,7 @@ public class ObjectPropertyService {
                 listType,
                 validator,
                 securityFilter,
-                type.cast(defaultValue),
+                type.parseValue(defaultValue),
                 userHidden
         );
     }
@@ -192,7 +192,7 @@ public class ObjectPropertyService {
         property.setDescription(input.description());
         property.setValidator(input.validator());
         property.setSecurityFilter(input.securityFilter());
-        property.setDefaultValue(property.getType().cast(input.defaultValue()));
+        property.setDefaultValue(property.getType().parseValue(input.defaultValue()));
         property.setUserHidden(input.userHidden());
     }
 }

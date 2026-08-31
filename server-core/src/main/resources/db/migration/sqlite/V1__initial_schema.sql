@@ -1,7 +1,7 @@
 -- Initial schema matching current JPA entities (SQLite)
 CREATE TABLE IF NOT EXISTS system_configurations (
     config_key VARCHAR(255) NOT NULL PRIMARY KEY,
-    config_value VARCHAR(1000)
+    config_value CLOB
 );
 
 CREATE TABLE auth_provider (

@@ -36,9 +36,9 @@ public class ConfigController {
         return this.config.getDatabaseConfig(id);
     }
 
-    @PutMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @PutMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Set a config value in the database")
-    public ConfigResponse setConfig(@PathVariable("id") String id, @RequestBody String value) {
+    public ConfigResponse setConfig(@PathVariable("id") String id, @RequestBody Object value) {
         return this.config.setConfig(id, value);
     }
 

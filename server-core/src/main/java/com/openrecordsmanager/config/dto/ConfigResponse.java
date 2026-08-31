@@ -5,6 +5,6 @@ import jakarta.validation.constraints.NotBlank;
 
 public record ConfigResponse(@NotBlank String key, @NotBlank Object value) {
     public static ConfigResponse of(ConfigItem item) {
-        return new ConfigResponse(item.configKey, item.configValue);
+        return new ConfigResponse(item.getKey(), item.getValue());
     }
 }

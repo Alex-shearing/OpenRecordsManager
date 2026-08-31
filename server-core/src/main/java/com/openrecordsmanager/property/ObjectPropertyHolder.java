@@ -20,14 +20,14 @@ public abstract class ObjectPropertyHolder<SELF extends ObjectPropertyHolder<SEL
         BuiltinPropertyMapper<SELF, ?> builtinMapper = this.getBuiltinPropertyMappers().get(property.getId());
 
         if (builtinMapper != null) {
-            return property.getType().cast(builtinMapper.get(this.self()));
+            return property.getType().parseValue(builtinMapper.get(this.self()));
         }
 
         T value = this.getDynamicProperties().get(property);
         if (value == null) {
             return null;
         }
-        return property.getType().cast(value.getValue());
+        return property.getType().parseValue(value.getValue());
     }
 
     public abstract boolean canSetProperty(ObjectProperty<?> property);
@@ -73,7 +73,7 @@ public abstract class ObjectPropertyHolder<SELF extends ObjectPropertyHolder<SEL
     }
 
     public final <K> @Nullable K setPropertyUntyped(ObjectProperty<K> property, @Nullable Object value) {
-        K newValue = property.getType().cast(value);
+        K newValue = property.getType().parseValue(value);
         this.setProperty(property, newValue);
         return newValue;
     }
@@ -88,7 +88,7 @@ public abstract class ObjectPropertyHolder<SELF extends ObjectPropertyHolder<SEL
         void setValue(@Nullable T value);
 
         default void setValueUntyped(@Nullable Object value) {
-            this.setValue(this.getProperty().getType().cast(value));
+            this.setValue(this.getProperty().getType().parseValue(value));
         }
     }
 

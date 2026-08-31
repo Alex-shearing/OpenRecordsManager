@@ -1,7 +1,7 @@
 -- Initial schema matching current JPA entities (MariaDB)
 CREATE TABLE system_configurations (
     config_key VARCHAR(255) NOT NULL PRIMARY KEY,
-    config_value VARCHAR(1000)
+    config_value JSON
 );
 
 CREATE TABLE auth_provider (

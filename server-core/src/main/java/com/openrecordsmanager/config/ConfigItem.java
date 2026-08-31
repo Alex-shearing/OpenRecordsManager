@@ -10,6 +10,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
+import org.jspecify.annotations.Nullable;
 
 import java.text.MessageFormat;
 
@@ -19,19 +20,24 @@ public class ConfigItem {
 
     @Id
     @Column(name = "config_key", unique = true, nullable = false)
-    public String configKey;
+    private String configKey;
 
     @Column(name = "config_value")
     @JdbcTypeCode(SqlTypes.JSON)
-    public String configValue;
+    @Nullable
+    private Object configValue;
 
     @Deprecated
     protected ConfigItem() {
     }
 
-    public ConfigItem(ComponentCatalog catalog, String configKey, String configValue) {
+    public ConfigItem(ComponentCatalog catalog, String configKey, Object configValue) {
         this.configKey = configKey;
         this.setValue(catalog, configValue);
+    }
+
+    public String getKey() {
+        return this.configKey;
     }
 
     public ConfigType<?> getConfigKey(ComponentCatalog catalog) {
@@ -41,22 +47,19 @@ public class ConfigItem {
                 .orElseThrow(() -> new ResourceNotFoundException(ComponentTypes.CONFIG, this.configKey));
     }
 
-    public Object getValue(ComponentCatalog catalog) {
-        ConfigType<?> key = this.getConfigKey(catalog);
-        return key.type().fromString(this.configValue)
-                .orElseThrow(() -> new IllegalArgumentException(MessageFormat.format(
-                        "Unable to parse configuration value as {0}",
-                        key.type().toString()
-                )));
+    public @Nullable Object getValue() {
+        return this.configValue;
     }
 
-    public void setValue(ComponentCatalog catalog, String value) {
+    public void setValue(ComponentCatalog catalog, @Nullable Object value) {
         ConfigType<?> key = this.getConfigKey(catalog);
-        key.type().fromString(value)
-                .orElseThrow(() -> new IllegalArgumentException(MessageFormat.format(
-                        "Unable to parse configuration value as {0}",
-                        key.type().toString()
-                )));
-        this.configValue = value;
+        Object parsed = key.type().parseValue(value);
+        if (parsed == null && value != null) {
+            throw new IllegalArgumentException(MessageFormat.format(
+                    "Unable to parse configuration value as {0}",
+                    key.type().getName()
+            ));
+        }
+        this.configValue = parsed;
     }
 }

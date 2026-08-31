@@ -3,7 +3,7 @@ IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'system_configurations')
 BEGIN
     CREATE TABLE system_configurations (
         config_key NVARCHAR(255) NOT NULL PRIMARY KEY,
-        config_value NVARCHAR(1000)
+        config_value VARCHAR(MAX)
     );
 END
 GO

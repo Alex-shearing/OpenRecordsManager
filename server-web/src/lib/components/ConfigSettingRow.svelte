@@ -29,7 +29,7 @@
 		</div>
 
 		<div class="w-full lg:max-w-md">
-			{#if config.type === 'BOOL'}
+			{#if config.type === 'boolean'}
 				<label class="flex items-center gap-2">
 					<input
 						id={inputId}
@@ -43,20 +43,20 @@
 					/>
 					<span class="text-sm text-foreground">{value === 'true' ? 'Enabled' : 'Disabled'}</span>
 				</label>
-			{:else if config.type === 'STRING_LIST' || config.type === 'INT_LIST'}
+			{:else if config.type === 'string_list' || config.type === 'int_list'}
 				<textarea
 					id={inputId}
 					bind:value
 					{disabled}
 					rows={4}
 					class="input w-full font-mono text-sm"
-					placeholder={config.type === 'INT_LIST' ? 'One integer per line' : 'One value per line'}
+					placeholder={config.type === 'int_list' ? 'One integer per line' : 'One value per line'}
 				></textarea>
-			{:else if config.type === 'INT' || config.type === 'DOUBLE'}
+			{:else if config.type === 'number' || config.type === 'decimal'}
 				<input
 					id={inputId}
 					type="number"
-					step={config.type === 'DOUBLE' ? 'any' : '1'}
+					step={config.type === 'decimal' ? 'any' : '1'}
 					bind:value
 					{disabled}
 					class="input w-full"

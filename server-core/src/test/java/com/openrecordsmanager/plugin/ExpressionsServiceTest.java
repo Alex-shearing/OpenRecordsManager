@@ -46,28 +46,28 @@ class ExpressionsServiceTest {
 
         // Number property
         ObjectProperty<Long> numberProperty = new ObjectProperty<>(
-                com.openrecordsmanager.api.ResourceIdentifier.valueOf("test:number_property"),
+                ResourceIdentifier.valueOf("test:number_property"),
                 "Number property", "Number property", PropertyType.NUMBER
         );
         this.testUser.setProperty(numberProperty, 10L);
 
         // String property
         ObjectProperty<String> stringProperty = new ObjectProperty<>(
-                com.openrecordsmanager.api.ResourceIdentifier.valueOf("test:string_property"),
+                ResourceIdentifier.valueOf("test:string_property"),
                 "String property", "String property", PropertyType.STRING
         );
         this.testUser.setProperty(stringProperty, "test value");
 
         // List property
         ObjectProperty<IListElement> listProperty = new ObjectProperty<>(
-                com.openrecordsmanager.api.ResourceIdentifier.valueOf("test:list_property"),
+                ResourceIdentifier.valueOf("test:list_property"),
                 "List property", "List property", PropertyType.LIST_ITEM
         );
         this.testUser.setProperty(listProperty, LIST_ITEM_2);
 
         // List multiple property
         ObjectProperty<Collection<IListElement>> listMultiple = new ObjectProperty<>(
-                com.openrecordsmanager.api.ResourceIdentifier.valueOf("test:list_multiple_property"),
+                ResourceIdentifier.valueOf("test:list_multiple_property"),
                 "List multiple property", "List multiple property", PropertyType.LIST_MULTIPLE
         );
         this.testUser.setProperty(listMultiple, List.of(LIST_ITEM_1, LIST_ITEM_3));

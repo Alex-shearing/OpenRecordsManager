@@ -1,13 +1,14 @@
 package com.openrecordsmanager.api.config;
 
 import com.openrecordsmanager.api.Component;
+import com.openrecordsmanager.api.template.property.PropertyType;
 import org.jspecify.annotations.Nullable;
 
 import java.util.Objects;
 
 public record ConfigType<T>(
         String key,
-        ConfigValueType<T> type,
+        PropertyType<T> type,
         String name,
         String description,
         @Nullable T defaultValue
@@ -17,9 +18,12 @@ public record ConfigType<T>(
         Objects.requireNonNull(key, "Property 'key' must not be null");
         Objects.requireNonNull(type, "Property 'type' must not be null");
         Objects.requireNonNull(name, "Property 'name' must not be null");
+        if (!type.supportsConfig()) {
+            throw new IllegalArgumentException("PropertyType '" + type.getName() + "' does not support configuration");
+        }
     }
 
-    public static <M> Builder<M> builder(String id, ConfigValueType<M> type) {
+    public static <M> Builder<M> builder(String id, PropertyType<M> type) {
         return new Builder<>(id, type);
     }
 
@@ -30,13 +34,13 @@ public record ConfigType<T>(
 
     public static class Builder<T> {
         private final String key;
-        private final ConfigValueType<T> type;
+        private final PropertyType<T> type;
         private String name;
         private String description = "";
         @Nullable
         private T defaultValue = null;
 
-        public Builder(String key, ConfigValueType<T> type) {
+        public Builder(String key, PropertyType<T> type) {
             this.key = key;
             this.type = type;
             this.name = key;

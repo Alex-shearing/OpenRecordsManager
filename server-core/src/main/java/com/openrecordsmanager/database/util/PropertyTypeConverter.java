@@ -8,7 +8,7 @@ import jakarta.persistence.Converter;
 public class PropertyTypeConverter implements AttributeConverter<PropertyType<?>, String> {
     @Override
     public String convertToDatabaseColumn(PropertyType<?> propertyType) {
-        return propertyType.name;
+        return propertyType.getName();
     }
 
     @Override

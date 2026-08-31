@@ -12,6 +12,8 @@ import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -26,6 +28,12 @@ class PrimaryOfflineIntegrationTest {
     private static final Path READ_DB = Path.of("build/test-primary-offline-read.db");
 
     static {
+        try {
+            Files.deleteIfExists(READ_DB);
+            Files.createDirectories(READ_DB.getParent());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
         Flyway.configure()
                 .dataSource("jdbc:sqlite:" + READ_DB + "?busy_timeout=5000", "", "")
                 .locations("classpath:db/migration/sqlite")

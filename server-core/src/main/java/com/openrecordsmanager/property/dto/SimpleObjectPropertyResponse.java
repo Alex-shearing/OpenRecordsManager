@@ -13,7 +13,7 @@ public record SimpleObjectPropertyResponse(
         return new SimpleObjectPropertyResponse(
                 property.getId(),
                 property.getName(),
-                property.getType().name
+                property.getType().getName()
         );
     }
 }
