@@ -2298,7 +2298,9 @@ export type GetConfigResponses = {
 export type GetConfigResponse = GetConfigResponses[keyof GetConfigResponses];
 
 export type SetConfigData = {
-    body: unknown;
+    body: {
+        [key: string]: unknown;
+    };
     path: {
         id: string;
     };

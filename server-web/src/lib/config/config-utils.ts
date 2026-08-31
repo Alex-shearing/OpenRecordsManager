@@ -1,4 +1,11 @@
-import type { ConfigTypeResponse } from '$lib/api/types.gen';
+import type {
+	ConfigDraftValue,
+	ConfigDraftValues,
+	DescriminatedConfigTypeResponse,
+	ConfigValueType
+} from '$lib/config/config-types';
+
+export type { ConfigDraftValue, ConfigDraftValues } from '$lib/config/config-types';
 
 export type ConfigGroup = {
 	id: string;
@@ -15,9 +22,11 @@ export const CONFIG_GROUPS: ConfigGroup[] = [
 	{ id: 'audit', title: 'Audit', prefix: 'app.audit.' }
 ];
 
-export function groupConfigs(configs: ConfigTypeResponse[]): Array<{ group: ConfigGroup | null; items: ConfigTypeResponse[] }> {
+export function groupConfigs(
+	configs: DescriminatedConfigTypeResponse[]
+): Array<{ group: ConfigGroup | null; items: DescriminatedConfigTypeResponse[] }> {
 	const sorted = [...configs].sort((a, b) => a.key.localeCompare(b.key));
-	const grouped = new Map<string, ConfigTypeResponse[]>();
+	const grouped = new Map<string, DescriminatedConfigTypeResponse[]>();
 
 	for (const config of sorted) {
 		const match = CONFIG_GROUPS.find((group) => config.key.startsWith(group.prefix));
@@ -27,7 +36,8 @@ export function groupConfigs(configs: ConfigTypeResponse[]): Array<{ group: Conf
 		grouped.set(groupId, bucket);
 	}
 
-	const sections: Array<{ group: ConfigGroup | null; items: ConfigTypeResponse[] }> = [];
+	const sections: Array<{ group: ConfigGroup | null; items: DescriminatedConfigTypeResponse[] }> =
+		[];
 
 	for (const group of CONFIG_GROUPS) {
 		const items = grouped.get(group.id);
@@ -44,53 +54,48 @@ export function groupConfigs(configs: ConfigTypeResponse[]): Array<{ group: Conf
 	return sections;
 }
 
-export function formatConfigValueForInput(config: ConfigTypeResponse): string {
+export function parseConfigDraftValue(config: DescriminatedConfigTypeResponse): ConfigDraftValue {
 	const value = config.currentValue ?? config.defaultValue;
 
 	switch (config.type) {
 		case 'boolean':
-			return value === true || value === 'true' ? 'true' : 'false';
+			return value === true || value === 'true';
 		case 'string_list':
+			if (Array.isArray(value)) {
+				return value.length > 0 ? value.map(String) : [''];
+			}
+			return [''];
 		case 'int_list':
 			if (Array.isArray(value)) {
-				return value.map(String).join('\n');
+				return value.map((entry) => Number(entry)).filter((entry) => !Number.isNaN(entry));
 			}
-			return '';
+			return [];
 		case 'number':
+			return typeof value === 'number' && !Number.isNaN(value) ? value : null;
 		case 'decimal':
-			return value == null || value === '' ? '' : String(value);
+			return typeof value === 'number' && !Number.isNaN(value) ? value : null;
 		default:
 			return value == null ? '' : String(value);
 	}
 }
 
-export function serializeConfigValue(type: ConfigTypeResponse['type'], input: string): unknown {
+export function serializeConfigDraftValue(type: ConfigValueType, value: ConfigDraftValue): any {
 	switch (type) {
 		case 'boolean':
-			return input === 'true';
+			return value;
 		case 'string_list':
-			return input
-				.split(/\r?\n/)
-				.map((entry) => entry.trim())
-				.filter(Boolean);
+			return (value as string[]).map((entry) => entry.trim()).filter(Boolean);
 		case 'int_list':
-			return input
-				.split(/\r?\n/)
-				.map((entry) => entry.trim())
-				.filter(Boolean)
-				.map(Number);
+			return (value as number[]).filter((entry) => !Number.isNaN(entry));
 		case 'number':
-			return input.trim() === '' ? null : Number.parseInt(input.trim(), 10);
 		case 'decimal':
-			return input.trim() === '' ? null : Number.parseFloat(input.trim());
-		case 'uuid':
-			return input.trim();
+			return value === null || value === '' ? null : value;
 		default:
-			return input.trim();
+			return typeof value === 'string' ? value.trim() : value;
 	}
 }
 
-export function formatConfigValueForDisplay(value: unknown, type: ConfigTypeResponse['type']): string {
+export function formatConfigValueForDisplay(value: unknown, type: ConfigValueType): string {
 	if (value == null || value === '') {
 		return '—';
 	}
@@ -104,29 +109,28 @@ export function formatConfigValueForDisplay(value: unknown, type: ConfigTypeResp
 	return String(value);
 }
 
-export function buildSavedValues(configs: ConfigTypeResponse[]): Record<string, string> {
-	return Object.fromEntries(configs.map((config) => [config.key, formatConfigValueForInput(config)]));
+export function buildSavedValues(configs: DescriminatedConfigTypeResponse[]): ConfigDraftValues {
+	return Object.fromEntries(configs.map((config) => [config.key, parseConfigDraftValue(config)]));
 }
 
-export function findChangedConfigs(
-	configs: ConfigTypeResponse[],
-	draftValues: Record<string, string>,
-	savedValues: Record<string, string>
-): ConfigTypeResponse[] {
-	return configs.filter(
-		(config) =>
-			!configValuesEqual(
-				config.type,
-				draftValues[config.key] ?? '',
-				savedValues[config.key] ?? ''
-			)
+export function configDraftValuesEqual(
+	type: ConfigValueType,
+	left: ConfigDraftValue,
+	right: ConfigDraftValue
+): boolean {
+	return (
+		JSON.stringify(serializeConfigDraftValue(type, left)) ===
+		JSON.stringify(serializeConfigDraftValue(type, right))
 	);
 }
 
-export function configValuesEqual(
-	type: ConfigTypeResponse['type'],
-	left: string,
-	right: string
-): boolean {
-	return JSON.stringify(serializeConfigValue(type, left)) === JSON.stringify(serializeConfigValue(type, right));
+export function findChangedConfigs(
+	configs: DescriminatedConfigTypeResponse[],
+	draftValues: ConfigDraftValues,
+	savedValues: ConfigDraftValues
+): DescriminatedConfigTypeResponse[] {
+	return configs.filter(
+		(config) =>
+			!configDraftValuesEqual(config.type, draftValues[config.key], savedValues[config.key])
+	);
 }

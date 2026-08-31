@@ -1,69 +1,41 @@
 <script lang="ts">
-	import type { ConfigTypeResponse } from '$lib/api/types.gen';
-	import { formatConfigValueForDisplay } from '$lib/config/config-utils';
+	import type { ConfigDraftValue, DescriminatedConfigTypeResponse } from '$lib/config/config-types';
+	import ConfigBooleanInput from '$lib/components/config/ConfigBooleanInput.svelte';
+	import ConfigIntListInput from '$lib/components/config/ConfigIntListInput.svelte';
+	import ConfigNumberInput from '$lib/components/config/ConfigNumberInput.svelte';
+	import ConfigSettingLayout from '$lib/components/config/ConfigSettingLayout.svelte';
+	import ConfigStringInput from '$lib/components/config/ConfigStringInput.svelte';
+	import ConfigStringListInput from '$lib/components/config/ConfigStringListInput.svelte';
 
 	let {
 		config,
-		value = $bindable<string>(),
+		value = $bindable<ConfigDraftValue>(),
 		disabled = false
 	}: {
-		config: ConfigTypeResponse;
-		value: string;
+		config: DescriminatedConfigTypeResponse;
+		value: ConfigDraftValue;
 		disabled?: boolean;
 	} = $props();
 
 	const inputId = $derived(`config-${config.key.replaceAll('.', '-')}`);
 </script>
 
-<article class="border-b border-border px-5 py-4 last:border-b-0">
-	<div class="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
-		<div class="min-w-0 flex-1">
-			<label for={inputId} class="text-label">{config.name}</label>
-			<p class="mt-1 text-hint">{config.description}</p>
-			<p class="mt-2 font-mono text-xs text-subtle-foreground">{config.key}</p>
-			{#if config.defaultValue != null && config.defaultValue !== ''}
-				<p class="mt-1 text-xs text-subtle-foreground">
-					Default: {formatConfigValueForDisplay(config.defaultValue, config.type)}
-				</p>
-			{/if}
-		</div>
-
-		<div class="w-full lg:max-w-md">
-			{#if config.type === 'boolean'}
-				<label class="flex items-center gap-2">
-					<input
-						id={inputId}
-						type="checkbox"
-						class="size-4 rounded border-border-input"
-						checked={value === 'true'}
-						{disabled}
-						onchange={(event) => {
-							value = event.currentTarget.checked ? 'true' : 'false';
-						}}
-					/>
-					<span class="text-sm text-foreground">{value === 'true' ? 'Enabled' : 'Disabled'}</span>
-				</label>
-			{:else if config.type === 'string_list' || config.type === 'int_list'}
-				<textarea
-					id={inputId}
-					bind:value
-					{disabled}
-					rows={4}
-					class="input w-full font-mono text-sm"
-					placeholder={config.type === 'int_list' ? 'One integer per line' : 'One value per line'}
-				></textarea>
-			{:else if config.type === 'number' || config.type === 'decimal'}
-				<input
-					id={inputId}
-					type="number"
-					step={config.type === 'decimal' ? 'any' : '1'}
-					bind:value
-					{disabled}
-					class="input w-full"
-				/>
-			{:else}
-				<input id={inputId} type="text" bind:value {disabled} class="input w-full" />
-			{/if}
-		</div>
-	</div>
-</article>
+<ConfigSettingLayout {config} {inputId}>
+	{#snippet input()}
+		{#if config.type === 'boolean'}
+			<ConfigBooleanInput id={inputId} bind:value={value as boolean} {disabled} />
+		{:else if config.type === 'string_list'}
+			<ConfigStringListInput id={inputId} bind:value={value as string[]} {disabled} />
+		{:else if config.type === 'int_list'}
+			<ConfigIntListInput id={inputId} bind:value={value as number[]} {disabled} />
+		{:else if config.type === 'number'}
+			<ConfigNumberInput id={inputId} bind:value={value as number | null} {disabled} />
+		{:else if config.type === 'decimal'}
+			<ConfigNumberInput id={inputId} bind:value={value as number | null} step="any" {disabled} />
+		{:else if config.type === 'uuid'}
+			<ConfigStringInput id={inputId} bind:value={value as string} {disabled} />
+		{:else}
+			<ConfigStringInput id={inputId} bind:value={value as string} {disabled} />
+		{/if}
+	{/snippet}
+</ConfigSettingLayout>

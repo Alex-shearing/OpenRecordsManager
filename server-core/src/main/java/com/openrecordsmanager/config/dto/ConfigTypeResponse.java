@@ -2,6 +2,7 @@ package com.openrecordsmanager.config.dto;
 
 import com.openrecordsmanager.api.config.ConfigType;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import org.jspecify.annotations.Nullable;
 
 public record ConfigTypeResponse(
@@ -10,7 +11,7 @@ public record ConfigTypeResponse(
         @Nullable Object currentValue,
         @NotBlank String description,
         @Nullable Object defaultValue,
-        @NotBlank String type
+        @NotNull ConfigValueType type
 ) {
 
     public static <T> ConfigTypeResponse from(ConfigType<T> ob, T val) {
@@ -20,7 +21,7 @@ public record ConfigTypeResponse(
                 val,
                 ob.description(),
                 ob.defaultValue(),
-                ob.type().getName()
+                ConfigValueType.fromPropertyType(ob.type())
         );
     }
 }

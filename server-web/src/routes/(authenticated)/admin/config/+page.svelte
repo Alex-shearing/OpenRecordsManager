@@ -5,7 +5,7 @@
 		buildSavedValues,
 		findChangedConfigs,
 		groupConfigs,
-		serializeConfigValue
+		serializeConfigDraftValue
 	} from '$lib/config/config-utils';
 	import { invalidateAll } from '$app/navigation';
 
@@ -51,7 +51,7 @@
 			: undefined;
 
 		for (const config of changedConfigs) {
-			const body = serializeConfigValue(config.type, draftValues[config.key] ?? '');
+			const body = serializeConfigDraftValue(config.type, draftValues[config.key]);
 			const { error } = await ConfigController.setConfig({
 				path: { id: config.key },
 				body,
