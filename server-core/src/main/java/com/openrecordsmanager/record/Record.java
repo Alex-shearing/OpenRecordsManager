@@ -23,15 +23,38 @@ import java.util.stream.Collectors;
 @Entity
 @Table(name = "record")
 @SuppressWarnings({"NotNullFieldNotInitialized", "CanBeFinal"})
-public class Record implements ObjectPropertyHolder<RecordPropertyValue<?>> {
-    private static final Map<ResourceIdentifier, BuiltinPropertyMapper<Record, ?>> BUILTIN_PROPERTY_MAPPERS = Map.ofEntries(
-            Map.entry(BuiltinProperties.TITLE_ID, BuiltinPropertyMapper.of(Record::getTitle, (record, v) -> record.setTitle(Objects.requireNonNull(v)))),
-            Map.entry(BuiltinProperties.NOTES_ID, BuiltinPropertyMapper.of(Record::getNotes, Record::setNotes)),
-            Map.entry(BuiltinProperties.DATE_CREATED_ID, BuiltinPropertyMapper.of(Record::getDateCreated, (record, v) -> record.setDateCreated(Objects.requireNonNull(v)))),
-            Map.entry(BuiltinProperties.DATE_REGISTERED_ID, BuiltinPropertyMapper.of(Record::getDateRegistered, Record::setDateRegistered)),
-            Map.entry(BuiltinProperties.DATE_MODIFIED_ID, BuiltinPropertyMapper.of(Record::getDateModified, (record, v) -> record.setDateModified(Objects.requireNonNull(v)))),
-            Map.entry(BuiltinProperties.KEYWORDS_ID, BuiltinPropertyMapper.of(Record::getKeywords, Record::setKeywords)),
-            Map.entry(BuiltinProperties.MIME_TYPES_ID, BuiltinPropertyMapper.of(Record::getMimeTypes, Record::setMimeTypes))
+public class Record extends ObjectPropertyHolder<Record, RecordPropertyValue<?>> {
+    private static final Map<ResourceIdentifier, BuiltinPropertyMapper<Record, ?>> BUILTIN_PROPERTY_MAPPERS = Map.of(
+            BuiltinProperties.TITLE_ID, BuiltinPropertyMapper.of(
+                    Record::getTitle,
+                    (r, v) -> r.title = Objects.requireNonNull(v)
+            ),
+            BuiltinProperties.NOTES_ID, BuiltinPropertyMapper.of(
+                    Record::getNotes,
+                    (r, v) -> r.notes = v
+            ),
+            BuiltinProperties.DATE_CREATED_ID, BuiltinPropertyMapper.of(
+                    Record::getDateCreated,
+                    (r, v) -> r.dateCreated = Objects.requireNonNull(v)
+            ),
+            BuiltinProperties.DATE_REGISTERED_ID, BuiltinPropertyMapper.of(
+                    Record::getDateRegistered,
+                    (r, v) -> r.dateRegistered = v
+            ),
+            BuiltinProperties.DATE_MODIFIED_ID, BuiltinPropertyMapper.of(
+                    Record::getDateModified,
+                    (_, _) -> {
+                        throw new IllegalArgumentException("date modified cannot be set explicitly");
+                    }
+            ),
+            BuiltinProperties.KEYWORDS_ID, BuiltinPropertyMapper.of(
+                    Record::getKeywords,
+                    (r, v) -> r.keywords = v
+            ),
+            BuiltinProperties.MIME_TYPES_ID, BuiltinPropertyMapper.of(
+                    Record::getMimeTypes,
+                    (r, v) -> r.mimeTypes = v
+            )
     );
 
     @Id
@@ -99,56 +122,32 @@ public class Record implements ObjectPropertyHolder<RecordPropertyValue<?>> {
         return this.title;
     }
 
-    public void setTitle(String title) {
-        this.title = title;
-    }
-
     public @Nullable String getNotes() {
         return this.notes;
-    }
-
-    public void setNotes(@Nullable String notes) {
-        this.notes = notes;
     }
 
     public Instant getDateCreated() {
         return this.dateCreated;
     }
 
-    public void setDateCreated(Instant dateCreated) {
-        this.dateCreated = dateCreated;
-    }
-
     public @Nullable Instant getDateRegistered() {
         return this.dateRegistered;
-    }
-
-    public void setDateRegistered(@Nullable Instant dateRegistered) {
-        this.dateRegistered = dateRegistered;
     }
 
     public Instant getDateModified() {
         return this.dateModified;
     }
 
-    public void setDateModified(Instant dateModified) {
-        this.dateModified = dateModified;
+    public void touchDateModified() {
+        this.dateModified = Instant.now();
     }
 
     public @Nullable String getKeywords() {
         return this.keywords;
     }
 
-    public void setKeywords(@Nullable String keywords) {
-        this.keywords = keywords;
-    }
-
     public @Nullable List<String> getMimeTypes() {
         return this.mimeTypes;
-    }
-
-    public void setMimeTypes(@Nullable List<String> mimeTypes) {
-        this.mimeTypes = mimeTypes;
     }
 
     public RecordType getType() {
@@ -167,10 +166,8 @@ public class Record implements ObjectPropertyHolder<RecordPropertyValue<?>> {
                 this.setPropertyUntyped(property, holder.value);
             }
         });
-    }
 
-    public void touchDateModified() {
-        this.dateModified = Instant.now();
+        this.touchDateModified();
     }
 
     public RecordRevision getCurrentRevision() {
@@ -201,40 +198,18 @@ public class Record implements ObjectPropertyHolder<RecordPropertyValue<?>> {
     }
 
     @Override
-    public <K> @Nullable K getProperty(ObjectProperty<K> property) {
-        BuiltinPropertyMapper<Record, ?> builtinGetter = BUILTIN_PROPERTY_MAPPERS.get(property.getId());
-
-        if (builtinGetter != null) {
-            return property.getType().cast(builtinGetter.get(this));
-        } else {
-            RecordPropertyValue<?> value = this.properties.get(property);
-            if (value == null) {
-                return null;
-            }
-            return property.getType().cast(value.value);
-        }
+    protected Map<ObjectProperty<?>, RecordPropertyValue<?>> getDynamicProperties() {
+        return this.properties;
     }
 
     @Override
-    public <K> void setProperty(ObjectProperty<K> property, @Nullable K value) {
-        BuiltinPropertyMapper<Record, ?> builtinGetter = BUILTIN_PROPERTY_MAPPERS.get(property.getId());
+    protected Map<ResourceIdentifier, BuiltinPropertyMapper<Record, ?>> getBuiltinPropertyMappers() {
+        return BUILTIN_PROPERTY_MAPPERS;
+    }
 
-        if (builtinGetter != null) {
-            builtinGetter.set(this, value);
-            return;
-        }
-
-        RecordPropertyValue<?> holder = this.properties.get(property);
-        if (holder == null) {
-            if (!this.canSetProperty(property)) {
-                throw new IllegalArgumentException("Property " + property + " does not exist on object");
-            }
-
-            holder = this.createProperty(property, value);
-            this.properties.put(property, holder);
-        }
-
-        holder.setValueUntyped(value);
+    @Override
+    protected Record self() {
+        return this;
     }
 
     public SecurityFilterUsage securityFilter(ExpressionsService expressions, User actor) {
@@ -269,6 +244,7 @@ public class Record implements ObjectPropertyHolder<RecordPropertyValue<?>> {
         }
         RecordRevision recordRevision = new RecordRevision(version, this, file);
         this.revisions.add(recordRevision);
+        this.touchDateModified();
         return recordRevision;
     }
 }

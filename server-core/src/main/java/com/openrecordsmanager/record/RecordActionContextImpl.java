@@ -84,17 +84,20 @@ class RecordActionContextImpl implements RecordActionContext {
     }
 
     @Override
-    @SuppressWarnings("unchecked")
     public <T> void setTargetProperty(ObjectPropertyTemplate<T> property, @Nullable T value) {
-        ObjectProperty<?> prop = this.catalog.getTemplateRegistry(ComponentCatalog.OBJECT_PROPERTY_MAPPER)
+        @SuppressWarnings("unchecked")
+        ObjectProperty<T> prop = (ObjectProperty<T>) this.catalog.getTemplateRegistry(ComponentCatalog.OBJECT_PROPERTY_MAPPER)
                 .getRegistered(property, this.repository)
-                .orElseThrow(() -> new ResourceNotFoundException(ComponentTypes.OBJECT_PROPERTY, property.getClass()));
+                .orElseThrow(() -> new ResourceNotFoundException(ComponentTypes.OBJECT_PROPERTY, property.name()));
 
-        ObjectProperty<T> typedProp = (ObjectProperty<T>) prop;
-        T oldValue = this.target.getProperty(typedProp);
-        this.target.setProperty(typedProp, value);
+        T oldValue = this.target.getProperty(prop);
+        this.target.setProperty(prop, value);
+
         this.repository.recordRepo.saveAndFlush(this.target);
-        getAudit().addPropertyChangeEvent(typedProp.getId().toString(), oldValue, value);
+
+        if (oldValue != value) {
+            this.getAudit().addPropertyChangeEvent(prop.getId().toString(), oldValue, value);
+        }
     }
 
     @Override

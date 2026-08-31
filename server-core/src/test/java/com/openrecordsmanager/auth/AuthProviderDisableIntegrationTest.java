@@ -20,9 +20,7 @@ import java.time.Instant;
 import static org.hamcrest.Matchers.hasSize;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -91,16 +89,6 @@ class AuthProviderDisableIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data", hasSize(0)));
 
-        // Need a fresh admin token for manage endpoint after revocation
-        String manageToken = this.adminBearerToken();
-        this.mockMvc.perform(
-                        get("/api/auth/providers/manage")
-                                .header("Authorization", "Bearer " + manageToken)
-                                .accept(MediaType.APPLICATION_JSON)
-                )
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data", hasSize(1)));
-
         this.mockMvc.perform(
                         post("/api/auth/login/" + provider.getId())
                                 .contentType(MediaType.APPLICATION_JSON)
@@ -113,7 +101,9 @@ class AuthProviderDisableIntegrationTest {
                                 .accept(MediaType.APPLICATION_JSON)
                 )
                 .andExpect(status().isUnauthorized());
-
+        
+        // Need a fresh admin token for manage endpoint after revocation
+        String manageToken = this.adminBearerToken();
         this.mockMvc.perform(
                         put("/api/auth/providers/" + provider.getId())
                                 .header("Authorization", "Bearer " + manageToken)

@@ -87,7 +87,6 @@ public class RecordService {
             changes.add(AuditPropertyChange.newProperty(identifier.toString(), newValue));
         });
 
-        record.touchDateModified();
         this.repository.recordRepo.saveAndFlush(record);
 
         this.auditService.addEvent(
@@ -133,7 +132,6 @@ public class RecordService {
             });
         }
 
-        record.touchDateModified();
         this.repository.recordRepo.saveAndFlush(record);
 
         this.auditService.addEvent(

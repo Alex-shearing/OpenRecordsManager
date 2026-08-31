@@ -11,10 +11,12 @@ import com.openrecordsmanager.recordtype.RecordTypeProperty;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.time.Instant;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class BuiltinColumnPropertiesTest {
 
@@ -82,5 +84,62 @@ class BuiltinColumnPropertiesTest {
         assertEquals("Ada", user.getProperty(givenNameProperty));
         assertEquals("Ada", user.toPropertyMap(true).get(BuiltinProperties.GIVEN_NAME_ID.toString()));
         assertNotNull(user.toPropertyMap(true).get(BuiltinProperties.DATE_CREATED_ID.toString()));
+    }
+
+    @Test
+    void setPropertyUpdatesDateModifiedForBuiltinAndDynamicProperties() {
+        ObjectProperty<String> givenNameProperty = new ObjectProperty<>(
+                BuiltinProperties.GIVEN_NAME_ID,
+                "Given Name",
+                "Given Name",
+                PropertyType.STRING
+        );
+        ObjectProperty<String> customProperty = new ObjectProperty<>(
+                ResourceIdentifier.valueOf("test:custom_property"),
+                "Custom",
+                "Custom",
+                PropertyType.STRING
+        );
+
+        User user = new User("test_user", null);
+        Instant createdModified = user.getDateModified();
+
+        user.setProperty(givenNameProperty, "Ada");
+        Instant afterBuiltinChange = user.getDateModified();
+        assertTrue(afterBuiltinChange.isAfter(createdModified));
+
+        user.setProperty(customProperty, "custom value");
+        Instant afterDynamicChange = user.getDateModified();
+        assertTrue(afterDynamicChange.isAfter(afterBuiltinChange));
+
+        user.setProperty(givenNameProperty, "Ada");
+        assertEquals(afterDynamicChange, user.getDateModified());
+    }
+
+    @Test
+    void recordSetPropertyUpdatesDateModifiedForBuiltinProperties() {
+        ObjectProperty<String> notesProperty = new ObjectProperty<>(
+                BuiltinProperties.NOTES_ID,
+                "Notes",
+                "Notes",
+                PropertyType.STRING
+        );
+        RecordType recordType = new RecordType(
+                ResourceIdentifier.valueOf("test:record_type"),
+                "Record type",
+                "Record type",
+                null,
+                null,
+                SecurityFilterUsage.SHOW_ALL,
+                Set.of(new RecordTypeProperty<>(notesProperty, "default notes"))
+        );
+
+        Record record = new Record("tba", recordType);
+        Instant beforeChange = record.getDateModified();
+
+        record.setProperty(notesProperty, "updated notes");
+
+        assertEquals("updated notes", record.getNotes());
+        assertTrue(record.getDateModified().isAfter(beforeChange));
     }
 }

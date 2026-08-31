@@ -17,15 +17,38 @@ import java.util.*;
 @Entity
 @Table(name = "user_details")
 @SuppressWarnings({"NotNullFieldNotInitialized", "CanBeFinal"})
-public class User implements ObjectPropertyHolder<UserPropertyValue<?>>, UserDetails {
+public class User extends ObjectPropertyHolder<User, UserPropertyValue<?>> implements UserDetails {
     private static final Map<ResourceIdentifier, BuiltinPropertyMapper<User, ?>> BUILTIN_PROPERTY_MAPPERS = Map.of(
-            BuiltinProperties.DATE_CREATED_ID, BuiltinPropertyMapper.of(User::getDateCreated, (user, v) -> user.setDateCreated(Objects.requireNonNull(v))),
-            BuiltinProperties.DATE_MODIFIED_ID, BuiltinPropertyMapper.of(User::getDateModified, (user, v) -> user.setDateModified(Objects.requireNonNull(v))),
-            BuiltinProperties.GIVEN_NAME_ID, BuiltinPropertyMapper.of(User::getGivenName, User::setGivenName),
-            BuiltinProperties.SURNAME_ID, BuiltinPropertyMapper.of(User::getSurname, User::setSurname),
-            BuiltinProperties.HONORIFIC_ID, BuiltinPropertyMapper.of(User::getHonorific, User::setHonorific),
-            BuiltinProperties.EMAIL_ID, BuiltinPropertyMapper.of(User::getEmail, User::setEmail),
-            BuiltinProperties.NOTES_ID, BuiltinPropertyMapper.of(User::getNotes, User::setNotes)
+            BuiltinProperties.DATE_CREATED_ID, BuiltinPropertyMapper.of(
+                    User::getDateCreated,
+                    (u, v) -> u.dateCreated = Objects.requireNonNull(v)
+            ),
+            BuiltinProperties.DATE_MODIFIED_ID, BuiltinPropertyMapper.of(
+                    User::getDateModified,
+                    (_, _) -> {
+                        throw new IllegalArgumentException("date modified cannot be set explicitly");
+                    }
+            ),
+            BuiltinProperties.GIVEN_NAME_ID, BuiltinPropertyMapper.of(
+                    User::getGivenName,
+                    (u, v) -> u.givenName = v
+            ),
+            BuiltinProperties.SURNAME_ID, BuiltinPropertyMapper.of(
+                    User::getSurname,
+                    (u, v) -> u.surname = v
+            ),
+            BuiltinProperties.HONORIFIC_ID, BuiltinPropertyMapper.of(
+                    User::getHonorific,
+                    (u, v) -> u.honorific = v
+            ),
+            BuiltinProperties.EMAIL_ID, BuiltinPropertyMapper.of(
+                    User::getEmail,
+                    (u, v) -> u.email = v
+            ),
+            BuiltinProperties.NOTES_ID, BuiltinPropertyMapper.of(
+                    User::getNotes,
+                    (u, v) -> u.notes = v
+            )
     );
 
     @Id
@@ -95,66 +118,44 @@ public class User implements ObjectPropertyHolder<UserPropertyValue<?>>, UserDet
 
     public void setUsername(String username) {
         this.username = username;
+        this.touchDateModified();
     }
 
     public void setAuthProvider(@Nullable AuthProvider authProvider) {
         this.authProvider = authProvider;
+        this.touchDateModified();
     }
 
     public Instant getDateCreated() {
         return this.dateCreated;
     }
 
-    public void setDateCreated(Instant dateCreated) {
-        this.dateCreated = dateCreated;
-    }
-
     public Instant getDateModified() {
         return this.dateModified;
     }
 
-    public void setDateModified(Instant dateModified) {
-        this.dateModified = dateModified;
+    public void touchDateModified() {
+        this.dateModified = Instant.now();
     }
 
     public @Nullable String getGivenName() {
         return this.givenName;
     }
 
-    public void setGivenName(@Nullable String givenName) {
-        this.givenName = givenName;
-    }
-
     public @Nullable String getSurname() {
         return this.surname;
-    }
-
-    public void setSurname(@Nullable String surname) {
-        this.surname = surname;
     }
 
     public @Nullable String getHonorific() {
         return this.honorific;
     }
 
-    public void setHonorific(@Nullable String honorific) {
-        this.honorific = honorific;
-    }
-
     public @Nullable String getEmail() {
         return this.email;
     }
 
-    public void setEmail(@Nullable String email) {
-        this.email = email;
-    }
-
     public @Nullable String getNotes() {
         return this.notes;
-    }
-
-    public void setNotes(@Nullable String notes) {
-        this.notes = notes;
     }
 
     public boolean isEnabled() {
@@ -163,10 +164,7 @@ public class User implements ObjectPropertyHolder<UserPropertyValue<?>>, UserDet
 
     public void setEnabled(boolean enabled) {
         this.enabled = enabled;
-    }
-
-    public void touchDateModified() {
-        this.dateModified = Instant.now();
+        this.touchDateModified();
     }
 
     @Override
@@ -187,36 +185,18 @@ public class User implements ObjectPropertyHolder<UserPropertyValue<?>>, UserDet
     }
 
     @Override
-    public <K> @Nullable K getProperty(ObjectProperty<K> property) {
-        BuiltinPropertyMapper<User, ?> builtinMapper = BUILTIN_PROPERTY_MAPPERS.get(property.getId());
-
-        if (builtinMapper != null) {
-            return property.getType().cast(builtinMapper.get(this));
-        }
-
-        UserPropertyValue<?> value = this.properties.get(property);
-        if (value == null) {
-            return null;
-        }
-        return property.getType().cast(value.getValue());
+    protected Map<ObjectProperty<?>, UserPropertyValue<?>> getDynamicProperties() {
+        return this.properties;
     }
 
     @Override
-    public <K> void setProperty(ObjectProperty<K> property, @Nullable K value) {
-        BuiltinPropertyMapper<User, ?> builtinMapper = BUILTIN_PROPERTY_MAPPERS.get(property.getId());
+    protected Map<ResourceIdentifier, BuiltinPropertyMapper<User, ?>> getBuiltinPropertyMappers() {
+        return BUILTIN_PROPERTY_MAPPERS;
+    }
 
-        if (builtinMapper != null) {
-            builtinMapper.set(this, value);
-            return;
-        }
-
-        UserPropertyValue<?> holder = this.properties.get(property);
-        if (holder == null) {
-            holder = this.createProperty(property, value);
-            this.properties.put(property, holder);
-        }
-
-        holder.setValueUntyped(value);
+    @Override
+    protected User self() {
+        return this;
     }
 
     @Override
