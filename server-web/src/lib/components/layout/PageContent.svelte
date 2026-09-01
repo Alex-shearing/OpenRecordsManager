@@ -1,9 +1,15 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
 
-	let { children }: { children: Snippet } = $props();
+	let {
+		children,
+		variant = 'app',
+	}: {
+		children: Snippet;
+		variant?: 'app' | 'guest';
+	} = $props();
 </script>
 
-<div class="mx-auto mb-5 w-full max-w-6xl px-4 py-6">
+<main class="mx-auto w-full px-4 py-8 mb-5 {variant === 'guest' ? 'max-w-md' : 'max-w-6xl'}">
 	{@render children()}
-</div>
+</main>
