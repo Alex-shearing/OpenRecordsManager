@@ -1,14 +1,14 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
-	import type { DescriminatedConfigTypeResponse } from '$lib/config/config-types';
-	import { formatConfigValueForDisplay } from '$lib/config/config-utils';
+	import type { ConfigTypeResponse } from '$lib/api/types.gen';
+	import { formatDefaultValueForDisplay } from '$lib/config/config-utils';
 
 	let {
 		config,
 		inputId,
 		input
 	}: {
-		config: DescriminatedConfigTypeResponse;
+		config: ConfigTypeResponse;
 		inputId: string;
 		input: Snippet;
 	} = $props();
@@ -22,7 +22,7 @@
 			<p class="mt-2 font-mono text-xs text-subtle-foreground">{config.key}</p>
 			{#if config.defaultValue != null && config.defaultValue !== ''}
 				<p class="mt-1 text-xs text-subtle-foreground">
-					Default: {formatConfigValueForDisplay(config.defaultValue, config.type)}
+					Default: {formatDefaultValueForDisplay(config)}
 				</p>
 			{/if}
 		</div>

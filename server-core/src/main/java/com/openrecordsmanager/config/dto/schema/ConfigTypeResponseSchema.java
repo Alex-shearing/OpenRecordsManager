@@ -14,6 +14,7 @@ public final class ConfigTypeResponseSchema {
     }
 
     @Schema(
+            name = "ConfigTypeStringResponse",
             description = "String configuration value",
             requiredProperties = {"key", "name", "description", "type"}
     )
@@ -28,6 +29,7 @@ public final class ConfigTypeResponseSchema {
     }
 
     @Schema(
+            name = "ConfigTypeBooleanResponse",
             description = "Boolean configuration value",
             requiredProperties = {"key", "name", "description", "type"}
     )
@@ -42,6 +44,7 @@ public final class ConfigTypeResponseSchema {
     }
 
     @Schema(
+            name = "ConfigTypeNumberResponse",
             description = "Integer number configuration value",
             requiredProperties = {"key", "name", "description", "type"}
     )
@@ -56,6 +59,7 @@ public final class ConfigTypeResponseSchema {
     }
 
     @Schema(
+            name = "ConfigTypeDecimalResponse",
             description = "Decimal configuration value",
             requiredProperties = {"key", "name", "description", "type"}
     )
@@ -70,6 +74,7 @@ public final class ConfigTypeResponseSchema {
     }
 
     @Schema(
+            name = "ConfigTypeUuidResponse",
             description = "UUID configuration value",
             requiredProperties = {"key", "name", "description", "type"}
     )
@@ -84,6 +89,7 @@ public final class ConfigTypeResponseSchema {
     }
 
     @Schema(
+            name = "ConfigTypeStringListResponse",
             description = "String list configuration value",
             requiredProperties = {"key", "name", "description", "type"}
     )
@@ -98,6 +104,7 @@ public final class ConfigTypeResponseSchema {
     }
 
     @Schema(
+            name = "ConfigTypeIntListResponse",
             description = "Integer list configuration value",
             requiredProperties = {"key", "name", "description", "type"}
     )
@@ -112,6 +119,7 @@ public final class ConfigTypeResponseSchema {
     }
 
     @Schema(
+            name = "ConfigTypeObjectResponse",
             description = "Opaque object configuration value",
             requiredProperties = {"key", "name", "description", "type"}
     )

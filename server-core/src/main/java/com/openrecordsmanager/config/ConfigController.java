@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/config")
@@ -36,10 +37,12 @@ public class ConfigController {
         return this.config.getDatabaseConfig(id);
     }
 
-    @PutMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PutMapping(value = "/", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Set a config value in the database")
-    public ConfigResponse setConfig(@PathVariable("id") String id, @RequestBody Object value) {
-        return this.config.setConfig(id, value);
+    public Set<ConfigResponse> setConfigs(@RequestBody Map<String, Object> values) {
+        return values.entrySet().stream()
+                .map(e -> this.config.setConfig(e.getKey(), e.getValue()))
+                .collect(Collectors.toSet());
     }
 
     @GetMapping(value = "/this_server", produces = MediaType.APPLICATION_JSON_VALUE)

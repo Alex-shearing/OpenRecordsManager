@@ -2,7 +2,7 @@
 
 import { type Client, formDataBodySerializer, type Options as Options2, type TDataShape } from './client';
 import { client } from './client.gen';
-import type { BrandingData, BrandingErrors, BrandingResponses, CallbackData, CallbackErrors, CallbackResponses, CreateData, CreateErrors, CreateListData, CreateListElementData, CreateListElementErrors, CreateListElementResponses, CreateListErrors, CreateListResponses, CreateProviderData, CreateProviderErrors, CreateProviderResponses, CreateResponses, CreateRevision2Data, CreateRevision2Errors, CreateRevision2Responses, DeleteListData, DeleteListElementData, DeleteListElementErrors, DeleteListElementResponses, DeleteListErrors, DeleteListResponses, ExecuteAction1Data, ExecuteAction1Errors, ExecuteAction1Responses, ExecuteActionData, ExecuteActionErrors, ExecuteActionResponses, FileStoreCreateData, FileStoreCreateErrors, FileStoreCreateResponses, FileStoreDeleteData, FileStoreDeleteErrors, FileStoreDeleteResponses, FileStoreMiddlewareTypeGetData, FileStoreMiddlewareTypeGetErrors, FileStoreMiddlewareTypeGetResponses, FileStoreRetrieveAllData, FileStoreRetrieveAllErrors, FileStoreRetrieveAllResponses, FileStoreRetrieveOneData, FileStoreRetrieveOneErrors, FileStoreRetrieveOneResponses, FileStoreTypeGetData, FileStoreTypeGetErrors, FileStoreTypeGetResponses, FileStoreUpdateData, FileStoreUpdateErrors, FileStoreUpdateResponses, Get1Data, Get1Errors, Get1Responses, GetAllConfigData, GetAllConfigErrors, GetAllConfigResponses, GetAllData, GetAllErrors, GetAllLocalConfigData, GetAllLocalConfigErrors, GetAllLocalConfigResponses, GetAllResponses, GetConfigData, GetConfigErrors, GetConfigResponses, GetData, GetErrors, GetEventData, GetEventErrors, GetEventResponses, GetListData, GetListElementData, GetListElementErrors, GetListElementResponses, GetListErrors, GetListResponses, GetListsData, GetListsErrors, GetListsResponses, GetLocalConfigData, GetLocalConfigErrors, GetLocalConfigResponses, GetRecordTypeData, GetRecordTypeErrors, GetRecordTypeResponses, GetRecordTypesData, GetRecordTypesErrors, GetRecordTypesResponses, GetResponses, GetRevisionData, GetRevisionErrors, GetRevisionResponses, GetTemplateData, GetTemplateErrors, GetTemplateResponses, GetTemplatesForTypeData, GetTemplatesForTypeErrors, GetTemplatesForTypeResponses, GetTemplateTypesData, GetTemplateTypesErrors, GetTemplateTypesResponses, ListActions1Data, ListActions1Errors, ListActions1Responses, ListActionsData, ListActionsErrors, ListActionsResponses, ListData, ListErrors, ListEventsData, ListEventsErrors, ListEventsResponses, ListPoliciesData, ListPoliciesErrors, ListPoliciesResponses, ListResponses, LoginData, LoginErrors, LoginResponses, LogoutData, LogoutErrors, LogoutResponses, MeData, MeErrors, MeResponses, MiddlewareCreateData, MiddlewareCreateErrors, MiddlewareCreateResponses, MiddlewareDeleteData, MiddlewareDeleteErrors, MiddlewareDeleteResponses, MiddlewareRetrieveAllData, MiddlewareRetrieveAllErrors, MiddlewareRetrieveAllResponses, MiddlewareRetrieveOneData, MiddlewareRetrieveOneErrors, MiddlewareRetrieveOneResponses, MiddlewareUpdateData, MiddlewareUpdateErrors, MiddlewareUpdateResponses, NewRecordData, NewRecordErrors, NewRecordResponses, ObjectPropertyCreateData, ObjectPropertyCreateErrors, ObjectPropertyCreateResponses, ObjectPropertyDeleteData, ObjectPropertyDeleteErrors, ObjectPropertyDeleteResponses, ObjectPropertyRetrieveAllData, ObjectPropertyRetrieveAllErrors, ObjectPropertyRetrieveAllResponses, ObjectPropertyRetrieveOneData, ObjectPropertyRetrieveOneErrors, ObjectPropertyRetrieveOneResponses, ObjectPropertyUpdateData, ObjectPropertyUpdateErrors, ObjectPropertyUpdateResponses, RedirectData, RedirectErrors, RedirectResponses, RegisterTemplateData, RegisterTemplateErrors, RegisterTemplateResponses, SearchListElementData, SearchListElementErrors, SearchListElementResponses, SetConfigData, SetConfigErrors, SetConfigResponses, SignupData, SignupErrors, SignupResponses, Status1Data, Status1Errors, Status1Responses, StatusData, StatusErrors, StatusResponses, Update1Data, Update1Errors, Update1Responses, UpdateData, UpdateErrors, UpdateListData, UpdateListElementData, UpdateListElementErrors, UpdateListElementResponses, UpdateListErrors, UpdateListResponses, UpdatePolicyData, UpdatePolicyErrors, UpdatePolicyResponses, UpdateProviderData, UpdateProviderErrors, UpdateProviderResponses, UpdateResponses, UpgradeData, UpgradeErrors, UpgradeResponses, ValidateData, ValidateErrors, ValidateResponses } from './types.gen';
+import type { BrandingData, BrandingErrors, BrandingResponses, CallbackData, CallbackErrors, CallbackResponses, CreateData, CreateErrors, CreateListData, CreateListElementData, CreateListElementErrors, CreateListElementResponses, CreateListErrors, CreateListResponses, CreateProviderData, CreateProviderErrors, CreateProviderResponses, CreateResponses, CreateRevision2Data, CreateRevision2Errors, CreateRevision2Responses, DeleteListData, DeleteListElementData, DeleteListElementErrors, DeleteListElementResponses, DeleteListErrors, DeleteListResponses, ExecuteAction1Data, ExecuteAction1Errors, ExecuteAction1Responses, ExecuteActionData, ExecuteActionErrors, ExecuteActionResponses, FileStoreCreateData, FileStoreCreateErrors, FileStoreCreateResponses, FileStoreDeleteData, FileStoreDeleteErrors, FileStoreDeleteResponses, FileStoreMiddlewareTypeGetData, FileStoreMiddlewareTypeGetErrors, FileStoreMiddlewareTypeGetResponses, FileStoreRetrieveAllData, FileStoreRetrieveAllErrors, FileStoreRetrieveAllResponses, FileStoreRetrieveOneData, FileStoreRetrieveOneErrors, FileStoreRetrieveOneResponses, FileStoreTypeGetData, FileStoreTypeGetErrors, FileStoreTypeGetResponses, FileStoreUpdateData, FileStoreUpdateErrors, FileStoreUpdateResponses, Get1Data, Get1Errors, Get1Responses, GetAllConfigData, GetAllConfigErrors, GetAllConfigResponses, GetAllData, GetAllErrors, GetAllLocalConfigData, GetAllLocalConfigErrors, GetAllLocalConfigResponses, GetAllResponses, GetConfigData, GetConfigErrors, GetConfigResponses, GetData, GetErrors, GetEventData, GetEventErrors, GetEventResponses, GetListData, GetListElementData, GetListElementErrors, GetListElementResponses, GetListErrors, GetListResponses, GetListsData, GetListsErrors, GetListsResponses, GetLocalConfigData, GetLocalConfigErrors, GetLocalConfigResponses, GetRecordTypeData, GetRecordTypeErrors, GetRecordTypeResponses, GetRecordTypesData, GetRecordTypesErrors, GetRecordTypesResponses, GetResponses, GetRevisionData, GetRevisionErrors, GetRevisionResponses, GetTemplateData, GetTemplateErrors, GetTemplateResponses, GetTemplatesForTypeData, GetTemplatesForTypeErrors, GetTemplatesForTypeResponses, GetTemplateTypesData, GetTemplateTypesErrors, GetTemplateTypesResponses, ListActions1Data, ListActions1Errors, ListActions1Responses, ListActionsData, ListActionsErrors, ListActionsResponses, ListData, ListErrors, ListEventsData, ListEventsErrors, ListEventsResponses, ListPoliciesData, ListPoliciesErrors, ListPoliciesResponses, ListResponses, LoginData, LoginErrors, LoginResponses, LogoutData, LogoutErrors, LogoutResponses, MeData, MeErrors, MeResponses, MiddlewareCreateData, MiddlewareCreateErrors, MiddlewareCreateResponses, MiddlewareDeleteData, MiddlewareDeleteErrors, MiddlewareDeleteResponses, MiddlewareRetrieveAllData, MiddlewareRetrieveAllErrors, MiddlewareRetrieveAllResponses, MiddlewareRetrieveOneData, MiddlewareRetrieveOneErrors, MiddlewareRetrieveOneResponses, MiddlewareUpdateData, MiddlewareUpdateErrors, MiddlewareUpdateResponses, NewRecordData, NewRecordErrors, NewRecordResponses, ObjectPropertyCreateData, ObjectPropertyCreateErrors, ObjectPropertyCreateResponses, ObjectPropertyDeleteData, ObjectPropertyDeleteErrors, ObjectPropertyDeleteResponses, ObjectPropertyRetrieveAllData, ObjectPropertyRetrieveAllErrors, ObjectPropertyRetrieveAllResponses, ObjectPropertyRetrieveOneData, ObjectPropertyRetrieveOneErrors, ObjectPropertyRetrieveOneResponses, ObjectPropertyUpdateData, ObjectPropertyUpdateErrors, ObjectPropertyUpdateResponses, RedirectData, RedirectErrors, RedirectResponses, RegisterTemplateData, RegisterTemplateErrors, RegisterTemplateResponses, SearchListElementData, SearchListElementErrors, SearchListElementResponses, SetConfigsData, SetConfigsErrors, SetConfigsResponses, SignupData, SignupErrors, SignupResponses, Status1Data, Status1Errors, Status1Responses, StatusData, StatusErrors, StatusResponses, Update1Data, Update1Errors, Update1Responses, UpdateData, UpdateErrors, UpdateListData, UpdateListElementData, UpdateListElementErrors, UpdateListElementResponses, UpdateListErrors, UpdateListResponses, UpdatePolicyData, UpdatePolicyErrors, UpdatePolicyResponses, UpdateProviderData, UpdateProviderErrors, UpdateProviderResponses, UpdateResponses, UpgradeData, UpgradeErrors, UpgradeResponses, ValidateData, ValidateErrors, ValidateResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean> = Options2<TData, ThrowOnError> & {
     /**
@@ -699,31 +699,16 @@ export class FileStoreController {
 
 export class ConfigController {
     /**
-     * Get the value of the config from the database
-     */
-    public static getConfig<ThrowOnError extends boolean = false>(options: Options<GetConfigData, ThrowOnError>) {
-        return (options.client ?? client).get<GetConfigResponses, GetConfigErrors, ThrowOnError>({
-            security: [{ scheme: 'bearer', type: 'http' }, {
-                    in: 'cookie',
-                    name: 'ORM-Authentication',
-                    type: 'apiKey'
-                }],
-            url: '/api/config/{id}',
-            ...options
-        });
-    }
-    
-    /**
      * Set a config value in the database
      */
-    public static setConfig<ThrowOnError extends boolean = false>(options: Options<SetConfigData, ThrowOnError>) {
-        return (options.client ?? client).put<SetConfigResponses, SetConfigErrors, ThrowOnError>({
+    public static setConfigs<ThrowOnError extends boolean = false>(options: Options<SetConfigsData, ThrowOnError>) {
+        return (options.client ?? client).put<SetConfigsResponses, SetConfigsErrors, ThrowOnError>({
             security: [{ scheme: 'bearer', type: 'http' }, {
                     in: 'cookie',
                     name: 'ORM-Authentication',
                     type: 'apiKey'
                 }],
-            url: '/api/config/{id}',
+            url: '/api/config/',
             ...options,
             headers: {
                 'Content-Type': 'application/json',
@@ -743,6 +728,21 @@ export class ConfigController {
                     type: 'apiKey'
                 }],
             url: '/api/config',
+            ...options
+        });
+    }
+    
+    /**
+     * Get the value of the config from the database
+     */
+    public static getConfig<ThrowOnError extends boolean = false>(options: Options<GetConfigData, ThrowOnError>) {
+        return (options.client ?? client).get<GetConfigResponses, GetConfigErrors, ThrowOnError>({
+            security: [{ scheme: 'bearer', type: 'http' }, {
+                    in: 'cookie',
+                    name: 'ORM-Authentication',
+                    type: 'apiKey'
+                }],
+            url: '/api/config/{id}',
             ...options
         });
     }

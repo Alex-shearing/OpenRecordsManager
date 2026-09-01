@@ -17,6 +17,7 @@
 		return provider.name || provider.type.type;
 	}
 
+	// svelte-ignore state_referenced_locally
 	let selectedProviderId = $state<string | undefined>(inputProviders.at(0)?.id);
 	let values = $state<Record<string, string>>({});
 	let fieldErrors = $state<Record<string, string>>({});

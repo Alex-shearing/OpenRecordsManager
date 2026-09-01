@@ -9,6 +9,7 @@ import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.media.*;
 import io.swagger.v3.oas.models.security.SecurityRequirement;
 import io.swagger.v3.oas.models.security.SecurityScheme;
+import org.springdoc.core.customizers.OpenApiCustomizer;
 import org.springdoc.core.customizers.OperationCustomizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -20,6 +21,23 @@ import org.springframework.web.method.HandlerMethod;
 
 @Configuration
 public class SwaggerConfiguration {
+
+    /**
+     * Fix discriminated unions on {@link com.openrecordsmanager.config.dto.ConfigTypeResponse}
+     */
+    @Bean
+    public OpenApiCustomizer configTypeResponseOpenApiCustomizer() {
+        return openApi -> {
+            if (openApi.getComponents() != null && openApi.getComponents().getSchemas() != null) {
+                Schema<?> parentSchema = openApi.getComponents().getSchemas().get("ConfigTypeResponse");
+
+                if (parentSchema != null && parentSchema.getOneOf() != null) {
+                    parentSchema.setProperties(null);
+                    parentSchema.setType(null);
+                }
+            }
+        };
+    }
 
     @Bean
     public OperationCustomizer wrapResponseSchemaCustomizer() {

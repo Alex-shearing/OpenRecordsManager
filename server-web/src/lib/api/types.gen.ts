@@ -330,13 +330,118 @@ export type MiddlewareTypeResponse = {
     settingsSchema: InputFormSchema;
 };
 
-export type ConfigTypeResponse = {
+/**
+ * Boolean configuration value
+ */
+export type ConfigTypeBooleanResponse = {
     key: string;
     name: string;
-    currentValue?: unknown;
     description: string;
+    type: 'boolean';
+    currentValue?: boolean;
+    defaultValue?: boolean;
+};
+
+/**
+ * Decimal configuration value
+ */
+export type ConfigTypeDecimalResponse = {
+    key: string;
+    name: string;
+    description: string;
+    type: 'decimal';
+    currentValue?: number;
+    defaultValue?: number;
+};
+
+/**
+ * Integer list configuration value
+ */
+export type ConfigTypeIntListResponse = {
+    key: string;
+    name: string;
+    description: string;
+    type: 'int_list';
+    currentValue?: Array<number>;
+    defaultValue?: Array<number>;
+};
+
+/**
+ * Integer number configuration value
+ */
+export type ConfigTypeNumberResponse = {
+    key: string;
+    name: string;
+    description: string;
+    type: 'number';
+    currentValue?: number;
+    defaultValue?: number;
+};
+
+/**
+ * Opaque object configuration value
+ */
+export type ConfigTypeObjectResponse = {
+    key: string;
+    name: string;
+    description: string;
+    type: 'object';
+    currentValue?: unknown;
     defaultValue?: unknown;
-    type: 'string' | 'boolean' | 'number' | 'decimal' | 'uuid' | 'string_list' | 'int_list' | 'object';
+};
+
+export type ConfigTypeResponse = ({
+    type: 'string';
+} & ConfigTypeStringResponse) | ({
+    type: 'boolean';
+} & ConfigTypeBooleanResponse) | ({
+    type: 'number';
+} & ConfigTypeNumberResponse) | ({
+    type: 'decimal';
+} & ConfigTypeDecimalResponse) | ({
+    type: 'uuid';
+} & ConfigTypeUuidResponse) | ({
+    type: 'string_list';
+} & ConfigTypeStringListResponse) | ({
+    type: 'int_list';
+} & ConfigTypeIntListResponse) | ({
+    type: 'object';
+} & ConfigTypeObjectResponse);
+
+/**
+ * String list configuration value
+ */
+export type ConfigTypeStringListResponse = {
+    key: string;
+    name: string;
+    description: string;
+    type: 'string_list';
+    currentValue?: Array<string>;
+    defaultValue?: Array<string>;
+};
+
+/**
+ * String configuration value
+ */
+export type ConfigTypeStringResponse = {
+    key: string;
+    name: string;
+    description: string;
+    type: 'string';
+    currentValue?: string;
+    defaultValue?: string;
+};
+
+/**
+ * UUID configuration value
+ */
+export type ConfigTypeUuidResponse = {
+    key: string;
+    name: string;
+    description: string;
+    type: 'uuid';
+    currentValue?: string;
+    defaultValue?: string;
 };
 
 export type AuditStatusResponse = {
@@ -2224,91 +2329,16 @@ export type MiddlewareUpdateResponses = {
 
 export type MiddlewareUpdateResponse = MiddlewareUpdateResponses[keyof MiddlewareUpdateResponses];
 
-export type GetConfigData = {
-    body?: never;
-    path: {
-        id: string;
-    };
-    query?: never;
-    url: '/api/config/{id}';
-};
-
-export type GetConfigErrors = {
-    /**
-     * Unauthorized
-     */
-    401: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
-    /**
-     * Forbidden
-     */
-    403: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
-    /**
-     * Audit comment required
-     */
-    422: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
-    /**
-     * Internal Server error
-     */
-    500: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
-};
-
-export type GetConfigError = GetConfigErrors[keyof GetConfigErrors];
-
-export type GetConfigResponses = {
-    /**
-     * OK
-     */
-    200: {
-        success: true;
-        timestamp: unknown;
-        data: {
-            [key: string]: unknown;
-        };
-    };
-};
-
-export type GetConfigResponse = GetConfigResponses[keyof GetConfigResponses];
-
-export type SetConfigData = {
+export type SetConfigsData = {
     body: {
         [key: string]: unknown;
     };
-    path: {
-        id: string;
-    };
+    path?: never;
     query?: never;
-    url: '/api/config/{id}';
+    url: '/api/config/';
 };
 
-export type SetConfigErrors = {
+export type SetConfigsErrors = {
     /**
      * Unauthorized
      */
@@ -2355,20 +2385,20 @@ export type SetConfigErrors = {
     };
 };
 
-export type SetConfigError = SetConfigErrors[keyof SetConfigErrors];
+export type SetConfigsError = SetConfigsErrors[keyof SetConfigsErrors];
 
-export type SetConfigResponses = {
+export type SetConfigsResponses = {
     /**
      * OK
      */
     200: {
         success: true;
         timestamp: unknown;
-        data: ConfigResponse;
+        data: Array<ConfigResponse>;
     };
 };
 
-export type SetConfigResponse = SetConfigResponses[keyof SetConfigResponses];
+export type SetConfigsResponse = SetConfigsResponses[keyof SetConfigsResponses];
 
 export type GetAllData = {
     body?: never;
@@ -4986,6 +5016,79 @@ export type GetAllConfigResponses = {
 };
 
 export type GetAllConfigResponse = GetAllConfigResponses[keyof GetAllConfigResponses];
+
+export type GetConfigData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/config/{id}';
+};
+
+export type GetConfigErrors = {
+    /**
+     * Unauthorized
+     */
+    401: {
+        success: false;
+        timestamp: unknown;
+        error: string;
+        errorData?: {
+            [key: string]: unknown;
+        };
+    };
+    /**
+     * Forbidden
+     */
+    403: {
+        success: false;
+        timestamp: unknown;
+        error: string;
+        errorData?: {
+            [key: string]: unknown;
+        };
+    };
+    /**
+     * Audit comment required
+     */
+    422: {
+        success: false;
+        timestamp: unknown;
+        error: string;
+        errorData?: {
+            [key: string]: unknown;
+        };
+    };
+    /**
+     * Internal Server error
+     */
+    500: {
+        success: false;
+        timestamp: unknown;
+        error: string;
+        errorData?: {
+            [key: string]: unknown;
+        };
+    };
+};
+
+export type GetConfigError = GetConfigErrors[keyof GetConfigErrors];
+
+export type GetConfigResponses = {
+    /**
+     * OK
+     */
+    200: {
+        success: true;
+        timestamp: unknown;
+        data: {
+            [key: string]: unknown;
+        };
+    };
+};
+
+export type GetConfigResponse = GetConfigResponses[keyof GetConfigResponses];
 
 export type GetAllLocalConfigData = {
     body?: never;

@@ -4,8 +4,7 @@
 	import {
 		buildSavedValues,
 		findChangedConfigs,
-		groupConfigs,
-		serializeConfigDraftValue
+		groupConfigs
 	} from '$lib/config/config-utils';
 	import { invalidateAll } from '$app/navigation';
 
@@ -14,18 +13,12 @@
 	const sections = $derived(groupConfigs(data.configs));
 	const savedValues = $derived(buildSavedValues(data.configs));
 
+	// svelte-ignore state_referenced_locally
 	let draftValues = $state(buildSavedValues(data.configs));
 	let auditComment = $state('');
 	let submitting = $state(false);
 	let formError = $state('');
 	let successMessage = $state('');
-
-	$effect(() => {
-		draftValues = buildSavedValues(data.configs);
-		formError = '';
-		successMessage = '';
-		auditComment = '';
-	});
 
 	const changedConfigs = $derived(findChangedConfigs(data.configs, draftValues, savedValues));
 	const isDirty = $derived(changedConfigs.length > 0);
@@ -50,22 +43,18 @@
 			? { 'X-ORM-Audit-Comment': auditComment.trim() }
 			: undefined;
 
-		for (const config of changedConfigs) {
-			const body = serializeConfigDraftValue(config.type, draftValues[config.key]);
-			const { error } = await ConfigController.setConfig({
-				path: { id: config.key },
-				body,
-				headers
-			});
-
-			if (error) {
-				submitting = false;
-				formError = `${config.name}: ${error.error ?? 'Failed to save.'}`;
-				return;
-			}
-		}
+		const { error } = await ConfigController.setConfigs({
+			body: Object.fromEntries(changedConfigs.map(a => [a.key, draftValues[a.key].currentValue])),
+			headers
+		});
 
 		submitting = false;
+
+		if (error) {
+			formError = error.error ?? 'Failed to save.';
+			return;
+		}
+
 		successMessage =
 			changedConfigs.length === 1
 				? 'Saved 1 setting.'

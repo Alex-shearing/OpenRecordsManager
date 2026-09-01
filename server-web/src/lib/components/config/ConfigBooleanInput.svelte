@@ -15,11 +15,8 @@
 		{id}
 		type="checkbox"
 		class="size-4 rounded border-border-input"
-		checked={value}
+		bind:checked={value}
 		{disabled}
-		onchange={(event) => {
-			value = event.currentTarget.checked;
-		}}
 	/>
 	<span class="text-sm text-foreground">{value ? 'Enabled' : 'Disabled'}</span>
 </label>

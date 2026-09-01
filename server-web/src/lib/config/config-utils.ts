@@ -1,32 +1,32 @@
-import type {
-	ConfigDraftValue,
-	ConfigDraftValues,
-	DescriminatedConfigTypeResponse,
-	ConfigValueType
-} from '$lib/config/config-types';
+import type { ConfigTypeResponse } from '$lib/api/types.gen';
+import type { DistributivePick } from '$lib/util-types';
 
-export type { ConfigDraftValue, ConfigDraftValues } from '$lib/config/config-types';
+export type EnsureCurrentValue<T> = T extends any
+	? Omit<T, 'currentValue'> & { currentValue: NonNullable<T[keyof T & 'currentValue']> }
+	: never;
 
-export type ConfigGroup = {
-	id: string;
-	title: string;
-	prefix: string;
-};
+export type ConfigDraftValue = EnsureCurrentValue<
+	DistributivePick<ConfigTypeResponse, 'currentValue' | 'type'>
+>;
 
-export const CONFIG_GROUPS: ConfigGroup[] = [
+export type ConfigDraftValueType = ConfigDraftValue['currentValue'];
+export type ConfigValueType = ConfigDraftValue['type'];
+
+export const CONFIG_GROUPS = [
 	{ id: 'workgroup', title: 'Workgroup', prefix: 'workgroup.' },
+	{ id: 'web', title: 'Web branding', prefix: 'app.web.' },
 	{ id: 'debug', title: 'Debugging', prefix: 'app.debug.' },
 	{ id: 'database', title: 'Database', prefix: 'app.database.' },
 	{ id: 'security', title: 'Security', prefix: 'app.security.' },
-	{ id: 'web', title: 'Web branding', prefix: 'app.web.' },
-	{ id: 'audit', title: 'Audit', prefix: 'app.audit.' }
+	{ id: 'audit', title: 'Audit', prefix: 'app.audit.' },
+	{ id: 'other', title: 'Other', prefix: '' }
 ];
 
-export function groupConfigs(
-	configs: DescriminatedConfigTypeResponse[]
-): Array<{ group: ConfigGroup | null; items: DescriminatedConfigTypeResponse[] }> {
+export type ConfigGroup = (typeof CONFIG_GROUPS)[0];
+
+export function groupConfigs(configs: ConfigTypeResponse[]) {
 	const sorted = [...configs].sort((a, b) => a.key.localeCompare(b.key));
-	const grouped = new Map<string, DescriminatedConfigTypeResponse[]>();
+	const grouped = new Map<string, ConfigTypeResponse[]>();
 
 	for (const config of sorted) {
 		const match = CONFIG_GROUPS.find((group) => config.key.startsWith(group.prefix));
@@ -36,8 +36,7 @@ export function groupConfigs(
 		grouped.set(groupId, bucket);
 	}
 
-	const sections: Array<{ group: ConfigGroup | null; items: DescriminatedConfigTypeResponse[] }> =
-		[];
+	const sections: { group: ConfigGroup; items: ConfigTypeResponse[] }[] = [];
 
 	for (const group of CONFIG_GROUPS) {
 		const items = grouped.get(group.id);
@@ -46,91 +45,51 @@ export function groupConfigs(
 		}
 	}
 
-	const other = grouped.get('other');
-	if (other?.length) {
-		sections.push({ group: null, items: other });
-	}
-
 	return sections;
 }
 
-export function parseConfigDraftValue(config: DescriminatedConfigTypeResponse): ConfigDraftValue {
-	const value = config.currentValue ?? config.defaultValue;
+const DEFAULT_FALLBACKS: Record<ConfigValueType, any> = {
+	boolean: false,
+	string_list: [''],
+	int_list: [],
+	number: 0,
+	decimal: 0,
+	string: '',
+	uuid: '',
+	object: {}
+};
 
-	switch (config.type) {
-		case 'boolean':
-			return value === true || value === 'true';
-		case 'string_list':
-			if (Array.isArray(value)) {
-				return value.length > 0 ? value.map(String) : [''];
-			}
-			return [''];
-		case 'int_list':
-			if (Array.isArray(value)) {
-				return value.map((entry) => Number(entry)).filter((entry) => !Number.isNaN(entry));
-			}
-			return [];
-		case 'number':
-			return typeof value === 'number' && !Number.isNaN(value) ? value : null;
-		case 'decimal':
-			return typeof value === 'number' && !Number.isNaN(value) ? value : null;
-		default:
-			return value == null ? '' : String(value);
-	}
+export function parseConfigDraftValue(config: ConfigTypeResponse): ConfigDraftValue {
+	return {
+		type: config.type,
+		currentValue: config.currentValue ?? config.defaultValue ?? DEFAULT_FALLBACKS[config.type]
+	};
 }
 
-export function serializeConfigDraftValue(type: ConfigValueType, value: ConfigDraftValue): any {
-	switch (type) {
-		case 'boolean':
-			return value;
-		case 'string_list':
-			return (value as string[]).map((entry) => entry.trim()).filter(Boolean);
-		case 'int_list':
-			return (value as number[]).filter((entry) => !Number.isNaN(entry));
-		case 'number':
-		case 'decimal':
-			return value === null || value === '' ? null : value;
-		default:
-			return typeof value === 'string' ? value.trim() : value;
-	}
-}
-
-export function formatConfigValueForDisplay(value: unknown, type: ConfigValueType): string {
-	if (value == null || value === '') {
+export function formatDefaultValueForDisplay(cfg: ConfigTypeResponse) {
+	if (cfg.defaultValue == null || cfg.defaultValue === '') {
 		return '—';
 	}
 
-	if (type === 'string_list' || type === 'int_list') {
-		if (Array.isArray(value)) {
-			return value.map(String).join(', ');
-		}
+	if (cfg.type === 'string_list' || cfg.type === 'int_list') {
+		return cfg.defaultValue.map(String).join(', ');
 	}
 
-	return String(value);
+	return String(cfg.defaultValue);
 }
 
-export function buildSavedValues(configs: DescriminatedConfigTypeResponse[]): ConfigDraftValues {
+export function buildSavedValues(configs: ConfigTypeResponse[]): Record<string, ConfigDraftValue> {
 	return Object.fromEntries(configs.map((config) => [config.key, parseConfigDraftValue(config)]));
 }
 
-export function configDraftValuesEqual(
-	type: ConfigValueType,
-	left: ConfigDraftValue,
-	right: ConfigDraftValue
-): boolean {
-	return (
-		JSON.stringify(serializeConfigDraftValue(type, left)) ===
-		JSON.stringify(serializeConfigDraftValue(type, right))
-	);
-}
-
 export function findChangedConfigs(
-	configs: DescriminatedConfigTypeResponse[],
-	draftValues: ConfigDraftValues,
-	savedValues: ConfigDraftValues
-): DescriminatedConfigTypeResponse[] {
+	configs: ConfigTypeResponse[],
+	draftValues: Record<string, ConfigDraftValue>,
+	savedValues: Record<string, ConfigDraftValue>
+): ConfigTypeResponse[] {
 	return configs.filter(
 		(config) =>
-			!configDraftValuesEqual(config.type, draftValues[config.key], savedValues[config.key])
+			JSON.stringify(draftValues[config.key].currentValue) !==
+			JSON.stringify(savedValues[config.key].currentValue)
 	);
 }

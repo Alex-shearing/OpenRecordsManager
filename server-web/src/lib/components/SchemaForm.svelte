@@ -14,7 +14,7 @@
 		disabled = false,
 		before,
 		after,
-		onsubmit,
+		onsubmit
 	}: {
 		schema: InputFormSchema;
 		values?: Record<string, string>;
@@ -53,7 +53,7 @@
 
 	{#each Object.entries(schema.properties) as [key, field] (key)}
 		{@const required = schema.required.includes(key)}
-		
+
 		<label class="flex flex-col gap-1">
 			<span>{field.title}</span>
 			{#if field.description}
@@ -73,6 +73,7 @@
 				class="input"
 				aria-invalid={fieldErrors[key] ? 'true' : undefined}
 				aria-describedby={fieldErrors[key] ? `${idPrefix}-${key}-error` : undefined}
+				placeholder=" "
 			/>
 			{#if fieldErrors[key]}
 				<span id="{idPrefix}-{key}-error" class="text-sm text-destructive" role="alert">
