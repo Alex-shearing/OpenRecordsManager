@@ -62,7 +62,9 @@
 	.btn-primary {
 		@apply inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors disabled:pointer-events-none disabled:opacity-50;
 
-		&:hover:not(:disabled) {
+		&:hover:not(:disabled),
+		&:focus:not(:disabled),
+		&:focus-visible:not(:disabled) {
 			background-color: color-mix(in srgb, var(--color-primary) 88%, black);
 		}
 	}

@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { page } from '$app/state';
-	import { NavigationMenu } from 'bits-ui';
 	import BrandingHeader from '$lib/components/BrandingHeader.svelte';
 	import HeaderNav from '$lib/components/HeaderNav.svelte';
 	import HeaderNavLink from '$lib/components/layout/HeaderNavLink.svelte';
@@ -20,18 +19,16 @@
 		</div>
 	{/snippet}
 	{#snippet end()}
-		<NavigationMenu.Root aria-label="Account" class="shrink-0">
-			<NavigationMenu.List class="flex list-none items-center gap-1">
-				<HeaderNavLink
-					route="/(authenticated)/profile"
-					icon={UserIcon}
-					active={isProfileActive}
-					class="hidden sm:inline-flex"
-				>
-					{data.me.username}
-				</HeaderNavLink>
-			</NavigationMenu.List>
-		</NavigationMenu.Root>
+		<nav aria-label="Account" class="flex shrink-0 items-center gap-1">
+			<HeaderNavLink
+				route="/(authenticated)/profile"
+				icon={UserIcon}
+				active={isProfileActive}
+				class="hidden sm:inline-flex"
+			>
+				{data.me.username}
+			</HeaderNavLink>
+		</nav>
 	{/snippet}
 </BrandingHeader>
 

@@ -67,7 +67,9 @@
 		</Select.Portal>
 	</Select.Root>
 
-	<label class="flex min-w-0 flex-1 items-center gap-2 px-3">
+	<label
+		class="flex min-w-0 flex-1 items-center gap-2 px-3 outline-hidden focus-within:ring-2 focus-within:ring-inset focus-within:ring-primary"
+	>
 		<MagnifyingGlassIcon class="size-4 shrink-0 text-subtle-foreground" aria-hidden="true" />
 		<input
 			bind:this={searchInput}
@@ -75,9 +77,14 @@
 			name="q"
 			aria-keyshortcuts="Control+K"
 			placeholder="Search {searchText}..."
-			class="min-w-0 flex-1 border-0 bg-transparent py-2 text-sm text-foreground placeholder:text-subtle-foreground focus:outline-none"
+			class={`
+				min-w-0 flex-1 border-0 bg-transparent py-2 text-sm text-foreground 
+				placeholder:text-subtle-foreground appearance-none shadow-none! ring-0! outline-hidden focus:border-0
+			    focus:shadow-none! focus:ring-0! focus:outline-hidden focus-visible:border-0 focus-visible:shadow-none!
+			    focus-visible:ring-0! focus-visible:outline-hidden
+			`}
 		/>
 	</label>
 
-	<button type="submit" class="btn-primary shrink-0 rounded-none border-l border-border"> Search </button>
+	<button type="submit" class="btn-primary shrink-0 rounded-none border-l border-border">Search</button>
 </form>
