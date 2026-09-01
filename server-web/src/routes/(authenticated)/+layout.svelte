@@ -1,18 +1,26 @@
 <script lang="ts">
-	import SearchBar from '$lib/components/SearchBar.svelte';
+	import { page } from '$app/state';
 	import BrandingHeader from '$lib/components/BrandingHeader.svelte';
+	import HeaderNav from '$lib/components/HeaderNav.svelte';
+	import SearchBar from '$lib/components/SearchBar.svelte';
 
 	let { children, data } = $props();
+
+	const isProfileActive = $derived(page.route.id === '/(authenticated)/profile');
 </script>
 
 <BrandingHeader branding={data.branding}>
 	{#snippet center()}
-		<SearchBar class="w-full sm:w-1/2" />
+		<div class="flex items-center gap-4">
+			<SearchBar class="w-full sm:w-1/2" />
+			<HeaderNav />
+		</div>
 	{/snippet}
 	{#snippet end()}
 		<a
 			href="/profile"
-			class="hidden h-8 w-max items-center justify-center rounded-[7px] bg-transparent px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-white/15 focus:outline-hidden sm:inline-flex"
+			class="header-nav-link hidden sm:inline-flex"
+			aria-current={isProfileActive ? 'page' : undefined}
 		>
 			{data.me.username}
 		</a>

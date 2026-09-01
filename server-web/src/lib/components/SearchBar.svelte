@@ -34,7 +34,7 @@
 		<Select.Portal>
 			<Select.Content class="z-50 min-w-28 rounded-lg border border-border bg-surface p-1 shadow-lg" sideOffset={4}>
 				<Select.ScrollUpButton class="flex w-full items-center justify-center py-1 text-muted-foreground">
-					<CaretUpIcon class="size-3" />
+					<CaretUpIcon class="size-3" aria-label="Select search target" />
 				</Select.ScrollUpButton>
 				<Select.Viewport>
 					{#each items as item (item.value)}

@@ -4,6 +4,7 @@
 
 	let { data } = $props();
 
+	// svelte-ignore state_referenced_locally
 	let statusData = $state(data.status);
 	let upgrading = $state(false);
 	let upgradeError = $state<string | null>(null);
