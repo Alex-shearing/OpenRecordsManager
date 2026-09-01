@@ -15,21 +15,29 @@
 	];
 
 	let selected = $state('all');
+	let searchInput = $state<HTMLInputElement | null>(null);
 	let searchText = $derived(items.find(item => item.value === selected)?.search ?? 'everything');
 
-	function handleSubmit(event: SubmitEvent) {
+	function handleWindowKeydown(event: KeyboardEvent) {
+		if (event.key.toLowerCase() !== 'k' || (!event.ctrlKey && !event.metaKey) || event.altKey || event.shiftKey) {
+			return;
+		}
+
 		event.preventDefault();
+		searchInput?.focus();
 	}
 </script>
 
-<form class="card flex items-stretch overflow-hidden p-0 {className}" onsubmit={handleSubmit} {...rest}>
-	<Select.Root type="single" {items} bind:value={selected}>
+<svelte:window onkeydown={handleWindowKeydown} />
+
+<form action="/search" method="GET" class="card flex items-stretch overflow-hidden p-0 {className}" {...rest}>
+	<Select.Root type="single" {items} bind:value={selected} name="type">
 		<Select.Trigger
 			aria-label="Select a search type"
-			class="inline-flex w-28 shrink-0 items-center gap-1 border-r border-border px-3 py-2 text-sm font-medium text-foreground outline-none hover:bg-surface-hover"
+			class="inline-flex w-28 shrink-0 items-center gap-1 border-r border-border px-3 py-2 text-sm font-medium text-foreground outline-hidden hover:bg-surface-hover focus-visible:bg-surface-hover focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary"
 		>
 			<Select.Value placeholder="Type" />
-			<CaretUpDownIcon class="ml-auto size-4 text-muted-foreground" />
+			<CaretUpDownIcon class="ml-auto size-4 text-muted-foreground" aria-hidden="true" />
 		</Select.Trigger>
 		<Select.Portal>
 			<Select.Content class="z-50 min-w-28 rounded-lg border border-border bg-surface p-1 shadow-lg" sideOffset={4}>
@@ -39,7 +47,7 @@
 				<Select.Viewport>
 					{#each items as item (item.value)}
 						<Select.Item
-							class="flex w-full items-center justify-between rounded px-2 py-1.5 text-sm text-foreground outline-none data-[highlighted]:bg-surface-muted"
+							class="flex w-full items-center justify-between rounded px-2 py-1.5 text-sm text-foreground outline-none data-highlighted:bg-surface-muted"
 							value={item.value}
 							label={item.label}
 						>
@@ -62,7 +70,10 @@
 	<label class="flex min-w-0 flex-1 items-center gap-2 px-3">
 		<MagnifyingGlassIcon class="size-4 shrink-0 text-subtle-foreground" aria-hidden="true" />
 		<input
+			bind:this={searchInput}
 			type="search"
+			name="q"
+			aria-keyshortcuts="Control+K"
 			placeholder="Search {searchText}..."
 			class="min-w-0 flex-1 border-0 bg-transparent py-2 text-sm text-foreground placeholder:text-subtle-foreground focus:outline-none"
 		/>

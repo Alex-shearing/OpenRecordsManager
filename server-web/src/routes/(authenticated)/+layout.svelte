@@ -1,8 +1,11 @@
 <script lang="ts">
 	import { page } from '$app/state';
+	import { NavigationMenu } from 'bits-ui';
 	import BrandingHeader from '$lib/components/BrandingHeader.svelte';
 	import HeaderNav from '$lib/components/HeaderNav.svelte';
+	import HeaderNavLink from '$lib/components/layout/HeaderNavLink.svelte';
 	import SearchBar from '$lib/components/SearchBar.svelte';
+	import UserIcon from 'phosphor-svelte/lib/UserIcon';
 
 	let { children, data } = $props();
 
@@ -17,13 +20,18 @@
 		</div>
 	{/snippet}
 	{#snippet end()}
-		<a
-			href="/profile"
-			class="header-nav-link hidden sm:inline-flex"
-			aria-current={isProfileActive ? 'page' : undefined}
-		>
-			{data.me.username}
-		</a>
+		<NavigationMenu.Root aria-label="Account" class="shrink-0">
+			<NavigationMenu.List class="flex list-none items-center gap-1">
+				<HeaderNavLink
+					route="/(authenticated)/profile"
+					icon={UserIcon}
+					active={isProfileActive}
+					class="hidden sm:inline-flex"
+				>
+					{data.me.username}
+				</HeaderNavLink>
+			</NavigationMenu.List>
+		</NavigationMenu.Root>
 	{/snippet}
 </BrandingHeader>
 
