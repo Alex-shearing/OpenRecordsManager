@@ -4,7 +4,7 @@
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
 	import SchemaForm from './SchemaForm.svelte';
-	import { client } from '$lib/api/client.gen';
+	import { getApiClient } from '$lib/api-client';
 
 	let {
 		inputProviders,
@@ -37,6 +37,7 @@
 		formError = '';
 
 		const { error } = await AuthController.login({
+			client: getApiClient(),
 			path: { provider: selectedProvider.id },
 			body: values,
 		});
@@ -104,7 +105,7 @@
 			{#each redirectProviders as provider (provider.id)}
 				<li>
 					<a
-						href={`${client.getConfig().baseUrl || ''}/api/auth/redirect/${provider.id}`}
+						href={`${getApiClient().getConfig().baseUrl || ''}/api/auth/redirect/${provider.id}`}
 						class="list-panel-item text-center font-medium"
 					>
 						Continue with {providerLabel(provider)}

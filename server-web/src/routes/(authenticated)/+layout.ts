@@ -1,11 +1,13 @@
 import { goto } from '$app/navigation';
 import { AuditController, ObjectPropertyController, UserController } from '$lib/api';
+import { getApiClient } from '$lib/api-client';
 
 export async function load({ url }) {
+	const client = getApiClient();
 	const [meR, propertiesR, auditPolicyR] = await Promise.all([
-		UserController.me(),
-		ObjectPropertyController.objectPropertyRetrieveAll(),
-		AuditController.listPolicies(),
+		UserController.me({ client }),
+		ObjectPropertyController.objectPropertyRetrieveAll({ client }),
+		AuditController.listPolicies({ client }),
 	]);
 
 	if (meR.error && meR.response.status === 401) {

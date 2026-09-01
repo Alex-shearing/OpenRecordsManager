@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { AuthController } from '$lib/api';
 	import type { ActionResponse } from '$lib/api/types.gen';
+	import { getApiClient } from '$lib/api-client';
 	import PageContent from '$lib/components/layout/PageContent.svelte';
 	import UserActionForm from '$lib/components/UserActionForm.svelte';
 	import { goto } from '$app/navigation';
@@ -19,7 +20,7 @@
 
 	async function handleLogout() {
 		loggingOut = true;
-		await AuthController.logout();
+		await AuthController.logout({ client: getApiClient() });
 		await goto('/login');
 	}
 </script>

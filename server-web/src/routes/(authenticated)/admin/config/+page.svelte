@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { ConfigController } from '$lib/api';
+	import { getApiClient } from '$lib/api-client';
 	import ConfigSettingRow from '$lib/components/ConfigSettingRow.svelte';
 	import { buildSavedValues, findChangedConfigs, groupConfigs } from '$lib/config/config-utils';
 	import { invalidateAll } from '$app/navigation';
@@ -38,6 +39,7 @@
 		const headers = auditComment.trim() ? { 'X-ORM-Audit-Comment': auditComment.trim() } : undefined;
 
 		const { error } = await ConfigController.setConfigs({
+			client: getApiClient(),
 			body: Object.fromEntries(changedConfigs.map(a => [a.key, draftValues[a.key].currentValue])),
 			headers,
 		});

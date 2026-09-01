@@ -1,10 +1,13 @@
 <script lang="ts">
 	import { TemplateController } from '$lib/api';
+	import { getApiClient } from '$lib/api-client';
 
-	const types = TemplateController.getTemplateTypes();
+	const client = getApiClient();
+	const types = TemplateController.getTemplateTypes({ client });
 
 	const registerTemplate = async (type: string, template: string) => {
 		const { data, error } = await TemplateController.registerTemplate({
+			client,
 			path: { type, template },
 			query: { includeDependencies: true },
 		});
@@ -26,7 +29,7 @@
 		{#if data}
 			{#each data.data as type}
 				<h1 class="text-2xl font-bold">{type}</h1>
-				{#await TemplateController.getTemplatesForType({ path: { type } })}
+				{#await TemplateController.getTemplatesForType({ client, path: { type } })}
 					Loading...
 				{:then { data, error }}
 					{#if data?.data}

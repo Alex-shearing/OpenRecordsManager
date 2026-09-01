@@ -1,7 +1,8 @@
 import { AuthController } from '$lib/api';
+import { getApiClient } from '$lib/api-client';
 
 export async function load() {
-	const { data, error } = await AuthController.getAll();
+	const { data, error } = await AuthController.getAll({ client: getApiClient() });
 
 	if (error || !data?.success) {
 		return {

@@ -1,7 +1,11 @@
 import { ConfigController } from '$lib/api';
+import { getApiClient } from '$lib/api-client';
 
 export async function load({ parent }) {
-	const [parentData, configResult] = await Promise.all([parent(), ConfigController.getAllConfig()]);
+	const [parentData, configResult] = await Promise.all([
+		parent(),
+		ConfigController.getAllConfig({ client: getApiClient() }),
+	]);
 
 	const configs = configResult.data?.success ? configResult.data.data : [];
 	const requiresAuditComment = parentData.auditPolicy.some(

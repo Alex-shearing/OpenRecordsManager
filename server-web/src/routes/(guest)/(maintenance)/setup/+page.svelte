@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { DatabaseController } from '$lib/api';
+	import { getApiClient } from '$lib/api-client';
 
 	let { data } = $props();
 
@@ -12,7 +13,8 @@
 	async function upgrade() {
 		upgrading = true;
 		upgradeError = null;
-		const { data, error } = await DatabaseController.upgrade();
+		const client = getApiClient();
+		const { data, error } = await DatabaseController.upgrade({ client });
 		upgrading = false;
 
 		if (error) {
@@ -20,7 +22,7 @@
 			return;
 		}
 
-		statusData = await DatabaseController.status();
+		statusData = await DatabaseController.status({ client });
 	}
 </script>
 

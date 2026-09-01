@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { DatabaseController } from '$lib/api';
+	import { getApiClient } from '$lib/api-client';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
 
@@ -9,7 +10,7 @@
 
 	async function checkStatus() {
 		try {
-			const { data, error } = await DatabaseController.status();
+			const { data, error } = await DatabaseController.status({ client: getApiClient() });
 			if (error) {
 				return 'unavailable';
 			}

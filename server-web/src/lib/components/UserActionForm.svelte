@@ -1,6 +1,7 @@
 <script lang="ts">
 	import type { ActionResponse } from '$lib/api/types.gen';
 	import { UserController } from '$lib/api';
+	import { getApiClient } from '$lib/api-client';
 	import SchemaForm from './SchemaForm.svelte';
 
 	let {
@@ -30,6 +31,7 @@
 		formError = '';
 
 		const { error } = await UserController.executeAction({
+			client: getApiClient(),
 			path: { id: userId, action: action.id },
 			body: values,
 			headers: auditComment.trim() ? { 'X-ORM-Audit-Comment': auditComment.trim() } : undefined,

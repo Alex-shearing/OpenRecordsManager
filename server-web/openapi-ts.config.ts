@@ -7,13 +7,11 @@ export default defineConfig({
 		'@hey-api/typescript',
 		{
 			name: '@hey-api/sdk',
+			client: false,
 			operations: {
 				strategy: 'byTags',
 			},
 		},
-		{
-			name: '@hey-api/client-fetch',
-			runtimeConfigPath: '../api-client.config.ts',
-		},
+		'@hey-api/client-fetch',
 	],
 });
