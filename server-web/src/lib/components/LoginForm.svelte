@@ -8,7 +8,7 @@
 
 	let {
 		inputProviders,
-		redirectProviders
+		redirectProviders,
 	}: {
 		inputProviders: AuthProviderResponse[];
 		redirectProviders: AuthProviderResponse[];
@@ -25,9 +25,7 @@
 	let formError = $state('');
 	let submitting = $state(false);
 
-	let selectedProvider = $derived(
-		inputProviders.find((provider) => provider.id === selectedProviderId)
-	);
+	let selectedProvider = $derived(inputProviders.find(provider => provider.id === selectedProviderId));
 
 	async function handleSubmit() {
 		if (!selectedProvider?.loginSchema) {
@@ -40,7 +38,7 @@
 
 		const { error } = await AuthController.login({
 			path: { provider: selectedProvider.id },
-			body: values
+			body: values,
 		});
 
 		submitting = false;

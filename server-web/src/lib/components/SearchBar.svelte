@@ -11,22 +11,18 @@
 	const items = [
 		{ label: 'All', value: 'all', search: 'everything' },
 		{ label: 'Record', value: 'record', search: 'records' },
-		{ label: 'Location', value: 'location', search: 'locations' }
+		{ label: 'Location', value: 'location', search: 'locations' },
 	];
 
 	let selected = $state('all');
-	let searchText = $derived(items.find((item) => item.value === selected)?.search ?? 'everything');
+	let searchText = $derived(items.find(item => item.value === selected)?.search ?? 'everything');
 
 	function handleSubmit(event: SubmitEvent) {
 		event.preventDefault();
 	}
 </script>
 
-<form
-	class="card flex items-stretch overflow-hidden p-0 {className}"
-	onsubmit={handleSubmit}
-	{...rest}
->
+<form class="card flex items-stretch overflow-hidden p-0 {className}" onsubmit={handleSubmit} {...rest}>
 	<Select.Root type="single" {items} bind:value={selected}>
 		<Select.Trigger
 			aria-label="Select a search type"
@@ -36,13 +32,8 @@
 			<CaretUpDownIcon class="ml-auto size-4 text-muted-foreground" />
 		</Select.Trigger>
 		<Select.Portal>
-			<Select.Content
-				class="z-50 min-w-28 rounded-lg border border-border bg-surface p-1 shadow-lg"
-				sideOffset={4}
-			>
-				<Select.ScrollUpButton
-					class="flex w-full items-center justify-center py-1 text-muted-foreground"
-				>
+			<Select.Content class="z-50 min-w-28 rounded-lg border border-border bg-surface p-1 shadow-lg" sideOffset={4}>
+				<Select.ScrollUpButton class="flex w-full items-center justify-center py-1 text-muted-foreground">
 					<CaretUpIcon class="size-3" />
 				</Select.ScrollUpButton>
 				<Select.Viewport>
@@ -61,9 +52,7 @@
 						</Select.Item>
 					{/each}
 				</Select.Viewport>
-				<Select.ScrollDownButton
-					class="flex w-full items-center justify-center py-1 text-muted-foreground"
-				>
+				<Select.ScrollDownButton class="flex w-full items-center justify-center py-1 text-muted-foreground">
 					<CaretDownIcon class="size-3" />
 				</Select.ScrollDownButton>
 			</Select.Content>
@@ -79,7 +68,5 @@
 		/>
 	</label>
 
-	<button type="submit" class="btn-primary shrink-0 rounded-none border-l border-border">
-		Search
-	</button>
+	<button type="submit" class="btn-primary shrink-0 rounded-none border-l border-border"> Search </button>
 </form>
