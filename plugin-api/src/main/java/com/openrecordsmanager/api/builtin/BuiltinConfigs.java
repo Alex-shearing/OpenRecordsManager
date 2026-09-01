@@ -26,10 +26,17 @@ public class BuiltinConfigs {
             .description("Defines the directory used to load plugins from.")
             .build();
 
-    public static final ConfigType<Boolean> PLUGINS_SKIP_STARTUP_CHECK = ConfigType.builder("server.plugins.skip-startup-check", PropertyType.BOOLEAN)
-            .name("Disable Plugin Load Check")
+    public static final ConfigType<Boolean> PLUGINS_SKIP_SYNC = ConfigType.builder("app.plugins.skip-sync", PropertyType.BOOLEAN)
+            .name("Disable Plugin Sync")
             .defaultValue(false)
-            .description("Disables the plugin startup check.")
+            .description("Disables background plugin synchronization with the database and file store.")
+            .build();
+
+    public static final String PLUGINS_SYNC_INTERVAL_MS_KEY = "app.plugins.sync-interval-ms";
+    public static final ConfigType<Long> PLUGINS_SYNC_INTERVAL_MS = ConfigType.builder(PLUGINS_SYNC_INTERVAL_MS_KEY, PropertyType.NUMBER)
+            .name("Plugin Sync Interval")
+            .description("Milliseconds between background checks for plugin changes in the database.")
+            .defaultValue(30000L)
             .build();
 
     public static final ConfigType<String> AUDIT_SPOOL_DIRECTORY = ConfigType.builder("server.audit-directory", PropertyType.STRING)
@@ -42,6 +49,24 @@ public class BuiltinConfigs {
             .name("Web Client Directory")
             .description("Optional static SPA directory (e.g. ./static after unpacking orm-web-static-*.zip), leave empty when the UI is hosted separately (nginx/IIS/etc)")
             .defaultValue("./static")
+            .build();
+
+    public static final ConfigType<String> MULTIPART_MAX_FILE_SIZE = ConfigType.builder(
+                    "server.servlet.multipart.max-file-size",
+                    PropertyType.STRING
+            )
+            .name("Multipart Max File Size")
+            .description("Maximum size of a single uploaded file (plugin JARs, record files). Spring Boot size format, e.g. 50MB.")
+            .defaultValue("50MB")
+            .build();
+
+    public static final ConfigType<String> MULTIPART_MAX_REQUEST_SIZE = ConfigType.builder(
+                    "server.servlet.multipart.max-request-size",
+                    PropertyType.STRING
+            )
+            .name("Multipart Max Request Size")
+            .description("Maximum size of a multipart HTTP request. Spring Boot size format, e.g. 50MB.")
+            .defaultValue("50MB")
             .build();
 
     // Database ony settings

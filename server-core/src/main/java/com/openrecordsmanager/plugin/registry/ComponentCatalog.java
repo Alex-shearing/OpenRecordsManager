@@ -9,7 +9,6 @@ import com.openrecordsmanager.plugin.registry.mapper.*;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -60,16 +59,12 @@ public class ComponentCatalog implements ComponentAccess {
             )
             .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 
-    public ComponentCatalog(
-            PluginManager pluginManager,
-            @Value("${workgroup.default_file_store:#{null}}") Optional<UUID> defaultStore
-    ) {
+    public ComponentCatalog(PluginManager pluginManager) {
         this.loadCatalog(pluginManager);
+    }
 
-        if (defaultStore.isPresent() && pluginManager.synchronizeWithServer(this, defaultStore.get())) {
-            LOGGER.info("Plugin manager reported changes, reloading catalog");
-            this.loadCatalog(pluginManager);
-        }
+    public synchronized void reload(PluginManager pluginManager) {
+        this.loadCatalog(pluginManager);
     }
 
     @SuppressWarnings("unchecked")

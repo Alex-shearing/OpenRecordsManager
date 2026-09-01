@@ -2,6 +2,7 @@
 	import { ConfigController } from '$lib/api';
 	import { getApiClient } from '$lib/api-client';
 	import ConfigSettingRow from '$lib/components/ConfigSettingRow.svelte';
+	import AuditSaveCard from '$lib/components/AuditSaveCard.svelte';
 	import { buildSavedValues, findChangedConfigs, groupConfigs } from '$lib/config/config-utils';
 	import { invalidateAll } from '$app/navigation';
 
@@ -88,37 +89,15 @@
 			</section>
 		{/each}
 
-		<section class="card p-5">
-			<label class="flex flex-col gap-1">
-				<span class="text-label">Audit comment</span>
-				<span class="text-hint">
-					{data.requiresAuditComment
-						? 'Required when saving configuration changes.'
-						: 'Optional; recorded with each change.'}
-				</span>
-				<textarea
-					bind:value={auditComment}
-					required={data.requiresAuditComment}
-					disabled={submitting}
-					rows={3}
-					class="input w-full"></textarea>
-			</label>
-
-			{#if formError}
-				<p class="mt-3 text-sm text-destructive" role="alert">{formError}</p>
-			{/if}
-			{#if successMessage}
-				<p class="mt-3 text-sm text-foreground">{successMessage}</p>
-			{/if}
-
-			<div class="mt-4 flex flex-wrap gap-2">
-				<button type="submit" class="btn-primary" disabled={submitting || !isDirty}>
-					{submitting ? 'Saving…' : 'Save changes'}
-				</button>
-				<button type="button" class="btn-secondary" disabled={submitting || !isDirty} onclick={handleReset}>
-					Reset
-				</button>
-			</div>
-		</section>
+		<AuditSaveCard
+			bind:auditComment
+			required={data.requiresAuditComment}
+			requiredHint="Required when saving configuration changes."
+			{formError}
+			{successMessage}
+			{submitting}
+			dirty={isDirty}
+			onreset={handleReset}
+		/>
 	</form>
 {/if}

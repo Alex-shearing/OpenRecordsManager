@@ -12,7 +12,7 @@ export async function load({ url }) {
 
 	if (meR.error && meR.response.status === 401) {
 		const dest = new URL('/login', document.baseURI);
-		dest.searchParams.append('redirect', encodeURIComponent(url.pathname.substring(1) + url.search));
+		dest.searchParams.append('redirect', url.pathname.substring(1) + url.search);
 
 		throw goto(dest);
 	}

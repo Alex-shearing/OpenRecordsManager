@@ -46,6 +46,19 @@ export type RecordResponse = {
     revisions: Array<string>;
 };
 
+export type UpdatePluginRequest = {
+    enabled?: boolean;
+};
+
+export type PluginResponse = {
+    name?: string;
+    version?: string;
+    enabled?: boolean;
+    dateCreated?: string;
+    dateModified?: string;
+    loaded?: boolean;
+};
+
 export type UpdateObjectPropertyRequest = {
     name: string;
     description: string;
@@ -169,7 +182,7 @@ export type UpdateAuditPolicyRequest = {
 };
 
 export type AuditPolicyResponse = {
-    entityType?: 'record' | 'user' | 'record_type' | 'config' | 'list' | 'list_element' | 'object_property' | 'file_store' | 'auth_provider' | 'record_revision' | 'file_store_middleware' | 'template';
+    entityType?: 'record' | 'user' | 'record_type' | 'config' | 'list' | 'list_element' | 'object_property' | 'file_store' | 'auth_provider' | 'record_revision' | 'file_store_middleware' | 'template' | 'plugin';
     operation?: 'CREATE' | 'READ' | 'UPDATE' | 'DELETE' | 'ACTION';
     enabled?: boolean;
     requiresComment?: boolean;
@@ -295,6 +308,14 @@ export type RecordTypeResponse = {
     securityFilterUsage: 'HIDE_RECORD' | 'HIDE_FILES' | 'SHOW_ALL';
     contentTypes?: Array<string>;
     properties: Array<RecordTypePropertyResponse>;
+};
+
+export type SimplePluginResponse = {
+    name?: string;
+    version?: string;
+    enabled?: boolean;
+    dateModified?: string;
+    loaded?: boolean;
 };
 
 export type SimpleObjectPropertyResponse = {
@@ -459,7 +480,7 @@ export type AuditEventResponse = {
     actorId?: string;
     actorUsername?: string;
     operation?: 'CREATE' | 'READ' | 'UPDATE' | 'DELETE' | 'ACTION';
-    targetType?: 'record' | 'user' | 'record_type' | 'config' | 'list' | 'list_element' | 'object_property' | 'file_store' | 'auth_provider' | 'record_revision' | 'file_store_middleware' | 'template';
+    targetType?: 'record' | 'user' | 'record_type' | 'config' | 'list' | 'list_element' | 'object_property' | 'file_store' | 'auth_provider' | 'record_revision' | 'file_store_middleware' | 'template' | 'plugin';
     targetId?: string;
     actionId?: string;
     summary?: string;
@@ -478,7 +499,7 @@ export type AuditPropertyChange = {
 };
 
 export type AuditRelationship = {
-    type?: 'record' | 'user' | 'record_type' | 'config' | 'list' | 'list_element' | 'object_property' | 'file_store' | 'auth_provider' | 'record_revision' | 'file_store_middleware' | 'template';
+    type?: 'record' | 'user' | 'record_type' | 'config' | 'list' | 'list_element' | 'object_property' | 'file_store' | 'auth_provider' | 'record_revision' | 'file_store_middleware' | 'template' | 'plugin';
     id?: string;
     role?: string;
 };
@@ -959,6 +980,251 @@ export type CreateRevision2Responses = {
 };
 
 export type CreateRevision2Response = CreateRevision2Responses[keyof CreateRevision2Responses];
+
+export type DeletePluginData = {
+    body?: never;
+    path: {
+        name: string;
+    };
+    query?: never;
+    url: '/api/plugins/{name}';
+};
+
+export type DeletePluginErrors = {
+    /**
+     * Unauthorized
+     */
+    401: {
+        success: false;
+        timestamp: unknown;
+        error: string;
+        errorData?: {
+            [key: string]: unknown;
+        };
+    };
+    /**
+     * Forbidden
+     */
+    403: {
+        success: false;
+        timestamp: unknown;
+        error: string;
+        errorData?: {
+            [key: string]: unknown;
+        };
+    };
+    /**
+     * Not Found
+     */
+    404: {
+        success: false;
+        timestamp: unknown;
+        error: string;
+        errorData?: {
+            [key: string]: unknown;
+        };
+    };
+    /**
+     * Audit comment required
+     */
+    422: {
+        success: false;
+        timestamp: unknown;
+        error: string;
+        errorData?: {
+            [key: string]: unknown;
+        };
+    };
+    /**
+     * Internal Server error
+     */
+    500: {
+        success: false;
+        timestamp: unknown;
+        error: string;
+        errorData?: {
+            [key: string]: unknown;
+        };
+    };
+};
+
+export type DeletePluginError = DeletePluginErrors[keyof DeletePluginErrors];
+
+export type DeletePluginResponses = {
+    /**
+     * OK
+     */
+    200: {
+        success: true;
+        timestamp: unknown;
+    };
+};
+
+export type DeletePluginResponse = DeletePluginResponses[keyof DeletePluginResponses];
+
+export type GetPluginData = {
+    body?: never;
+    path: {
+        name: string;
+    };
+    query?: never;
+    url: '/api/plugins/{name}';
+};
+
+export type GetPluginErrors = {
+    /**
+     * Unauthorized
+     */
+    401: {
+        success: false;
+        timestamp: unknown;
+        error: string;
+        errorData?: {
+            [key: string]: unknown;
+        };
+    };
+    /**
+     * Forbidden
+     */
+    403: {
+        success: false;
+        timestamp: unknown;
+        error: string;
+        errorData?: {
+            [key: string]: unknown;
+        };
+    };
+    /**
+     * Not Found
+     */
+    404: {
+        success: false;
+        timestamp: unknown;
+        error: string;
+        errorData?: {
+            [key: string]: unknown;
+        };
+    };
+    /**
+     * Audit comment required
+     */
+    422: {
+        success: false;
+        timestamp: unknown;
+        error: string;
+        errorData?: {
+            [key: string]: unknown;
+        };
+    };
+    /**
+     * Internal Server error
+     */
+    500: {
+        success: false;
+        timestamp: unknown;
+        error: string;
+        errorData?: {
+            [key: string]: unknown;
+        };
+    };
+};
+
+export type GetPluginError = GetPluginErrors[keyof GetPluginErrors];
+
+export type GetPluginResponses = {
+    /**
+     * OK
+     */
+    200: {
+        success: true;
+        timestamp: unknown;
+        data: PluginResponse;
+    };
+};
+
+export type GetPluginResponse = GetPluginResponses[keyof GetPluginResponses];
+
+export type UpdatePluginData = {
+    body: UpdatePluginRequest;
+    path: {
+        name: string;
+    };
+    query?: never;
+    url: '/api/plugins/{name}';
+};
+
+export type UpdatePluginErrors = {
+    /**
+     * Unauthorized
+     */
+    401: {
+        success: false;
+        timestamp: unknown;
+        error: string;
+        errorData?: {
+            [key: string]: unknown;
+        };
+    };
+    /**
+     * Forbidden
+     */
+    403: {
+        success: false;
+        timestamp: unknown;
+        error: string;
+        errorData?: {
+            [key: string]: unknown;
+        };
+    };
+    /**
+     * Not Found
+     */
+    404: {
+        success: false;
+        timestamp: unknown;
+        error: string;
+        errorData?: {
+            [key: string]: unknown;
+        };
+    };
+    /**
+     * Audit comment required
+     */
+    422: {
+        success: false;
+        timestamp: unknown;
+        error: string;
+        errorData?: {
+            [key: string]: unknown;
+        };
+    };
+    /**
+     * Internal Server error
+     */
+    500: {
+        success: false;
+        timestamp: unknown;
+        error: string;
+        errorData?: {
+            [key: string]: unknown;
+        };
+    };
+};
+
+export type UpdatePluginError = UpdatePluginErrors[keyof UpdatePluginErrors];
+
+export type UpdatePluginResponses = {
+    /**
+     * OK
+     */
+    200: {
+        success: true;
+        timestamp: unknown;
+        data: PluginResponse;
+    };
+};
+
+export type UpdatePluginResponse = UpdatePluginResponses[keyof UpdatePluginResponses];
 
 export type ObjectPropertyDeleteData = {
     body?: never;
@@ -3131,6 +3397,159 @@ export type ExecuteAction1Responses = {
 
 export type ExecuteAction1Response = ExecuteAction1Responses[keyof ExecuteAction1Responses];
 
+export type ListPluginsData = {
+    body?: never;
+    path?: never;
+    query?: {
+        includeDisabled?: boolean;
+    };
+    url: '/api/plugins';
+};
+
+export type ListPluginsErrors = {
+    /**
+     * Unauthorized
+     */
+    401: {
+        success: false;
+        timestamp: unknown;
+        error: string;
+        errorData?: {
+            [key: string]: unknown;
+        };
+    };
+    /**
+     * Forbidden
+     */
+    403: {
+        success: false;
+        timestamp: unknown;
+        error: string;
+        errorData?: {
+            [key: string]: unknown;
+        };
+    };
+    /**
+     * Audit comment required
+     */
+    422: {
+        success: false;
+        timestamp: unknown;
+        error: string;
+        errorData?: {
+            [key: string]: unknown;
+        };
+    };
+    /**
+     * Internal Server error
+     */
+    500: {
+        success: false;
+        timestamp: unknown;
+        error: string;
+        errorData?: {
+            [key: string]: unknown;
+        };
+    };
+};
+
+export type ListPluginsError = ListPluginsErrors[keyof ListPluginsErrors];
+
+export type ListPluginsResponses = {
+    /**
+     * OK
+     */
+    200: {
+        success: true;
+        timestamp: unknown;
+        data: Array<SimplePluginResponse>;
+    };
+};
+
+export type ListPluginsResponse = ListPluginsResponses[keyof ListPluginsResponses];
+
+export type UploadPluginData = {
+    body?: {
+        jar: Blob | File;
+    };
+    path?: never;
+    query?: never;
+    url: '/api/plugins';
+};
+
+export type UploadPluginErrors = {
+    /**
+     * Unauthorized
+     */
+    401: {
+        success: false;
+        timestamp: unknown;
+        error: string;
+        errorData?: {
+            [key: string]: unknown;
+        };
+    };
+    /**
+     * Forbidden
+     */
+    403: {
+        success: false;
+        timestamp: unknown;
+        error: string;
+        errorData?: {
+            [key: string]: unknown;
+        };
+    };
+    /**
+     * Resource in use
+     */
+    409: {
+        success: false;
+        timestamp: unknown;
+        error: string;
+        errorData?: {
+            [key: string]: unknown;
+        };
+    };
+    /**
+     * Audit comment required
+     */
+    422: {
+        success: false;
+        timestamp: unknown;
+        error: string;
+        errorData?: {
+            [key: string]: unknown;
+        };
+    };
+    /**
+     * Internal Server error
+     */
+    500: {
+        success: false;
+        timestamp: unknown;
+        error: string;
+        errorData?: {
+            [key: string]: unknown;
+        };
+    };
+};
+
+export type UploadPluginError = UploadPluginErrors[keyof UploadPluginErrors];
+
+export type UploadPluginResponses = {
+    /**
+     * OK
+     */
+    200: {
+        success: true;
+        timestamp: unknown;
+        data: PluginResponse;
+    };
+};
+
+export type UploadPluginResponse = UploadPluginResponses[keyof UploadPluginResponses];
+
 export type ObjectPropertyRetrieveAllData = {
     body?: never;
     path?: never;
@@ -4620,75 +5039,6 @@ export type GetRecordTypeResponses = {
 };
 
 export type GetRecordTypeResponse = GetRecordTypeResponses[keyof GetRecordTypeResponses];
-
-export type ListData = {
-    body?: never;
-    path?: never;
-    query?: never;
-    url: '/api/plugins';
-};
-
-export type ListErrors = {
-    /**
-     * Unauthorized
-     */
-    401: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
-    /**
-     * Forbidden
-     */
-    403: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
-    /**
-     * Audit comment required
-     */
-    422: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
-    /**
-     * Internal Server error
-     */
-    500: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
-};
-
-export type ListError = ListErrors[keyof ListErrors];
-
-export type ListResponses = {
-    /**
-     * OK
-     */
-    200: {
-        success: true;
-        timestamp: unknown;
-        data: Array<string>;
-    };
-};
-
-export type ListResponse = ListResponses[keyof ListResponses];
 
 export type SearchListElementData = {
     body?: never;

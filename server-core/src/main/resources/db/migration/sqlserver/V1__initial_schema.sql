@@ -179,7 +179,10 @@ GO
 CREATE TABLE plugin (
     name NVARCHAR(255) NOT NULL PRIMARY KEY,
     version NVARCHAR(255) NOT NULL,
-    file_id UNIQUEIDENTIFIER NOT NULL UNIQUE,
+    file_id UNIQUEIDENTIFIER UNIQUE,
+    enabled BIT NOT NULL CONSTRAINT df_plugin_enabled DEFAULT 1,
+    date_created DATETIMEOFFSET NOT NULL,
+    date_modified DATETIMEOFFSET NOT NULL,
     CONSTRAINT fk_plugin_file FOREIGN KEY (file_id) REFERENCES file_store_entry (id)
 );
 GO

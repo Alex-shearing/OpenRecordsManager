@@ -35,12 +35,19 @@ server:
   plugins:
     # Defines the directory used to load plugins from.
     directory: ./plugins
-    # Disables the plugin startup check.
-    skip-startup-check: false
   # Local directory for audit spool and archive files
   audit-directory: ./data/audit
   # Optional static SPA directory (e.g. ./static after unpacking orm-web-static-*.zip), leave empty when the UI is hosted separately (nginx/IIS/etc)
   web-directory: ./static
+
+  #######################
+  # Multipart uploads   #
+  #######################
+  servlet:
+    multipart:
+      # Plugin JARs and record file uploads
+      max-file-size: 50MB
+      max-request-size: 50MB
 
   ####################
   # Logging settings #
@@ -64,6 +71,11 @@ app:
   database:
     # Defines how frequently the application probes the primary database to update its health status. This is used for the audit process to ensure the database is ready to accept new audit events
     probe-interval-ms: 30000
+  plugins:
+    # Disables background plugin synchronization with the database and file store.
+    skip-sync: false
+    # Milliseconds between background checks for plugin changes in the database.
+    sync-interval-ms: 30000
 
   #####################
   # Security settings #

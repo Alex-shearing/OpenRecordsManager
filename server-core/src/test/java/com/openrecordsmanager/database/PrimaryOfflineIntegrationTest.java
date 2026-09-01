@@ -49,7 +49,7 @@ class PrimaryOfflineIntegrationTest {
         registry.add("server.database.read-only.url",
                 () -> "jdbc:sqlite:" + READ_DB + "?open_mode=1");
         registry.add("server.database.read-only.driver-class-name", () -> "org.sqlite.JDBC");
-        registry.add(BuiltinConfigs.PLUGINS_SKIP_STARTUP_CHECK.key(), () -> "true");
+        registry.add(BuiltinConfigs.PLUGINS_SKIP_SYNC.key(), () -> "true");
         registry.add(BuiltinConfigs.DATABASE_PROBE_INTERVAL_MS.key(), () -> "60000");
         registry.add(BuiltinConfigs.AUDIT_SPOOL_DRAIN_INTERVAL_SECONDS.key(), () -> "60000");
     }

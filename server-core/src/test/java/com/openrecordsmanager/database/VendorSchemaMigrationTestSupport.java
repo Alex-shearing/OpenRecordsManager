@@ -48,7 +48,7 @@ final class VendorSchemaMigrationTestSupport {
 
     static void registerCommonProperties(DynamicPropertyRegistry registry) {
         registry.add("server.database.read-only.url", () -> "");
-        registry.add("server.plugins.skip_startup_check", () -> "true");
+        registry.add("app.plugins.skip_sync", () -> "true");
         registry.add("server.plugins.directory", () -> "./plugins");
     }
 

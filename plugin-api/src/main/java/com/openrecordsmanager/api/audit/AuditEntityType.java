@@ -22,7 +22,8 @@ public enum AuditEntityType {
     AUTH_PROVIDER("auth_provider", null),
     RECORD_REVISION("record_revision", null),
     FILE_STORE_MIDDLEWARE("file_store_middleware", null),
-    TEMPLATE("template", null);
+    TEMPLATE("template", null),
+    PLUGIN("plugin", null);
 
     private final String key;
     private final @Nullable ComponentType<?> componentType;

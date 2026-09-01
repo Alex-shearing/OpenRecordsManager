@@ -148,7 +148,10 @@ CREATE INDEX IF NOT EXISTS idx_fse_store_id ON file_store_entry (store_id);
 CREATE TABLE plugin (
     name VARCHAR(255) NOT NULL PRIMARY KEY,
     version VARCHAR(255) NOT NULL,
-    file_id UUID NOT NULL UNIQUE,
+    file_id UUID UNIQUE,
+    enabled BOOLEAN NOT NULL DEFAULT TRUE,
+    date_created TIMESTAMPTZ NOT NULL,
+    date_modified TIMESTAMPTZ NOT NULL,
     CONSTRAINT fk_plugin_file FOREIGN KEY (file_id) REFERENCES file_store_entry (id)
 );
 

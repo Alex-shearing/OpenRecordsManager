@@ -1,6 +1,8 @@
 #####################
 # ORM Configuration #
 #####################
+# This configuration file contains the bare minimum to launch the application,
+# all other configuration options will be loaded from the database/use defaults.
 
 server:
   database:
@@ -8,7 +10,5 @@ server:
       url: jdbc:sqlite:./data/orm_system.db?busy_timeout=5000
   plugins:
     directory: ./plugins
-    skip-startup-check: false
   audit-directory: ./data/audit
   web-directory: ./static
-  

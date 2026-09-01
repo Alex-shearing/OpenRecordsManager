@@ -9,6 +9,7 @@ import com.openrecordsmanager.filestore.middleware.MiddlewareRepository;
 import com.openrecordsmanager.filestore.store.FileStoreRepository;
 import com.openrecordsmanager.list.ListElementRepository;
 import com.openrecordsmanager.list.ListTypeRepository;
+import com.openrecordsmanager.plugin.PluginRepository;
 import com.openrecordsmanager.property.ObjectPropertyRepository;
 import com.openrecordsmanager.record.RecordRepository;
 import com.openrecordsmanager.recordtype.RecordTypeRepository;
@@ -28,6 +29,7 @@ public class DataRepository {
     public final RecordRepository recordRepo;
     public final FileStoreRepository fileStoreRepo;
     public final MiddlewareRepository fileStoreMiddlewareRepo;
+    public final PluginRepository pluginRepo;
     public final UserRepository userRepo;
     public final AuthTokenRepository authTokenRepo;
 
@@ -43,6 +45,7 @@ public class DataRepository {
             RecordRepository recordRepo,
             FileStoreRepository fileStoreRepo,
             MiddlewareRepository fileStoreMiddlewareRepo,
+            PluginRepository pluginRepo,
             UserRepository userRepo,
             AuthTokenRepository authTokenRepo
     ) {
@@ -57,6 +60,7 @@ public class DataRepository {
         this.recordRepo = recordRepo;
         this.fileStoreRepo = fileStoreRepo;
         this.fileStoreMiddlewareRepo = fileStoreMiddlewareRepo;
+        this.pluginRepo = pluginRepo;
         this.userRepo = userRepo;
         this.authTokenRepo = authTokenRepo;
     }

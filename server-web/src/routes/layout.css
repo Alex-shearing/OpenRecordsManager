@@ -85,6 +85,16 @@
 		}
 	}
 
+	.btn-destructive {
+		@apply inline-flex items-center justify-center rounded-md bg-destructive px-4 py-2 text-sm font-medium text-destructive-foreground transition-colors disabled:pointer-events-none disabled:opacity-50;
+
+		&:hover:not(:disabled),
+		&:focus:not(:disabled),
+		&:focus-visible:not(:disabled) {
+			background-color: color-mix(in srgb, var(--color-destructive) 88%, black);
+		}
+	}
+
 	.input {
 		@apply rounded-md border border-border-input bg-surface px-3 py-2 text-sm text-foreground;
 	}

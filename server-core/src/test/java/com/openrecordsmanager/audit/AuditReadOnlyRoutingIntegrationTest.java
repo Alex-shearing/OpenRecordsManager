@@ -50,7 +50,7 @@ class AuditReadOnlyRoutingIntegrationTest {
         registry.add("server.database.primary.driver-class-name", () -> "org.sqlite.JDBC");
         registry.add("server.database.read-only.url", () -> readUrl);
         registry.add("server.database.read-only.driver-class-name", () -> "org.sqlite.JDBC");
-        registry.add("server.plugins.skip_startup_check", () -> "true");
+        registry.add("app.plugins.skip_sync", () -> "true");
         registry.add("audit.spool.directory", () -> SPOOL.toString());
         registry.add("audit.drain.fixed-delay-ms", () -> "60000");
         registry.add("audit.probe.interval-ms", () -> "60000");

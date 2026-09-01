@@ -3,19 +3,23 @@
 	import type { ActionResponse } from '$lib/api/types.gen';
 	import { getApiClient } from '$lib/api-client';
 	import PageContent from '$lib/components/layout/PageContent.svelte';
-	import UserActionForm from '$lib/components/UserActionForm.svelte';
+	import UserActionDialog from '$lib/components/UserActionDialog.svelte';
 	import { goto } from '$app/navigation';
 
 	let { data } = $props();
 
 	let loggingOut = $state(false);
 	let selectedAction = $state<ActionResponse | null>(null);
-	let dialog = $state<HTMLDialogElement | null>(null);
+	let actionOpen = $state(false);
 
-	function closeDialog() {
-		if (dialog?.open) {
-			dialog.close();
-		}
+	function openAction(action: ActionResponse) {
+		selectedAction = action;
+		actionOpen = true;
+	}
+
+	function closeActionDialog() {
+		actionOpen = false;
+		selectedAction = null;
 	}
 
 	async function handleLogout() {
@@ -62,9 +66,7 @@
 							<button
 								type="button"
 								class="list-panel-item flex w-full flex-col gap-1 text-left"
-								onclick={() => (selectedAction = action)}
-								commandfor="action-modal"
-								command="show-modal"
+								onclick={() => openAction(action)}
 							>
 								<span class="font-medium">{action.name}</span>
 								{#if action.description}
@@ -85,97 +87,6 @@
 			</button>
 		</section>
 
-		<dialog bind:this={dialog} class="action-dialog" id="action-modal">
-			{#if selectedAction}
-				{#key selectedAction.id}
-					<div class="card-header flex items-start justify-between gap-4">
-						<div>
-							<h2 class="text-lg font-medium">{selectedAction.name}</h2>
-							{#if selectedAction.description}
-								<p class="mt-1 text-hint">{selectedAction.description}</p>
-							{/if}
-						</div>
-						<button
-							type="button"
-							aria-label="Close"
-							commandfor="action-modal"
-							command="close"
-							class="btn-ghost px-2 py-0.5 text-muted-foreground"
-						>
-							×
-						</button>
-					</div>
-
-					<div class="card-body">
-						<UserActionForm userId={data.me.id} action={selectedAction} onsuccess={closeDialog} />
-					</div>
-				{/key}
-			{/if}
-		</dialog>
+		<UserActionDialog bind:open={actionOpen} userId={data.me.id} action={selectedAction} onclose={closeActionDialog} />
 	{/if}
-
-	<style>
-		.action-dialog {
-			position: fixed;
-			inset: 0;
-			width: fit-content;
-			height: fit-content;
-			max-width: min(32rem, calc(100vw - 2rem));
-			max-height: calc(100vh - 2rem);
-			margin: auto;
-			padding: 0;
-			overflow: auto;
-			border: 1px solid var(--color-border);
-			border-radius: var(--radius-lg);
-			background: var(--color-surface);
-			color: var(--color-foreground);
-			box-shadow: var(--shadow-dialog);
-			opacity: 0;
-			transform: scale(0.97);
-			transition:
-				opacity 160ms ease-out,
-				transform 160ms ease-out,
-				overlay 160ms allow-discrete,
-				display 160ms allow-discrete;
-		}
-
-		.action-dialog[open] {
-			opacity: 1;
-			transform: scale(1);
-		}
-
-		@starting-style {
-			.action-dialog[open] {
-				opacity: 0;
-				transform: scale(0.97);
-			}
-		}
-
-		.action-dialog::backdrop {
-			background: rgb(0 0 0 / 0.25);
-			opacity: 0;
-			transition:
-				opacity 160ms ease-out,
-				overlay 160ms allow-discrete,
-				display 160ms allow-discrete;
-		}
-
-		.action-dialog[open]::backdrop {
-			opacity: 1;
-		}
-
-		@starting-style {
-			.action-dialog[open]::backdrop {
-				opacity: 0;
-			}
-		}
-
-		@media (prefers-reduced-motion: reduce) {
-			.action-dialog,
-			.action-dialog::backdrop {
-				transition: none;
-				transform: none;
-			}
-		}
-	</style>
 </PageContent>

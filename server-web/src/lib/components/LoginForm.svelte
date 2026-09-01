@@ -27,7 +27,9 @@
 
 	let selectedProvider = $derived(inputProviders.find(provider => provider.id === selectedProviderId));
 
-	async function handleSubmit() {
+	async function handleSubmit(event: SubmitEvent) {
+		event.preventDefault();
+
 		if (!selectedProvider?.loginSchema) {
 			return;
 		}
@@ -61,37 +63,39 @@
 
 {#if inputProviders.length > 0}
 	{#if selectedProvider?.loginSchema}
-		<SchemaForm
-			schema={selectedProvider.loginSchema}
-			bind:values
-			{fieldErrors}
-			{formError}
-			{submitting}
-			submitLabel="Sign in"
-			submittingLabel="Signing in..."
-			idPrefix="login"
-			disabled={!selectedProvider}
-			onsubmit={handleSubmit}
-		>
-			{#snippet before()}
-				{#if inputProviders.length > 1}
-					<label class="flex flex-col gap-1">
-						<span class="text-label">Sign in with</span>
-						<select bind:value={selectedProviderId} class="input" disabled={submitting}>
-							{#each inputProviders as provider (provider.id)}
-								<option value={provider.id}>{providerLabel(provider)}</option>
-							{/each}
-						</select>
-					</label>
-				{:else}
-					<p class="text-hint">
-						Sign in with <span class="font-medium text-foreground">
-							{providerLabel(selectedProvider)}
-						</span>
-					</p>
-				{/if}
-			{/snippet}
-		</SchemaForm>
+		<form class="flex flex-col gap-4" onsubmit={handleSubmit} novalidate>
+			<SchemaForm
+				schema={selectedProvider.loginSchema}
+				bind:values
+				{fieldErrors}
+				{formError}
+				{submitting}
+				idPrefix="login"
+			>
+				{#snippet before()}
+					{#if inputProviders.length > 1}
+						<label class="flex flex-col gap-1">
+							<span class="text-label">Sign in with</span>
+							<select bind:value={selectedProviderId} class="input" disabled={submitting}>
+								{#each inputProviders as provider (provider.id)}
+									<option value={provider.id}>{providerLabel(provider)}</option>
+								{/each}
+							</select>
+						</label>
+					{:else}
+						<p class="text-hint">
+							Sign in with <span class="font-medium text-foreground">
+								{providerLabel(selectedProvider)}
+							</span>
+						</p>
+					{/if}
+				{/snippet}
+			</SchemaForm>
+
+			<button type="submit" class="btn-primary" disabled={submitting || !selectedProvider}>
+				{submitting ? 'Signing in...' : 'Sign in'}
+			</button>
+		</form>
 	{/if}
 {/if}
 

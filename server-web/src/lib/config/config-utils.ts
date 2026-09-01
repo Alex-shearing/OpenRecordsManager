@@ -13,10 +13,11 @@ export type ConfigValueType = ConfigDraftValue['type'];
 export const CONFIG_GROUPS = [
 	{ id: 'workgroup', title: 'Workgroup', prefix: 'workgroup.' },
 	{ id: 'web', title: 'Web branding', prefix: 'app.web.' },
-	{ id: 'debug', title: 'Debugging', prefix: 'app.debug.' },
 	{ id: 'database', title: 'Database', prefix: 'app.database.' },
 	{ id: 'security', title: 'Security', prefix: 'app.security.' },
 	{ id: 'audit', title: 'Audit', prefix: 'app.audit.' },
+	{ id: 'plugins', title: 'Plugins', prefix: 'app.plugins.' },
+	{ id: 'debug', title: 'Debugging', prefix: 'app.debug.' },
 	{ id: 'other', title: 'Other', prefix: '' },
 ];
 
