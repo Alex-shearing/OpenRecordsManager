@@ -1,11 +1,7 @@
 <script lang="ts">
-	import { ConfigController } from '$lib';
+	import { ConfigController } from '$lib/api';
 	import ConfigSettingRow from '$lib/components/ConfigSettingRow.svelte';
-	import {
-		buildSavedValues,
-		findChangedConfigs,
-		groupConfigs
-	} from '$lib/config/config-utils';
+	import { buildSavedValues, findChangedConfigs, groupConfigs } from '$lib/config/config-utils';
 	import { invalidateAll } from '$app/navigation';
 
 	let { data } = $props();
@@ -39,13 +35,11 @@
 		formError = '';
 		successMessage = '';
 
-		const headers = auditComment.trim()
-			? { 'X-ORM-Audit-Comment': auditComment.trim() }
-			: undefined;
+		const headers = auditComment.trim() ? { 'X-ORM-Audit-Comment': auditComment.trim() } : undefined;
 
 		const { error } = await ConfigController.setConfigs({
 			body: Object.fromEntries(changedConfigs.map(a => [a.key, draftValues[a.key].currentValue])),
-			headers
+			headers,
 		});
 
 		submitting = false;
@@ -55,10 +49,7 @@
 			return;
 		}
 
-		successMessage =
-			changedConfigs.length === 1
-				? 'Saved 1 setting.'
-				: `Saved ${changedConfigs.length} settings.`;
+		successMessage = changedConfigs.length === 1 ? 'Saved 1 setting.' : `Saved ${changedConfigs.length} settings.`;
 		auditComment = '';
 		await invalidateAll();
 	}
@@ -72,9 +63,8 @@
 
 <h1 class="mb-2 text-2xl font-semibold">Configuration</h1>
 <p class="mb-6 text-hint">
-	Settings stored in the database. Environment variables and <code class="text-xs">config.yml</code> still
-	override these values on each server. Server-only keys (<code class="text-xs">server.*</code>) are not
-	shown here.
+	Adjust configuration settings saved in the database below. Please note that other configuration locations may take
+	precedence over these.
 </p>
 
 {#if data.error}
@@ -109,8 +99,7 @@
 					required={data.requiresAuditComment}
 					disabled={submitting}
 					rows={3}
-					class="input w-full"
-				></textarea>
+					class="input w-full"></textarea>
 			</label>
 
 			{#if formError}

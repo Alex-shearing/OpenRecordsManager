@@ -8,12 +8,12 @@ export default defineConfig({
 		{
 			name: '@hey-api/sdk',
 			operations: {
-				strategy: 'byTags'
+				strategy: 'byTags',
 			},
 		},
 		{
 			name: '@hey-api/client-fetch',
 			runtimeConfigPath: '../api-client.config.ts',
-		}
-	]
+		},
+	],
 });

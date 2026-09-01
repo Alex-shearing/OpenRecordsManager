@@ -19,6 +19,4 @@
 	{/snippet}
 </BrandingHeader>
 
-<div class="mx-auto mb-5 mt-3 w-full lg:max-w-6xl">
-	{@render children()}
-</div>
+{@render children()}

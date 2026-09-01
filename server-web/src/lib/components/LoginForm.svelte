@@ -1,9 +1,10 @@
 <script lang="ts">
-	import { client, AuthController } from '$lib';
+	import { AuthController } from '$lib/api';
 	import type { AuthProviderResponse } from '$lib/api/types.gen';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
 	import SchemaForm from './SchemaForm.svelte';
+	import { client } from '$lib/api/client.gen';
 
 	let {
 		inputProviders,
@@ -77,11 +78,7 @@
 				{#if inputProviders.length > 1}
 					<label class="flex flex-col gap-1">
 						<span class="text-label">Sign in with</span>
-						<select
-							bind:value={selectedProviderId}
-							class="input"
-							disabled={submitting}
-						>
+						<select bind:value={selectedProviderId} class="input" disabled={submitting}>
 							{#each inputProviders as provider (provider.id)}
 								<option value={provider.id}>{providerLabel(provider)}</option>
 							{/each}
@@ -89,7 +86,9 @@
 					</label>
 				{:else}
 					<p class="text-hint">
-						Sign in with <span class="font-medium text-foreground">{providerLabel(selectedProvider)}</span>
+						Sign in with <span class="font-medium text-foreground">
+							{providerLabel(selectedProvider)}
+						</span>
 					</p>
 				{/if}
 			{/snippet}

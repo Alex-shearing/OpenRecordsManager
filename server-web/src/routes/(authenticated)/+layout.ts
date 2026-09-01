@@ -1,16 +1,16 @@
-import { AuditController, ObjectPropertyController, UserController } from '$lib';
+import { AuditController, ObjectPropertyController, UserController } from '$lib/api';
 
 export async function load() {
 	const [meR, propertiesR, auditPolicyR] = await Promise.all([
 		UserController.me(),
 		ObjectPropertyController.objectPropertyRetrieveAll(),
-		AuditController.listPolicies()
+		AuditController.listPolicies(),
 	]);
 
 	const me = meR?.data?.data || {
 		id: '00000000-0000-0000-0000-000000000000',
 		username: 'Me',
-		properties: {}
+		properties: {},
 	};
 	const properties = propertiesR?.data?.data || [];
 	const auditPolicy = auditPolicyR?.data?.data || [];
@@ -18,6 +18,6 @@ export async function load() {
 	return {
 		me,
 		properties,
-		auditPolicy
+		auditPolicy,
 	};
 }

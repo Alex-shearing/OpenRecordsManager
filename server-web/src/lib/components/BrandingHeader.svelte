@@ -6,7 +6,7 @@
 		branding,
 		showLogoOnMobile = false,
 		center,
-		end
+		end,
 	}: {
 		branding: WebBrandingResponse;
 		showLogoOnMobile?: boolean;
@@ -16,7 +16,8 @@
 </script>
 
 <header
-	class="sticky top-0 z-15 flex w-full items-center gap-4 bg-primary p-2 text-primary-foreground shadow {center || end
+	class="sticky top-0 z-15 flex h-(--header-height) w-full items-center gap-4 bg-primary px-4 py-2 text-primary-foreground shadow {center ||
+	end
 		? 'justify-between'
 		: 'justify-center'}"
 >

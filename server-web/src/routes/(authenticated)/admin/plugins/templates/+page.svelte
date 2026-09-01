@@ -1,12 +1,12 @@
 <script lang="ts">
-	import { TemplateController	} from '$lib';
+	import { TemplateController } from '$lib/api';
 
 	const types = TemplateController.getTemplateTypes();
 
 	const registerTemplate = async (type: string, template: string) => {
 		const { data, error } = await TemplateController.registerTemplate({
 			path: { type, template },
-			query: { includeDependencies: true }
+			query: { includeDependencies: true },
 		});
 
 		if (error) {

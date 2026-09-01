@@ -14,7 +14,7 @@
 		disabled = false,
 		before,
 		after,
-		onsubmit
+		onsubmit,
 	}: {
 		schema: InputFormSchema;
 		values?: Record<string, string>;

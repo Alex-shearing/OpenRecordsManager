@@ -19,10 +19,7 @@
 			{:else if data.inputProviders.length === 0 && data.redirectProviders.length === 0}
 				<p class="text-hint">No sign-in options are available.</p>
 			{:else}
-				<LoginForm
-					inputProviders={data.inputProviders}
-					redirectProviders={data.redirectProviders}
-				/>
+				<LoginForm inputProviders={data.inputProviders} redirectProviders={data.redirectProviders} />
 			{/if}
 		</div>
 	</div>

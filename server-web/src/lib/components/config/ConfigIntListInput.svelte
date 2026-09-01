@@ -4,7 +4,7 @@
 	let {
 		id,
 		value = $bindable<number[]>(),
-		disabled = false
+		disabled = false,
 	}: {
 		id: string;
 		value: number[];
@@ -14,7 +14,7 @@
 	let items = $state<Array<number | null>>([]);
 
 	$effect(() => {
-		const normalized = value.length > 0 ? value.map((entry) => entry as number | null) : [null];
+		const normalized = value.length > 0 ? value.map(entry => entry as number | null) : [null];
 		if (JSON.stringify(items) !== JSON.stringify(normalized)) {
 			items = normalized;
 		}
@@ -57,13 +57,11 @@
 				value={displayValue(item)}
 				placeholder="Integer value"
 				aria-label="List item {index + 1}"
-				oninput={(event) => {
-					updateItem(index, event.currentTarget.value);
-				}}
+				oninput={event => updateItem(index, event.currentTarget.value)}
 			/>
 			<button
 				type="button"
-				class="btn-ghost size-10 shrink-0 !p-0"
+				class="btn-ghost size-10 shrink-0 p-0!"
 				{disabled}
 				aria-label="Remove item {index + 1}"
 				onclick={() => removeItem(index)}

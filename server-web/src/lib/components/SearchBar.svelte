@@ -40,7 +40,9 @@
 				class="z-50 min-w-28 rounded-lg border border-border bg-surface p-1 shadow-lg"
 				sideOffset={4}
 			>
-				<Select.ScrollUpButton class="flex w-full items-center justify-center py-1 text-muted-foreground">
+				<Select.ScrollUpButton
+					class="flex w-full items-center justify-center py-1 text-muted-foreground"
+				>
 					<CaretUpIcon class="size-3" />
 				</Select.ScrollUpButton>
 				<Select.Viewport>
@@ -59,7 +61,9 @@
 						</Select.Item>
 					{/each}
 				</Select.Viewport>
-				<Select.ScrollDownButton class="flex w-full items-center justify-center py-1 text-muted-foreground">
+				<Select.ScrollDownButton
+					class="flex w-full items-center justify-center py-1 text-muted-foreground"
+				>
 					<CaretDownIcon class="size-3" />
 				</Select.ScrollDownButton>
 			</Select.Content>

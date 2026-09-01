@@ -1,48 +1,33 @@
 <script lang="ts">
 	import { NavigationMenu } from 'bits-ui';
-	import CaretDownIcon from 'phosphor-svelte/lib/CaretDownIcon';
+	import SubNavLayout from '$lib/components/layout/SubNavLayout.svelte';
+	import SubNavList from '$lib/components/layout/SubNavList.svelte';
+	import SubNavLink from '$lib/components/layout/SubNavLink.svelte';
+	import SubNavMenu from '$lib/components/layout/SubNavMenu.svelte';
+	import SubNavMenuLink from '$lib/components/layout/SubNavMenuLink.svelte';
 
 	let { children } = $props();
 </script>
 
-<NavigationMenu.Root class="relative z-10 flex w-full justify-between bg-background p-2 shadow-sm">
-	<NavigationMenu.List class="flex w-full list-none items-center justify-between gap-10">
-		<NavigationMenu.Item value="config">
-			<NavigationMenu.Link class="text-foreground hover:text-primary" href="/admin/config">
-				Configuration
-			</NavigationMenu.Link>
-		</NavigationMenu.Item>
+<SubNavLayout>
+	{#snippet subnav()}
+		<NavigationMenu.Root class="relative w-full">
+			<SubNavList>
+				<SubNavLink href="/admin/config" match="exact">Configuration</SubNavLink>
 
-		<NavigationMenu.Item value="plugins">
-			<NavigationMenu.Trigger class="inline-flex items-center justify-between">
-				Manage Plugins
+				<SubNavMenu label="Manage Plugins" hrefPrefix="/admin/plugins">
+					<SubNavMenuLink href="/admin/plugins">Plugins</SubNavMenuLink>
+					<SubNavMenuLink href="/admin/plugins/templates">Templates</SubNavMenuLink>
+				</SubNavMenu>
+			</SubNavList>
 
-				<CaretDownIcon
-					class="relative top-px ml-1 size-3 transition-transform duration-200 group-data-[state=open]:rotate-180"
-					aria-hidden="true"
+			<div class="perspective-[2000px] absolute top-full left-0 z-20 flex w-full justify-start">
+				<NavigationMenu.Viewport
+					class="text-popover-foreground relative mt-1 h-(--bits-navigation-menu-viewport-height) w-full origin-[top_left] overflow-hidden rounded-lg border border-border bg-surface shadow-lg transition-[width,height] duration-200 data-[state=closed]:animate-scale-out data-[state=open]:animate-scale-in sm:w-(--bits-navigation-menu-viewport-width)"
 				/>
-			</NavigationMenu.Trigger>
-			<NavigationMenu.Content>
-				<ul class="grid gap-3 p-3 sm:w-100 sm:p-6 md:w-125 md:grid-cols-2 lg:w-[600px]">
-					<NavigationMenu.Link class="text-foreground hover:text-primary" href="/admin/plugins">
-						Plugins
-					</NavigationMenu.Link>
-					<NavigationMenu.Link
-						class="text-foreground hover:text-primary"
-						href="/admin/plugins/templates"
-					>
-						Templates
-					</NavigationMenu.Link>
-				</ul>
-			</NavigationMenu.Content>
-		</NavigationMenu.Item>
-	</NavigationMenu.List>
+			</div>
+		</NavigationMenu.Root>
+	{/snippet}
 
-	<div class="perspective-[2000px] absolute left-0 top-full flex w-full justify-center z-200">
-		<NavigationMenu.Viewport
-			class="text-popover-foreground bg-background data-[state=closed]:animate-scale-out data-[state=open]:animate-scale-in relative mt-2.5 h-(--bits-navigation-menu-viewport-height) w-full origin-[top_center] overflow-hidden rounded-md border shadow-lg transition-[width,height] duration-200 sm:w-(--bits-navigation-menu-viewport-width) "
-		/>
-	</div>
-</NavigationMenu.Root>
-
-{@render children()}
+	{@render children()}
+</SubNavLayout>

@@ -2,7 +2,7 @@
 	let {
 		id,
 		value = $bindable<string>(),
-		disabled = false
+		disabled = false,
 	}: {
 		id: string;
 		value: string;

@@ -11,7 +11,7 @@
 	let {
 		config,
 		value = $bindable<ConfigDraftValue>(),
-		disabled = false
+		disabled = false,
 	}: {
 		config: ConfigTypeResponse;
 		value: ConfigDraftValue;
@@ -36,7 +36,9 @@
 		{:else if value.type === 'uuid' || value.type === 'string'}
 			<ConfigStringInput id={inputId} bind:value={value.currentValue} {disabled} />
 		{:else}
-			<p class="input w-full font-mono text-sm">This configuration cannot be modified from here, please change the configuration file directly.</p>
+			<p class="input w-full font-mono text-sm">
+				This configuration cannot be modified from here, please change the configuration file directly.
+			</p>
 		{/if}
 	{/snippet}
 </ConfigSettingLayout>

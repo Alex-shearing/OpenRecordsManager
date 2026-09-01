@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { DatabaseController } from '$lib';
+	import { DatabaseController } from '$lib/api';
 	import { goto } from '$app/navigation';
 
 	let { data } = $props();
@@ -45,7 +45,10 @@
 				{data.data.message || 'A database schema upgrade is required before the application can be used.'}
 			</p>
 			{#if data.data.currentVersion}
-				<p class="mb-2 text-sm"><span class="font-medium">Current version:</span> {data.data.currentVersion}</p>
+				<p class="mb-2 text-sm">
+					<span class="font-medium">Current version:</span>
+					{data.data.currentVersion}
+				</p>
 			{/if}
 			{#if data.data.pendingMigrations.length}
 				<p class="mb-2 text-sm font-medium">Pending migrations:</p>

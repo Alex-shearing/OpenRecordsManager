@@ -6,7 +6,7 @@
 	let {
 		config,
 		inputId,
-		input
+		input,
 	}: {
 		config: ConfigTypeResponse;
 		inputId: string;

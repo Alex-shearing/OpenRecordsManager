@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { DatabaseController } from '$lib';
+	import { DatabaseController } from '$lib/api';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
 
@@ -68,8 +68,7 @@
 				{data.branding.productName} is being updated and will be back shortly.
 			</p>
 			<p class="text-hint">
-				This page will bring you back automatically when the update is finished. You don't need to do
-				anything.
+				This page will bring you back automatically when the update is finished. You don't need to do anything.
 			</p>
 		{:else if view === 'unavailable'}
 			<h1 class="mb-3 text-2xl font-semibold text-foreground">Temporarily unavailable</h1>

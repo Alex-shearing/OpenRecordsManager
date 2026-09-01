@@ -4,7 +4,7 @@
 	let {
 		id,
 		value = $bindable<string[]>(),
-		disabled = false
+		disabled = false,
 	}: {
 		id: string;
 		value: string[];
@@ -50,13 +50,11 @@
 				value={item}
 				placeholder="Value"
 				aria-label="List item {index + 1}"
-				oninput={(event) => {
-					updateItem(index, event.currentTarget.value);
-				}}
+				oninput={event => updateItem(index, event.currentTarget.value)}
 			/>
 			<button
 				type="button"
-				class="btn-ghost size-10 shrink-0 !p-0"
+				class="btn-ghost size-10 shrink-0 p-0!"
 				{disabled}
 				aria-label="Remove item {index + 1}"
 				onclick={() => removeItem(index)}

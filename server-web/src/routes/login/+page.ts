@@ -1,4 +1,4 @@
-import { AuthController } from '$lib';
+import { AuthController } from '$lib/api';
 
 export async function load() {
 	const { data, error } = await AuthController.getAll();
@@ -7,15 +7,15 @@ export async function load() {
 		return {
 			inputProviders: [],
 			redirectProviders: [],
-			providersError: 'Failed to load login options.'
+			providersError: 'Failed to load login options.',
 		};
 	}
 
 	const providers = data.data;
 
 	return {
-		inputProviders: providers.filter((provider) => provider.loginSchema),
-		redirectProviders: providers.filter((provider) => !provider.loginSchema),
-		providersError: null
+		inputProviders: providers.filter(provider => provider.loginSchema),
+		redirectProviders: providers.filter(provider => !provider.loginSchema),
+		providersError: null,
 	};
 }

@@ -1,12 +1,12 @@
 <script lang="ts">
 	import type { ActionResponse } from '$lib/api/types.gen';
-	import { UserController } from '$lib';
+	import { UserController } from '$lib/api';
 	import SchemaForm from './SchemaForm.svelte';
 
 	let {
 		userId,
 		action,
-		onsuccess
+		onsuccess,
 	}: {
 		userId: string;
 		action: ActionResponse;
@@ -32,9 +32,7 @@
 		const { error } = await UserController.executeAction({
 			path: { id: userId, action: action.id },
 			body: values,
-			headers: auditComment.trim()
-				? { 'X-ORM-Audit-Comment': auditComment.trim() }
-				: undefined
+			headers: auditComment.trim() ? { 'X-ORM-Audit-Comment': auditComment.trim() } : undefined,
 		});
 
 		submitting = false;
@@ -68,8 +66,7 @@
 				required={action.requiresAuditComment}
 				disabled={submitting}
 				rows="3"
-				class="input"
-			></textarea>
+				class="input"></textarea>
 		</label>
 	{/snippet}
 </SchemaForm>

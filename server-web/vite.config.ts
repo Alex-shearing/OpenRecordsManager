@@ -9,13 +9,12 @@ export default defineConfig({
 		sveltekit({
 			compilerOptions: {
 				// Force runes mode for the project, except for libraries. Can be removed in svelte 6.
-				runes: ({ filename }) =>
-					filename.split(/[/\\]/).includes('node_modules') ? undefined : true
+				runes: ({ filename }) => (filename.split(/[/\\]/).includes('node_modules') ? undefined : true),
 			},
 			adapter: adapter({
-				fallback: 'index.html'
-			})
-		})
+				fallback: 'index.html',
+			}),
+		}),
 	],
 	// Used during development to proxy API requests to the Spring Boot backend.
 	server: {
@@ -23,8 +22,8 @@ export default defineConfig({
 			'/api': {
 				target: 'http://localhost:8080',
 				changeOrigin: true,
-				secure: false
-			}
-		}
-	}
+				secure: false,
+			},
+		},
+	},
 });
