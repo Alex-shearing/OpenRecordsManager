@@ -130,10 +130,52 @@
 			background: var(--color-surface);
 			color: var(--color-foreground);
 			box-shadow: var(--shadow-dialog);
+			opacity: 0;
+			transform: scale(0.97);
+			transition:
+				opacity 160ms ease-out,
+				transform 160ms ease-out,
+				overlay 160ms allow-discrete,
+				display 160ms allow-discrete;
+		}
+
+		.action-dialog[open] {
+			opacity: 1;
+			transform: scale(1);
+		}
+
+		@starting-style {
+			.action-dialog[open] {
+				opacity: 0;
+				transform: scale(0.97);
+			}
 		}
 
 		.action-dialog::backdrop {
 			background: rgb(0 0 0 / 0.25);
+			opacity: 0;
+			transition:
+				opacity 160ms ease-out,
+				overlay 160ms allow-discrete,
+				display 160ms allow-discrete;
+		}
+
+		.action-dialog[open]::backdrop {
+			opacity: 1;
+		}
+
+		@starting-style {
+			.action-dialog[open]::backdrop {
+				opacity: 0;
+			}
+		}
+
+		@media (prefers-reduced-motion: reduce) {
+			.action-dialog,
+			.action-dialog::backdrop {
+				transition: none;
+				transform: none;
+			}
 		}
 	</style>
 </PageContent>
