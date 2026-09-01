@@ -2,15 +2,15 @@ package com.openrecordsmanager.plugin.dto;
 
 import com.openrecordsmanager.plugin.PersistedPlugin;
 import com.openrecordsmanager.plugin.PluginManager;
-import org.jspecify.annotations.NonNull;
+import jakarta.validation.constraints.NotBlank;
 
 import java.time.Instant;
 
 public record SimplePluginResponse(
-        @NonNull String name,
-        @NonNull String version,
+        @NotBlank String name,
+        @NotBlank String version,
         boolean enabled,
-        @NonNull Instant dateModified,
+        @NotBlank Instant dateModified,
         boolean loaded
 ) {
     public static SimplePluginResponse of(PersistedPlugin plugin, PluginManager pluginManager) {

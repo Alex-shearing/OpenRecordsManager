@@ -9,9 +9,7 @@
 
 	let { data } = $props();
 
-	const sortedPlugins = $derived(
-		[...data.plugins].sort((a, b) => (a.name ?? '').localeCompare(b.name ?? ''))
-	);
+	const sortedPlugins = $derived([...data.plugins].sort((a, b) => (a.name ?? '').localeCompare(b.name ?? '')));
 
 	function enabledDraft(plugins: SimplePluginResponse[]) {
 		return Object.fromEntries(
@@ -32,18 +30,13 @@
 	let deleteOpen = $state(false);
 
 	const auditRequired = $derived(
-		data.auditCommentRequired.create ||
-			data.auditCommentRequired.update ||
-			data.auditCommentRequired.delete
+		data.auditCommentRequired.create || data.auditCommentRequired.update || data.auditCommentRequired.delete
 	);
 
 	const dirtyNames = $derived(
 		sortedPlugins
 			.filter(
-				plugin =>
-					plugin.name &&
-					plugin.name !== 'builtin' &&
-					draftEnabled[plugin.name] !== (plugin.enabled ?? false)
+				plugin => plugin.name && plugin.name !== 'builtin' && draftEnabled[plugin.name] !== (plugin.enabled ?? false)
 			)
 			.map(plugin => plugin.name!)
 	);
@@ -178,37 +171,11 @@
 </script>
 
 <h1 class="mb-2 text-2xl font-semibold">Plugins</h1>
-<p class="mb-6 text-hint">
-	Upload plugin JARs, enable or disable plugins, and remove plugins from the cluster. Changes sync to other
-	servers automatically.
-</p>
+<p class="mb-6 text-hint">Upload plugin JARs, enable or disable plugins, and remove plugins from the workgroup.</p>
 
 {#if data.error}
 	<p class="text-destructive">{data.error}</p>
 {:else}
-	<form class="mb-6 card p-5" onsubmit={handleUpload}>
-		<h2 class="mb-1 text-lg font-medium">Upload plugin</h2>
-		<p class="mb-4 text-hint">Select a JAR with Plugin-Id and Plugin-Version manifest attributes.</p>
-
-		<label class="flex flex-col gap-1">
-			<span class="text-label">Plugin JAR</span>
-			<input
-				type="file"
-				name="jar"
-				accept=".jar,application/java-archive"
-				disabled={submitting}
-				class="input w-full max-w-md"
-				bind:files={uploadFiles}
-			/>
-		</label>
-
-		<div class="mt-4">
-			<button type="submit" class="btn-primary" disabled={submitting || !uploadFiles?.length}>
-				{submitting ? 'Uploading…' : 'Upload'}
-			</button>
-		</div>
-	</form>
-
 	<form onsubmit={handleSave}>
 		<section class="card">
 			<div class="card-header">
@@ -252,13 +219,9 @@
 										{/if}
 									</td>
 									<td class="px-5 py-4 text-foreground">
-										{#if plugin.dateModified}
-											<time datetime={plugin.dateModified}>
-												{new Date(plugin.dateModified).toLocaleString()}
-											</time>
-										{:else}
-											—
-										{/if}
+										<time datetime={plugin.dateModified}>
+											{new Date(plugin.dateModified).toLocaleString()}
+										</time>
 									</td>
 									<td class="px-5 py-4 text-right">
 										{#if plugin.name !== 'builtin'}
@@ -282,19 +245,42 @@
 				</div>
 			{/if}
 		</section>
-
-		<AuditSaveCard
-			bind:auditComment
-			required={auditRequired}
-			requiredHint="Required when uploading, saving plugin changes, or deleting plugins."
-			class="mt-6"
-			{formError}
-			{successMessage}
-			{submitting}
-			dirty={dirtyNames.length > 0}
-			onreset={resetDraft}
-		/>
 	</form>
+
+	<form class="mt-6 card p-5" onsubmit={handleUpload}>
+		<h2 class="mb-1 text-lg font-medium">Upload plugin</h2>
+		<p class="mb-4 text-hint">Select a JAR with Plugin-Id and Plugin-Version manifest attributes.</p>
+
+		<label class="flex flex-col gap-1">
+			<span class="text-label">Plugin JAR</span>
+			<input
+				type="file"
+				name="jar"
+				accept=".jar,application/java-archive"
+				disabled={submitting}
+				class="input w-full max-w-md"
+				bind:files={uploadFiles}
+			/>
+		</label>
+
+		<div class="mt-4">
+			<button type="submit" class="btn-primary" disabled={submitting || !uploadFiles?.length}>
+				{submitting ? 'Uploading…' : 'Upload'}
+			</button>
+		</div>
+	</form>
+
+	<AuditSaveCard
+		bind:auditComment
+		required={auditRequired}
+		requiredHint="Required when uploading, saving plugin changes, or deleting plugins."
+		class="mt-6"
+		{formError}
+		{successMessage}
+		{submitting}
+		dirty={dirtyNames.length > 0}
+		onreset={resetDraft}
+	/>
 {/if}
 
 <AppDialog

@@ -3,6 +3,7 @@ package com.openrecordsmanager.template;
 import com.openrecordsmanager.api.ResourceIdentifier;
 import com.openrecordsmanager.api.template.TemplateComponent;
 import com.openrecordsmanager.rest.swagger.DefaultApiResponses;
+import com.openrecordsmanager.template.dto.TemplateResponse;
 import com.openrecordsmanager.rest.swagger.NotFoundApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.http.MediaType;
@@ -32,7 +33,7 @@ public class TemplateController {
     @GetMapping(value = "/{type}", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "List templates available for type")
     @NotFoundApiResponse
-    public Set<ResourceIdentifier> getTemplatesForType(@PathVariable("type") String typeName) {
+    public Set<TemplateResponse> getTemplatesForType(@PathVariable("type") String typeName) {
         return this.service.listTemplates(typeName);
     }
 

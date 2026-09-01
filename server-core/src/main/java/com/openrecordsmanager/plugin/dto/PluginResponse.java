@@ -2,16 +2,16 @@ package com.openrecordsmanager.plugin.dto;
 
 import com.openrecordsmanager.plugin.PersistedPlugin;
 import com.openrecordsmanager.plugin.PluginManager;
-import org.jspecify.annotations.NonNull;
+import jakarta.validation.constraints.NotBlank;
 
 import java.time.Instant;
 
 public record PluginResponse(
-        @NonNull String name,
-        @NonNull String version,
+        @NotBlank String name,
+        @NotBlank String version,
         boolean enabled,
-        @NonNull Instant dateCreated,
-        @NonNull Instant dateModified,
+        @NotBlank Instant dateCreated,
+        @NotBlank Instant dateModified,
         boolean loaded
 ) {
     public static PluginResponse of(PersistedPlugin plugin, PluginManager pluginManager) {

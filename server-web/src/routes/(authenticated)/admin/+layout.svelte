@@ -16,8 +16,8 @@
 				<SubNavLink href="/admin/config" match="exact">Configuration</SubNavLink>
 
 				<SubNavMenu label="Manage Plugins" hrefPrefix="/admin/plugins">
-					<SubNavMenuLink href="/admin/plugins">Plugins</SubNavMenuLink>
-					<SubNavMenuLink href="/admin/plugins/templates">Templates</SubNavMenuLink>
+					<SubNavMenuLink route="/(authenticated)/admin/plugins">Plugins</SubNavMenuLink>
+					<SubNavMenuLink route="/(authenticated)/admin/plugins/templates">Templates</SubNavMenuLink>
 				</SubNavMenu>
 			</SubNavList>
 

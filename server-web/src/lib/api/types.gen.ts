@@ -51,11 +51,11 @@ export type UpdatePluginRequest = {
 };
 
 export type PluginResponse = {
-    name?: string;
-    version?: string;
+    name: string;
+    version: string;
     enabled?: boolean;
-    dateCreated?: string;
-    dateModified?: string;
+    dateCreated: string;
+    dateModified: string;
     loaded?: boolean;
 };
 
@@ -283,6 +283,11 @@ export type ActionResponse = {
     requiresAuditComment?: boolean;
 };
 
+export type TemplateResponse = {
+    id: string;
+    name: string;
+};
+
 export type ComponentReferenceTemplateComponent = {
     type?: ComponentTypeTemplateComponent;
 };
@@ -311,10 +316,10 @@ export type RecordTypeResponse = {
 };
 
 export type SimplePluginResponse = {
-    name?: string;
-    version?: string;
+    name: string;
+    version: string;
     enabled?: boolean;
-    dateModified?: string;
+    dateModified: string;
     loaded?: boolean;
 };
 
@@ -4718,7 +4723,7 @@ export type GetTemplatesForTypeResponses = {
     200: {
         success: true;
         timestamp: unknown;
-        data: Array<string>;
+        data: Array<TemplateResponse>;
     };
 };
 

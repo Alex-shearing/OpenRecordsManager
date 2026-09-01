@@ -9,6 +9,8 @@ import java.io.InputStream;
 
 public interface TemplateComponent extends Component {
 
+    String name();
+
     static <T extends TemplateComponent> T fromJson(String fileName, Class<T> clazz) {
         try (InputStream inputStream = Plugin.class
                 .getClassLoader()
