@@ -35,15 +35,6 @@
 		}
 		wasVisible = isVisible;
 	});
-
-	function setCommentValidity(event: Event) {
-		const field = event.currentTarget as HTMLTextAreaElement;
-		if (required && !field.value.trim()) {
-			field.setCustomValidity(requiredHint);
-			return;
-		}
-		field.setCustomValidity('');
-	}
 </script>
 
 <div
@@ -79,10 +70,7 @@
 					disabled={submitting}
 					rows={2}
 					aria-describedby="{form}-audit-comment-hint"
-					class="input w-full resize-none"
-					oninvalid={setCommentValidity}
-					oninput={setCommentValidity}
-				></textarea>
+					class="input w-full resize-none"></textarea>
 
 				{#if formError}
 					<p class="mt-1.5 text-sm text-destructive" role="alert">{formError}</p>
