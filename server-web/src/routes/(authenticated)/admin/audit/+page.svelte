@@ -12,6 +12,7 @@
 		policyKey,
 	} from '$lib/audit/audit-utils';
 	import { invalidateAll } from '$app/navigation';
+	import toast from 'svelte-hot-french-toast';
 
 	let { data } = $props();
 
@@ -22,7 +23,6 @@
 	let auditComment = $state('');
 	let submitting = $state(false);
 	let formError = $state('');
-	let successMessage = $state('');
 
 	const changedPolicies = $derived(findChangedPolicies(data.policies, draftPolicies));
 	const isDirty = $derived(changedPolicies.length > 0);
@@ -35,10 +35,9 @@
 	function resetDraft() {
 		draftPolicies = buildPolicyDraft(data.policies);
 		formError = '';
-		successMessage = '';
 	}
 
-	async function handleSubmit(event: SubmitEvent) {
+	async function handleSave(event: SubmitEvent) {
 		event.preventDefault();
 
 		if (!isDirty) {
@@ -47,43 +46,45 @@
 
 		submitting = true;
 		formError = '';
-		successMessage = '';
 
-		const client = getApiClient();
+		try {
+			const client = getApiClient();
 
-		for (const policy of changedPolicies) {
-			const entityType = policy.entityType ?? '';
-			const operation = policy.operation;
-			if (!entityType || !operation) {
-				continue;
+			for (const policy of changedPolicies) {
+				const entityType = policy.entityType ?? '';
+				const operation = policy.operation;
+				if (!entityType || !operation) {
+					continue;
+				}
+				const key = policyKey(entityType, operation);
+				const draft = draftPolicies[key];
+
+				const { error } = await AuditController.updateAuditPolicy({
+					client,
+					query: {
+						entityType,
+						operation,
+					},
+					body: {
+						enabled: draft.enabled,
+						requiresComment: draft.requiresComment,
+					},
+				});
+
+				if (error) {
+					formError = error.error ?? `Failed to update ${entityType} ${operation}.`;
+					await invalidateAll();
+					return;
+				}
 			}
-			const key = policyKey(entityType, operation);
-			const draft = draftPolicies[key];
 
-			const { error } = await AuditController.updateAuditPolicy({
-				client,
-				query: {
-					entityType,
-					operation,
-				},
-				body: {
-					enabled: draft.enabled,
-					requiresComment: draft.requiresComment,
-				},
-			});
-
-			if (error) {
-				submitting = false;
-				formError = error.error ?? `Failed to update ${entityType} ${operation}.`;
-				await invalidateAll();
-				return;
-			}
+			toast.success(
+				changedPolicies.length === 1 ? 'Saved 1 audit policy.' : `Saved ${changedPolicies.length} audit policies.`
+			);
+			await invalidateAll();
+		} finally {
+			submitting = false;
 		}
-
-		submitting = false;
-		successMessage =
-			changedPolicies.length === 1 ? 'Saved 1 audit policy.' : `Saved ${changedPolicies.length} audit policies.`;
-		await invalidateAll();
 	}
 </script>
 
@@ -176,7 +177,7 @@
 		{/if}
 	</section>
 
-	<form onsubmit={handleSubmit}>
+	<form id="audit-save-form" onsubmit={handleSave}>
 		<section class="card">
 			<div class="card-header">
 				<h2 class="text-lg font-medium">Audit policies</h2>
@@ -242,13 +243,12 @@
 		</section>
 
 		<AuditSaveCard
+			form="audit-save-form"
 			bind:auditComment
 			required={false}
 			requiredHint=""
 			optionalHint="Optional; not required for audit policy changes."
-			class="mt-6"
 			{formError}
-			{successMessage}
 			{submitting}
 			dirty={isDirty}
 			onreset={resetDraft}

@@ -6,6 +6,7 @@
 	import AppDialog from '$lib/components/AppDialog.svelte';
 	import DialogActions from '$lib/components/DialogActions.svelte';
 	import { invalidateAll } from '$app/navigation';
+	import toast from 'svelte-hot-french-toast';
 
 	let { data } = $props();
 
@@ -25,13 +26,8 @@
 	let auditComment = $state('');
 	let submitting = $state(false);
 	let formError = $state('');
-	let successMessage = $state('');
 	let deleteTarget = $state<SimplePluginResponse | null>(null);
 	let deleteOpen = $state(false);
-
-	const auditRequired = $derived(
-		data.auditCommentRequired.create || data.auditCommentRequired.update || data.auditCommentRequired.delete
-	);
 
 	const dirtyNames = $derived(
 		sortedPlugins
@@ -53,7 +49,6 @@
 	function resetDraft() {
 		draftEnabled = enabledDraft(data.plugins);
 		formError = '';
-		successMessage = '';
 	}
 
 	async function handleUpload(event: SubmitEvent) {
@@ -72,7 +67,6 @@
 
 		submitting = true;
 		formError = '';
-		successMessage = '';
 
 		const { error } = await PluginController.uploadPlugin({
 			client: getApiClient(),
@@ -87,7 +81,7 @@
 			return;
 		}
 
-		successMessage = `Uploaded ${file.name}.`;
+		toast.success(`Uploaded ${file.name}.`);
 		uploadFiles = undefined;
 		auditComment = '';
 		await invalidateAll();
@@ -100,38 +94,35 @@
 			return;
 		}
 
-		if (data.auditCommentRequired.update && !auditComment.trim()) {
-			formError = 'An audit comment is required for this action.';
-			return;
-		}
-
 		submitting = true;
 		formError = '';
-		successMessage = '';
 
-		const headers = auditComment.trim() ? { 'X-ORM-Audit-Comment': auditComment.trim() } : undefined;
-		const client = getApiClient();
+		try {
+			const headers = auditComment.trim() ? { 'X-ORM-Audit-Comment': auditComment.trim() } : undefined;
+			const client = getApiClient();
 
-		for (const name of dirtyNames) {
-			const { error } = await PluginController.updatePlugin({
-				client,
-				path: { name },
-				body: { enabled: draftEnabled[name] },
-				headers,
-			});
+			for (const name of dirtyNames) {
+				const { error } = await PluginController.updatePlugin({
+					client,
+					path: { name },
+					body: { enabled: draftEnabled[name] },
+					headers,
+				});
 
-			if (error) {
-				submitting = false;
-				formError = error.error ?? `Failed to update plugin ${name}.`;
-				await invalidateAll();
-				return;
+				if (error) {
+					formError = error.error ?? `Failed to update plugin ${name}.`;
+					await invalidateAll();
+					return;
+				}
 			}
-		}
 
-		submitting = false;
-		successMessage =
-			dirtyNames.length === 1 ? 'Saved plugin changes.' : `Saved changes to ${dirtyNames.length} plugins.`;
-		await invalidateAll();
+			toast.success(
+				dirtyNames.length === 1 ? 'Saved plugin changes.' : `Saved changes to ${dirtyNames.length} plugins.`
+			);
+			await invalidateAll();
+		} finally {
+			submitting = false;
+		}
 	}
 
 	async function confirmDelete() {
@@ -146,7 +137,6 @@
 
 		submitting = true;
 		formError = '';
-		successMessage = '';
 
 		const name = deleteTarget.name;
 		const { error } = await PluginController.deletePlugin({
@@ -164,7 +154,7 @@
 			return;
 		}
 
-		successMessage = `Deleted plugin ${name}.`;
+		toast.success(`Deleted plugin ${name}.`);
 		auditComment = '';
 		await invalidateAll();
 	}
@@ -176,7 +166,7 @@
 {#if data.error}
 	<p class="text-destructive">{data.error}</p>
 {:else}
-	<form onsubmit={handleSave}>
+	<form id="plugins-save-form" onsubmit={handleSave}>
 		<section class="card">
 			<div class="card-header">
 				<h2 class="text-lg font-medium">Installed plugins</h2>
@@ -271,12 +261,11 @@
 	</form>
 
 	<AuditSaveCard
+		form="plugins-save-form"
 		bind:auditComment
-		required={auditRequired}
-		requiredHint="Required when uploading, saving plugin changes, or deleting plugins."
-		class="mt-6"
+		required={data.auditCommentRequired.update}
+		requiredHint="Required when saving plugin changes."
 		{formError}
-		{successMessage}
 		{submitting}
 		dirty={dirtyNames.length > 0}
 		onreset={resetDraft}
