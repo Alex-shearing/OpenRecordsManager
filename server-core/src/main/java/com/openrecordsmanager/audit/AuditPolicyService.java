@@ -34,8 +34,17 @@ public class AuditPolicyService {
     }
 
     public boolean isAuditDisabled() {
-        return this.migrationState.isUpgradeRequired() ||
-                !this.config.getOptional(BuiltinConfigs.AUDIT_ENABLED).orElse(true);
+        return getAuditDisabledReason() != null;
+    }
+
+    public @Nullable String getAuditDisabledReason() {
+        if (this.migrationState.isUpgradeRequired()) {
+            return "schema_migration_required";
+        }
+        if (!this.config.getOptional(BuiltinConfigs.AUDIT_ENABLED).orElse(true)) {
+            return "disabled_by_config";
+        }
+        return null;
     }
 
     @Transactional(readOnly = true)

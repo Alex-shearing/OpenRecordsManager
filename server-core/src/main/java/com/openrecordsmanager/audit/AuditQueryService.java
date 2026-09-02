@@ -2,13 +2,16 @@ package com.openrecordsmanager.audit;
 
 import com.openrecordsmanager.api.audit.AuditEntityType;
 import com.openrecordsmanager.api.audit.AuditOperation;
+import com.openrecordsmanager.api.builtin.BuiltinConfigs;
 import com.openrecordsmanager.audit.dto.AuditEventResponse;
 import com.openrecordsmanager.audit.dto.AuditPolicyResponse;
 import com.openrecordsmanager.audit.dto.AuditStatusResponse;
 import com.openrecordsmanager.audit.dto.UpdateAuditPolicyRequest;
 import com.openrecordsmanager.audit.persistence.AuditPolicyEntity;
 import com.openrecordsmanager.audit.spool.AuditSpoolDrainer;
+import com.openrecordsmanager.audit.spool.AuditSpoolPaths;
 import com.openrecordsmanager.audit.spool.AuditSpoolWriter;
+import com.openrecordsmanager.config.ConfigService;
 import com.openrecordsmanager.database.DataRepository;
 import com.openrecordsmanager.database.DatabaseWritableProbe;
 import com.openrecordsmanager.rest.errors.ResourceNotFoundException;
@@ -32,6 +35,8 @@ public class AuditQueryService {
     private final AuditPolicyService policyService;
     private final DatabaseWritableProbe probe;
     private final AuditSpoolDrainer drainer;
+    private final AuditSpoolPaths spoolPaths;
+    private final ConfigService config;
 
     public AuditQueryService(
             DataRepository repository,
@@ -40,7 +45,9 @@ public class AuditQueryService {
             AuditAccessService accessService,
             AuditPolicyService policyService,
             DatabaseWritableProbe probe,
-            AuditSpoolDrainer drainer
+            AuditSpoolDrainer drainer,
+            AuditSpoolPaths spoolPaths,
+            ConfigService config
     ) {
         this.repository = repository;
         this.auditService = auditService;
@@ -49,10 +56,12 @@ public class AuditQueryService {
         this.policyService = policyService;
         this.probe = probe;
         this.drainer = drainer;
+        this.spoolPaths = spoolPaths;
+        this.config = config;
     }
 
     @Transactional(readOnly = true)
-    public List<AuditEventResponse> listEvents(
+    public List<AuditEventResponse> listAuditEvents(
             User actor,
             AuditEntityType targetType,
             String targetId,
@@ -95,7 +104,7 @@ public class AuditQueryService {
     }
 
     @Transactional(readOnly = true)
-    public AuditEventResponse getEvent(User actor, UUID eventId) {
+    public AuditEventResponse getAuditEvent(User actor, UUID eventId) {
         AuditEventPayload payload = this.repository.auditEventRepo.findById(eventId)
                 .map(this.auditService::toPayload)
                 .orElseGet(() -> this.spoolWriter.readPending().stream()
@@ -109,14 +118,14 @@ public class AuditQueryService {
     }
 
     @Transactional(readOnly = true)
-    public List<AuditPolicyResponse> listPolicies() {
+    public List<AuditPolicyResponse> listAuditPolicies() {
         return this.policyService.getAllPolicies().stream()
                 .map(AuditPolicyResponse::of)
                 .toList();
     }
 
     @Transactional
-    public AuditPolicyResponse updatePolicy(
+    public AuditPolicyResponse updateAuditPolicy(
             AuditEntityType entityType,
             AuditOperation operation,
             UpdateAuditPolicyRequest request
@@ -130,10 +139,15 @@ public class AuditQueryService {
         return AuditPolicyResponse.of(updated);
     }
 
-    public AuditStatusResponse status() {
+    public AuditStatusResponse getAuditStatus() {
+        String disabledReason = this.policyService.getAuditDisabledReason();
         return new AuditStatusResponse(
+                disabledReason == null,
+                disabledReason,
                 this.probe.isWritable(),
                 this.spoolWriter.pendingCount(),
+                this.spoolPaths.isArchiveEnabled(),
+                this.config.getOrThrow(BuiltinConfigs.AUDIT_SPOOL_DRAIN_INTERVAL_SECONDS),
                 this.probe.getLastChecked(),
                 this.probe.getLastSuccessfulWrite(),
                 this.drainer.getLastDrainAttempt(),

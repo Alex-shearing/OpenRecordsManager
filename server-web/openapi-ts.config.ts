@@ -4,7 +4,10 @@ export default defineConfig({
 	input: 'http://localhost:8080/v3/api-docs',
 	output: 'src/lib/api',
 	plugins: [
-		'@hey-api/typescript',
+		{
+			name: '@hey-api/typescript',
+			enums: 'javascript',
+		},
 		{
 			name: '@hey-api/sdk',
 			client: false,

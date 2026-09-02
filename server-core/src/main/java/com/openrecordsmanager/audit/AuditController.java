@@ -36,14 +36,14 @@ public class AuditController {
 
     @GetMapping(value = "/events", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "List audit events for an entity")
-    public List<AuditEventResponse> listEvents(
+    public List<AuditEventResponse> listAuditEvents(
             @AuthenticationPrincipal User user,
             @RequestParam("targetType") String targetType,
             @RequestParam("targetId") String targetId,
             @RequestParam(value = "before", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) @Nullable Instant before,
             @RequestParam(value = "limit", defaultValue = "50") int limit
     ) {
-        return this.queryService.listEvents(
+        return this.queryService.listAuditEvents(
                 user,
                 AuditEntityType.fromKey(targetType),
                 targetId,
@@ -55,30 +55,30 @@ public class AuditController {
     @GetMapping(value = "/events/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Get a single audit event")
     @NotFoundApiResponse
-    public AuditEventResponse getEvent(@AuthenticationPrincipal User user, @PathVariable("id") UUID id) {
-        return this.queryService.getEvent(user, id);
+    public AuditEventResponse getAuditEvent(@AuthenticationPrincipal User user, @PathVariable("id") UUID id) {
+        return this.queryService.getAuditEvent(user, id);
     }
 
     @GetMapping(value = "/policies", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "List audit policies")
-    public List<AuditPolicyResponse> listPolicies() {
-        return this.queryService.listPolicies();
+    public List<AuditPolicyResponse> listAuditPolicies() {
+        return this.queryService.listAuditPolicies();
     }
 
     @PutMapping(value = "/policies", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Update an audit policy")
     @NotFoundApiResponse
-    public AuditPolicyResponse updatePolicy(
+    public AuditPolicyResponse updateAuditPolicy(
             @RequestParam("entityType") String entityType,
             @RequestParam("operation") AuditOperation operation,
             @Valid @RequestBody UpdateAuditPolicyRequest request
     ) {
-        return this.queryService.updatePolicy(AuditEntityType.fromKey(entityType), operation, request);
+        return this.queryService.updateAuditPolicy(AuditEntityType.fromKey(entityType), operation, request);
     }
 
     @GetMapping(value = "/status", produces = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(summary = "Get audit subsystem status")
-    public AuditStatusResponse status() {
-        return this.queryService.status();
+    @Operation(summary = "Get audit subsystem status for the current server")
+    public AuditStatusResponse getAuditStatus() {
+        return this.queryService.getAuditStatus();
     }
 }

@@ -181,13 +181,23 @@ export type UpdateAuditPolicyRequest = {
     requiresComment: boolean;
 };
 
+export const AuditOperation = {
+    CREATE: 'CREATE',
+    READ: 'READ',
+    UPDATE: 'UPDATE',
+    DELETE: 'DELETE',
+    ACTION: 'ACTION'
+} as const;
+
+export type AuditOperation = typeof AuditOperation[keyof typeof AuditOperation];
+
 export type AuditPolicyResponse = {
-    entityType?: 'record' | 'user' | 'record_type' | 'config' | 'list' | 'list_element' | 'object_property' | 'file_store' | 'auth_provider' | 'record_revision' | 'file_store_middleware' | 'template' | 'plugin';
-    operation?: 'CREATE' | 'READ' | 'UPDATE' | 'DELETE' | 'ACTION';
-    enabled?: boolean;
-    requiresComment?: boolean;
-    displayName?: string;
-    description?: string;
+    entityType: 'record' | 'user' | 'record_type' | 'config' | 'list' | 'list_element' | 'object_property' | 'file_store' | 'auth_provider' | 'record_revision' | 'file_store_middleware' | 'template' | 'plugin';
+    operation?: AuditOperation;
+    enabled: boolean;
+    requiresComment: boolean;
+    displayName: string;
+    description: string;
 };
 
 export type NewUserRequest = {
@@ -471,12 +481,16 @@ export type ConfigTypeUuidResponse = {
 };
 
 export type AuditStatusResponse = {
-    primaryWritable?: boolean;
-    pendingSpoolCount?: number;
-    lastProbeAt?: string;
-    lastSuccessfulWriteAt?: string;
-    lastDrainAttemptAt?: string;
-    lastSuccessfulDrainAt?: string;
+    auditEnabled: boolean;
+    auditDisabledReason?: string;
+    primaryWritable: boolean;
+    pendingSpoolCount: number;
+    archiveEnabled: boolean;
+    drainIntervalSeconds: number;
+    lastProbeAt: string;
+    lastSuccessfulWriteAt: string;
+    lastDrainAttemptAt: string;
+    lastSuccessfulDrainAt: string;
 };
 
 export type AuditEventResponse = {
@@ -484,7 +498,7 @@ export type AuditEventResponse = {
     occurredAt?: string;
     actorId?: string;
     actorUsername?: string;
-    operation?: 'CREATE' | 'READ' | 'UPDATE' | 'DELETE' | 'ACTION';
+    operation?: AuditOperation;
     targetType?: 'record' | 'user' | 'record_type' | 'config' | 'list' | 'list_element' | 'object_property' | 'file_store' | 'auth_provider' | 'record_revision' | 'file_store_middleware' | 'template' | 'plugin';
     targetId?: string;
     actionId?: string;
@@ -2838,14 +2852,14 @@ export type UpdateProviderResponses = {
 
 export type UpdateProviderResponse = UpdateProviderResponses[keyof UpdateProviderResponses];
 
-export type ListPoliciesData = {
+export type ListAuditPoliciesData = {
     body?: never;
     path?: never;
     query?: never;
     url: '/api/audit/policies';
 };
 
-export type ListPoliciesErrors = {
+export type ListAuditPoliciesErrors = {
     /**
      * Unauthorized
      */
@@ -2892,9 +2906,9 @@ export type ListPoliciesErrors = {
     };
 };
 
-export type ListPoliciesError = ListPoliciesErrors[keyof ListPoliciesErrors];
+export type ListAuditPoliciesError = ListAuditPoliciesErrors[keyof ListAuditPoliciesErrors];
 
-export type ListPoliciesResponses = {
+export type ListAuditPoliciesResponses = {
     /**
      * OK
      */
@@ -2905,9 +2919,9 @@ export type ListPoliciesResponses = {
     };
 };
 
-export type ListPoliciesResponse = ListPoliciesResponses[keyof ListPoliciesResponses];
+export type ListAuditPoliciesResponse = ListAuditPoliciesResponses[keyof ListAuditPoliciesResponses];
 
-export type UpdatePolicyData = {
+export type UpdateAuditPolicyData = {
     body: UpdateAuditPolicyRequest;
     path?: never;
     query: {
@@ -2917,7 +2931,7 @@ export type UpdatePolicyData = {
     url: '/api/audit/policies';
 };
 
-export type UpdatePolicyErrors = {
+export type UpdateAuditPolicyErrors = {
     /**
      * Unauthorized
      */
@@ -2975,9 +2989,9 @@ export type UpdatePolicyErrors = {
     };
 };
 
-export type UpdatePolicyError = UpdatePolicyErrors[keyof UpdatePolicyErrors];
+export type UpdateAuditPolicyError = UpdateAuditPolicyErrors[keyof UpdateAuditPolicyErrors];
 
-export type UpdatePolicyResponses = {
+export type UpdateAuditPolicyResponses = {
     /**
      * OK
      */
@@ -2988,7 +3002,7 @@ export type UpdatePolicyResponses = {
     };
 };
 
-export type UpdatePolicyResponse = UpdatePolicyResponses[keyof UpdatePolicyResponses];
+export type UpdateAuditPolicyResponse = UpdateAuditPolicyResponses[keyof UpdateAuditPolicyResponses];
 
 export type CreateData = {
     body: NewUserRequest;
@@ -5680,14 +5694,14 @@ export type CallbackResponses = {
 
 export type CallbackResponse = CallbackResponses[keyof CallbackResponses];
 
-export type Status1Data = {
+export type GetAuditStatusData = {
     body?: never;
     path?: never;
     query?: never;
     url: '/api/audit/status';
 };
 
-export type Status1Errors = {
+export type GetAuditStatusErrors = {
     /**
      * Unauthorized
      */
@@ -5734,9 +5748,9 @@ export type Status1Errors = {
     };
 };
 
-export type Status1Error = Status1Errors[keyof Status1Errors];
+export type GetAuditStatusError = GetAuditStatusErrors[keyof GetAuditStatusErrors];
 
-export type Status1Responses = {
+export type GetAuditStatusResponses = {
     /**
      * OK
      */
@@ -5747,9 +5761,9 @@ export type Status1Responses = {
     };
 };
 
-export type Status1Response = Status1Responses[keyof Status1Responses];
+export type GetAuditStatusResponse = GetAuditStatusResponses[keyof GetAuditStatusResponses];
 
-export type ListEventsData = {
+export type ListAuditEventsData = {
     body?: never;
     path?: never;
     query: {
@@ -5761,7 +5775,7 @@ export type ListEventsData = {
     url: '/api/audit/events';
 };
 
-export type ListEventsErrors = {
+export type ListAuditEventsErrors = {
     /**
      * Unauthorized
      */
@@ -5808,9 +5822,9 @@ export type ListEventsErrors = {
     };
 };
 
-export type ListEventsError = ListEventsErrors[keyof ListEventsErrors];
+export type ListAuditEventsError = ListAuditEventsErrors[keyof ListAuditEventsErrors];
 
-export type ListEventsResponses = {
+export type ListAuditEventsResponses = {
     /**
      * OK
      */
@@ -5821,9 +5835,9 @@ export type ListEventsResponses = {
     };
 };
 
-export type ListEventsResponse = ListEventsResponses[keyof ListEventsResponses];
+export type ListAuditEventsResponse = ListAuditEventsResponses[keyof ListAuditEventsResponses];
 
-export type GetEventData = {
+export type GetAuditEventData = {
     body?: never;
     path: {
         id: string;
@@ -5832,7 +5846,7 @@ export type GetEventData = {
     url: '/api/audit/events/{id}';
 };
 
-export type GetEventErrors = {
+export type GetAuditEventErrors = {
     /**
      * Unauthorized
      */
@@ -5890,9 +5904,9 @@ export type GetEventErrors = {
     };
 };
 
-export type GetEventError = GetEventErrors[keyof GetEventErrors];
+export type GetAuditEventError = GetAuditEventErrors[keyof GetAuditEventErrors];
 
-export type GetEventResponses = {
+export type GetAuditEventResponses = {
     /**
      * OK
      */
@@ -5903,4 +5917,4 @@ export type GetEventResponses = {
     };
 };
 
-export type GetEventResponse = GetEventResponses[keyof GetEventResponses];
+export type GetAuditEventResponse = GetAuditEventResponses[keyof GetAuditEventResponses];

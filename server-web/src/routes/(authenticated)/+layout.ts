@@ -7,7 +7,7 @@ export async function load({ url }) {
 	const [meR, propertiesR, auditPolicyR] = await Promise.all([
 		UserController.me({ client }),
 		ObjectPropertyController.objectPropertyRetrieveAll({ client }),
-		AuditController.listPolicies({ client }),
+		AuditController.listAuditPolicies({ client }),
 	]);
 
 	if (meR.error && meR.response.status === 401) {

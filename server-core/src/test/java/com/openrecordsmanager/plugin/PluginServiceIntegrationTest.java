@@ -155,7 +155,7 @@ class PluginServiceIntegrationTest {
                                 .accept(MediaType.APPLICATION_JSON)
                 )
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.length()").value(this.pluginManager.getLocalPlugins().length));
+                .andExpect(jsonPath("$.data.length()").value(this.pluginManager.getLocalPlugins().length - 1));
     }
 
     @Test

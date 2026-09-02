@@ -14,6 +14,7 @@
 		<NavigationMenu.Root class="relative w-full">
 			<SubNavList>
 				<SubNavLink href="/admin/config" match="exact">Configuration</SubNavLink>
+				<SubNavLink href="/admin/audit" match="exact">Audit</SubNavLink>
 
 				<SubNavMenu label="Manage Plugins" hrefPrefix="/admin/plugins">
 					<SubNavMenuLink route="/(authenticated)/admin/plugins">Plugins</SubNavMenuLink>

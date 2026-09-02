@@ -76,10 +76,10 @@
 	<p class="text-hint">No configuration settings are available.</p>
 {:else}
 	<form class="flex flex-col gap-6" onsubmit={handleSubmit}>
-		{#each sections as section (section.group?.id ?? 'other')}
-			<section class="card">
+		{#each sections as section (section.group.id)}
+			<section class="card scroll-mt-28" id={section.group.id}>
 				<div class="card-header">
-					<h2 class="text-lg font-medium">{section.group?.title ?? 'Other'}</h2>
+					<h2 class="text-lg font-medium">{section.group.title}</h2>
 				</div>
 				<div class="divide-y divide-border">
 					{#each section.items as config (config.key)}
