@@ -66,7 +66,8 @@ Unpack `orm-web-static-*.zip` into your web root and use the samples shipped ins
 For a **same-origin** setup, proxy `/api` to the JAR and leave `apiBaseUrl` empty in `index.html` (`window.__ORM_UI__`).
 
 For a **cross-origin** setup, patch `apiBaseUrl` in `index.html` to the public API URL and allow the UI origin in
-`app.security.cors` settings.
+`app.security.cors` settings. The API exposes the CSRF token in the `X-XSRF-TOKEN` **response** header (also listed in
+CORS exposed headers).
 
 You can still place a `config.yml` next to the API process for non-Docker installs; env vars override it. Web branding
 keys are **not** under `server.*`, so they can also be set centrally in the database via the config API.

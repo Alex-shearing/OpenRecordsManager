@@ -4,12 +4,15 @@ import { page } from '$app/state';
 import { createClient, createConfig, type Client } from '$lib/api/client';
 
 const SCHEMA_UPGRADE_HEADER = 'X-ORM-Schema-Upgrade-Required';
+export const CSRF_HEADER = 'X-CSRF-TOKEN';
 
 const baseUrl = (
 	env.PUBLIC_API_URL || (typeof window !== 'undefined' ? (window.__ORM_UI__?.apiBaseUrl ?? '') : '')
 ).replace(/\/$/, '');
 
 let apiClient: Client | undefined;
+/** Set from API response headers; required when UI and API are on different hostnames. */
+let csrfTokenFromHeader: string | null = null;
 
 /**
  * Creates the app API client with SvelteKit's fetch and registers interceptors.
@@ -28,15 +31,20 @@ export function createApiClient(fetch: typeof globalThis.fetch): Client {
 	);
 
 	client.interceptors.request.use(request => {
-		const csrfToken = getCookie('XSRF-TOKEN');
-		if (csrfToken) {
-			request.headers.set('X-XSRF-TOKEN', csrfToken);
+		if (csrfTokenFromHeader) {
+			request.headers.set(CSRF_HEADER, csrfTokenFromHeader);
 		}
 
 		return request;
 	});
 
 	client.interceptors.response.use((response, request) => {
+		const headerToken = response.headers.get(CSRF_HEADER);
+		console.log(headerToken);
+		if (headerToken) {
+			csrfTokenFromHeader = headerToken;
+		}
+
 		handleSchemaUpdateRequired(response, request);
 
 		if (response.status >= 400) {

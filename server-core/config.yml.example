@@ -97,7 +97,7 @@ app:
       allowed-headers:
         - Authorization
         - Content-Type
-        - X-XSRF-TOKEN
+        - X-CSRF-TOKEN
         - X-Client-Platform
         - X-ORM-Audit-Comment
 

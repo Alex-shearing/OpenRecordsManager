@@ -111,7 +111,7 @@ public class BuiltinConfigs {
     public static final ConfigType<List<String>> CORS_ALLOWED_HEADERS = ConfigType.builder("app.security.cors.allowed-headers", PropertyType.STRING_LIST)
             .name("Cross Origin Resource Sharing Allowed Headers")
             .description("Headers that should be allowed to when accessing the API")
-            .defaultValue(List.of("Authorization", "Content-Type", "X-XSRF-TOKEN", "X-Client-Platform", "X-ORM-Audit-Comment"))
+            .defaultValue(List.of("Authorization", "Content-Type", "X-CSRF-TOKEN", "X-Client-Platform", "X-ORM-Audit-Comment"))
             .build();
 
     public static final ConfigType<Long> TOKEN_EXPIRATION_TIME = ConfigType.builder("app.security.token-expiration-time", PropertyType.NUMBER)
@@ -121,13 +121,13 @@ public class BuiltinConfigs {
             .build();
 
     public static final ConfigType<String> COOKIE_NAME = ConfigType.builder("app.security.cookie-auth.name", PropertyType.STRING)
-            .name("Cookie Name")
+            .name("Authentication Cookie Name")
             .description("When using cookie-based authentication, the name of the cookie to use")
             .defaultValue("ORM-Authentication")
             .build();
 
     public static final ConfigType<Boolean> COOKIE_SECURE = ConfigType.builder("app.security.cookie-auth.secure", PropertyType.BOOLEAN)
-            .name("Cookie Secure Only")
+            .name("Authentication Cookie Secure Only")
             .description("When using cookie-based authentication, enforce the 'Secure' attribute")
             .defaultValue(true)
             .build();

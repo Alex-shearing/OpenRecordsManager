@@ -22,9 +22,10 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
+import org.springframework.security.web.csrf.CsrfFilter;
 import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
+import org.springframework.security.web.csrf.HttpSessionCsrfTokenRepository;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -58,7 +59,6 @@ public class RestConfiguration {
     private final AuthService authService;
     private final List<String> allowedOrigins;
     private final List<String> allowedHeaders;
-    private final boolean cookieSecure;
 
     public RestConfiguration(
             DataRepository repository,
@@ -69,7 +69,6 @@ public class RestConfiguration {
         this.authService = authService;
         this.allowedOrigins = configService.getOrThrow(BuiltinConfigs.CORS_ALLOWED_ORIGINS);
         this.allowedHeaders = configService.getOrThrow(BuiltinConfigs.CORS_ALLOWED_HEADERS);
-        this.cookieSecure = configService.getOrThrow(BuiltinConfigs.COOKIE_SECURE);
     }
 
     @Bean
@@ -91,6 +90,10 @@ public class RestConfiguration {
         configuration.setAllowedOrigins(this.allowedOrigins);
         configuration.setAllowedHeaders(this.allowedHeaders);
         configuration.setAllowCredentials(true);
+        configuration.setExposedHeaders(List.of(
+                "X-CSRF-TOKEN",
+                SchemaUpgradeGateFilter.UPGRADE_REQUIRED_HEADER
+        ));
         // Required for browser preflights from localhost / private-network contexts
         configuration.setAllowPrivateNetwork(true);
 
@@ -104,15 +107,9 @@ public class RestConfiguration {
             HttpSecurity http,
             DatabaseTokenAuthenticationFilter tokenAuthenticationFilter,
             SchemaUpgradeGateFilter schemaUpgradeFilter,
-            AuditContextFilter auditContextFilter
+            AuditContextFilter auditContextFilter,
+            CsrfTokenResponseHeaderFilter csrfTokenResponseHeaderFilter
     ) {
-        CookieCsrfTokenRepository csrfTokenRepository = CookieCsrfTokenRepository.withHttpOnlyFalse();
-        csrfTokenRepository.setCookieCustomizer(cookie -> {
-            cookie.secure(this.cookieSecure);
-            cookie.sameSite(this.cookieSecure ? "None" : "Lax");
-            cookie.path("/");
-        });
-
         http
                 .securityMatcher("/api/**")
                 .cors(cors -> cors.configurationSource(this.corsConfigurationSource()))
@@ -123,7 +120,7 @@ public class RestConfiguration {
                             return authHeader != null && authHeader.startsWith("Bearer ");
                         })
                         .ignoringRequestMatchers(PUBLIC_API_PATHS)
-                        .csrfTokenRepository(csrfTokenRepository)
+                        .csrfTokenRepository(new HttpSessionCsrfTokenRepository())
                         .csrfTokenRequestHandler(new CsrfTokenRequestAttributeHandler() {
                             @Override
                             public void handle(HttpServletRequest request, HttpServletResponse response, Supplier<CsrfToken> csrfToken) {
@@ -140,6 +137,7 @@ public class RestConfiguration {
                         .requestMatchers(PUBLIC_API_PATHS).permitAll()
                         .anyRequest().authenticated()
                 )
+                .addFilterAfter(csrfTokenResponseHeaderFilter, CsrfFilter.class)
                 .addFilterBefore(tokenAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .addFilterAfter(auditContextFilter, DatabaseTokenAuthenticationFilter.class)
                 .addFilterBefore(schemaUpgradeFilter, DatabaseTokenAuthenticationFilter.class)

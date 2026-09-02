@@ -73,7 +73,6 @@
 
 				if (error) {
 					formError = error.error ?? `Failed to update ${entityType} ${operation}.`;
-					await invalidateAll();
 					return;
 				}
 			}

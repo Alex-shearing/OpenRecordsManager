@@ -132,11 +132,8 @@ public class AuthService implements UserAuthContext {
     public @Nullable String extractTokenFromRequest(HttpServletRequest request) {
         String authHeader = request.getHeader("Authorization");
 
-        if (authHeader != null) {
-            if (authHeader.startsWith("Bearer ")) {
-                return authHeader.substring(7);
-            }
-            return null;
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            return authHeader.substring(7);
         }
 
         Cookie[] cookies = request.getCookies();

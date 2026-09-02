@@ -111,7 +111,6 @@
 
 				if (error) {
 					formError = error.error ?? `Failed to update plugin ${name}.`;
-					await invalidateAll();
 					return;
 				}
 			}
