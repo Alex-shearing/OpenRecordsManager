@@ -37,7 +37,7 @@ server:
     directory: ./plugins
   # Local directory for audit spool and archive files
   audit-directory: ./data/audit
-  # Optional static SPA directory (e.g. ./static after unpacking orm-web-static-*.zip), leave empty when the UI is hosted separately (nginx/IIS/etc)
+  # Static SPA directory cohosted by the API. Set to 'none' when the UI is hosted separately (nginx/IIS/etc)
   web-directory: ./static
 
   #######################

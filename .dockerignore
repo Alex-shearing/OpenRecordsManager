@@ -6,5 +6,4 @@ server-core/plugins
 **/target
 **/node_modules
 **/.svelte-kit
-server-web
 *.md

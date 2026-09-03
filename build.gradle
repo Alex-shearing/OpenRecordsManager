@@ -72,15 +72,11 @@ distributions {
 
                 from pluginProjects.collect { it.tasks.named('jar').map { jarTask -> jarTask.outputs.files } }
             }
-        }
-    }
-
-    // Separate static web client distribution (SPA + sample host configs)
-    web {
-        distributionBaseName = 'orm-web-static'
-
-        contents {
-            from file('server-web/build')
+            // Cohosted SPA (served from server.web-directory=./static)
+            into('static') {
+                from 'server-web/build'
+            }
+            // Sample nginx/IIS configs for optional self-hosted UI
             into('deploy') {
                 from 'server-web/deploy'
             }
@@ -88,15 +84,9 @@ distributions {
     }
 }
 
-tasks.named('webDistZip').configure {
-    dependsOn tasks.named('buildWeb')
-}
-tasks.named('webDistTar').configure {
-    dependsOn tasks.named('buildWeb')
-}
-tasks.named('assembleWebDist').configure {
-    dependsOn tasks.named('buildWeb')
-}
+tasks.named('distZip').configure { dependsOn tasks.named('buildWeb') }
+tasks.named('distTar').configure { dependsOn tasks.named('buildWeb') }
+tasks.named('assembleDist').configure { dependsOn tasks.named('buildWeb') }
 
 // Primary run task for the API
 tasks.register('runApp') {

@@ -47,7 +47,7 @@ public class BuiltinConfigs {
 
     public static final ConfigType<String> WEB_DIRECTORY = ConfigType.builder("server.web-directory", PropertyType.STRING)
             .name("Web Client Directory")
-            .description("Optional static SPA directory (e.g. ./static after unpacking orm-web-static-*.zip), leave empty when the UI is hosted separately (nginx/IIS/etc)")
+            .description("Static SPA directory cohosted by the API. Set to 'none' when the UI is hosted separately (nginx/IIS/etc)")
             .defaultValue("./static")
             .build();
 
@@ -105,7 +105,7 @@ public class BuiltinConfigs {
     public static final ConfigType<List<String>> CORS_ALLOWED_ORIGINS = ConfigType.builder("app.security.cors.allowed-origins", PropertyType.STRING_LIST)
             .name("Cross Origin Resource Sharing Allowed Origins")
             .description("Origins that should be allowed to request resources from the API, this is your web client URL(s)")
-            .defaultValue(List.of("http://localhost:5173", "http://localhost:3000"))
+            .defaultValue(List.of())
             .build();
 
     public static final ConfigType<List<String>> CORS_ALLOWED_HEADERS = ConfigType.builder("app.security.cors.allowed-headers", PropertyType.STRING_LIST)

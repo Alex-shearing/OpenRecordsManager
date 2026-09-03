@@ -20,7 +20,7 @@ services:
       SERVER_DATABASE_PRIMARY_PASSWORD: ${SERVER_DATABASE_PRIMARY_PASSWORD:-}
       SERVER_DATABASE_READ_ONLY_URL: ${SERVER_DATABASE_READ_ONLY_URL:-jdbc:sqlite:/app/data/orm_system.db?open_mode=1}
       SERVER_PLUGINS_DIRECTORY: /app/plugins
-      SERVER_WEB_DIRECTORY: ""
+      SERVER_WEB_DIRECTORY: /app/static
       APP_LOGGING_PATH: /app/data/logs/openrecordsmanager.log
     depends_on:
       postgres:
@@ -33,14 +33,14 @@ services:
         condition: service_healthy
         required: false
     healthcheck:
-      test: ["CMD", "curl", "-fsS", "http://127.0.0.1:8080/api/health/liveness"]
+      test: [ "CMD", "curl", "-fsS", "http://127.0.0.1:8080/api/health/liveness" ]
       interval: 30s
       timeout: 5s
       retries: 3
       start_period: 90s
 
   postgres:
-    profiles: [postgres]
+    profiles: [ postgres ]
     image: postgres:16-alpine
     ports:
       - "5432:5432"
@@ -51,13 +51,13 @@ services:
     volumes:
       - postgres-data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U orm -d orm"]
+      test: [ "CMD-SHELL", "pg_isready -U orm -d orm" ]
       interval: 5s
       timeout: 5s
       retries: 10
 
   mariadb:
-    profiles: [mariadb]
+    profiles: [ mariadb ]
     image: mariadb:11
     ports:
       - "3306:3306"
@@ -69,13 +69,13 @@ services:
     volumes:
       - mariadb-data:/var/lib/mysql
     healthcheck:
-      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      test: [ "CMD", "healthcheck.sh", "--connect", "--innodb_initialized" ]
       interval: 5s
       timeout: 5s
       retries: 10
 
   sqlserver:
-    profiles: [sqlserver]
+    profiles: [ sqlserver ]
     image: mcr.microsoft.com/mssql/server:2022-latest
     ports:
       - "1433:1433"
@@ -94,18 +94,6 @@ services:
       timeout: 5s
       retries: 12
       start_period: 40s
-
-  web:
-    build:
-      context: ./server-web
-      dockerfile: Dockerfile
-    ports:
-      - "3000:3000"
-    environment:
-      UI_API_BASE_URL: http://localhost:8080
-    depends_on:
-      api:
-        condition: service_healthy
 
 volumes:
   api-data:

@@ -17,11 +17,11 @@ There are multiple tasks that can be used to assist in the development workflow:
 
 - `gradlew runApp` / `gradlew bootRun` - runs the Spring Boot API (plugins included with `runApp`)
 - `gradlew copyPlugins` - builds all the plugins and places them in the `server-core/data/plugins` directory
-- `gradlew buildWeb` / `gradlew webDistZip` - builds the static web client distribution
-- `gradlew bootJar` / `gradlew distZip` - API distribution zip (JAR, plugins, scripts)
+- `gradlew buildWeb` - builds the static web client (included under `static/` in `distZip`)
+- `gradlew bootJar` / `gradlew distZip` - API jar; distribution zip also includes plugins and web client.
 - `cd server-web && npm run dev` - SvelteKit UI in development mode (proxies `/api` to `:8080`)
 - `cd server-web && npm run build` - production static SPA build
-- `docker compose up --build` - runs API + nginx web containers (see [`DEPLOYING.md`](DEPLOYING.md))
+- `docker compose up --build` - runs the API container with embedded UI on `:8080` (see [`DEPLOYING.md`](DEPLOYING.md))
 
 If you are editing primarily for the website, run `gradlew bootRun` on the parent project and
 `npm run dev` in the `server-web` project.

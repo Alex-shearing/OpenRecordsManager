@@ -40,7 +40,6 @@ export function createApiClient(fetch: typeof globalThis.fetch): Client {
 
 	client.interceptors.response.use((response, request) => {
 		const headerToken = response.headers.get(CSRF_HEADER);
-		console.log(headerToken);
 		if (headerToken) {
 			csrfTokenFromHeader = headerToken;
 		}
@@ -82,12 +81,4 @@ function handleSchemaUpdateRequired(response: Response, request: Request): Respo
 	}
 
 	return response;
-}
-
-function getCookie(name: string): string | null {
-	if (typeof document === 'undefined') return null;
-	const value = `; ${document.cookie}`;
-	const parts = value.split(`; ${name}=`);
-	if (parts.length === 2) return parts.pop()?.split(';').shift() ?? null;
-	return null;
 }

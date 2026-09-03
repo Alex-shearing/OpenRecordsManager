@@ -76,12 +76,11 @@ jobs:
           VERSION="${VERSION#v}"
           echo "value=$VERSION" >> "$GITHUB_OUTPUT"
 
-      - name: Build distributions
-        run: ./gradlew distZip webDistZip -Pversion=${{ steps.version.outputs.value }} --no-daemon
+      - name: Build distribution
+        run: ./gradlew distZip -Pversion=${{ steps.version.outputs.value }} --no-daemon
 
       - name: Upload release assets
         uses: softprops/action-gh-release@v3
         with:
           files: |
             build/distributions/open-records-manager-${{ steps.version.outputs.value }}.zip
-            build/distributions/orm-web-static-${{ steps.version.outputs.value }}.zip

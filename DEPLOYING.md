@@ -1,9 +1,9 @@
 # Deploying Open Records Manager
 
-Deploying ORM takes two components:
+Deploying ORM takes two pieces shipped together in one distribution:
 
 - **API** (Spring Boot JAR)
-- **Web Client** (Static Web App, optionally deployed by the API)
+- **Web Client** (static files under `./static`, cohosted by the API)
 
 ## Quick start (Docker)
 
@@ -11,25 +11,14 @@ Deploying ORM takes two components:
 docker compose up --build
 ```
 
-- Web UI: http://localhost:3000
-- API: http://localhost:8080
+- App (UI + API): http://localhost:8080
 
 ## Quick start (no Docker)
 
-1. Build distributions: `./gradlew distZip webDistZip`
-2. Unpack `build/distributions/open-records-manager-*.zip` for the API
-3. Run the API with `./start.sh` or `.\start.ps1` (Java 25+)
-4. Host the UI from `build/distributions/orm-web-static-*.zip` using one of the options below
-
-### Option A — Co-host UI from the API process
-
-```bash
-mkdir -p static
-unzip orm-web-static-*.zip -d static
-./start.sh
-```
-
-Browse http://localhost:8080. Same-origin API calls use the empty `apiBaseUrl` baked into `index.html`.
+1. Build the distribution: `./gradlew distZip`
+2. Unpack `build/distributions/open-records-manager-*.zip`
+3. Run with `./start.sh` or `.\start.ps1` (Java 25+)
+4. Browse http://localhost:8080 — the API serves `./static` same-origin
 
 ### PostgreSQL, MariaDB, or SQL Server (Docker)
 
@@ -56,29 +45,26 @@ export SERVER_DATABASE_READ_ONLY_URL=
 ./gradlew bootRun
 ```
 
-### Option B — Host the static files yourself
+### Optional — Host the static files yourself
 
-Unpack `orm-web-static-*.zip` into your web root and use the samples shipped inside that zip:
+Copy the `static/` directory from the distribution and use the sample configs under `deploy/`:
 
 - `deploy/orm-web.conf` — nginx + SPA fallback + `/api` proxy
 - `deploy/web.config` — IIS URL Rewrite + ARR proxy
 
-For a **same-origin** setup, proxy `/api` to the JAR and leave `apiBaseUrl` empty in `index.html` (`window.__ORM_UI__`).
+Set `server.web-directory=none` (or `SERVER_WEB_DIRECTORY=none`) on the API so it does not also serve the UI.
+
+For a **same-origin** setup, proxy `/api` to the JAR and leave `apiBaseUrl` empty in
+`index.html` (`window.__ORM_UI__`).
 
 For a **cross-origin** setup, patch `apiBaseUrl` in `index.html` to the public API URL and allow the UI origin in
-`app.security.cors` settings. The API exposes the CSRF token in the `X-XSRF-TOKEN` **response** header (also listed in
+`app.security.cors` settings. The API exposes the CSRF token in the `X-CSRF-TOKEN` **response** header (also listed in
 CORS exposed headers).
 
 You can still place a `config.yml` next to the API process for non-Docker installs; env vars override it. Web branding
 keys are **not** under `server.*`, so they can also be set centrally in the database via the config API.
 
 Only the API URL is host-local. Branding always comes from the API (`GET /api/web`).
-
-## Production notes
-
-- Terminate TLS at a reverse proxy or load balancer.
-- Prefer same-origin (API + UI behind one hostname) for simpler cookies.
-- Cross-origin auth cookies need `Secure` (HTTPS) and matching CORS origins.
 
 ## Local development (without Docker)
 

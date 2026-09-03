@@ -16,21 +16,29 @@ import java.nio.file.Path;
 import java.util.stream.Stream;
 
 /**
- * Serves a static SPA from {@code server.web-directory} when configured
- * (e.g. {@code ./static} after unpacking the web zip next to the JAR).
+ * Serves a static SPA from {@code server.web-directory} when that directory is non-empty
+ * (e.g. {@code ./static} shipped in the distribution). Set to {@code none} (or leave empty /
+ * missing) to disable cohosting when the UI is hosted separately.
  */
 @Configuration
 public class WebServerMvcConfigurer implements WebMvcConfigurer {
+
+    private static final String DISABLE_VALUE = "none";
 
     @Nullable
     private final String webDir;
 
     public WebServerMvcConfigurer(ConfigService configService) {
-        Path path = Path.of(configService.getOrThrow(BuiltinConfigs.WEB_DIRECTORY));
-        if (isDirectoryAndNotEmpty(path)) {
-            this.webDir = path.toAbsolutePath().toUri().toString();
-        } else {
+        String setting = configService.getOrThrow(BuiltinConfigs.WEB_DIRECTORY);
+        if (DISABLE_VALUE.equals(setting)) {
             this.webDir = null;
+        } else {
+            Path path = Path.of(configService.getOrThrow(BuiltinConfigs.WEB_DIRECTORY));
+            if (isDirectoryAndNotEmpty(path)) {
+                this.webDir = path.toAbsolutePath().toUri().toString();
+            } else {
+                this.webDir = null;
+            }
         }
     }
 

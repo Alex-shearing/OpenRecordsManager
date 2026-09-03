@@ -27,6 +27,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 class WebClientCsrfIntegrationTest {
 
+    private static final String CSRF_HEADER = "X-CSRF-TOKEN";
+    private static final String CSRF_COOKIE = "XSRF-TOKEN";
+
     @DynamicPropertySource
     static void properties(DynamicPropertyRegistry registry) {
         registry.add(BuiltinConfigs.PLUGINS_SKIP_SYNC.key(), () -> "true");
@@ -67,11 +70,25 @@ class WebClientCsrfIntegrationTest {
                                 .accept(MediaType.APPLICATION_JSON)
                 )
                 .andExpect(status().isOk())
-                .andExpect(header().exists("X-CSRF-TOKEN"))
+                .andExpect(header().exists(CSRF_HEADER))
                 .andReturn();
 
-        String csrfToken = bootstrap.getResponse().getHeader("X-CSRF-TOKEN");
+        String csrfToken = bootstrap.getResponse().getHeader(CSRF_HEADER);
         assertNotNull(csrfToken);
+
+        Cookie csrfCookie = bootstrap.getResponse().getCookie(CSRF_COOKIE);
+        assertNotNull(csrfCookie);
+
+        this.mockMvc.perform(
+                        put("/api/config/")
+                                .header("X-Client-Platform", "Web-Client")
+                                .header(CSRF_HEADER, csrfToken)
+                                .cookie(authCookie, csrfCookie)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("{}")
+                                .accept(MediaType.APPLICATION_JSON)
+                )
+                .andExpect(status().isOk());
     }
 
     @Test
@@ -80,7 +97,7 @@ class WebClientCsrfIntegrationTest {
         AuthToken token = new AuthToken(AuthService.generateToken(), user, Instant.now().plusSeconds(3600));
         this.repository.authTokenRepo.saveAndFlush(token);
 
-        var authCookie = new jakarta.servlet.http.Cookie(this.authService.getCookieName(), token.getToken());
+        var authCookie = new Cookie(this.authService.getCookieName(), token.getToken());
 
         MvcResult bootstrap = this.mockMvc.perform(
                         get("/api/user/me")
@@ -89,10 +106,24 @@ class WebClientCsrfIntegrationTest {
                                 .accept(MediaType.APPLICATION_JSON)
                 )
                 .andExpect(status().isOk())
-                .andExpect(header().exists("X-CSRF-TOKEN"))
+                .andExpect(header().exists(CSRF_HEADER))
                 .andReturn();
 
-        String csrfToken = bootstrap.getResponse().getHeader("X-CSRF-TOKEN");
+        String csrfToken = bootstrap.getResponse().getHeader(CSRF_HEADER);
         assertNotNull(csrfToken);
+
+        Cookie csrfCookie = bootstrap.getResponse().getCookie(CSRF_COOKIE);
+        assertNotNull(csrfCookie);
+
+        this.mockMvc.perform(
+                        put("/api/config/")
+                                .header("X-Client-Platform", "Web-Client")
+                                .header(CSRF_HEADER, csrfToken)
+                                .cookie(authCookie, csrfCookie)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("{}")
+                                .accept(MediaType.APPLICATION_JSON)
+                )
+                .andExpect(status().isOk());
     }
 }
