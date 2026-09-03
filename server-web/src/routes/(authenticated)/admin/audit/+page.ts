@@ -11,9 +11,6 @@ export async function load() {
 	return {
 		status: statusResult.data?.success ? statusResult.data.data : null,
 		policies: policiesResult.data?.success ? policiesResult.data.data : [],
-		error:
-			statusResult.error || policiesResult.error
-				? 'Failed to load audit settings.'
-				: null,
+		error: statusResult.error || policiesResult.error ? 'Failed to load audit settings.' : null,
 	};
 }
