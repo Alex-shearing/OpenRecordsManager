@@ -19,11 +19,11 @@ RUN chmod +x gradlew \
     && ./gradlew
 
 COPY settings.gradle build.gradle ./
-COPY plugin-api plugin-api
-COPY server-core server-core
-COPY plugins plugins
 COPY scripts scripts
+COPY plugin-api plugin-api
 COPY server-web server-web
+COPY plugins plugins
+COPY server-core server-core
 
 RUN ./gradlew distZip --no-daemon -x test \
     && mkdir -p /dist \
@@ -44,8 +44,6 @@ RUN chmod +x /app/start.sh
 
 ENV SERVER_PLUGINS_DIRECTORY=/app/plugins \
     SERVER_WEB_DIRECTORY=/app/static \
-    SERVER_DATABASE_PRIMARY_URL=jdbc:sqlite:/app/data/orm_system.db \
-    SERVER_DATABASE_READ_ONLY_URL=jdbc:sqlite:/app/data/orm_system.db \
     APP_LOGGING_PATH=/app/data/logs/openrecordsmanager.log
 
 EXPOSE 8080

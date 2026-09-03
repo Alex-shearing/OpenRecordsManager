@@ -18,7 +18,7 @@ services:
       SERVER_DATABASE_PRIMARY_URL: ${SERVER_DATABASE_PRIMARY_URL:-jdbc:sqlite:/app/data/orm_system.db?busy_timeout=5000}
       SERVER_DATABASE_PRIMARY_USERNAME: ${SERVER_DATABASE_PRIMARY_USERNAME:-}
       SERVER_DATABASE_PRIMARY_PASSWORD: ${SERVER_DATABASE_PRIMARY_PASSWORD:-}
-      SERVER_DATABASE_READ_ONLY_URL: ${SERVER_DATABASE_READ_ONLY_URL:-jdbc:sqlite:/app/data/orm_system.db?open_mode=1}
+      SERVER_DATABASE_READ_ONLY_URL: ${SERVER_DATABASE_READ_ONLY_URL-jdbc:sqlite:/app/data/orm_system.db?open_mode=1}
       SERVER_PLUGINS_DIRECTORY: /app/plugins
       SERVER_WEB_DIRECTORY: /app/static
       APP_LOGGING_PATH: /app/data/logs/openrecordsmanager.log
