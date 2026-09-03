@@ -31,6 +31,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Instant;
+import java.util.Arrays;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
@@ -52,16 +53,7 @@ class PluginServiceIntegrationTest {
     static void properties(DynamicPropertyRegistry registry) throws IOException {
         Files.createDirectories(PLUGINS_DIR);
         Files.createDirectories(FILE_STORE_ROOT);
-        Path sourceDir = Path.of("plugins");
-        try (var jars = Files.list(sourceDir)) {
-            jars.filter(path -> path.toString().endsWith(".jar")).forEach(source -> {
-                try {
-                    Files.copy(source, PLUGINS_DIR.resolve(source.getFileName()), java.nio.file.StandardCopyOption.REPLACE_EXISTING);
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-            });
-        }
+        restorePluginJars();
         registry.add(BuiltinConfigs.PLUGINS_DIRECTORY.key(), () -> PLUGINS_DIR.toString());
         registry.add(BuiltinConfigs.PLUGINS_SKIP_SYNC.key(), () -> "true");
         registry.add(BuiltinConfigs.PLUGINS_SYNC_INTERVAL_MS_KEY, () -> "600000");
@@ -125,15 +117,30 @@ class PluginServiceIntegrationTest {
     }
 
     private static void restorePluginJars() throws IOException {
-        Path sourceDir = Path.of("plugins");
-        try (var jars = Files.list(sourceDir)) {
-            jars.filter(path -> path.toString().endsWith(".jar")).forEach(source -> {
+        Files.createDirectories(PLUGINS_DIR);
+        try (var existing = Files.list(PLUGINS_DIR)) {
+            existing.filter(path -> path.getFileName().toString().endsWith(".jar")).forEach(path -> {
                 try {
-                    Files.copy(source, PLUGINS_DIR.resolve(source.getFileName()), java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+                    Files.deleteIfExists(path);
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
             });
+        }
+
+        Path sourceDir = Path.of("plugins");
+        try (var jars = Files.list(sourceDir)) {
+            jars.filter(path -> {
+                        String name = path.getFileName().toString();
+                        return name.endsWith(".jar") && !name.startsWith("upload-");
+                    })
+                    .forEach(source -> {
+                        try {
+                            Files.copy(source, PLUGINS_DIR.resolve(source.getFileName()), java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+                        } catch (IOException e) {
+                            throw new RuntimeException(e);
+                        }
+                    });
         }
     }
 
@@ -147,6 +154,10 @@ class PluginServiceIntegrationTest {
     @Test
     void listIncludesLocalPluginsWhenDatabaseIsEmpty() throws Exception {
         String token = this.adminBearerToken();
+        int expected = (int) Arrays.stream(this.pluginManager.getLocalPlugins())
+                .map(PluginManager.LocalPluginInfo::name)
+                .distinct()
+                .count();
 
         this.mockMvc.perform(
                         get("/api/plugins")
@@ -155,7 +166,7 @@ class PluginServiceIntegrationTest {
                                 .accept(MediaType.APPLICATION_JSON)
                 )
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.length()").value(this.pluginManager.getLocalPlugins().length - 1));
+                .andExpect(jsonPath("$.data.length()").value(expected));
     }
 
     @Test

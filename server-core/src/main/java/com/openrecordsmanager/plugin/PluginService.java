@@ -89,62 +89,66 @@ public class PluginService {
     @RequiresAuditComment(operation = AuditOperation.CREATE, targetType = AuditEntityType.PLUGIN)
     public PluginResponse upload(InputStream jarStream) throws IOException {
         Path tempDest = this.pluginManager.getDirectory().resolve("upload-" + System.nanoTime() + ".jar");
-        PluginManager.LocalPluginInfo pluginInfo = this.pluginManager.getPluginInfo(jarStream, tempDest);
-        if (pluginInfo == null) {
-            throw new IllegalArgumentException("plugin JAR must contain Plugin-Id and Plugin-Version manifest attributes");
-        }
+        try {
+            PluginManager.LocalPluginInfo pluginInfo = this.pluginManager.getPluginInfo(jarStream, tempDest);
+            if (pluginInfo == null) {
+                throw new IllegalArgumentException("plugin JAR must contain Plugin-Id and Plugin-Version manifest attributes");
+            }
 
-        if (BuiltinPlugin.BUILTIN_PLUGIN_NAME.equals(pluginInfo.name())) {
-            throw new ResourceInUseException("the builtin plugin cannot be uploaded");
-        }
+            if (BuiltinPlugin.BUILTIN_PLUGIN_NAME.equals(pluginInfo.name())) {
+                throw new ResourceInUseException("the builtin plugin cannot be uploaded");
+            }
 
-        Optional<PersistedPlugin> existing = this.repository.pluginRepo.findById(pluginInfo.name());
+            Optional<PersistedPlugin> existing = this.repository.pluginRepo.findById(pluginInfo.name());
 
-        if (existing.isPresent()) {
-            Semver existingVersion = new Semver(existing.get().getVersion());
-            Semver uploadedVersion = new Semver(pluginInfo.version());
-            if (!uploadedVersion.isGreaterThan(existingVersion)) {
-                throw new ResourceInUseException(
-                        "plugin already exists with version " + existing.get().getVersion()
-                                + "; uploaded version must be greater"
+            if (existing.isPresent()) {
+                Semver existingVersion = new Semver(existing.get().getVersion());
+                Semver uploadedVersion = new Semver(pluginInfo.version());
+                if (!uploadedVersion.isGreaterThan(existingVersion)) {
+                    throw new ResourceInUseException(
+                            "plugin already exists with version " + existing.get().getVersion()
+                                    + "; uploaded version must be greater"
+                    );
+                }
+            }
+
+            Path finalDest = this.pluginManager.getDirectory().resolve(pluginInfo.name() + "-" + pluginInfo.version() + ".jar");
+            if (!tempDest.equals(finalDest)) {
+                Files.move(tempDest, finalDest, StandardCopyOption.REPLACE_EXISTING);
+            }
+
+            this.pluginSyncService.syncAndReload(true);
+
+            PersistedPlugin plugin = this.repository.pluginRepo.findById(pluginInfo.name())
+                    .orElseThrow(() -> new ResourceNotFoundException("plugin", pluginInfo.name()));
+
+            if (existing.isEmpty()) {
+                this.auditService.addEvent(
+                        AuditOperation.CREATE,
+                        AuditEntityType.PLUGIN,
+                        plugin.getName(),
+                        null,
+                        null,
+                        PluginManager.auditMetadata(plugin)
+                );
+            } else {
+                List<AuditPropertyChange> changes = List.of(
+                        new AuditPropertyChange("version", existing.get().getVersion(), plugin.getVersion())
+                );
+                this.auditService.addEvent(
+                        AuditOperation.UPDATE,
+                        AuditEntityType.PLUGIN,
+                        plugin.getName(),
+                        changes,
+                        null,
+                        PluginManager.auditMetadata(plugin)
                 );
             }
+
+            return PluginResponse.of(plugin, this.pluginManager);
+        } finally {
+            Files.deleteIfExists(tempDest);
         }
-
-        Path finalDest = this.pluginManager.getDirectory().resolve(pluginInfo.name() + "-" + pluginInfo.version() + ".jar");
-        if (!tempDest.equals(finalDest)) {
-            Files.move(tempDest, finalDest, StandardCopyOption.REPLACE_EXISTING);
-        }
-
-        this.pluginSyncService.syncAndReload(true);
-
-        PersistedPlugin plugin = this.repository.pluginRepo.findById(pluginInfo.name())
-                .orElseThrow(() -> new ResourceNotFoundException("plugin", pluginInfo.name()));
-
-        if (existing.isEmpty()) {
-            this.auditService.addEvent(
-                    AuditOperation.CREATE,
-                    AuditEntityType.PLUGIN,
-                    plugin.getName(),
-                    null,
-                    null,
-                    PluginManager.auditMetadata(plugin)
-            );
-        } else {
-            List<AuditPropertyChange> changes = List.of(
-                    new AuditPropertyChange("version", existing.get().getVersion(), plugin.getVersion())
-            );
-            this.auditService.addEvent(
-                    AuditOperation.UPDATE,
-                    AuditEntityType.PLUGIN,
-                    plugin.getName(),
-                    changes,
-                    null,
-                    PluginManager.auditMetadata(plugin)
-            );
-        }
-
-        return PluginResponse.of(plugin, this.pluginManager);
     }
 
     @Transactional
