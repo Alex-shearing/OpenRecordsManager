@@ -9,12 +9,10 @@ import com.openrecordsmanager.api.types.ComponentTypes;
 import com.openrecordsmanager.audit.persistence.AuditEventEntity;
 import com.openrecordsmanager.audit.persistence.AuditPolicyEntity;
 import com.openrecordsmanager.audit.persistence.AuditPolicyId;
-import com.openrecordsmanager.auth.AuthService;
-import com.openrecordsmanager.auth.entity.AuthToken;
+import com.openrecordsmanager.auth.TestAuthTokens;
 import com.openrecordsmanager.database.DataRepository;
 import com.openrecordsmanager.filestore.store.FileStore;
 import com.openrecordsmanager.plugin.registry.ComponentCatalog;
-import com.openrecordsmanager.user.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,7 +28,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.time.Instant;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.UUID;
@@ -54,7 +51,8 @@ class PluginServiceIntegrationTest {
         Files.createDirectories(PLUGINS_DIR);
         Files.createDirectories(FILE_STORE_ROOT);
         restorePluginJars();
-        registry.add(BuiltinConfigs.PLUGINS_DIRECTORY.key(), () -> PLUGINS_DIR.toString());
+        com.openrecordsmanager.database.SqliteTestSupport.registerPrimaryMemoryDatabase(registry, PluginServiceIntegrationTest.class);
+        registry.add(BuiltinConfigs.PLUGINS_DIRECTORY.key(), PLUGINS_DIR::toString);
         registry.add(BuiltinConfigs.PLUGINS_SKIP_SYNC.key(), () -> "true");
         registry.add(BuiltinConfigs.PLUGINS_SYNC_INTERVAL_MS_KEY, () -> "600000");
         registry.add(BuiltinConfigs.COOKIE_SECURE.key(), () -> "false");
@@ -66,6 +64,9 @@ class PluginServiceIntegrationTest {
 
     @Autowired
     private DataRepository repository;
+
+    @Autowired
+    private TestAuthTokens testAuthTokens;
 
     @Autowired
     private ComponentCatalog catalog;
@@ -145,10 +146,7 @@ class PluginServiceIntegrationTest {
     }
 
     private String adminBearerToken() {
-        User admin = this.repository.userRepo.findByUsername("admin").orElseThrow();
-        AuthToken token = new AuthToken(AuthService.generateToken(), admin, Instant.now().plusSeconds(3600));
-        this.repository.authTokenRepo.saveAndFlush(token);
-        return token.getToken();
+        return this.testAuthTokens.adminAccessToken();
     }
 
     @Test

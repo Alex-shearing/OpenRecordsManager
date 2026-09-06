@@ -83,6 +83,7 @@ CREATE TABLE user_details (
     email VARCHAR(255),
     notes VARCHAR(255),
     enabled BOOLEAN NOT NULL DEFAULT TRUE,
+    session_epoch INTEGER NOT NULL DEFAULT 0,
     CONSTRAINT fk_user_auth_provider FOREIGN KEY (auth_provider_id) REFERENCES auth_provider (id)
 );
 
@@ -99,16 +100,6 @@ CREATE TABLE user_property_value (
 
 CREATE UNIQUE INDEX IF NOT EXISTS uk_user_property_value_user_property ON user_property_value (user_id, property_id);
 CREATE INDEX IF NOT EXISTS idx_upv_property_id ON user_property_value (property_id);
-
-CREATE TABLE auth_token (
-    token_value VARCHAR(255) NOT NULL PRIMARY KEY,
-    user_id UUID NOT NULL,
-    expiry_date TIMESTAMPTZ NOT NULL,
-    CONSTRAINT fk_auth_token_user FOREIGN KEY (user_id) REFERENCES user_details (id)
-);
-
-CREATE INDEX IF NOT EXISTS idx_auth_token_user_id ON auth_token (user_id);
-CREATE INDEX IF NOT EXISTS idx_auth_token_expiry_date ON auth_token (expiry_date);
 
 CREATE TABLE file_store (
     id UUID NOT NULL PRIMARY KEY,

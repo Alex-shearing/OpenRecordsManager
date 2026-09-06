@@ -1,11 +1,10 @@
 package com.openrecordsmanager.user;
 
-import com.openrecordsmanager.api.builtin.BuiltinConfigs;
-import com.openrecordsmanager.auth.AuthService;
-import com.openrecordsmanager.auth.entity.AuthToken;
-import com.openrecordsmanager.auth.entity.AuthTokenRepository;
-import com.openrecordsmanager.database.DataRepository;
 import com.jayway.jsonpath.JsonPath;
+import com.openrecordsmanager.api.builtin.BuiltinConfigs;
+import com.openrecordsmanager.auth.TestAuthTokens;
+import com.openrecordsmanager.database.DataRepository;
+import com.openrecordsmanager.database.SqliteTestSupport;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -16,12 +15,9 @@ import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
-import java.time.Instant;
 import java.util.UUID;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -31,6 +27,7 @@ class UserCrudIntegrationTest {
 
     @DynamicPropertySource
     static void properties(DynamicPropertyRegistry registry) {
+        SqliteTestSupport.registerPrimaryMemoryDatabase(registry, UserCrudIntegrationTest.class);
         registry.add(BuiltinConfigs.PLUGINS_SKIP_SYNC.key(), () -> "true");
         registry.add(BuiltinConfigs.COOKIE_SECURE.key(), () -> "false");
     }
@@ -39,16 +36,13 @@ class UserCrudIntegrationTest {
     private MockMvc mockMvc;
 
     @Autowired
-    private AuthTokenRepository tokenRepository;
+    private TestAuthTokens testAuthTokens;
 
     @Autowired
     private DataRepository repository;
 
     private String adminBearerToken() {
-        com.openrecordsmanager.user.User admin = this.repository.userRepo.findByUsername("admin").orElseThrow();
-        AuthToken token = new AuthToken(AuthService.generateToken(), admin, Instant.now().plusSeconds(3600));
-        this.tokenRepository.saveAndFlush(token);
-        return token.getToken();
+        return this.testAuthTokens.adminAccessToken();
     }
 
     @Test

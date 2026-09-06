@@ -1,8 +1,7 @@
 package com.openrecordsmanager.auth;
 
 import com.openrecordsmanager.api.builtin.BuiltinConfigs;
-import com.openrecordsmanager.auth.entity.AuthToken;
-import com.openrecordsmanager.auth.entity.AuthTokenRepository;
+import com.openrecordsmanager.auth.dto.TokenPair;
 import com.openrecordsmanager.database.DataRepository;
 import com.openrecordsmanager.user.User;
 import jakarta.servlet.http.Cookie;
@@ -15,9 +14,6 @@ import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 
-import java.time.Instant;
-
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.cookie;
@@ -29,6 +25,7 @@ class AuthLogoutIntegrationTest {
 
     @DynamicPropertySource
     static void properties(DynamicPropertyRegistry registry) {
+        com.openrecordsmanager.database.SqliteTestSupport.registerPrimaryMemoryDatabase(registry, AuthLogoutIntegrationTest.class);
         registry.add(BuiltinConfigs.PLUGINS_SKIP_SYNC.key(), () -> "true");
         registry.add(BuiltinConfigs.COOKIE_SECURE.key(), () -> "false");
     }
@@ -37,52 +34,54 @@ class AuthLogoutIntegrationTest {
     private MockMvc mockMvc;
 
     @Autowired
-    private AuthTokenRepository tokenRepository;
-
-    @Autowired
     private DataRepository repository;
 
     @Autowired
     private AuthService authService;
 
+    @Autowired
+    private TestAuthTokens testAuthTokens;
+
     @Test
-    void logoutDeletesBearerTokenAndBlocksFurtherUse() throws Exception {
+    void logoutBumpsEpochAndBlocksFurtherUse() throws Exception {
         User user = this.repository.userRepo.findByUsername("admin").orElseThrow();
-        AuthToken token = new AuthToken(AuthService.generateToken(), user, Instant.now().plusSeconds(3600));
-        this.tokenRepository.saveAndFlush(token);
+        TokenPair pair = this.testAuthTokens.tokenPairFor(user);
 
         this.mockMvc.perform(
                         post("/api/auth/logout")
-                                .header("Authorization", "Bearer " + token.getToken())
+                                .header("Authorization", "Bearer " + pair.accessToken())
                                 .accept(MediaType.APPLICATION_JSON)
                 )
                 .andExpect(status().isOk());
 
-        assertFalse(this.tokenRepository.existsById(token.getToken()));
-
         this.mockMvc.perform(
                         get("/api/user/me")
-                                .header("Authorization", "Bearer " + token.getToken())
+                                .header("Authorization", "Bearer " + pair.accessToken())
+                                .accept(MediaType.APPLICATION_JSON)
+                )
+                .andExpect(status().isUnauthorized());
+
+        this.mockMvc.perform(
+                        post("/api/auth/refresh")
+                                .header("Authorization", "Bearer " + pair.refreshToken())
                                 .accept(MediaType.APPLICATION_JSON)
                 )
                 .andExpect(status().isUnauthorized());
     }
 
     @Test
-    void logoutClearsAuthCookieForWebClient() throws Exception {
-        User user = this.repository.userRepo.findByUsername("admin").orElseThrow();
-        AuthToken token = new AuthToken(AuthService.generateToken(), user, Instant.now().plusSeconds(3600));
-        this.tokenRepository.saveAndFlush(token);
+    void logoutClearsAuthCookiesForWebClient() throws Exception {
+        TokenPair pair = this.testAuthTokens.tokenPairFor("admin");
 
         this.mockMvc.perform(
                         post("/api/auth/logout")
                                 .header("X-Client-Platform", "Web-Client")
-                                .cookie(new Cookie(this.authService.getCookieName(), token.getToken()))
+                                .cookie(new Cookie(this.authService.getCookieName(), pair.accessToken()))
+                                .cookie(new Cookie(this.authService.getRefreshCookieName(), pair.refreshToken()))
                                 .accept(MediaType.APPLICATION_JSON)
                 )
                 .andExpect(status().isOk())
-                .andExpect(cookie().maxAge(this.authService.getCookieName(), 0));
-
-        assertFalse(this.tokenRepository.existsById(token.getToken()));
+                .andExpect(cookie().maxAge(this.authService.getCookieName(), 0))
+                .andExpect(cookie().maxAge(this.authService.getRefreshCookieName(), 0));
     }
 }

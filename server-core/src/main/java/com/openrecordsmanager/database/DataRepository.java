@@ -3,7 +3,6 @@ package com.openrecordsmanager.database;
 import com.openrecordsmanager.audit.persistence.AuditEventRepository;
 import com.openrecordsmanager.audit.persistence.AuditPolicyRepository;
 import com.openrecordsmanager.auth.AuthProviderRepository;
-import com.openrecordsmanager.auth.entity.AuthTokenRepository;
 import com.openrecordsmanager.config.ConfigRepository;
 import com.openrecordsmanager.filestore.middleware.MiddlewareRepository;
 import com.openrecordsmanager.filestore.store.FileStoreRepository;
@@ -31,7 +30,6 @@ public class DataRepository {
     public final MiddlewareRepository fileStoreMiddlewareRepo;
     public final PluginRepository pluginRepo;
     public final UserRepository userRepo;
-    public final AuthTokenRepository authTokenRepo;
 
     public DataRepository(
             AuditEventRepository auditEventRepo,
@@ -46,8 +44,7 @@ public class DataRepository {
             FileStoreRepository fileStoreRepo,
             MiddlewareRepository fileStoreMiddlewareRepo,
             PluginRepository pluginRepo,
-            UserRepository userRepo,
-            AuthTokenRepository authTokenRepo
+            UserRepository userRepo
     ) {
         this.auditEventRepo = auditEventRepo;
         this.auditPolicyRepo = auditPolicyRepo;
@@ -62,6 +59,5 @@ public class DataRepository {
         this.fileStoreMiddlewareRepo = fileStoreMiddlewareRepo;
         this.pluginRepo = pluginRepo;
         this.userRepo = userRepo;
-        this.authTokenRepo = authTokenRepo;
     }
 }

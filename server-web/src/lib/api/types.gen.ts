@@ -193,7 +193,7 @@ export type AuditOperation = typeof AuditOperation[keyof typeof AuditOperation];
 
 export type AuditPolicyResponse = {
     entityType: 'record' | 'user' | 'record_type' | 'config' | 'list' | 'list_element' | 'object_property' | 'file_store' | 'auth_provider' | 'record_revision' | 'file_store_middleware' | 'template' | 'plugin';
-    operation?: AuditOperation;
+    operation: AuditOperation;
     enabled: boolean;
     requiresComment: boolean;
     displayName: string;
@@ -273,8 +273,11 @@ export type SetupStatusResponse = {
 };
 
 export type LoginResponse = {
-    token: string;
-    expires: string;
+    accessToken: string;
+    accessExpires: string;
+    refreshToken: string;
+    refreshExpires: string;
+    sessionMode: 'NORMAL' | 'DEGRADED_READ_ONLY';
 };
 
 export type WebBrandingResponse = {
@@ -498,7 +501,7 @@ export type AuditEventResponse = {
     occurredAt?: string;
     actorId?: string;
     actorUsername?: string;
-    operation?: AuditOperation;
+    operation?: 'CREATE' | 'READ' | 'UPDATE' | 'DELETE' | 'ACTION';
     targetType?: 'record' | 'user' | 'record_type' | 'config' | 'list' | 'list_element' | 'object_property' | 'file_store' | 'auth_provider' | 'record_revision' | 'file_store_middleware' | 'template' | 'plugin';
     targetId?: string;
     actionId?: string;
@@ -4296,6 +4299,53 @@ export type SignupResponses = {
 };
 
 export type SignupResponse = SignupResponses[keyof SignupResponses];
+
+export type RefreshData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/auth/refresh';
+};
+
+export type RefreshErrors = {
+    /**
+     * Refresh Failed
+     */
+    401: {
+        success: false;
+        timestamp: unknown;
+        error: string;
+        errorData?: {
+            [key: string]: unknown;
+        };
+    };
+    /**
+     * Internal Server error
+     */
+    500: {
+        success: false;
+        timestamp: unknown;
+        error: string;
+        errorData?: {
+            [key: string]: unknown;
+        };
+    };
+};
+
+export type RefreshError = RefreshErrors[keyof RefreshErrors];
+
+export type RefreshResponses = {
+    /**
+     * OK
+     */
+    200: {
+        success: true;
+        timestamp: unknown;
+        data: LoginResponse;
+    };
+};
+
+export type RefreshResponse = RefreshResponses[keyof RefreshResponses];
 
 export type LogoutData = {
     body?: never;

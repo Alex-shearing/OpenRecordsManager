@@ -91,6 +91,9 @@ public class User extends ObjectPropertyHolder<User, UserPropertyValue<?>> imple
     @Column(nullable = false)
     private boolean enabled = true;
 
+    @Column(name = "session_epoch", nullable = false)
+    private int sessionEpoch = 0;
+
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "user", fetch = FetchType.EAGER)
     @MapKey(name = "property")
     private Map<ObjectProperty<?>, UserPropertyValue<?>> properties = new HashMap<>();
@@ -165,6 +168,14 @@ public class User extends ObjectPropertyHolder<User, UserPropertyValue<?>> imple
     public void setEnabled(boolean enabled) {
         this.enabled = enabled;
         this.touchDateModified();
+    }
+
+    public int getSessionEpoch() {
+        return this.sessionEpoch;
+    }
+
+    public void bumpSessionEpoch() {
+        this.sessionEpoch++;
     }
 
     @Override

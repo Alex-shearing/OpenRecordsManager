@@ -29,7 +29,6 @@ final class VendorSchemaMigrationTestSupport {
             "record_type_property",
             "user_details",
             "user_property_value",
-            "auth_token",
             "file_store",
             "file_store_middleware",
             "file_store_middleware_usage",

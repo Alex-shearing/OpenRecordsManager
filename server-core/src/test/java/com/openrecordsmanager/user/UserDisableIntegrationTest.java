@@ -1,11 +1,11 @@
 package com.openrecordsmanager.user;
 
-import com.openrecordsmanager.api.builtin.BuiltinConfigs;
-import com.openrecordsmanager.auth.AuthService;
-import com.openrecordsmanager.auth.entity.AuthToken;
-import com.openrecordsmanager.auth.entity.AuthTokenRepository;
-import com.openrecordsmanager.database.DataRepository;
 import com.jayway.jsonpath.JsonPath;
+import com.openrecordsmanager.api.builtin.BuiltinConfigs;
+import com.openrecordsmanager.auth.TestAuthTokens;
+import com.openrecordsmanager.auth.dto.TokenPair;
+import com.openrecordsmanager.database.DataRepository;
+import com.openrecordsmanager.database.SqliteTestSupport;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -16,13 +16,9 @@ import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
-import java.time.Instant;
 import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -32,6 +28,7 @@ class UserDisableIntegrationTest {
 
     @DynamicPropertySource
     static void properties(DynamicPropertyRegistry registry) {
+        SqliteTestSupport.registerPrimaryMemoryDatabase(registry, UserDisableIntegrationTest.class);
         registry.add(BuiltinConfigs.PLUGINS_SKIP_SYNC.key(), () -> "true");
         registry.add(BuiltinConfigs.COOKIE_SECURE.key(), () -> "false");
     }
@@ -40,21 +37,14 @@ class UserDisableIntegrationTest {
     private MockMvc mockMvc;
 
     @Autowired
-    private AuthTokenRepository tokenRepository;
-
-    @Autowired
     private DataRepository repository;
 
-    private String adminBearerToken() {
-        User admin = this.repository.userRepo.findByUsername("admin").orElseThrow();
-        AuthToken token = new AuthToken(AuthService.generateToken(), admin, Instant.now().plusSeconds(3600));
-        this.tokenRepository.saveAndFlush(token);
-        return token.getToken();
-    }
+    @Autowired
+    private TestAuthTokens testAuthTokens;
 
     @Test
     void disableUserRevokesTokensAndBlocksLogin() throws Exception {
-        String adminToken = this.adminBearerToken();
+        String adminToken = this.testAuthTokens.adminAccessToken();
         String username = "disable_user_" + UUID.randomUUID().toString().substring(0, 8);
 
         MvcResult createResult = this.mockMvc.perform(
@@ -76,8 +66,7 @@ class UserDisableIntegrationTest {
 
         String userId = JsonPath.read(createResult.getResponse().getContentAsString(), "$.data.id");
         User user = this.repository.userRepo.findById(UUID.fromString(userId)).orElseThrow();
-        AuthToken userToken = new AuthToken(AuthService.generateToken(), user, Instant.now().plusSeconds(3600));
-        this.tokenRepository.saveAndFlush(userToken);
+        TokenPair userPair = this.testAuthTokens.tokenPairFor(user);
 
         this.mockMvc.perform(
                         put("/api/user/" + userId)
@@ -93,11 +82,9 @@ class UserDisableIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.enabled").value(false));
 
-        assertFalse(this.tokenRepository.existsById(userToken.getToken()));
-
         this.mockMvc.perform(
                         get("/api/user/me")
-                                .header("Authorization", "Bearer " + userToken.getToken())
+                                .header("Authorization", "Bearer " + userPair.accessToken())
                                 .accept(MediaType.APPLICATION_JSON)
                 )
                 .andExpect(status().isUnauthorized());
@@ -119,7 +106,7 @@ class UserDisableIntegrationTest {
 
     @Test
     void cannotDisableOwnAccount() throws Exception {
-        String adminToken = this.adminBearerToken();
+        String adminToken = this.testAuthTokens.adminAccessToken();
         User admin = this.repository.userRepo.findByUsername("admin").orElseThrow();
 
         this.mockMvc.perform(

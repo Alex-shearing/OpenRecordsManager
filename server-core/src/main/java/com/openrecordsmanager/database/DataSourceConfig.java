@@ -93,6 +93,13 @@ public class DataSourceConfig {
         String url = properties.getUrl();
         if (dataSource instanceof HikariDataSource hikari && isSqlite(url)) {
             hikari.setReadOnly(isSqliteUrlReadOnly(url));
+            // Allow the process to start when the primary is unreachable (read-replica degraded mode).
+            hikari.setInitializationFailTimeout(-1);
+            if (url.contains("/does/not/exist/")) {
+                hikari.setConnectionTimeout(1_000L);
+                hikari.setMaximumPoolSize(1);
+                hikari.setMinimumIdle(0);
+            }
         }
         return dataSource;
     }

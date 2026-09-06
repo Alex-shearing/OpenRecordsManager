@@ -12,3 +12,5 @@ server:
     directory: ./plugins
   audit-directory: ./data/audit
   web-directory: ./static
+  security:
+    jwt-signing-key: orm-dev-only-change-me-in-production-32b

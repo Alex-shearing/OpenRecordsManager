@@ -1,9 +1,8 @@
 package com.openrecordsmanager.auth;
 
 import com.openrecordsmanager.api.builtin.BuiltinConfigs;
+import com.openrecordsmanager.auth.dto.TokenPair;
 import com.openrecordsmanager.auth.entity.AuthProvider;
-import com.openrecordsmanager.auth.entity.AuthToken;
-import com.openrecordsmanager.auth.entity.AuthTokenRepository;
 import com.openrecordsmanager.database.DataRepository;
 import com.openrecordsmanager.user.User;
 import org.junit.jupiter.api.Test;
@@ -15,10 +14,7 @@ import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 
-import java.time.Instant;
-
 import static org.hamcrest.Matchers.hasSize;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -30,6 +26,7 @@ class AuthProviderDisableIntegrationTest {
 
     @DynamicPropertySource
     static void properties(DynamicPropertyRegistry registry) {
+        com.openrecordsmanager.database.SqliteTestSupport.registerPrimaryMemoryDatabase(registry, AuthProviderDisableIntegrationTest.class);
         registry.add(BuiltinConfigs.PLUGINS_SKIP_SYNC.key(), () -> "true");
         registry.add(BuiltinConfigs.COOKIE_SECURE.key(), () -> "false");
     }
@@ -38,17 +35,10 @@ class AuthProviderDisableIntegrationTest {
     private MockMvc mockMvc;
 
     @Autowired
-    private AuthTokenRepository tokenRepository;
-
-    @Autowired
     private DataRepository repository;
 
-    private String adminBearerToken() {
-        User admin = this.repository.userRepo.findByUsername("admin").orElseThrow();
-        AuthToken token = new AuthToken(AuthService.generateToken(), admin, Instant.now().plusSeconds(3600));
-        this.tokenRepository.saveAndFlush(token);
-        return token.getToken();
-    }
+    @Autowired
+    private TestAuthTokens testAuthTokens;
 
     private AuthProvider localProvider() {
         return this.repository.authProviderRepo.findAll().stream()
@@ -59,11 +49,9 @@ class AuthProviderDisableIntegrationTest {
 
     @Test
     void disableProviderHidesFromPublicListRevokesTokensAndBlocksLogin() throws Exception {
-        String adminToken = this.adminBearerToken();
+        String adminToken = this.testAuthTokens.adminAccessToken();
         AuthProvider provider = this.localProvider();
-        User admin = this.repository.userRepo.findByUsername("admin").orElseThrow();
-        AuthToken adminSession = new AuthToken(AuthService.generateToken(), admin, Instant.now().plusSeconds(3600));
-        this.tokenRepository.saveAndFlush(adminSession);
+        TokenPair adminSession = this.testAuthTokens.tokenPairFor("admin");
 
         this.mockMvc.perform(get("/api/auth/providers").accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -82,8 +70,19 @@ class AuthProviderDisableIntegrationTest {
                 )
                 .andExpect(status().isOk());
 
-        assertFalse(this.tokenRepository.existsById(adminSession.getToken()));
-        assertFalse(this.tokenRepository.existsById(adminToken));
+        this.mockMvc.perform(
+                        get("/api/user/me")
+                                .header("Authorization", "Bearer " + adminSession.accessToken())
+                                .accept(MediaType.APPLICATION_JSON)
+                )
+                .andExpect(status().isUnauthorized());
+
+        this.mockMvc.perform(
+                        get("/api/user/me")
+                                .header("Authorization", "Bearer " + adminToken)
+                                .accept(MediaType.APPLICATION_JSON)
+                )
+                .andExpect(status().isUnauthorized());
 
         this.mockMvc.perform(get("/api/auth/providers").accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -101,9 +100,9 @@ class AuthProviderDisableIntegrationTest {
                                 .accept(MediaType.APPLICATION_JSON)
                 )
                 .andExpect(status().isUnauthorized());
-        
+
         // Need a fresh admin token for manage endpoint after revocation
-        String manageToken = this.adminBearerToken();
+        String manageToken = this.testAuthTokens.adminAccessToken();
         this.mockMvc.perform(
                         put("/api/auth/providers/" + provider.getId())
                                 .header("Authorization", "Bearer " + manageToken)
@@ -133,7 +132,8 @@ class AuthProviderDisableIntegrationTest {
                                 .accept(MediaType.APPLICATION_JSON)
                 )
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.token").exists());
+                .andExpect(jsonPath("$.data.accessToken").exists())
+                .andExpect(jsonPath("$.data.refreshToken").exists());
 
         assertTrue(this.localProvider().isEnabled());
     }

@@ -1,9 +1,7 @@
 package com.openrecordsmanager.audit;
 
 import com.openrecordsmanager.api.builtin.BuiltinConfigs;
-import com.openrecordsmanager.auth.AuthService;
-import com.openrecordsmanager.auth.entity.AuthToken;
-import com.openrecordsmanager.auth.entity.AuthTokenRepository;
+import com.openrecordsmanager.auth.TestAuthTokens;
 import com.openrecordsmanager.database.DataRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -16,7 +14,6 @@ import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.nio.file.Path;
-import java.time.Instant;
 import java.util.UUID;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -32,6 +29,7 @@ class AuditStatusIntegrationTest {
     @DynamicPropertySource
     static void auditProperties(DynamicPropertyRegistry registry) {
         spoolDirectory = Path.of("build/test-audit-status-" + UUID.randomUUID());
+        com.openrecordsmanager.database.SqliteTestSupport.registerPrimaryMemoryDatabase(registry, AuditStatusIntegrationTest.class);
         registry.add(BuiltinConfigs.AUDIT_SPOOL_DIRECTORY.key(), () -> spoolDirectory.toString());
         registry.add(BuiltinConfigs.AUDIT_SPOOL_DRAIN_INTERVAL_SECONDS.key(), () -> "45");
         registry.add(BuiltinConfigs.PLUGINS_SKIP_SYNC.key(), () -> "true");
@@ -42,7 +40,7 @@ class AuditStatusIntegrationTest {
     private MockMvc mockMvc;
 
     @Autowired
-    private AuthTokenRepository tokenRepository;
+    private TestAuthTokens testAuthTokens;
 
     @Autowired
     private DataRepository repository;
@@ -73,9 +71,6 @@ class AuditStatusIntegrationTest {
     }
 
     private String adminBearerToken() {
-        com.openrecordsmanager.user.User admin = this.repository.userRepo.findByUsername("admin").orElseThrow();
-        AuthToken token = new AuthToken(AuthService.generateToken(), admin, Instant.now().plusSeconds(3600));
-        this.tokenRepository.saveAndFlush(token);
-        return token.getToken();
+        return this.testAuthTokens.adminAccessToken();
     }
 }

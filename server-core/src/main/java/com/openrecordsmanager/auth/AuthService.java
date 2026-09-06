@@ -11,19 +11,18 @@ import com.openrecordsmanager.api.template.property.ObjectPropertyTemplate;
 import com.openrecordsmanager.audit.AuditPropertyChange;
 import com.openrecordsmanager.audit.AuditService;
 import com.openrecordsmanager.audit.RequiresAuditComment;
-import com.openrecordsmanager.auth.dto.AuthProviderResponse;
-import com.openrecordsmanager.auth.dto.LoginResponse;
-import com.openrecordsmanager.auth.dto.UpdateAuthProviderRequest;
+import com.openrecordsmanager.auth.dto.*;
 import com.openrecordsmanager.auth.entity.AuthProvider;
-import com.openrecordsmanager.auth.entity.AuthToken;
 import com.openrecordsmanager.config.ConfigService;
 import com.openrecordsmanager.database.DataRepository;
+import com.openrecordsmanager.database.DatabaseWritableProbe;
 import com.openrecordsmanager.plugin.ExpressionsService;
 import com.openrecordsmanager.plugin.registry.ComponentCatalog;
 import com.openrecordsmanager.plugin.registry.mapper.TemplateRegistrationMapper;
 import com.openrecordsmanager.property.ObjectProperty;
 import com.openrecordsmanager.rest.errors.ResourceNotFoundException;
 import com.openrecordsmanager.user.User;
+import io.jsonwebtoken.Claims;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -37,26 +36,24 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.net.URI;
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.security.SecureRandom;
 import java.time.Instant;
 import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
 public class AuthService implements UserAuthContext {
-    private static final SecureRandom RANDOM = new SecureRandom();
-    private static final Base64.Encoder ENCODER = Base64.getUrlEncoder().withoutPadding();
+
+    private static final String CLIENT_PLATFORM_HEADER_NAME = "X-Client-Platform";
 
     private final DataRepository repository;
     private final ComponentCatalog catalog;
     private final ExpressionsService expressions;
     private final AuditService auditService;
     private final PluginAuthenticationProvider authenticationProvider;
+    private final JwtSessionService jwtSessionService;
+    private final DatabaseWritableProbe probe;
     private final String cookieName;
-    private final long tokenDuration;
+    private final String refreshCookieName;
     private final boolean cookieSecure;
 
     public AuthService(
@@ -65,16 +62,19 @@ public class AuthService implements UserAuthContext {
             ConfigService config,
             ExpressionsService expressions,
             AuditService auditService,
-            @Lazy PluginAuthenticationProvider authenticationProvider
+            @Lazy PluginAuthenticationProvider authenticationProvider,
+            JwtSessionService jwtSessionService,
+            DatabaseWritableProbe probe
     ) {
         this.repository = repository;
         this.catalog = catalog;
         this.expressions = expressions;
         this.auditService = auditService;
         this.authenticationProvider = authenticationProvider;
-        // Cache these configuration options at startup, don't query sources each time its used
+        this.jwtSessionService = jwtSessionService;
+        this.probe = probe;
         this.cookieName = config.getOrThrow(BuiltinConfigs.COOKIE_NAME);
-        this.tokenDuration = config.getOrThrow(BuiltinConfigs.TOKEN_EXPIRATION_TIME);
+        this.refreshCookieName = config.getOrThrow(BuiltinConfigs.REFRESH_COOKIE_NAME);
         this.cookieSecure = config.getOrThrow(BuiltinConfigs.COOKIE_SECURE);
     }
 
@@ -97,7 +97,7 @@ public class AuthService implements UserAuthContext {
         return type.getRedirectTo(provider);
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     public LoginResponse login(
             PluginAuthenticationProvider.AbstractPluginToken token,
             HttpServletRequest request,
@@ -108,51 +108,97 @@ public class AuthService implements UserAuthContext {
             throw new BadCredentialsException("Username or password is incorrect");
         }
 
-        AuthToken persistedToken = this.generateToken((User) authenticatedUser.getDetails());
+        User user = (User) authenticatedUser.getDetails();
+        TokenPair pair = this.issueTokenPair(user);
+        this.applyCookiesIfWebClient(request, response, pair);
+        return LoginResponse.of(pair);
+    }
 
-        // Add the token as a cookie if the request has come from the web client
-        if ("Web-Client".equals(request.getHeader("X-Client-Platform"))) {
-            this.setAuthCookie(response, persistedToken.getToken(), this.tokenDuration);
+    @Transactional(readOnly = true)
+    public LoginResponse refresh(HttpServletRequest request, HttpServletResponse response) {
+        String refreshToken = this.extractTokenFromRequest(request, this.refreshCookieName);
+        if (refreshToken == null || refreshToken.isBlank()) {
+            throw new BadCredentialsException("Refresh token is required");
         }
 
-        return LoginResponse.of(persistedToken);
+        Claims claims = this.jwtSessionService.verifyRefreshToken(refreshToken);
+        User user = this.jwtSessionService.resolveUser(claims);
+        TokenPair pair = this.issueTokenPair(user);
+        this.applyCookiesIfWebClient(request, response, pair);
+        return LoginResponse.of(pair);
     }
 
     @Transactional
     public void logout(HttpServletRequest request, HttpServletResponse response) {
-        String tokenValue = this.extractTokenFromRequest(request);
-        if (tokenValue != null) {
-            this.repository.authTokenRepo.deleteById(tokenValue);
-        }
-
-        this.setAuthCookie(response, "", 0);
-        SecurityContextHolder.clearContext();
-    }
-
-    public @Nullable String extractTokenFromRequest(HttpServletRequest request) {
-        String authHeader = request.getHeader("Authorization");
-
-        if (authHeader != null && authHeader.startsWith("Bearer ")) {
-            return authHeader.substring(7);
-        }
-
-        Cookie[] cookies = request.getCookies();
-        if (cookies != null) {
-            Optional<Cookie> authCookie = Arrays.stream(cookies)
-                    .filter(cookie -> cookie.getName().equals(this.cookieName))
-                    .findFirst();
-
-            if (authCookie.isPresent() && !authCookie.get().getValue().isBlank()) {
-                return authCookie.get().getValue();
+        String accessToken = this.extractTokenFromRequest(request, this.cookieName);
+        if (accessToken != null && this.probe.isWritable()) {
+            try {
+                Claims claims = this.jwtSessionService.verifyAccessToken(accessToken);
+                UUID userId = UUID.fromString(claims.getSubject());
+                this.repository.userRepo.findById(userId).ifPresent(user -> {
+                    user.bumpSessionEpoch();
+                    this.repository.userRepo.saveAndFlush(user);
+                });
+            } catch (Exception ignored) {
+                // Cookie/token may already be invalid; still clear cookies below.
             }
         }
 
-        return null;
+        this.clearAuthCookies(response);
+        SecurityContextHolder.clearContext();
     }
 
-    private void setAuthCookie(HttpServletResponse response, String value, long duration) {
-        Cookie cookie = new Cookie(this.cookieName, value);
-        cookie.setMaxAge((int) duration);
+    public TokenPair issueTokenPair(User user) {
+        SessionMode mode = this.probe.isWritable() ? SessionMode.NORMAL : SessionMode.DEGRADED_READ_ONLY;
+        return this.jwtSessionService.issueTokenPair(user, mode);
+    }
+
+    @Transactional
+    public void bumpSessionEpochForAuthProvider(UUID authProviderId) {
+        this.repository.userRepo.findByAuthProvider_Id(authProviderId).forEach(user -> {
+            user.bumpSessionEpoch();
+            this.repository.userRepo.save(user);
+        });
+        this.repository.userRepo.flush();
+    }
+
+    public @Nullable String extractTokenFromRequest(HttpServletRequest request, String cookieName) {
+        String authHeader = request.getHeader("Authorization");
+        if (authHeader != null) {
+            if (authHeader.startsWith("Bearer ")) {
+                return authHeader.substring(7);
+            }
+            return null;
+        }
+        Cookie[] cookies = request.getCookies();
+        if (cookies == null) {
+            return null;
+        }
+        return Arrays.stream(cookies)
+                .filter(cookie -> cookie.getName().equals(cookieName))
+                .map(Cookie::getValue)
+                .filter(value -> value != null && !value.isBlank())
+                .findFirst()
+                .orElse(null);
+
+    }
+
+    private void applyCookiesIfWebClient(HttpServletRequest request, HttpServletResponse response, TokenPair pair) {
+        if (!"Web-Client".equals(request.getHeader(CLIENT_PLATFORM_HEADER_NAME))) {
+            return;
+        }
+        this.setCookie(response, this.cookieName, pair.accessToken(), secondsUntil(pair.accessExpires()));
+        this.setCookie(response, this.refreshCookieName, pair.refreshToken(), secondsUntil(pair.refreshExpires()));
+    }
+
+    private void clearAuthCookies(HttpServletResponse response) {
+        this.setCookie(response, this.cookieName, "", 0);
+        this.setCookie(response, this.refreshCookieName, "", 0);
+    }
+
+    private void setCookie(HttpServletResponse response, String name, String value, long durationSeconds) {
+        Cookie cookie = new Cookie(name, value);
+        cookie.setMaxAge((int) Math.min(durationSeconds, Integer.MAX_VALUE));
         cookie.setHttpOnly(true);
         cookie.setSecure(this.cookieSecure);
         cookie.setPath("/");
@@ -160,28 +206,16 @@ public class AuthService implements UserAuthContext {
         response.addCookie(cookie);
     }
 
-    public static String generateToken() {
-        byte[] randomBytes = new byte[32]; // 256 bits of entropy
-        RANDOM.nextBytes(randomBytes);
-        String token = ENCODER.encodeToString(randomBytes);
-
-        try {
-            MessageDigest digest = MessageDigest.getInstance("SHA-256");
-            byte[] hash = digest.digest(token.getBytes(StandardCharsets.UTF_8));
-
-            return Base64.getEncoder().encodeToString(hash);
-        } catch (NoSuchAlgorithmException e) {
-            throw new RuntimeException("SHA-256 algorithm not available", e);
-        }
-    }
-
-    private AuthToken generateToken(User details) {
-        AuthToken token = new AuthToken(generateToken(), details, Instant.now().plusSeconds(this.tokenDuration));
-        return this.repository.authTokenRepo.save(token);
+    private static long secondsUntil(Instant expires) {
+        return Math.max(0, expires.getEpochSecond() - Instant.now().getEpochSecond());
     }
 
     public String getCookieName() {
         return this.cookieName;
+    }
+
+    public String getRefreshCookieName() {
+        return this.refreshCookieName;
     }
 
     @Override
@@ -202,7 +236,6 @@ public class AuthService implements UserAuthContext {
 
     @RequiresAuditComment(operation = AuditOperation.CREATE, targetType = AuditEntityType.AUTH_PROVIDER)
     public AuthProviderResponse createProvider(String name, ComponentReference<? extends AuthProviderType> type, Map<String, Object> settings) {
-        // Ensure any pre-requisite templates are registered
         TemplateRegistrationMapper.registerDependencies(
                 this.repository,
                 this.catalog,
@@ -213,11 +246,8 @@ public class AuthService implements UserAuthContext {
         );
 
         AuthProvider provider = new AuthProvider(name, type, settings);
-
         this.repository.authProviderRepo.save(provider);
-
         this.auditService.addEvent(AuditOperation.CREATE, AuditEntityType.AUTH_PROVIDER, provider.getId());
-
         return AuthProviderResponse.of(this.catalog, provider);
     }
 
@@ -247,7 +277,7 @@ public class AuthService implements UserAuthContext {
             changes.add(new AuditPropertyChange("enabled", oldEnabled, input.enabled()));
 
             if (!input.enabled()) {
-                this.repository.authTokenRepo.deleteByUser_AuthProvider_Id(provider.getId());
+                this.bumpSessionEpochForAuthProvider(provider.getId());
             }
         }
 

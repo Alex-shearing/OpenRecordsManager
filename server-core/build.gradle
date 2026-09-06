@@ -73,6 +73,8 @@ tasks.named('test', Test) {
         excludeTags 'database-migration'
     }
     dependsOn parent.tasks.named('copyPlugins')
+    // Isolate from developer ./config.yml and file DB under server-core/
+    systemProperty 'spring.config.import', ''
 }
 
 tasks.register('databaseMigrationTest', Test) {
@@ -85,6 +87,7 @@ tasks.register('databaseMigrationTest', Test) {
         includeTags 'database-migration'
     }
     dependsOn parent.tasks.named('copyPlugins')
+    systemProperty 'spring.config.import', ''
 }
 
 tasks.withType(ProcessResources).configureEach {

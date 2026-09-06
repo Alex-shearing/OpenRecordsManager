@@ -3,7 +3,7 @@ package com.openrecordsmanager.rest;
 import com.openrecordsmanager.api.builtin.BuiltinConfigs;
 import com.openrecordsmanager.audit.AuditContextFilter;
 import com.openrecordsmanager.auth.AuthService;
-import com.openrecordsmanager.auth.DatabaseTokenAuthenticationFilter;
+import com.openrecordsmanager.auth.JwtSessionAuthenticationFilter;
 import com.openrecordsmanager.auth.PluginAuthenticationProvider;
 import com.openrecordsmanager.config.ConfigService;
 import com.openrecordsmanager.database.DataRepository;
@@ -22,6 +22,7 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.authentication.session.NullAuthenticatedSessionStrategy;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.csrf.CsrfFilter;
 import org.springframework.security.web.csrf.CsrfToken;
@@ -94,6 +95,7 @@ public class RestConfiguration {
         configuration.setAllowCredentials(true);
         configuration.setExposedHeaders(List.of(
                 "X-CSRF-TOKEN",
+                JwtSessionAuthenticationFilter.SESSION_MODE_HEADER,
                 SchemaUpgradeGateFilter.UPGRADE_REQUIRED_HEADER
         ));
         // Required for browser preflights from localhost / private-network contexts
@@ -107,7 +109,7 @@ public class RestConfiguration {
     @Bean
     public SecurityFilterChain securityFilterChain(
             HttpSecurity http,
-            DatabaseTokenAuthenticationFilter tokenAuthenticationFilter,
+            JwtSessionAuthenticationFilter tokenAuthenticationFilter,
             SchemaUpgradeGateFilter schemaUpgradeFilter,
             AuditContextFilter auditContextFilter,
             CsrfTokenResponseHeaderFilter csrfTokenResponseHeaderFilter
@@ -138,6 +140,7 @@ public class RestConfiguration {
                                 super.handle(request, response, csrfToken);
                             }
                         })
+                        .sessionAuthenticationStrategy(new NullAuthenticatedSessionStrategy())
                 )
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
@@ -149,8 +152,8 @@ public class RestConfiguration {
                 )
                 .addFilterAfter(csrfTokenResponseHeaderFilter, CsrfFilter.class)
                 .addFilterBefore(tokenAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
-                .addFilterAfter(auditContextFilter, DatabaseTokenAuthenticationFilter.class)
-                .addFilterBefore(schemaUpgradeFilter, DatabaseTokenAuthenticationFilter.class)
+                .addFilterAfter(auditContextFilter, JwtSessionAuthenticationFilter.class)
+                .addFilterBefore(schemaUpgradeFilter, JwtSessionAuthenticationFilter.class)
                 .exceptionHandling(exception -> exception
                         // Force 401 Unauthorized for unauthenticated requests
                         .authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED))

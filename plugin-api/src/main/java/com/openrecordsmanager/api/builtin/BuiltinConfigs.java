@@ -69,6 +69,12 @@ public class BuiltinConfigs {
             .defaultValue("50MB")
             .build();
 
+    public static final ConfigType<String> JWT_SIGNING_KEY = ConfigType.builder("server.security.jwt-signing-key", PropertyType.STRING)
+            .name("JWT Signing Key")
+            .description("HMAC secret used to sign access and refresh tokens. Must be shared across all API instances. Server-only; not loaded from the database.")
+            .defaultValue("orm-dev-only-change-me-in-production-32b")
+            .build();
+
     // Database ony settings
 
     public static final ConfigType<String> WORKGROUP_NAME = ConfigType.builder("workgroup.name", PropertyType.STRING)
@@ -114,16 +120,52 @@ public class BuiltinConfigs {
             .defaultValue(List.of("Authorization", "Content-Type", "X-CSRF-TOKEN", "X-Client-Platform", "X-ORM-Audit-Comment"))
             .build();
 
-    public static final ConfigType<Long> TOKEN_EXPIRATION_TIME = ConfigType.builder("app.security.token-expiration-time", PropertyType.NUMBER)
-            .name("Token Expiration Time")
-            .description("How long issued authentication tokens are valid for after issuing")
-            .defaultValue(3600000L)
+    public static final ConfigType<Long> ACCESS_TOKEN_EXPIRATION_SECONDS = ConfigType.builder(
+                    "app.security.access-token-expiration-seconds",
+                    PropertyType.NUMBER
+            )
+            .name("Access Token Expiration Seconds")
+            .description("How long access JWTs are valid for after issuing when the primary database is writable")
+            .defaultValue(3600L)
+            .build();
+
+    public static final ConfigType<Long> DEGRADED_ACCESS_TOKEN_EXPIRATION_SECONDS = ConfigType.builder(
+                    "app.security.degraded-access-token-expiration-seconds",
+                    PropertyType.NUMBER
+            )
+            .name("Degraded Access Token Expiration Seconds")
+            .description("How long access JWTs are valid for after issuing when the primary database is not writable")
+            .defaultValue(900L)
+            .build();
+
+    public static final ConfigType<Long> REFRESH_TOKEN_EXPIRATION_SECONDS = ConfigType.builder(
+                    "app.security.refresh-token-expiration-seconds",
+                    PropertyType.NUMBER
+            )
+            .name("Refresh Token Expiration Seconds")
+            .description("How long refresh JWTs are valid for after issuing when the primary database is writable")
+            .defaultValue(604800L)
+            .build();
+
+    public static final ConfigType<Long> DEGRADED_REFRESH_TOKEN_EXPIRATION_SECONDS = ConfigType.builder(
+                    "app.security.degraded-refresh-token-expiration-seconds",
+                    PropertyType.NUMBER
+            )
+            .name("Degraded Refresh Token Expiration Seconds")
+            .description("How long refresh JWTs are valid for after issuing when the primary database is not writable")
+            .defaultValue(28800L)
             .build();
 
     public static final ConfigType<String> COOKIE_NAME = ConfigType.builder("app.security.cookie-auth.name", PropertyType.STRING)
             .name("Authentication Cookie Name")
-            .description("When using cookie-based authentication, the name of the cookie to use")
+            .description("When using cookie-based authentication, the name of the cookie to use for access tokens")
             .defaultValue("ORM-Authentication")
+            .build();
+
+    public static final ConfigType<String> REFRESH_COOKIE_NAME = ConfigType.builder("app.security.cookie-auth.refresh-name", PropertyType.STRING)
+            .name("Refresh Cookie Name")
+            .description("When using cookie-based authentication, the name of the cookie to use for refresh tokens")
+            .defaultValue("ORM-Refresh-Authentication")
             .build();
 
     public static final ConfigType<Boolean> COOKIE_SECURE = ConfigType.builder("app.security.cookie-auth.secure", PropertyType.BOOLEAN)

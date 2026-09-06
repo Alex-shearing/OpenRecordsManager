@@ -136,7 +136,7 @@ public class UserService {
             changes.add(new AuditPropertyChange("enabled", oldEnabled, input.enabled()));
 
             if (!input.enabled()) {
-                this.repository.authTokenRepo.deleteByUser_Id(user.getId());
+                user.bumpSessionEpoch();
             }
         }
 

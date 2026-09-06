@@ -4,20 +4,11 @@ import jakarta.validation.constraints.NotBlank;
 
 import java.time.Instant;
 
-public record LoginResponse(
+public record TokenPair(
         @NotBlank String accessToken,
         @NotBlank Instant accessExpires,
         @NotBlank String refreshToken,
         @NotBlank Instant refreshExpires,
         @NotBlank SessionMode sessionMode
 ) {
-    public static LoginResponse of(TokenPair pair) {
-        return new LoginResponse(
-                pair.accessToken(),
-                pair.accessExpires(),
-                pair.refreshToken(),
-                pair.refreshExpires(),
-                pair.sessionMode()
-        );
-    }
 }

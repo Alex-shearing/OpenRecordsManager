@@ -35,6 +35,7 @@ class AuditIntegrationTest {
     @DynamicPropertySource
     static void auditProperties(DynamicPropertyRegistry registry) {
         spoolDirectory = Path.of("build/test-audit-" + UUID.randomUUID());
+        com.openrecordsmanager.database.SqliteTestSupport.registerPrimaryMemoryDatabase(registry, AuditIntegrationTest.class);
         registry.add(BuiltinConfigs.AUDIT_SPOOL_DIRECTORY.key(), () -> spoolDirectory.toString());
         registry.add(BuiltinConfigs.AUDIT_SPOOL_DRAIN_INTERVAL_SECONDS.key(), () -> "60000");
         registry.add("audit.probe.interval-ms", () -> "60000");

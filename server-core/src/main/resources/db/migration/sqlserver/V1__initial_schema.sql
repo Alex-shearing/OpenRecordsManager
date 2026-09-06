@@ -98,6 +98,7 @@ CREATE TABLE user_details (
     email NVARCHAR(255) NULL,
     notes NVARCHAR(255) NULL,
     enabled BIT NOT NULL CONSTRAINT df_user_details_enabled DEFAULT 1,
+    session_epoch INT NOT NULL CONSTRAINT df_user_details_session_epoch DEFAULT 0,
     CONSTRAINT fk_user_auth_provider FOREIGN KEY (auth_provider_id) REFERENCES auth_provider (id)
 );
 GO
@@ -119,20 +120,6 @@ CREATE UNIQUE INDEX uk_user_property_value_user_property ON user_property_value 
 GO
 
 CREATE INDEX idx_upv_property_id ON user_property_value (property_id);
-GO
-
-CREATE TABLE auth_token (
-    token_value NVARCHAR(255) NOT NULL PRIMARY KEY,
-    user_id UNIQUEIDENTIFIER NOT NULL,
-    expiry_date DATETIMEOFFSET NOT NULL,
-    CONSTRAINT fk_auth_token_user FOREIGN KEY (user_id) REFERENCES user_details (id)
-);
-GO
-
-CREATE INDEX idx_auth_token_user_id ON auth_token (user_id);
-GO
-
-CREATE INDEX idx_auth_token_expiry_date ON auth_token (expiry_date);
 GO
 
 CREATE TABLE file_store (

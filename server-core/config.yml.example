@@ -40,6 +40,14 @@ server:
   # Static SPA directory cohosted by the API. Set to 'none' when the UI is hosted separately (nginx/IIS/etc)
   web-directory: ./static
 
+  #####################
+  # Security secrets  #
+  #####################
+  security:
+    # HMAC secret used to sign access and refresh JWTs. Must be shared across all API instances.
+    # Server-only — not loaded from the database.
+    jwt-signing-key: orm-dev-only-change-me-in-production-32b
+
   #######################
   # Multipart uploads   #
   #######################
@@ -81,11 +89,19 @@ app:
   # Security settings #
   #####################
   security:
-    # How long issued authentication tokens are valid for after issuing
-    token-expiration-time: 3600000
+    # Access JWT lifetime when the primary database is writable (seconds)
+    access-token-expiration-seconds: 3600
+    # Access JWT lifetime when the primary database is not writable (seconds)
+    degraded-access-token-expiration-seconds: 900
+    # Refresh JWT lifetime when the primary database is writable (seconds)
+    refresh-token-expiration-seconds: 604800
+    # Refresh JWT lifetime when the primary database is not writable (seconds)
+    degraded-refresh-token-expiration-seconds: 28800
     cookie-auth:
-      # When using cookie-based authentication, the name of the cookie to use
+      # When using cookie-based authentication, the name of the cookie to use for access tokens
       name: ORM-Authentication
+      # When using cookie-based authentication, the name of the cookie to use for refresh tokens
+      refresh-name: ORM-Refresh-Authentication
       # When using cookie-based authentication, enforce the 'Secure' attribute
       secure: true
     cors:

@@ -71,6 +71,9 @@ public class InitialDatabaseSeeder {
     @EventListener({ApplicationReadyEvent.class, SchemaMigrationReadyEvent.class})
     @Transactional
     public void seedIfNeeded() {
+        // Re-probe before seeding: listener order vs DatabaseWritableProbe is not guaranteed,
+        // and writable defaults to false until the first successful probe.
+        this.probe.probe();
         if (!this.probe.isWritable()) {
             LOGGER.warn("Database is not writable on startup, data seeding will not occur");
             return;

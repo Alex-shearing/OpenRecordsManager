@@ -16,7 +16,7 @@ import javax.sql.DataSource;
 @SpringBootTest
 class SqliteSchemaMigrationIntegrationTest {
 
-    private static final String JDBC_URL = "jdbc:sqlite::memory:";
+    private static final String JDBC_URL = "jdbc:sqlite:file:orm-schema-migration?mode=memory&cache=shared";
 
     @DynamicPropertySource
     static void databaseProperties(DynamicPropertyRegistry registry) {

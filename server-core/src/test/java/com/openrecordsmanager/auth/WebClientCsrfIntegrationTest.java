@@ -1,9 +1,7 @@
 package com.openrecordsmanager.auth;
 
 import com.openrecordsmanager.api.builtin.BuiltinConfigs;
-import com.openrecordsmanager.auth.entity.AuthToken;
-import com.openrecordsmanager.database.DataRepository;
-import com.openrecordsmanager.user.User;
+import com.openrecordsmanager.database.SqliteTestSupport;
 import jakarta.servlet.http.Cookie;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,8 +13,8 @@ import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
-import java.time.Instant;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
@@ -32,6 +30,7 @@ class WebClientCsrfIntegrationTest {
 
     @DynamicPropertySource
     static void properties(DynamicPropertyRegistry registry) {
+        SqliteTestSupport.registerPrimaryMemoryDatabase(registry, WebClientCsrfIntegrationTest.class);
         registry.add(BuiltinConfigs.PLUGINS_SKIP_SYNC.key(), () -> "true");
         registry.add(BuiltinConfigs.COOKIE_SECURE.key(), () -> "false");
     }
@@ -40,18 +39,16 @@ class WebClientCsrfIntegrationTest {
     private MockMvc mockMvc;
 
     @Autowired
-    private DataRepository repository;
+    private AuthService authService;
 
     @Autowired
-    private AuthService authService;
+    private TestAuthTokens testAuthTokens;
 
     @Test
     void cookieAuthMutatingRequestRequiresCsrfToken() throws Exception {
-        User user = this.repository.userRepo.findByUsername("admin").orElseThrow();
-        AuthToken token = new AuthToken(AuthService.generateToken(), user, Instant.now().plusSeconds(3600));
-        this.repository.authTokenRepo.saveAndFlush(token);
+        String accessToken = this.testAuthTokens.adminAccessToken();
 
-        var authCookie = new Cookie(this.authService.getCookieName(), token.getToken());
+        var authCookie = new Cookie(this.authService.getCookieName(), accessToken);
 
         this.mockMvc.perform(
                         put("/api/config/")
@@ -78,6 +75,7 @@ class WebClientCsrfIntegrationTest {
 
         Cookie csrfCookie = bootstrap.getResponse().getCookie(CSRF_COOKIE);
         assertNotNull(csrfCookie);
+        assertEquals(csrfToken, csrfCookie.getValue());
 
         this.mockMvc.perform(
                         put("/api/config/")
@@ -93,11 +91,9 @@ class WebClientCsrfIntegrationTest {
 
     @Test
     void crossOriginClientCanUseCsrfTokenFromResponseHeader() throws Exception {
-        User user = this.repository.userRepo.findByUsername("admin").orElseThrow();
-        AuthToken token = new AuthToken(AuthService.generateToken(), user, Instant.now().plusSeconds(3600));
-        this.repository.authTokenRepo.saveAndFlush(token);
+        String accessToken = this.testAuthTokens.adminAccessToken();
 
-        var authCookie = new Cookie(this.authService.getCookieName(), token.getToken());
+        var authCookie = new Cookie(this.authService.getCookieName(), accessToken);
 
         MvcResult bootstrap = this.mockMvc.perform(
                         get("/api/user/me")
@@ -114,12 +110,61 @@ class WebClientCsrfIntegrationTest {
 
         Cookie csrfCookie = bootstrap.getResponse().getCookie(CSRF_COOKIE);
         assertNotNull(csrfCookie);
+        assertEquals(csrfToken, csrfCookie.getValue(), "X-CSRF-TOKEN header must match XSRF-TOKEN cookie");
 
         this.mockMvc.perform(
                         put("/api/config/")
                                 .header("X-Client-Platform", "Web-Client")
                                 .header(CSRF_HEADER, csrfToken)
                                 .cookie(authCookie, csrfCookie)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("{}")
+                                .accept(MediaType.APPLICATION_JSON)
+                )
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void authenticatedRequestsDoNotRotateCsrfToken() throws Exception {
+        String accessToken = this.testAuthTokens.adminAccessToken();
+        var authCookie = new Cookie(this.authService.getCookieName(), accessToken);
+
+        MvcResult first = this.mockMvc.perform(
+                        get("/api/user/me")
+                                .header("X-Client-Platform", "Web-Client")
+                                .cookie(authCookie)
+                                .accept(MediaType.APPLICATION_JSON)
+                )
+                .andExpect(status().isOk())
+                .andExpect(header().exists(CSRF_HEADER))
+                .andReturn();
+
+        String firstHeader = first.getResponse().getHeader(CSRF_HEADER);
+        Cookie firstCookie = first.getResponse().getCookie(CSRF_COOKIE);
+        assertNotNull(firstHeader);
+        assertNotNull(firstCookie);
+        assertEquals(firstHeader, firstCookie.getValue());
+
+        MvcResult second = this.mockMvc.perform(
+                        get("/api/user/me")
+                                .header("X-Client-Platform", "Web-Client")
+                                .cookie(authCookie, firstCookie)
+                                .accept(MediaType.APPLICATION_JSON)
+                )
+                .andExpect(status().isOk())
+                .andExpect(header().string(CSRF_HEADER, firstHeader))
+                .andReturn();
+
+        Cookie secondCookie = second.getResponse().getCookie(CSRF_COOKIE);
+        if (secondCookie != null) {
+            assertEquals(firstHeader, secondCookie.getValue());
+        }
+
+        this.mockMvc.perform(
+                        put("/api/config/")
+                                .header("X-Client-Platform", "Web-Client")
+                                .header(CSRF_HEADER, firstHeader)
+                                .cookie(authCookie, firstCookie)
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content("{}")
                                 .accept(MediaType.APPLICATION_JSON)

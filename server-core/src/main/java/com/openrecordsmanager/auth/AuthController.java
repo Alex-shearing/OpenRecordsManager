@@ -109,6 +109,29 @@ public class AuthController {
         this.authService.logout(request, response);
     }
 
+    @PostMapping(value = "/refresh", produces = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(summary = "Exchange a refresh token for a new access and refresh token pair")
+    @ApiResponse(
+            responseCode = "401",
+            description = "Refresh Failed",
+            content = @Content(
+                    mediaType = MediaType.APPLICATION_JSON_VALUE,
+                    schema = @Schema(implementation = ApiResponseV1.class),
+                    examples = @ExampleObject(
+                            value = """
+                                    {
+                                      "success": false,
+                                      "errorCode": "Invalid or expired token",
+                                      "timestamp": "2026-06-29T23:05:00Z"
+                                    }
+                                    """
+                    )
+            )
+    )
+    public LoginResponse refresh(HttpServletRequest request, HttpServletResponse response) {
+        return this.authService.refresh(request, response);
+    }
+
     @PostMapping(value = "/signup", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Trigger a signup to an authentication provider, implementations vary depending on the provider.")
     @NotFoundApiResponse
