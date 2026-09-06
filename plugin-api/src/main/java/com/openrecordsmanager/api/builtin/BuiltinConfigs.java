@@ -190,8 +190,8 @@ public class BuiltinConfigs {
 
     public static final ConfigType<String> WEB_FAVICON_URL = ConfigType.builder("app.web.favicon-url", PropertyType.STRING)
             .name("Favicon URL")
-            .description("Optional favicon URL for the web client.")
-            .defaultValue("/favicon.ico")
+            .description("Optional favicon URL for the web client. Leave blank to use the built-in favicon.")
+            .defaultValue("")
             .build();
 
     public static final ConfigType<String> WEB_PRIMARY_COLOR = ConfigType.builder("app.web.primary-color", PropertyType.STRING)
