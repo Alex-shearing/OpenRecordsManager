@@ -19,11 +19,13 @@ export async function load({ fetch }) {
 		const { data } = await WebController.branding({ client });
 		return {
 			branding: data?.data || DEFAULT_BRANDING,
+			online: true,
 		};
 	} catch {
 		// Offline / API unreachable — still boot the SPA shell from cache.
 		return {
 			branding: DEFAULT_BRANDING,
+			online: false,
 		};
 	}
 }

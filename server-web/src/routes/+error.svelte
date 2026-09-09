@@ -15,6 +15,10 @@
 	let branding = $derived(page.data.branding ?? defaultBranding);
 
 	let title = $derived.by(() => {
+		if (!page.data.online) {
+			return 'Server offline';
+		}
+
 		switch (page.status) {
 			case 404:
 				return 'Page not found';
@@ -28,6 +32,10 @@
 	});
 
 	let description = $derived.by(() => {
+		if (!page.data.online) {
+			return 'The server is currently offline, please try again later.';
+		}
+
 		switch (page.status) {
 			case 404:
 				return "The page you're looking for doesn't exist or may have been moved.";

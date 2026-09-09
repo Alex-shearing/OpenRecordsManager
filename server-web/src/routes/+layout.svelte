@@ -33,6 +33,7 @@
 
 <svelte:head>
 	<title>{data.branding.productName}</title>
+	<meta name="description" content="{data.branding.productName} helps organizations manage records and information." />
 	<link rel="icon" href={data.branding.faviconUrl || faviconAsset} />
 	<link rel="manifest" href="/manifest.webmanifest" />
 	<meta name="theme-color" content={data.branding.primaryColor} />
