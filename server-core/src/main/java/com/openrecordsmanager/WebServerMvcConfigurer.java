@@ -6,6 +6,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.jspecify.annotations.Nullable;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.Resource;
+import org.springframework.http.CacheControl;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.springframework.web.servlet.resource.PathResourceResolver;
@@ -13,6 +14,7 @@ import org.springframework.web.servlet.resource.PathResourceResolver;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
 /**
@@ -25,6 +27,12 @@ public class WebServerMvcConfigurer implements WebMvcConfigurer {
 
     private static final String DISABLE_VALUE = "none";
 
+
+    private static final CacheControl IMMUTABLE_CACHE = CacheControl.maxAge(365, TimeUnit.DAYS)
+            .cachePublic()
+            .immutable();
+    private static final CacheControl REVALIDATE_CACHE = CacheControl.noCache().cachePublic();
+
     @Nullable
     private final String webDir;
 
@@ -35,7 +43,7 @@ public class WebServerMvcConfigurer implements WebMvcConfigurer {
         } else {
             Path path = Path.of(configService.getOrThrow(BuiltinConfigs.WEB_DIRECTORY));
             if (isDirectoryAndNotEmpty(path)) {
-                this.webDir = path.toAbsolutePath().toUri().toString();
+                this.webDir = withTrailingSlash(path.toAbsolutePath().toUri().toString());
             } else {
                 this.webDir = null;
             }
@@ -48,8 +56,15 @@ public class WebServerMvcConfigurer implements WebMvcConfigurer {
             return;
         }
 
+        // Hashed assets under /_app/immutable/ (JS/CSS chunks) — long-lived cache.
+        registry.addResourceHandler("/_app/immutable/**")
+                .addResourceLocations(this.webDir + "_app/immutable/")
+                .setCacheControl(IMMUTABLE_CACHE);
+
+        // SPA shell and remaining static files — revalidate on each visit.
         registry.addResourceHandler("/**")
                 .addResourceLocations(this.webDir)
+                .setCacheControl(REVALIDATE_CACHE)
                 .resourceChain(true)
                 .addResolver(new PathResourceResolver() {
                     @Override
@@ -77,5 +92,9 @@ public class WebServerMvcConfigurer implements WebMvcConfigurer {
         } catch (IOException e) {
             return false;
         }
+    }
+
+    private static String withTrailingSlash(String location) {
+        return location.endsWith("/") ? location : location + "/";
     }
 }

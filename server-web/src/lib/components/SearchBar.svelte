@@ -19,7 +19,7 @@
 	let searchText = $derived(items.find(item => item.value === selected)?.search ?? 'everything');
 
 	function handleWindowKeydown(event: KeyboardEvent) {
-		if (event.key.toLowerCase() !== 'k' || (!event.ctrlKey && !event.metaKey) || event.altKey || event.shiftKey) {
+		if (event.key.toLowerCase() !== '/' || event.ctrlKey || event.metaKey || event.altKey || event.shiftKey) {
 			return;
 		}
 
