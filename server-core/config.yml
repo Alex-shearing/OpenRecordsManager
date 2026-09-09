@@ -7,7 +7,7 @@
 server:
   database:
     primary:
-      url: jdbc:sqlite:./data/orm_system.db?busy_timeout=5000
+      url: jdbc:sqlite:./data/orm_system.db?busy_timeout=30000
   plugins:
     directory: ./plugins
   audit-directory: ./data/audit

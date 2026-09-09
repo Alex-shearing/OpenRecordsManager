@@ -87,18 +87,31 @@ public class DataSourceConfig {
     /**
      * For SQLite, Hikari's read-only flag must match how the JDBC URL opens the connection.
      * Otherwise, pool setup calls {@code Connection#setReadOnly} and SQLite rejects the change.
+     * <p>
+     * Writable SQLite is capped to a single pooled connection: SQLite allows only one writer, and
+     * concurrent Hikari connections produce frequent {@code SQLITE_BUSY} under Tomcat + audit drain.
+     * WAL + busy_timeout let readers (including a same-file read-only pool) coexist with that writer.
      */
     private static DataSource buildDataSource(DataSourceProperties properties) {
         DataSource dataSource = properties.initializeDataSourceBuilder().build();
         String url = properties.getUrl();
         if (dataSource instanceof HikariDataSource hikari && isSqlite(url)) {
-            hikari.setReadOnly(isSqliteUrlReadOnly(url));
+            boolean readOnly = isSqliteUrlReadOnly(url);
+            hikari.setReadOnly(readOnly);
             // Allow the process to start when the primary is unreachable (read-replica degraded mode).
             hikari.setInitializationFailTimeout(-1);
             if (url.contains("/does/not/exist/")) {
                 hikari.setConnectionTimeout(1_000L);
                 hikari.setMaximumPoolSize(1);
                 hikari.setMinimumIdle(0);
+            } else if (!readOnly) {
+                hikari.setMaximumPoolSize(1);
+                hikari.setMinimumIdle(1);
+                hikari.setConnectionInitSql(
+                        "PRAGMA journal_mode=WAL; PRAGMA synchronous=NORMAL; PRAGMA busy_timeout=30000;"
+                );
+            } else {
+                hikari.setConnectionInitSql("PRAGMA busy_timeout=30000;");
             }
         }
         return dataSource;

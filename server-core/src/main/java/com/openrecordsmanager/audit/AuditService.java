@@ -12,6 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.dao.CannotAcquireLockException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -220,6 +221,9 @@ public class AuditService {
         try {
             this.self.saveIfAbsent(this.toEntity(payload));
             return true;
+        } catch (CannotAcquireLockException e) {
+            LOGGER.debug("Audit event {} deferred to spool (database busy)", payload.id());
+            return false;
         } catch (Exception e) {
             LOGGER.warn("Failed to persist audit event {} to database", payload.id(), e);
             this.probe.markWriteFailed();

@@ -10,7 +10,7 @@ server:
     primary:
       # EXAMPLE CONNECTIONS
       # SQLite File
-      url: jdbc:sqlite:./data/orm_system.db?busy_timeout=5000
+      url: jdbc:sqlite:./data/orm_system.db?busy_timeout=30000
       # PostgreSQL
       # url: jdbc:postgresql://localhost:5432/orm
       # username: orm
