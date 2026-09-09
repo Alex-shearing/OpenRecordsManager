@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { afterNavigate } from '$app/navigation';
 	import { page } from '$app/state';
 	import BrandingHeader from '$lib/components/BrandingHeader.svelte';
 	import HeaderNav from '$lib/components/HeaderNav.svelte';
@@ -9,27 +10,39 @@
 	let { children, data } = $props();
 
 	const isProfileActive = $derived(page.route.id === '/(authenticated)/profile');
+
+	let contentEl: HTMLDivElement | undefined = $state();
+
+	afterNavigate(({ type }) => {
+		if (type !== 'popstate') {
+			contentEl?.scrollTo(0, 0);
+		}
+	});
 </script>
 
-<BrandingHeader branding={data.branding}>
-	{#snippet center()}
-		<div class="flex items-center gap-4">
-			<SearchBar class="w-full sm:w-1/2" />
-			<HeaderNav />
-		</div>
-	{/snippet}
-	{#snippet end()}
-		<nav aria-label="Account" class="flex shrink-0 items-center gap-1">
-			<HeaderNavLink
-				route="/(authenticated)/profile"
-				icon={UserIcon}
-				active={isProfileActive}
-				class="hidden sm:inline-flex"
-			>
-				{data.me.username}
-			</HeaderNavLink>
-		</nav>
-	{/snippet}
-</BrandingHeader>
+<div class="flex h-dvh flex-col overflow-hidden">
+	<BrandingHeader branding={data.branding}>
+		{#snippet center()}
+			<div class="flex items-center gap-4">
+				<SearchBar class="w-full sm:w-1/2" />
+				<HeaderNav />
+			</div>
+		{/snippet}
+		{#snippet end()}
+			<nav aria-label="Account" class="flex shrink-0 items-center gap-1">
+				<HeaderNavLink
+					route="/(authenticated)/profile"
+					icon={UserIcon}
+					active={isProfileActive}
+					class="hidden sm:inline-flex"
+				>
+					{data.me.username}
+				</HeaderNavLink>
+			</nav>
+		{/snippet}
+	</BrandingHeader>
 
-{@render children()}
+	<div bind:this={contentEl} class="min-h-0 flex-1 overflow-y-auto">
+		{@render children()}
+	</div>
+</div>

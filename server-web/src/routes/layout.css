@@ -42,6 +42,12 @@
 }
 
 @layer base {
+	html,
+	body {
+		height: 100%;
+		overflow: hidden;
+	}
+
 	button:not(:disabled),
 	input[type='button']:not(:disabled),
 	input[type='submit']:not(:disabled),

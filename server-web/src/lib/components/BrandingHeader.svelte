@@ -16,7 +16,7 @@
 </script>
 
 <header
-	class="sticky top-0 z-15 flex h-(--header-height) w-full items-center gap-4 bg-primary px-4 py-2 text-primary-foreground shadow {center ||
+	class="z-15 flex h-(--header-height) w-full shrink-0 items-center gap-4 bg-primary px-4 py-2 text-primary-foreground shadow {center ||
 	end
 		? 'justify-between'
 		: 'justify-center'}"

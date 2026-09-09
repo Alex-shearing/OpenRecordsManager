@@ -53,29 +53,33 @@
 	<title>{page.status} · {branding.productName}</title>
 </svelte:head>
 
-<BrandingHeader {branding} showLogoOnMobile />
+<div class="flex h-dvh flex-col overflow-hidden">
+	<BrandingHeader {branding} showLogoOnMobile />
 
-<PageContent variant="guest">
-	<div class="card">
-		<div class="card-header">
-			<h1 class="text-2xl font-semibold">{title}</h1>
-		</div>
+	<div class="min-h-0 flex-1 overflow-y-auto">
+		<PageContent variant="guest">
+			<div class="card">
+				<div class="card-header">
+					<h1 class="text-2xl font-semibold">{title}</h1>
+				</div>
 
-		<div class="card-body">
-			<p class="text-hint">{description}</p>
+				<div class="card-body">
+					<p class="text-hint">{description}</p>
 
-			<div class="mt-6 flex gap-3">
-				<a href="/" class="btn-primary">Go home</a>
-				{#if page.status === 401}
-					<a href="/login" class="btn-secondary">Sign in</a>
-				{/if}
+					<div class="mt-6 flex gap-3">
+						<a href="/" class="btn-primary">Go home</a>
+						{#if page.status === 401}
+							<a href="/login" class="btn-secondary">Sign in</a>
+						{/if}
+					</div>
+				</div>
 			</div>
-		</div>
-	</div>
 
-	{#if branding.supportUrl}
-		<p class="mt-4 text-center text-hint">
-			<a href={branding.supportUrl} class="text-link">Need help?</a>
-		</p>
-	{/if}
-</PageContent>
+			{#if branding.supportUrl}
+				<p class="mt-4 text-center text-hint">
+					<a href={branding.supportUrl} class="text-link">Need help?</a>
+				</p>
+			{/if}
+		</PageContent>
+	</div>
+</div>

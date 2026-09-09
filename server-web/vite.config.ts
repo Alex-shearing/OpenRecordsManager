@@ -17,11 +17,14 @@ export default defineConfig({
 		}),
 	],
 	// Used during development to proxy API requests to the Spring Boot backend.
+	// Keep changeOrigin false so Host stays the Vite origin (e.g. localhost:5173).
+	// Spring treats Origin≠Host as CORS; with an empty allow-list that becomes 403
+	// "Invalid CORS request" on login and other browser POSTs.
 	server: {
 		proxy: {
 			'/api': {
 				target: 'http://localhost:8080',
-				changeOrigin: true,
+				changeOrigin: false,
 				secure: false,
 			},
 		},

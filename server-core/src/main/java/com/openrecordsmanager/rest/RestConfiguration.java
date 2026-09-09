@@ -15,6 +15,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -30,6 +31,8 @@ import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.filter.CorsFilter;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.util.List;
 import java.util.function.Supplier;
@@ -106,6 +109,17 @@ public class RestConfiguration {
         return source;
     }
 
+    /**
+     * Prefer a CorsFilter bean over {@code cors.configurationSource(...)} so we can install
+     * {@link ApiResponseCorsProcessor}; Security's DSL otherwise builds a filter with the default processor.
+     */
+    @Bean
+    public CorsFilter corsFilter(CorsConfigurationSource corsConfigurationSource, JsonMapper jsonMapper) {
+        CorsFilter filter = new CorsFilter(corsConfigurationSource);
+        filter.setCorsProcessor(new ApiResponseCorsProcessor(jsonMapper));
+        return filter;
+    }
+
     @Bean
     public SecurityFilterChain securityFilterChain(
             HttpSecurity http,
@@ -124,7 +138,7 @@ public class RestConfiguration {
 
         http
                 .securityMatcher("/api/**")
-                .cors(cors -> cors.configurationSource(this.corsConfigurationSource()))
+                .cors(Customizer.withDefaults())
                 .csrf(csrf -> csrf
                         // Only enable CSRF protection when using cookie authentication, not when using the header
                         .ignoringRequestMatchers(request -> {
