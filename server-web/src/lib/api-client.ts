@@ -23,7 +23,7 @@ export function createApiClient(fetchImpl: typeof globalThis.fetch): Client {
 	const client = createClient(
 		createConfig({
 			baseUrl,
-			fetchImpl,
+			fetch: fetchImpl,
 			credentials: 'include',
 			headers: {
 				'X-Client-Platform': 'Web-Client',

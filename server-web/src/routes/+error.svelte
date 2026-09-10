@@ -1,18 +1,7 @@
 <script lang="ts">
 	import { page } from '$app/state';
-	import faviconAsset from '$lib/assets/favicon.ico';
 	import BrandingHeader from '$lib/components/BrandingHeader.svelte';
 	import PageContent from '$lib/components/layout/PageContent.svelte';
-
-	const defaultBranding = {
-		productName: 'Open Records Manager',
-		logoUrl: '',
-		faviconUrl: faviconAsset,
-		primaryColor: '#1d4ed8',
-		supportUrl: '',
-	};
-
-	let branding = $derived(page.data.branding ?? defaultBranding);
 
 	let title = $derived.by(() => {
 		if (!page.data.online) {
@@ -50,11 +39,11 @@
 </script>
 
 <svelte:head>
-	<title>{page.status} · {branding.productName}</title>
+	<title>{page.status} · {page.data.branding.productName}</title>
 </svelte:head>
 
 <div class="flex h-dvh flex-col overflow-hidden">
-	<BrandingHeader {branding} showLogoOnMobile />
+	<BrandingHeader branding={page.data.branding} showLogoOnMobile />
 
 	<div class="min-h-0 flex-1 overflow-y-auto">
 		<PageContent variant="guest">
@@ -75,9 +64,9 @@
 				</div>
 			</div>
 
-			{#if branding.supportUrl}
+			{#if page.data.branding.supportUrl}
 				<p class="mt-4 text-center text-hint">
-					<a href={branding.supportUrl} class="text-link">Need help?</a>
+					<a href={page.data.branding.supportUrl} class="text-link">Need help?</a>
 				</p>
 			{/if}
 		</PageContent>

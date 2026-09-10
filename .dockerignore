@@ -3,6 +3,11 @@
 **/build
 **/data
 server-core/plugins
+server-core/data
+server-core/build
+server-core/bin
+server-core/logs
+server-core/target
 **/target
 **/node_modules
 **/.svelte-kit
