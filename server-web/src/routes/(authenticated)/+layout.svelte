@@ -24,7 +24,7 @@
 	<BrandingHeader branding={data.branding}>
 		{#snippet center()}
 			<div class="flex items-center gap-4">
-				<SearchBar class="w-full sm:w-1/2" />
+				<SearchBar />
 				<HeaderNav />
 			</div>
 		{/snippet}
