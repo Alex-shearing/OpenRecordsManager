@@ -80,7 +80,7 @@ public class FileStore {
         // Save the stream into the store
         String path;
         try {
-            path = this.getStoreType(catalog).saveUntyped(this.properties, stream);
+            path = this.getStoreType(catalog).saveUntyped(this.properties, stream, extension);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

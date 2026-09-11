@@ -2,6 +2,7 @@ package com.openrecordsmanager.plugin.filestore_local;
 
 import com.openrecordsmanager.api.filestore.FileStoreType;
 import com.openrecordsmanager.api.schema.SchemaField;
+import org.jspecify.annotations.Nullable;
 
 import java.io.*;
 import java.nio.file.Path;
@@ -18,7 +19,7 @@ public class LocalFileStoreType extends FileStoreType<LocalFileStoreType.LocalFi
     }
 
     @Override
-    public String save(LocalFileStoreSettings settings, InputStream data) throws IOException {
+    public String save(LocalFileStoreSettings settings, InputStream data, @Nullable String extension) throws IOException {
         Path destPath;
         File file;
         do {

@@ -2,6 +2,7 @@ package com.openrecordsmanager.plugin.filestore_s3;
 
 import com.openrecordsmanager.api.filestore.FileStoreType;
 import com.openrecordsmanager.api.schema.SchemaField;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -19,7 +20,7 @@ public class S3FileStoreType extends FileStoreType<S3FileStoreType.S3FileStoreSe
     }
 
     @Override
-    public String save(S3FileStoreSettings settings, InputStream data) throws IOException {
+    public String save(S3FileStoreSettings settings, InputStream data, @Nullable String extension) throws IOException {
         String path = UUID.randomUUID().toString();
 
         LOGGER.info("Uploading file to S3: endpoint={}, bucket={}, key={}", settings.endpoint(), settings.bucket(), path);

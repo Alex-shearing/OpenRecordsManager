@@ -26,7 +26,7 @@ GO
 CREATE TABLE object_property (
     id NVARCHAR(255) NOT NULL PRIMARY KEY,
     name NVARCHAR(255) NOT NULL,
-    description NVARCHAR(255) NOT NULL,
+    description NVARCHAR(MAX) NOT NULL,
     type NVARCHAR(255) NOT NULL,
     list_type_id NVARCHAR(255) NULL,
     validator NVARCHAR(255) NULL,
@@ -44,7 +44,7 @@ CREATE TABLE list_element (
     id NVARCHAR(255) NOT NULL PRIMARY KEY,
     parent_id NVARCHAR(255) NOT NULL,
     name NVARCHAR(255) NOT NULL,
-    description NVARCHAR(255) NOT NULL,
+    description NVARCHAR(MAX) NOT NULL,
     element_index INT NOT NULL,
     active_to DATETIMEOFFSET NULL,
     CONSTRAINT fk_list_element_parent FOREIGN KEY (parent_id) REFERENCES list_type (id)
@@ -67,7 +67,7 @@ GO
 CREATE TABLE record_type (
     id NVARCHAR(255) NOT NULL PRIMARY KEY,
     name NVARCHAR(255) NOT NULL,
-    description NVARCHAR(255) NOT NULL,
+    description NVARCHAR(MAX) NOT NULL,
     security_filter NVARCHAR(255) NULL,
     security_filter_usage TINYINT NOT NULL CHECK (security_filter_usage BETWEEN 0 AND 2),
     content_types VARCHAR(MAX) NULL
@@ -248,7 +248,7 @@ CREATE TABLE audit_policy (
     enabled BIT NOT NULL,
     requires_comment BIT NOT NULL,
     display_name NVARCHAR(255) NOT NULL,
-    description NVARCHAR(1000) NULL,
+    description NVARCHAR(MAX) NULL,
     PRIMARY KEY (entity_type, operation)
 );
 GO

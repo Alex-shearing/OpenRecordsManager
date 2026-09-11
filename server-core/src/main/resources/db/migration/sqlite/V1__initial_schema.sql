@@ -20,7 +20,7 @@ CREATE TABLE list_type (
 CREATE TABLE object_property (
     id VARCHAR(255) NOT NULL PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
-    description VARCHAR(255) NOT NULL,
+    description VARCHAR(MAX) NOT NULL,
     type VARCHAR(255) NOT NULL,
     list_type_id VARCHAR(255),
     validator VARCHAR(255),
@@ -36,7 +36,7 @@ CREATE TABLE list_element (
     id VARCHAR(255) NOT NULL PRIMARY KEY,
     parent_id VARCHAR(255) NOT NULL,
     name VARCHAR(255) NOT NULL,
-    description VARCHAR(255) NOT NULL,
+    description VARCHAR(MAX) NOT NULL,
     element_index INTEGER NOT NULL,
     active_to TIMESTAMP,
     CONSTRAINT fk_list_element_parent FOREIGN KEY (parent_id) REFERENCES list_type (id)
@@ -55,7 +55,7 @@ CREATE INDEX IF NOT EXISTS idx_list_element_alias_element ON list_element_alias 
 CREATE TABLE record_type (
     id VARCHAR(255) NOT NULL PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
-    description VARCHAR(255) NOT NULL,
+    description VARCHAR(MAX) NOT NULL,
     security_filter VARCHAR(255),
     security_filter_usage TINYINT NOT NULL CHECK (security_filter_usage BETWEEN 0 AND 2),
     content_types CLOB
@@ -209,6 +209,6 @@ CREATE TABLE audit_policy (
     enabled BOOLEAN NOT NULL,
     requires_comment BOOLEAN NOT NULL,
     display_name VARCHAR(255) NOT NULL,
-    description VARCHAR(1000),
+    description VARCHAR(MAX),
     PRIMARY KEY (entity_type, operation)
 );

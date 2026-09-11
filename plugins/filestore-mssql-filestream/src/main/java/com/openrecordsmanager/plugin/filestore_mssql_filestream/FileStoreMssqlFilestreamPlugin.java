@@ -1,0 +1,22 @@
+package com.openrecordsmanager.plugin.filestore_mssql_filestream;
+
+import com.openrecordsmanager.api.Plugin;
+import com.openrecordsmanager.api.RegistrationContext;
+
+/**
+ * Main plugin class that registers the Microsoft SQL Server FILESTREAM file store type.
+ */
+public class FileStoreMssqlFilestreamPlugin implements Plugin {
+
+    public static final MssqlFilestreamFileStoreType MSSQL_FILESTREAM_FILE_STORE_TYPE = new MssqlFilestreamFileStoreType();
+
+    @Override
+    public String getName() {
+        return "filestore_mssql_filestream";
+    }
+
+    @Override
+    public void initialise(RegistrationContext registry) {
+        registry.registerComponent("filestream", MSSQL_FILESTREAM_FILE_STORE_TYPE);
+    }
+}

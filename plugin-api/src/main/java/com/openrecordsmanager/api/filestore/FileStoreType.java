@@ -2,6 +2,7 @@ package com.openrecordsmanager.api.filestore;
 
 import com.openrecordsmanager.api.Component;
 import com.openrecordsmanager.api.schema.JsonSchemaValidator;
+import org.jspecify.annotations.Nullable;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -20,18 +21,21 @@ public abstract class FileStoreType<S extends Record> implements Component {
     /**
      * Saves a file into the storage provider using the specified instance properties.
      *
-     * @param settings configuration properties for the file store instance (e.g. root directory, bucket name)
-     * @param data     the file contents stream
+     * @param settings  configuration properties for the file store instance (e.g. root directory, bucket name)
+     * @param data      the file contents stream
+     * @param extension file extension without a leading dot (e.g. {@code "pdf"}, {@code "jar"});
+     *                  may be {@code null} or blank when unknown
      * @return the data to persist in the database. this same data will be used to retrieve the file.
      * @throws IOException if there is an error saving the file
      */
-    public abstract String save(S settings, InputStream data) throws IOException;
+    public abstract String save(S settings, InputStream data, @Nullable String extension) throws IOException;
 
     /**
      * Saves a file using untyped settings (typically raw JSON maps from persistence).
      */
-    public final String saveUntyped(Map<String, ?> settings, InputStream data) throws IOException {
-        return this.save(this.parseSettings(settings), data);
+    public final String saveUntyped(Map<String, ?> settings, InputStream data, @Nullable String extension)
+            throws IOException {
+        return this.save(this.parseSettings(settings), data, extension);
     }
 
     /**

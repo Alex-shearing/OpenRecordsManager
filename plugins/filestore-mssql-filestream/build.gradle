@@ -1,0 +1,8 @@
+plugins {
+    id 'java'
+}
+
+dependencies {
+    compileOnly project(':plugin-api')
+    implementation 'com.microsoft.sqlserver:mssql-jdbc:13.4.0.jre11'
+}
