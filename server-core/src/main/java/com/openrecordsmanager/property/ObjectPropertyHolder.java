@@ -27,7 +27,8 @@ public abstract class ObjectPropertyHolder<SELF extends ObjectPropertyHolder<SEL
         if (value == null) {
             return null;
         }
-        return property.getType().parseValue(value.getValue());
+        Object hydrated = ListElementPropertyResolver.hydrateStoredStatic(property, value.getValue());
+        return property.getType().parseValue(hydrated);
     }
 
     public abstract boolean canSetProperty(ObjectProperty<?> property);
@@ -68,12 +69,15 @@ public abstract class ObjectPropertyHolder<SELF extends ObjectPropertyHolder<SEL
                 this.getDynamicProperties().put(property, holder);
             }
 
+            // ListElement uses @JsonValue so Hibernate JSON persistence writes resource id
+            // string(s); getProperty hydrates id strings back to ListElement after reload.
             holder.setValueUntyped(value);
         }
     }
 
     public final <K> @Nullable K setPropertyUntyped(ObjectProperty<K> property, @Nullable Object value) {
-        K newValue = property.getType().parseValue(value);
+        Object resolved = ListElementPropertyResolver.resolveInputStatic(property, value);
+        K newValue = property.getType().parseValue(resolved);
         this.setProperty(property, newValue);
         return newValue;
     }
@@ -113,7 +117,7 @@ public abstract class ObjectPropertyHolder<SELF extends ObjectPropertyHolder<SEL
                     .findFirst();
 
             return propKey
-                    .map(this.holder::getProperty)
+                    .map(property -> this.mapValue(property, this.holder.getProperty(property)))
                     .orElse(null);
         }
 
@@ -124,9 +128,18 @@ public abstract class ObjectPropertyHolder<SELF extends ObjectPropertyHolder<SEL
                     .filter(entry -> !this.forUser || !entry.isUserHidden())
                     .map(entry -> new AbstractMap.SimpleEntry<String, Object>(
                             entry.getId().toString(),
-                            this.holder.getProperty(entry)
+                            this.mapValue(entry, this.holder.getProperty(entry))
                     ))
                     .collect(Collectors.toSet());
+        }
+
+        private @Nullable Object mapValue(ObjectProperty<?> property, @Nullable Object domainValue) {
+            // API responses (forUser=true) expose list values as resource id strings.
+            // CEL / internal maps keep live ListElement instances for comparisons.
+            if (this.forUser) {
+                return ListElementPropertyResolver.toApiValue(property, domainValue);
+            }
+            return domainValue;
         }
     }
 }

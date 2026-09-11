@@ -55,6 +55,12 @@ class PropertyTypeTest {
     }
 
     @Test
+    void listMultipleDoesNotAcceptStringCollectionsWithoutResolution() {
+        Assertions.assertNull(PropertyType.LIST_MULTIPLE.parseValue(List.of("a:b", "c:d")));
+        Assertions.assertNull(PropertyType.LIST_ITEM.parseValue("a:b"));
+    }
+
+    @Test
     void jacksonDeserialisesPropertyTypeByName() throws Exception {
         PropertyType<?> type = MAPPER.readValue("\"string\"", PropertyType.class);
         Assertions.assertSame(PropertyType.STRING, type);

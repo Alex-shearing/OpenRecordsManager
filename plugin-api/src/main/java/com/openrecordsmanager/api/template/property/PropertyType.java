@@ -123,6 +123,15 @@ public abstract class PropertyType<T> {
             }
             return null;
         }
+
+        /**
+         * Avoid {@link Class#isInstance(Object)} short-circuit on raw {@link Collection}s of strings
+         * from the API; only accept collections whose elements are already {@link IListElement}.
+         */
+        @Override
+        public @Nullable Collection<IListElement> parseValue(@Nullable Object value) {
+            return this.coerce(value);
+        }
     };
 
     public static final PropertyType<Instant> DATE = new PropertyType<>("date", Instant.class, false) {
