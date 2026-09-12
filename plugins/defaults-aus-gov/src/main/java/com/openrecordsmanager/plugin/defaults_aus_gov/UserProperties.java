@@ -7,6 +7,12 @@ import com.openrecordsmanager.api.template.property.PropertyType;
 import java.util.Collection;
 
 public class UserProperties {
+    public static final ObjectPropertyTemplate<IListElement> USER_NATIONALITY =
+            ObjectPropertyTemplate.builder("User Nationality", PropertyType.LIST_ITEM)
+                    .description("The nationality of the user.")
+                    .listType(Lists.RELEASABILITY_CAVEAT)
+                    .build();
+
     public static final ObjectPropertyTemplate<IListElement> USER_SECURITY_CLASSIFICATION =
             ObjectPropertyTemplate.builder("Allowed Security Classification", PropertyType.LIST_ITEM)
                     .description("The top security classification the user is able to access.")

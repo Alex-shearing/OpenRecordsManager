@@ -35,6 +35,7 @@ public class RecordProperties {
                     .description("Controls that dictate who is allowed to access, view, or receive specific classified or sensitive information.")
                     .listType(Lists.RELEASABILITY_CAVEAT)
                     .validator("value.size() > 2")
+                    .securityFilter("value.exists(x, x == principal[{0}])", UserProperties.USER_NATIONALITY)
                     .build();
 
     public static final ObjectPropertyTemplate<IListElement> RECORD_CATEGORY =

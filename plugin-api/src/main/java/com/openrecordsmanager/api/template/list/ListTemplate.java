@@ -3,12 +3,14 @@ package com.openrecordsmanager.api.template.list;
 import com.google.common.collect.ImmutableMap;
 import com.openrecordsmanager.api.ComponentReference;
 import com.openrecordsmanager.api.template.TemplateComponent;
+import org.jspecify.annotations.Nullable;
 import tools.jackson.databind.annotation.JsonDeserialize;
 
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.Consumer;
 
 @JsonDeserialize
 public record ListTemplate(String name,
@@ -40,8 +42,17 @@ public record ListTemplate(String name,
             return this;
         }
 
-        public ListElementTemplate.Builder entry(String id, String name) {
-            return new ListElementTemplate.Builder(this, id, name);
+        public Builder entry(String id, String name, @Nullable Consumer<ListElementTemplate.Builder> builder) {
+            ListElementTemplate.Builder elementBuilder = new ListElementTemplate.Builder(name);
+            if (builder != null) {
+                builder.accept(elementBuilder);
+            }
+            this.addEntry(id, elementBuilder);
+            return this;
+        }
+
+        public Builder entry(String id, String name) {
+            return this.entry(id, name, null);
         }
 
         protected void addEntry(String id, ListElementTemplate.Builder defaultEntry) {

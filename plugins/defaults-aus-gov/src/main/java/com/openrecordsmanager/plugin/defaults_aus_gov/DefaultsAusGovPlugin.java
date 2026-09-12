@@ -58,6 +58,7 @@ public class DefaultsAusGovPlugin implements Plugin {
         registry.registerComponent("jurisdiction", RecordProperties.JURISDICTION);
 
         // User Properties
+        registry.registerComponent("user_nationality", UserProperties.USER_NATIONALITY);
         registry.registerComponent("user_security_classification", UserProperties.USER_SECURITY_CLASSIFICATION);
         registry.registerComponent("user_security_caveat", UserProperties.USER_SECURITY_CAVEAT);
 

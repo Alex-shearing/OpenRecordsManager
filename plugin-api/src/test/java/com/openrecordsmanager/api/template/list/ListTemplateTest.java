@@ -12,8 +12,8 @@ class ListTemplateTest {
     void testDeserialisationFull() {
         ListTemplate list = TemplateComponent.fromJson("test_list.json", ListTemplate.class);
         ListTemplate codeList = ListTemplate.builder("Test List")
-                .entry("entry_1", "Entry 1").index(1).endEntry()
-                .entry("entry_2", "Entry 2").index(2).endEntry()
+                .entry("entry_1", "Entry 1", e -> e.index(1))
+                .entry("entry_2", "Entry 2", e -> e.index(2))
                 .build();
 
         Assertions.assertEquals(list.name(), codeList.name(), "Name should be equal");

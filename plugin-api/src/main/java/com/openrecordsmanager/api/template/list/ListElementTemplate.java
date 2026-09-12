@@ -52,8 +52,6 @@ public record ListElementTemplate(
     }
 
     public static class Builder {
-        private final ListTemplate.Builder parentBuilder;
-        private final String id;
         private final String name;
         private final Set<String> aliases = new HashSet<>();
 
@@ -62,9 +60,7 @@ public record ListElementTemplate(
         @Nullable
         private Instant activeTo = null;
 
-        public Builder(ListTemplate.Builder parentBuilder, String id, String name) {
-            this.parentBuilder = parentBuilder;
-            this.id = id;
+        public Builder(String name) {
             this.name = name;
         }
 
@@ -96,11 +92,6 @@ public record ListElementTemplate(
         public Builder alias(String alias) {
             this.aliases.add(alias);
             return this;
-        }
-
-        public ListTemplate.Builder endEntry() {
-            this.parentBuilder.addEntry(this.id, this);
-            return this.parentBuilder;
         }
 
         public ListElementTemplate build(ComponentReference<ListTemplate> parent) {

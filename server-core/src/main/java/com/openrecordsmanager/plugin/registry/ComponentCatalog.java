@@ -2,6 +2,7 @@ package com.openrecordsmanager.plugin.registry;
 
 import com.openrecordsmanager.api.*;
 import com.openrecordsmanager.api.template.TemplateComponent;
+import com.openrecordsmanager.api.template.list.ListTemplate;
 import com.openrecordsmanager.api.types.ComponentType;
 import com.openrecordsmanager.api.types.ComponentTypes;
 import com.openrecordsmanager.plugin.PluginManager;
@@ -11,7 +12,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -125,6 +128,12 @@ public class ComponentCatalog implements ComponentAccess {
             LOGGER.info("Registering plugin component '{}' as {}", identifier, type);
 
             typeBuilder.register(identifier, component);
+
+            if (component instanceof ListTemplate template) {
+                template.defaultEntries().forEach((s, element) -> {
+                    this.registerInstance(context, s, element);
+                });
+            }
         }
 
         public void build() {
