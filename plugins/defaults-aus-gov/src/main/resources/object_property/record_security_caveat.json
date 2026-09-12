@@ -1,0 +1,8 @@
+{
+  "name": "Record Security Caveat",
+  "type": "list_multiple",
+  "description": "Warning that a security classified record or mandate requires special handling, and that only people cleared and briefed to see it may have access.",
+  "listType": "list/defaults_aus_gov:security_caveat",
+  "securityFilter": "value.all(x, x in principal['defaults_aus_gov:user_security_caveat'])",
+  "validator": "value.size() == 0 || resource['defaults_aus_gov:record_security_classification'] >= list('defaults_aus_gov:protected')"
+}

@@ -1,0 +1,17 @@
+{
+  "name": "Information Management Marker",
+  "defaultEntries": {
+    "personal_privacy": {
+      "name": "Personal-Privacy",
+      "parent": "list/defaults_aus_gov:information_management_marker"
+    },
+    "legal_privilege": {
+      "name": "Legal-Privilege",
+      "parent": "list/defaults_aus_gov:information_management_marker"
+    },
+    "legislative_secrecy": {
+      "name": "Legislative-Secrecy",
+      "parent": "list/defaults_aus_gov:information_management_marker"
+    }
+  }
+}

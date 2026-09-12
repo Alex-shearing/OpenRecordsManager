@@ -1,0 +1,6 @@
+{
+  "name": "Jurisdiction",
+  "type": "string",
+  "description": "Specification of a jurisdiction within which an entity operates, exists or is valid.",
+  "defaultValue": "AU"
+}

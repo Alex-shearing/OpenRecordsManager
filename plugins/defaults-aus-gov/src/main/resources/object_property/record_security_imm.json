@@ -1,0 +1,7 @@
+{
+  "name": "Record Information Management Marker",
+  "type": "list_multiple",
+  "description": "Standardised tags used to indicate specific legal, professional, or ethical restrictions on access and use.",
+  "listType": "list/defaults_aus_gov:information_management_marker",
+  "validator": "value.size() == 0 || resource['defaults_aus_gov:record_security_classification'] >= list('defaults_aus_gov:official_sensitive')"
+}

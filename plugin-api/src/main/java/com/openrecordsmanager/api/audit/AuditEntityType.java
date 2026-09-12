@@ -54,6 +54,6 @@ public enum AuditEntityType {
                 return type;
             }
         }
-        throw new IllegalArgumentException("Unsupported component type for audit:" + componentType.name);
+        throw new IllegalArgumentException("Unsupported component type for audit:" + componentType.name());
     }
 }

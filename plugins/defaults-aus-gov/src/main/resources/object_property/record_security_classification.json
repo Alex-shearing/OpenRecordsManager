@@ -1,0 +1,7 @@
+{
+  "name": "Record Security Classification",
+  "type": "list_item",
+  "description": "Security classification of the record.",
+  "listType": "list/defaults_aus_gov:security_classification",
+  "securityFilter": "principal['defaults_aus_gov:user_security_classification'] >= value"
+}

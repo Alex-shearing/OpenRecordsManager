@@ -114,7 +114,7 @@ public class ConfigService implements ConfigStore {
     @Transactional(readOnly = true)
     public Optional<?> getDatabaseConfig(String id) {
         ConfigType<?> config = this.getConfigByKey(id)
-                .orElseThrow(() -> new ResourceNotFoundException(ComponentTypes.CONFIG.name, id));
+                .orElseThrow(() -> new ResourceNotFoundException(ComponentTypes.CONFIG.name(), id));
 
         this.repository.configRepo.findByConfigKey(config.key())
                 .orElseThrow(() -> new ResourceNotFoundException("config value", id));
@@ -140,7 +140,7 @@ public class ConfigService implements ConfigStore {
     @Transactional(readOnly = true)
     public Object getServerConfig(String id) {
         ConfigType<?> config = this.getConfigByKey(id)
-                .orElseThrow(() -> new ResourceNotFoundException(ComponentTypes.CONFIG.name, id));
+                .orElseThrow(() -> new ResourceNotFoundException(ComponentTypes.CONFIG.name(), id));
 
         Object value = this.getOptional(config)
                 .orElseThrow(() -> new ResourceNotFoundException("config value", id));

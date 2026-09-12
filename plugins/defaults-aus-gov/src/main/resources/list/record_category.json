@@ -1,0 +1,35 @@
+{
+  "name": "Record Category",
+  "defaultEntries": {
+    "archives": {
+      "name": "Archives",
+      "description": "All of the records within a specified society, jurisdiction or sector brought into an encompassing framework.",
+      "parent": "list/defaults_aus_gov:record_category"
+    },
+    "archive": {
+      "name": "Archive",
+      "description": "The whole body of records of an organisation or individual.",
+      "parent": "list/defaults_aus_gov:record_category"
+    },
+    "series": {
+      "name": "Series",
+      "description": "A group of records created or maintained by an organisation or person that, regardless of currency, value or present custody, are in the same identifiable sequence, or result from the same accumulation or filing process, and are of similar function, format or information content.",
+      "parent": "list/defaults_aus_gov:record_category"
+    },
+    "file": {
+      "name": "File",
+      "description": "A sequence of items, physically or virtually linked, that provides evidence of organisational or business activity. A file can be physical or electronic.",
+      "parent": "list/defaults_aus_gov:record_category"
+    },
+    "transaction_sequence": {
+      "name": "Transaction Sequence",
+      "description": "A sequence of items, physically or virtually linked, that shows one coherent transaction leading to a specific outcome.",
+      "parent": "list/defaults_aus_gov:record_category"
+    },
+    "item": {
+      "name": "Item",
+      "description": "The smallest discrete unit of records managed as an entity.",
+      "parent": "list/defaults_aus_gov:record_category"
+    }
+  }
+}

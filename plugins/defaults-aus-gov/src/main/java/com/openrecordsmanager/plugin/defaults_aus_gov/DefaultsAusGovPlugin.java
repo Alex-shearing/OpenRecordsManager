@@ -2,14 +2,15 @@ package com.openrecordsmanager.plugin.defaults_aus_gov;
 
 import com.openrecordsmanager.api.Plugin;
 import com.openrecordsmanager.api.RegistrationContext;
-import com.openrecordsmanager.api.builtin.BuiltinProperties;
-import com.openrecordsmanager.api.template.recordtype.RecordTypeTemplate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
  * This is a set of defaults for the Australian Government.
- * The following sources were used:
+ * Templates are auto-loaded from classpath JSON under {@code list/}, {@code object_property/},
+ * and {@code record_type/} (see {@link com.openrecordsmanager.template.TemplateJsonLoader}).
+ * <p>
+ * Sources:
  * - <a href="https://www.protectivesecurity.gov.au/system/files/2025-07/pspf-release-2025.pdf">Australian Government Protective Security Policy Framework</a>
  * - <a href="https://www.protectivesecurity.gov.au/system/files/2025-07/australian-government-email-protective-marking-standard-2025.PDF">Australian Government Protective Security Email Marking Standard</a>
  * - <a href="https://www.stylemanual.gov.au/writing-and-designing-content/security-classifications-and-protective-markings">Security classifications and protective markings</a>
@@ -19,20 +20,6 @@ import org.slf4j.LoggerFactory;
 public class DefaultsAusGovPlugin implements Plugin {
     private static final Logger LOGGER = LoggerFactory.getLogger(DefaultsAusGovPlugin.class);
 
-    public static final RecordTypeTemplate EMAIL_RECORD_TYPE = RecordTypeTemplate.builder("Email Record")
-            .description("Use this to record email records.")
-            .allowedContentTypes("text/plain", "text/html", "multipart/alternative", "multipart/mixed")
-            .property(BuiltinProperties.DATE_CREATED)
-            .property(BuiltinProperties.DATE_REGISTERED)
-            .property(BuiltinProperties.NOTES, "This is an email")
-            .property(RecordProperties.RECORD_SECURITY_CLASSIFICATION)
-            .property(RecordProperties.RECORD_SECURITY_CAVEAT)
-            .property(RecordProperties.RECORD_SECURITY_RELEASABILITY)
-            .property(RecordProperties.RECORD_SECURITY_IMM)
-            .property(RecordProperties.RECORD_CATEGORY)
-            .property(RecordProperties.JURISDICTION)
-            .build();
-
     @Override
     public String getName() {
         return "defaults_aus_gov";
@@ -40,29 +27,6 @@ public class DefaultsAusGovPlugin implements Plugin {
 
     @Override
     public void initialise(RegistrationContext registry) {
-        LOGGER.info("Initializing plugin...");
-
-        // Lists
-        registry.registerComponent("security_classification", Lists.SECURITY_CLASSIFICATION);
-        registry.registerComponent("security_caveat", Lists.SECURITY_CAVEAT);
-        registry.registerComponent("releasability_caveat", Lists.RELEASABILITY_CAVEAT);
-        registry.registerComponent("information_management_marker", Lists.INFORMATION_MANAGEMENT_MARKER);
-        registry.registerComponent("record_category", Lists.RECORD_CATEGORY);
-
-        // Record Properties
-        registry.registerComponent("record_security_classification", RecordProperties.RECORD_SECURITY_CLASSIFICATION);
-        registry.registerComponent("record_security_caveat", RecordProperties.RECORD_SECURITY_CAVEAT);
-        registry.registerComponent("record_security_releasability", RecordProperties.RECORD_SECURITY_RELEASABILITY);
-        registry.registerComponent("record_security_imm", RecordProperties.RECORD_SECURITY_IMM);
-        registry.registerComponent("record_category", RecordProperties.RECORD_CATEGORY);
-        registry.registerComponent("jurisdiction", RecordProperties.JURISDICTION);
-
-        // User Properties
-        registry.registerComponent("user_nationality", UserProperties.USER_NATIONALITY);
-        registry.registerComponent("user_security_classification", UserProperties.USER_SECURITY_CLASSIFICATION);
-        registry.registerComponent("user_security_caveat", UserProperties.USER_SECURITY_CAVEAT);
-
-        // Record Types
-        registry.registerComponent("email_record_type", EMAIL_RECORD_TYPE);
+        LOGGER.info("Initializing plugin (JSON templates auto-loaded from classpath)...");
     }
 }

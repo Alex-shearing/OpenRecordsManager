@@ -1,0 +1,1511 @@
+{
+  "name": "Releasability Caveat",
+  "defaultEntries": {
+    "austeo": {
+      "name": "AUSTEO",
+      "description": "Australian eyes only",
+      "index": 0,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "agao": {
+      "name": "AGAO",
+      "description": "Australian government agencies only",
+      "index": 5,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "and": {
+      "name": "AND",
+      "description": "Releasable to Andorra",
+      "index": 50,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "are": {
+      "name": "ARE",
+      "description": "Releasable to United Arab Emirates",
+      "index": 51,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "afg": {
+      "name": "AFG",
+      "description": "Releasable to Afghanistan",
+      "index": 52,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "atg": {
+      "name": "ATG",
+      "description": "Releasable to Antigua & Barbuda",
+      "index": 53,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "aia": {
+      "name": "AIA",
+      "description": "Releasable to Anguilla",
+      "index": 54,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "alb": {
+      "name": "ALB",
+      "description": "Releasable to Albania",
+      "index": 55,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "arm": {
+      "name": "ARM",
+      "description": "Releasable to Armenia",
+      "index": 56,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "ago": {
+      "name": "AGO",
+      "description": "Releasable to Angola",
+      "index": 57,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "ata": {
+      "name": "ATA",
+      "description": "Releasable to Antarctica",
+      "index": 58,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "arg": {
+      "name": "ARG",
+      "description": "Releasable to Argentina",
+      "index": 59,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "asm": {
+      "name": "ASM",
+      "description": "Releasable to American Samoa",
+      "index": 60,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "aut": {
+      "name": "AUT",
+      "description": "Releasable to Austria",
+      "index": 61,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "aus": {
+      "name": "AUS",
+      "description": "Releasable to Australia",
+      "index": 10,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "abw": {
+      "name": "ABW",
+      "description": "Releasable to Aruba",
+      "index": 63,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "ala": {
+      "name": "ALA",
+      "description": "Releasable to Åland Islands",
+      "index": 64,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "aze": {
+      "name": "AZE",
+      "description": "Releasable to Azerbaijan",
+      "index": 65,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "bih": {
+      "name": "BIH",
+      "description": "Releasable to Bosnia & Herzegovina",
+      "index": 66,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "brb": {
+      "name": "BRB",
+      "description": "Releasable to Barbados",
+      "index": 67,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "bgd": {
+      "name": "BGD",
+      "description": "Releasable to Bangladesh",
+      "index": 68,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "bel": {
+      "name": "BEL",
+      "description": "Releasable to Belgium",
+      "index": 69,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "bfa": {
+      "name": "BFA",
+      "description": "Releasable to Burkina Faso",
+      "index": 70,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "bgr": {
+      "name": "BGR",
+      "description": "Releasable to Bulgaria",
+      "index": 71,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "bhr": {
+      "name": "BHR",
+      "description": "Releasable to Bahrain",
+      "index": 72,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "bdi": {
+      "name": "BDI",
+      "description": "Releasable to Burundi",
+      "index": 73,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "ben": {
+      "name": "BEN",
+      "description": "Releasable to Benin",
+      "index": 74,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "blm": {
+      "name": "BLM",
+      "description": "Releasable to St. Barthélemy",
+      "index": 75,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "bmu": {
+      "name": "BMU",
+      "description": "Releasable to Bermuda",
+      "index": 76,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "brn": {
+      "name": "BRN",
+      "description": "Releasable to Brunei",
+      "index": 77,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "bol": {
+      "name": "BOL",
+      "description": "Releasable to Bolivia",
+      "index": 78,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "bes": {
+      "name": "BES",
+      "description": "Releasable to Caribbean Netherlands",
+      "index": 79,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "bra": {
+      "name": "BRA",
+      "description": "Releasable to Brazil",
+      "index": 80,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "bhs": {
+      "name": "BHS",
+      "description": "Releasable to Bahamas",
+      "index": 81,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "btn": {
+      "name": "BTN",
+      "description": "Releasable to Bhutan",
+      "index": 82,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "bvt": {
+      "name": "BVT",
+      "description": "Releasable to Bouvet Island",
+      "index": 83,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "bwa": {
+      "name": "BWA",
+      "description": "Releasable to Botswana",
+      "index": 84,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "blr": {
+      "name": "BLR",
+      "description": "Releasable to Belarus",
+      "index": 85,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "blz": {
+      "name": "BLZ",
+      "description": "Releasable to Belize",
+      "index": 86,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "can": {
+      "name": "CAN",
+      "description": "Releasable to Canada",
+      "index": 15,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "cck": {
+      "name": "CCK",
+      "description": "Releasable to Cocos (Keeling) Islands",
+      "index": 88,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "cod": {
+      "name": "COD",
+      "description": "Releasable to Congo - Kinshasa",
+      "index": 89,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "caf": {
+      "name": "CAF",
+      "description": "Releasable to Central African Republic",
+      "index": 90,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "cog": {
+      "name": "COG",
+      "description": "Releasable to Congo - Brazzaville",
+      "index": 91,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "che": {
+      "name": "CHE",
+      "description": "Releasable to Switzerland",
+      "index": 92,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "civ": {
+      "name": "CIV",
+      "description": "Releasable to Côte d’Ivoire",
+      "index": 93,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "cok": {
+      "name": "COK",
+      "description": "Releasable to Cook Islands",
+      "index": 94,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "chl": {
+      "name": "CHL",
+      "description": "Releasable to Chile",
+      "index": 95,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "cmr": {
+      "name": "CMR",
+      "description": "Releasable to Cameroon",
+      "index": 96,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "chn": {
+      "name": "CHN",
+      "description": "Releasable to China",
+      "index": 97,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "col": {
+      "name": "COL",
+      "description": "Releasable to Colombia",
+      "index": 98,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "cri": {
+      "name": "CRI",
+      "description": "Releasable to Costa Rica",
+      "index": 99,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "cub": {
+      "name": "CUB",
+      "description": "Releasable to Cuba",
+      "index": 100,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "cpv": {
+      "name": "CPV",
+      "description": "Releasable to Cape Verde",
+      "index": 101,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "cuw": {
+      "name": "CUW",
+      "description": "Releasable to Curaçao",
+      "index": 102,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "cxr": {
+      "name": "CXR",
+      "description": "Releasable to Christmas Island",
+      "index": 103,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "cyp": {
+      "name": "CYP",
+      "description": "Releasable to Cyprus",
+      "index": 104,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "cze": {
+      "name": "CZE",
+      "description": "Releasable to Czechia",
+      "index": 105,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "deu": {
+      "name": "DEU",
+      "description": "Releasable to Germany",
+      "index": 106,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "dji": {
+      "name": "DJI",
+      "description": "Releasable to Djibouti",
+      "index": 107,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "dnk": {
+      "name": "DNK",
+      "description": "Releasable to Denmark",
+      "index": 108,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "dma": {
+      "name": "DMA",
+      "description": "Releasable to Dominica",
+      "index": 109,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "dom": {
+      "name": "DOM",
+      "description": "Releasable to Dominican Republic",
+      "index": 110,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "dza": {
+      "name": "DZA",
+      "description": "Releasable to Algeria",
+      "index": 111,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "ecu": {
+      "name": "ECU",
+      "description": "Releasable to Ecuador",
+      "index": 112,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "est": {
+      "name": "EST",
+      "description": "Releasable to Estonia",
+      "index": 113,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "egy": {
+      "name": "EGY",
+      "description": "Releasable to Egypt",
+      "index": 114,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "esh": {
+      "name": "ESH",
+      "description": "Releasable to Western Sahara",
+      "index": 115,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "eri": {
+      "name": "ERI",
+      "description": "Releasable to Eritrea",
+      "index": 116,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "esp": {
+      "name": "ESP",
+      "description": "Releasable to Spain",
+      "index": 117,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "eth": {
+      "name": "ETH",
+      "description": "Releasable to Ethiopia",
+      "index": 118,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "fin": {
+      "name": "FIN",
+      "description": "Releasable to Finland",
+      "index": 119,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "fji": {
+      "name": "FJI",
+      "description": "Releasable to Fiji",
+      "index": 120,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "flk": {
+      "name": "FLK",
+      "description": "Releasable to Falkland Islands",
+      "index": 121,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "fsm": {
+      "name": "FSM",
+      "description": "Releasable to Micronesia",
+      "index": 122,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "fro": {
+      "name": "FRO",
+      "description": "Releasable to Faroe Islands",
+      "index": 123,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "fra": {
+      "name": "FRA",
+      "description": "Releasable to France",
+      "index": 124,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "gab": {
+      "name": "GAB",
+      "description": "Releasable to Gabon",
+      "index": 125,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "gbr": {
+      "name": "GBR",
+      "description": "Releasable to United Kingdom",
+      "index": 20,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "grd": {
+      "name": "GRD",
+      "description": "Releasable to Grenada",
+      "index": 127,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "geo": {
+      "name": "GEO",
+      "description": "Releasable to Georgia",
+      "index": 128,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "guf": {
+      "name": "GUF",
+      "description": "Releasable to French Guiana",
+      "index": 129,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "ggy": {
+      "name": "GGY",
+      "description": "Releasable to Guernsey",
+      "index": 130,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "gha": {
+      "name": "GHA",
+      "description": "Releasable to Ghana",
+      "index": 131,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "gib": {
+      "name": "GIB",
+      "description": "Releasable to Gibraltar",
+      "index": 132,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "grl": {
+      "name": "GRL",
+      "description": "Releasable to Greenland",
+      "index": 133,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "gmb": {
+      "name": "GMB",
+      "description": "Releasable to Gambia",
+      "index": 134,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "gin": {
+      "name": "GIN",
+      "description": "Releasable to Guinea",
+      "index": 135,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "glp": {
+      "name": "GLP",
+      "description": "Releasable to Guadeloupe",
+      "index": 136,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "gnq": {
+      "name": "GNQ",
+      "description": "Releasable to Equatorial Guinea",
+      "index": 137,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "grc": {
+      "name": "GRC",
+      "description": "Releasable to Greece",
+      "index": 138,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "sgs": {
+      "name": "SGS",
+      "description": "Releasable to South Georgia & South Sandwich Islands",
+      "index": 139,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "gtm": {
+      "name": "GTM",
+      "description": "Releasable to Guatemala",
+      "index": 140,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "gum": {
+      "name": "GUM",
+      "description": "Releasable to Guam",
+      "index": 141,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "gnb": {
+      "name": "GNB",
+      "description": "Releasable to Guinea-Bissau",
+      "index": 142,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "guy": {
+      "name": "GUY",
+      "description": "Releasable to Guyana",
+      "index": 143,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "hkg": {
+      "name": "HKG",
+      "description": "Releasable to Hong Kong SAR China",
+      "index": 144,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "hmd": {
+      "name": "HMD",
+      "description": "Releasable to Heard & McDonald Islands",
+      "index": 145,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "hnd": {
+      "name": "HND",
+      "description": "Releasable to Honduras",
+      "index": 146,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "hrv": {
+      "name": "HRV",
+      "description": "Releasable to Croatia",
+      "index": 147,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "hti": {
+      "name": "HTI",
+      "description": "Releasable to Haiti",
+      "index": 148,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "hun": {
+      "name": "HUN",
+      "description": "Releasable to Hungary",
+      "index": 149,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "idn": {
+      "name": "IDN",
+      "description": "Releasable to Indonesia",
+      "index": 150,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "irl": {
+      "name": "IRL",
+      "description": "Releasable to Ireland",
+      "index": 151,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "isr": {
+      "name": "ISR",
+      "description": "Releasable to Israel",
+      "index": 152,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "imn": {
+      "name": "IMN",
+      "description": "Releasable to Isle of Man",
+      "index": 153,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "ind": {
+      "name": "IND",
+      "description": "Releasable to India",
+      "index": 154,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "iot": {
+      "name": "IOT",
+      "description": "Releasable to British Indian Ocean Territory",
+      "index": 155,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "irq": {
+      "name": "IRQ",
+      "description": "Releasable to Iraq",
+      "index": 156,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "irn": {
+      "name": "IRN",
+      "description": "Releasable to Iran",
+      "index": 157,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "isl": {
+      "name": "ISL",
+      "description": "Releasable to Iceland",
+      "index": 158,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "ita": {
+      "name": "ITA",
+      "description": "Releasable to Italy",
+      "index": 159,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "jey": {
+      "name": "JEY",
+      "description": "Releasable to Jersey",
+      "index": 160,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "jam": {
+      "name": "JAM",
+      "description": "Releasable to Jamaica",
+      "index": 161,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "jor": {
+      "name": "JOR",
+      "description": "Releasable to Jordan",
+      "index": 162,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "jpn": {
+      "name": "JPN",
+      "description": "Releasable to Japan",
+      "index": 163,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "ken": {
+      "name": "KEN",
+      "description": "Releasable to Kenya",
+      "index": 164,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "kgz": {
+      "name": "KGZ",
+      "description": "Releasable to Kyrgyzstan",
+      "index": 165,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "khm": {
+      "name": "KHM",
+      "description": "Releasable to Cambodia",
+      "index": 166,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "kir": {
+      "name": "KIR",
+      "description": "Releasable to Kiribati",
+      "index": 167,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "com": {
+      "name": "COM",
+      "description": "Releasable to Comoros",
+      "index": 168,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "kna": {
+      "name": "KNA",
+      "description": "Releasable to St. Kitts & Nevis",
+      "index": 169,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "prk": {
+      "name": "PRK",
+      "description": "Releasable to North Korea",
+      "index": 170,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "kor": {
+      "name": "KOR",
+      "description": "Releasable to South Korea",
+      "index": 171,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "kwt": {
+      "name": "KWT",
+      "description": "Releasable to Kuwait",
+      "index": 172,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "cym": {
+      "name": "CYM",
+      "description": "Releasable to Cayman Islands",
+      "index": 173,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "kaz": {
+      "name": "KAZ",
+      "description": "Releasable to Kazakhstan",
+      "index": 174,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "lao": {
+      "name": "LAO",
+      "description": "Releasable to Laos",
+      "index": 175,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "lbn": {
+      "name": "LBN",
+      "description": "Releasable to Lebanon",
+      "index": 176,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "lca": {
+      "name": "LCA",
+      "description": "Releasable to St. Lucia",
+      "index": 177,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "lie": {
+      "name": "LIE",
+      "description": "Releasable to Liechtenstein",
+      "index": 178,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "lka": {
+      "name": "LKA",
+      "description": "Releasable to Sri Lanka",
+      "index": 179,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "lbr": {
+      "name": "LBR",
+      "description": "Releasable to Liberia",
+      "index": 180,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "lso": {
+      "name": "LSO",
+      "description": "Releasable to Lesotho",
+      "index": 181,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "ltu": {
+      "name": "LTU",
+      "description": "Releasable to Lithuania",
+      "index": 182,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "lux": {
+      "name": "LUX",
+      "description": "Releasable to Luxembourg",
+      "index": 183,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "lva": {
+      "name": "LVA",
+      "description": "Releasable to Latvia",
+      "index": 184,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "lby": {
+      "name": "LBY",
+      "description": "Releasable to Libya",
+      "index": 185,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "mar": {
+      "name": "MAR",
+      "description": "Releasable to Morocco",
+      "index": 186,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "mco": {
+      "name": "MCO",
+      "description": "Releasable to Monaco",
+      "index": 187,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "mda": {
+      "name": "MDA",
+      "description": "Releasable to Moldova",
+      "index": 188,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "mne": {
+      "name": "MNE",
+      "description": "Releasable to Montenegro",
+      "index": 189,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "maf": {
+      "name": "MAF",
+      "description": "Releasable to St. Martin",
+      "index": 190,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "mdg": {
+      "name": "MDG",
+      "description": "Releasable to Madagascar",
+      "index": 191,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "mhl": {
+      "name": "MHL",
+      "description": "Releasable to Marshall Islands",
+      "index": 192,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "mkd": {
+      "name": "MKD",
+      "description": "Releasable to North Macedonia",
+      "index": 193,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "mli": {
+      "name": "MLI",
+      "description": "Releasable to Mali",
+      "index": 194,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "mmr": {
+      "name": "MMR",
+      "description": "Releasable to Myanmar (Burma)",
+      "index": 195,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "mng": {
+      "name": "MNG",
+      "description": "Releasable to Mongolia",
+      "index": 196,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "mac": {
+      "name": "MAC",
+      "description": "Releasable to Macao SAR China",
+      "index": 197,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "mnp": {
+      "name": "MNP",
+      "description": "Releasable to Northern Mariana Islands",
+      "index": 198,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "mtq": {
+      "name": "MTQ",
+      "description": "Releasable to Martinique",
+      "index": 199,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "mrt": {
+      "name": "MRT",
+      "description": "Releasable to Mauritania",
+      "index": 200,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "msr": {
+      "name": "MSR",
+      "description": "Releasable to Montserrat",
+      "index": 201,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "mlt": {
+      "name": "MLT",
+      "description": "Releasable to Malta",
+      "index": 202,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "mus": {
+      "name": "MUS",
+      "description": "Releasable to Mauritius",
+      "index": 203,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "mdv": {
+      "name": "MDV",
+      "description": "Releasable to Maldives",
+      "index": 204,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "mwi": {
+      "name": "MWI",
+      "description": "Releasable to Malawi",
+      "index": 205,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "mex": {
+      "name": "MEX",
+      "description": "Releasable to Mexico",
+      "index": 206,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "mys": {
+      "name": "MYS",
+      "description": "Releasable to Malaysia",
+      "index": 207,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "moz": {
+      "name": "MOZ",
+      "description": "Releasable to Mozambique",
+      "index": 208,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "nam": {
+      "name": "NAM",
+      "description": "Releasable to Namibia",
+      "index": 209,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "ncl": {
+      "name": "NCL",
+      "description": "Releasable to New Caledonia",
+      "index": 210,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "ner": {
+      "name": "NER",
+      "description": "Releasable to Niger",
+      "index": 211,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "nfk": {
+      "name": "NFK",
+      "description": "Releasable to Norfolk Island",
+      "index": 212,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "nga": {
+      "name": "NGA",
+      "description": "Releasable to Nigeria",
+      "index": 213,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "nic": {
+      "name": "NIC",
+      "description": "Releasable to Nicaragua",
+      "index": 214,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "nld": {
+      "name": "NLD",
+      "description": "Releasable to Netherlands",
+      "index": 215,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "nor": {
+      "name": "NOR",
+      "description": "Releasable to Norway",
+      "index": 216,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "npl": {
+      "name": "NPL",
+      "description": "Releasable to Nepal",
+      "index": 217,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "nru": {
+      "name": "NRU",
+      "description": "Releasable to Nauru",
+      "index": 218,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "niu": {
+      "name": "NIU",
+      "description": "Releasable to Niue",
+      "index": 219,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "nzl": {
+      "name": "NZL",
+      "description": "Releasable to New Zealand",
+      "index": 25,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "omn": {
+      "name": "OMN",
+      "description": "Releasable to Oman",
+      "index": 221,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "pan": {
+      "name": "PAN",
+      "description": "Releasable to Panama",
+      "index": 222,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "per": {
+      "name": "PER",
+      "description": "Releasable to Peru",
+      "index": 223,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "pyf": {
+      "name": "PYF",
+      "description": "Releasable to French Polynesia",
+      "index": 224,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "png": {
+      "name": "PNG",
+      "description": "Releasable to Papua New Guinea",
+      "index": 225,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "phl": {
+      "name": "PHL",
+      "description": "Releasable to Philippines",
+      "index": 226,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "pak": {
+      "name": "PAK",
+      "description": "Releasable to Pakistan",
+      "index": 227,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "pol": {
+      "name": "POL",
+      "description": "Releasable to Poland",
+      "index": 228,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "spm": {
+      "name": "SPM",
+      "description": "Releasable to St. Pierre & Miquelon",
+      "index": 229,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "pcn": {
+      "name": "PCN",
+      "description": "Releasable to Pitcairn Islands",
+      "index": 230,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "pri": {
+      "name": "PRI",
+      "description": "Releasable to Puerto Rico",
+      "index": 231,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "pse": {
+      "name": "PSE",
+      "description": "Releasable to Palestinian Territories",
+      "index": 232,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "prt": {
+      "name": "PRT",
+      "description": "Releasable to Portugal",
+      "index": 233,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "plw": {
+      "name": "PLW",
+      "description": "Releasable to Palau",
+      "index": 234,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "pry": {
+      "name": "PRY",
+      "description": "Releasable to Paraguay",
+      "index": 235,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "qat": {
+      "name": "QAT",
+      "description": "Releasable to Qatar",
+      "index": 236,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "reu": {
+      "name": "REU",
+      "description": "Releasable to Réunion",
+      "index": 237,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "rou": {
+      "name": "ROU",
+      "description": "Releasable to Romania",
+      "index": 238,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "srb": {
+      "name": "SRB",
+      "description": "Releasable to Serbia",
+      "index": 239,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "rus": {
+      "name": "RUS",
+      "description": "Releasable to Russia",
+      "index": 240,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "rwa": {
+      "name": "RWA",
+      "description": "Releasable to Rwanda",
+      "index": 241,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "sau": {
+      "name": "SAU",
+      "description": "Releasable to Saudi Arabia",
+      "index": 242,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "slb": {
+      "name": "SLB",
+      "description": "Releasable to Solomon Islands",
+      "index": 243,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "syc": {
+      "name": "SYC",
+      "description": "Releasable to Seychelles",
+      "index": 244,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "sdn": {
+      "name": "SDN",
+      "description": "Releasable to Sudan",
+      "index": 245,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "swe": {
+      "name": "SWE",
+      "description": "Releasable to Sweden",
+      "index": 246,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "sgp": {
+      "name": "SGP",
+      "description": "Releasable to Singapore",
+      "index": 247,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "shn": {
+      "name": "SHN",
+      "description": "Releasable to St. Helena",
+      "index": 248,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "svn": {
+      "name": "SVN",
+      "description": "Releasable to Slovenia",
+      "index": 249,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "sjm": {
+      "name": "SJM",
+      "description": "Releasable to Svalbard & Jan Mayen",
+      "index": 250,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "svk": {
+      "name": "SVK",
+      "description": "Releasable to Slovakia",
+      "index": 251,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "sle": {
+      "name": "SLE",
+      "description": "Releasable to Sierra Leone",
+      "index": 252,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "smr": {
+      "name": "SMR",
+      "description": "Releasable to San Marino",
+      "index": 253,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "sen": {
+      "name": "SEN",
+      "description": "Releasable to Senegal",
+      "index": 254,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "som": {
+      "name": "SOM",
+      "description": "Releasable to Somalia",
+      "index": 255,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "sur": {
+      "name": "SUR",
+      "description": "Releasable to Suriname",
+      "index": 256,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "ssd": {
+      "name": "SSD",
+      "description": "Releasable to South Sudan",
+      "index": 257,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "stp": {
+      "name": "STP",
+      "description": "Releasable to São Tomé & Príncipe",
+      "index": 258,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "slv": {
+      "name": "SLV",
+      "description": "Releasable to El Salvador",
+      "index": 259,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "sxm": {
+      "name": "SXM",
+      "description": "Releasable to Sint Maarten",
+      "index": 260,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "syr": {
+      "name": "SYR",
+      "description": "Releasable to Syria",
+      "index": 261,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "swz": {
+      "name": "SWZ",
+      "description": "Releasable to Eswatini",
+      "index": 262,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "tca": {
+      "name": "TCA",
+      "description": "Releasable to Turks & Caicos Islands",
+      "index": 263,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "tcd": {
+      "name": "TCD",
+      "description": "Releasable to Chad",
+      "index": 264,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "atf": {
+      "name": "ATF",
+      "description": "Releasable to French Southern Territories",
+      "index": 265,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "tgo": {
+      "name": "TGO",
+      "description": "Releasable to Togo",
+      "index": 266,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "tha": {
+      "name": "THA",
+      "description": "Releasable to Thailand",
+      "index": 267,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "tjk": {
+      "name": "TJK",
+      "description": "Releasable to Tajikistan",
+      "index": 268,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "tkl": {
+      "name": "TKL",
+      "description": "Releasable to Tokelau",
+      "index": 269,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "tls": {
+      "name": "TLS",
+      "description": "Releasable to Timor-Leste",
+      "index": 270,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "tkm": {
+      "name": "TKM",
+      "description": "Releasable to Turkmenistan",
+      "index": 271,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "tun": {
+      "name": "TUN",
+      "description": "Releasable to Tunisia",
+      "index": 272,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "ton": {
+      "name": "TON",
+      "description": "Releasable to Tonga",
+      "index": 273,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "tur": {
+      "name": "TUR",
+      "description": "Releasable to Türkiye",
+      "index": 274,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "tto": {
+      "name": "TTO",
+      "description": "Releasable to Trinidad & Tobago",
+      "index": 275,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "tuv": {
+      "name": "TUV",
+      "description": "Releasable to Tuvalu",
+      "index": 276,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "twn": {
+      "name": "TWN",
+      "description": "Releasable to Taiwan",
+      "index": 277,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "tza": {
+      "name": "TZA",
+      "description": "Releasable to Tanzania",
+      "index": 278,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "ukr": {
+      "name": "UKR",
+      "description": "Releasable to Ukraine",
+      "index": 279,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "uga": {
+      "name": "UGA",
+      "description": "Releasable to Uganda",
+      "index": 280,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "umi": {
+      "name": "UMI",
+      "description": "Releasable to U.S. Outlying Islands",
+      "index": 281,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "usa": {
+      "name": "USA",
+      "description": "Releasable to United States",
+      "index": 30,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "ury": {
+      "name": "URY",
+      "description": "Releasable to Uruguay",
+      "index": 283,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "uzb": {
+      "name": "UZB",
+      "description": "Releasable to Uzbekistan",
+      "index": 284,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "vat": {
+      "name": "VAT",
+      "description": "Releasable to Vatican City",
+      "index": 285,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "vct": {
+      "name": "VCT",
+      "description": "Releasable to St. Vincent & Grenadines",
+      "index": 286,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "ven": {
+      "name": "VEN",
+      "description": "Releasable to Venezuela",
+      "index": 287,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "vgb": {
+      "name": "VGB",
+      "description": "Releasable to British Virgin Islands",
+      "index": 288,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "vir": {
+      "name": "VIR",
+      "description": "Releasable to U.S. Virgin Islands",
+      "index": 289,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "vnm": {
+      "name": "VNM",
+      "description": "Releasable to Vietnam",
+      "index": 290,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "vut": {
+      "name": "VUT",
+      "description": "Releasable to Vanuatu",
+      "index": 291,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "wlf": {
+      "name": "WLF",
+      "description": "Releasable to Wallis & Futuna",
+      "index": 292,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "wsm": {
+      "name": "WSM",
+      "description": "Releasable to Samoa",
+      "index": 293,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "yem": {
+      "name": "YEM",
+      "description": "Releasable to Yemen",
+      "index": 294,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "myt": {
+      "name": "MYT",
+      "description": "Releasable to Mayotte",
+      "index": 295,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "zaf": {
+      "name": "ZAF",
+      "description": "Releasable to South Africa",
+      "index": 296,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "zmb": {
+      "name": "ZMB",
+      "description": "Releasable to Zambia",
+      "index": 297,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    },
+    "zwe": {
+      "name": "ZWE",
+      "description": "Releasable to Zimbabwe",
+      "index": 298,
+      "parent": "list/defaults_aus_gov:releasability_caveat"
+    }
+  }
+}

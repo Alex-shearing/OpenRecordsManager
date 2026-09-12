@@ -1,0 +1,22 @@
+{
+  "name": "Email Record",
+  "description": "Use this to record email records.",
+  "allowedContentTypes": [
+    "text/plain",
+    "text/html",
+    "multipart/alternative",
+    "multipart/mixed"
+  ],
+  "securityFilterUsage": "HIDE_FILES",
+  "properties": {
+    "object_property/builtin:date_created": null,
+    "object_property/builtin:date_registered": null,
+    "object_property/builtin:notes": "This is an email",
+    "object_property/defaults_aus_gov:record_security_classification": null,
+    "object_property/defaults_aus_gov:record_security_caveat": null,
+    "object_property/defaults_aus_gov:record_security_releasability": null,
+    "object_property/defaults_aus_gov:record_security_imm": null,
+    "object_property/defaults_aus_gov:record_category": null,
+    "object_property/defaults_aus_gov:jurisdiction": null
+  }
+}

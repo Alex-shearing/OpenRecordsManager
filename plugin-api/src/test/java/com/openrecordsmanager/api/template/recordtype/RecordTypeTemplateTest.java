@@ -7,11 +7,14 @@ import com.openrecordsmanager.api.types.ComponentTypes;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import java.io.IOException;
+import java.io.InputStream;
+
 class RecordTypeTemplateTest {
 
     @Test
     void testDeserialization() {
-        RecordTypeTemplate type = TemplateComponent.fromJson("test_record_type.json", RecordTypeTemplate.class);
+        RecordTypeTemplate type = load("test_record_type.json", RecordTypeTemplate.class);
         RecordTypeTemplate codeType = RecordTypeTemplate.builder("Test record type")
                 .description("Test record description")
                 .allowedContentTypes("application/json")
@@ -32,4 +35,14 @@ class RecordTypeTemplateTest {
         Assertions.assertNotEquals(otherType, type, "Objects should not be equal");
     }
 
+    private static <T extends TemplateComponent> T load(String resource, Class<T> type) {
+        try (InputStream in = RecordTypeTemplateTest.class.getClassLoader().getResourceAsStream(resource)) {
+            if (in == null) {
+                throw new IllegalArgumentException("Missing resource: " + resource);
+            }
+            return TemplateComponent.fromJson(in, type);
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to read " + resource, e);
+        }
+    }
 }

@@ -17,7 +17,7 @@ public class ComponentReferenceSerializer extends ValueSerializer<ComponentRefer
     @Override
     public void serialize(ComponentReference<?> value, JsonGenerator gen, SerializationContext ctxt) throws JacksonException {
         gen.writeStartObject();
-        gen.writeStringProperty("type", value.getType().name);
+        gen.writeStringProperty("type", value.getType().name());
         gen.writeStringProperty("id", value.getId(catalog).orElseThrow().toString());
         gen.writeEndObject();
     }

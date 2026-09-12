@@ -7,6 +7,7 @@ import com.openrecordsmanager.api.types.ComponentType;
 import com.openrecordsmanager.api.types.ComponentTypes;
 import com.openrecordsmanager.plugin.PluginManager;
 import com.openrecordsmanager.plugin.registry.mapper.*;
+import com.openrecordsmanager.template.TemplateJsonLoader;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,7 +29,7 @@ public class ComponentCatalog implements ComponentAccess {
     public static final ObjectPropertyTemplateRegistrationMapper OBJECT_PROPERTY_MAPPER = new ObjectPropertyTemplateRegistrationMapper();
     public static final RecordTypeTemplateRegistrationMapper RECORD_TYPE_MAPPER = new RecordTypeTemplateRegistrationMapper();
 
-    private static final List<TemplateRegistrationMapper<?, ?>> TEMPLATE_MAPPERS = List.of(
+    public static final List<TemplateRegistrationMapper<?, ?>> TEMPLATE_MAPPERS = List.of(
             LIST_MAPPER,
             LIST_ELEMENT_MAPPER,
             OBJECT_PROPERTY_MAPPER,
@@ -90,7 +91,9 @@ public class ComponentCatalog implements ComponentAccess {
         Builder builder = new Builder();
         for (Plugin plugin : pluginManager.getPlugins()) {
             LOGGER.info("Initializing plugin {}...", plugin.getName());
-            plugin.initialise(new RegistrationContextImpl(builder, plugin));
+            RegistrationContextImpl context = new RegistrationContextImpl(builder, plugin);
+            TemplateJsonLoader.registerAll(context, plugin.getClass());
+            plugin.initialise(context);
         }
         builder.build();
     }
@@ -98,7 +101,7 @@ public class ComponentCatalog implements ComponentAccess {
     @Nullable
     public static TemplateRegistrationMapper<?, ?> mapperFromName(String name) {
         return TEMPLATE_MAPPERS.stream()
-                .filter(mapper -> mapper.componentType().name.equals(name))
+                .filter(mapper -> mapper.componentType().name().equals(name))
                 .findFirst()
                 .orElse(null);
     }

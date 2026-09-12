@@ -1,0 +1,6 @@
+{
+  "name": "Record Category",
+  "type": "list_item",
+  "description": "Specifies the specific category or aggregation of the record being described.",
+  "listType": "list/defaults_aus_gov:record_category"
+}

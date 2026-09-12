@@ -1,0 +1,6 @@
+{
+  "name": "Allowed Security Classification",
+  "type": "list_item",
+  "description": "The top security classification the user is able to access.",
+  "listType": "list/defaults_aus_gov:security_classification"
+}

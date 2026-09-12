@@ -76,7 +76,7 @@ public abstract class ComponentReference<T extends Component> {
 
         @Override
         public String toString() {
-            return String.format("%s/%s", this.type.name, this.id);
+            return String.format("%s/%s", this.type.name(), this.id);
         }
     }
 

@@ -1,0 +1,6 @@
+{
+  "name": "User Nationality",
+  "type": "list_item",
+  "description": "The nationality of the user.",
+  "listType": "list/defaults_aus_gov:releasability_caveat"
+}

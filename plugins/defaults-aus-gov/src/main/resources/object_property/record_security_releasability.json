@@ -1,0 +1,8 @@
+{
+  "name": "Record Releasability",
+  "type": "list_multiple",
+  "description": "Controls that dictate who is allowed to access, view, or receive specific classified or sensitive information.",
+  "listType": "list/defaults_aus_gov:releasability_caveat",
+  "validator": "value.size() > 2",
+  "securityFilter": "value.exists(x, x == principal['defaults_aus_gov:user_nationality'])"
+}

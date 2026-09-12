@@ -6,6 +6,7 @@ import com.networknt.schema.SchemaRegistry;
 import com.networknt.schema.SpecificationVersion;
 import com.openrecordsmanager.api.ComponentReference;
 import com.openrecordsmanager.api.errors.InputValidationException;
+import tools.jackson.databind.DeserializationFeature;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.json.JsonMapper;
@@ -21,6 +22,8 @@ import java.util.Map;
 
 public final class JsonSchemaValidator {
     public static final ObjectMapper MAPPER = JsonMapper.builder()
+            // Template JSON may omit primitives that builders default (e.g. list entry index → 0).
+            .disable(DeserializationFeature.FAIL_ON_NULL_FOR_PRIMITIVES)
             .addModule(new SimpleModule()
                     .addKeyDeserializer(ComponentReference.class, new ComponentReference.RefKeyDeserializer())
             )

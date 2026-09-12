@@ -7,15 +7,7 @@ import org.jspecify.annotations.Nullable;
 import java.util.Objects;
 import java.util.Optional;
 
-public class ComponentType<T extends Component> {
-
-    public final String name;
-    private final Class<T> componentClass;
-
-    public ComponentType(String name, Class<T> componentClass) {
-        this.name = name;
-        this.componentClass = componentClass;
-    }
+public record ComponentType<T extends Component>(String name, Class<T> componentClass) {
 
     public <K extends Component> Optional<T> get(K object) {
         if (this.componentClass.isInstance(object)) {

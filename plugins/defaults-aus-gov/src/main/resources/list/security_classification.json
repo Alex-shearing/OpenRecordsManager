@@ -1,0 +1,101 @@
+{
+  "name": "Security Classification",
+  "defaultEntries": {
+    "unofficial": {
+      "name": "UNOFFICIAL",
+      "description": "No damage. This information does not form part of official duty.",
+      "index": 0,
+      "aliases": [
+        "UO"
+      ],
+      "parent": "list/defaults_aus_gov:security_classification"
+    },
+    "official": {
+      "name": "OFFICIAL",
+      "description": "No or insignificant damage. This is the majority of routine information.",
+      "index": 10,
+      "aliases": [
+        "O"
+      ],
+      "parent": "list/defaults_aus_gov:security_classification"
+    },
+    "official_sensitive": {
+      "name": "OFFICIAL: Sensitive",
+      "description": "Limited damage to an individual, organisation or government generally if compromised.",
+      "index": 20,
+      "aliases": [
+        "OFFICIAL:Sensitive",
+        "OFFICIAL:SENSITIVE",
+        "O:S",
+        "OS"
+      ],
+      "parent": "list/defaults_aus_gov:security_classification"
+    },
+    "protected": {
+      "name": "PROTECTED",
+      "description": "Damage to the national interest, organisations or individuals.",
+      "index": 30,
+      "aliases": [
+        "P"
+      ],
+      "parent": "list/defaults_aus_gov:security_classification"
+    },
+    "secret": {
+      "name": "SECRET",
+      "description": "Serious damage to the national interest, organisations or individuals.",
+      "index": 40,
+      "aliases": [
+        "S"
+      ],
+      "parent": "list/defaults_aus_gov:security_classification"
+    },
+    "top_secret": {
+      "name": "TOP SECRET",
+      "description": "Exceptionally grave damage to the national interest, organisations or individuals.",
+      "index": 50,
+      "aliases": [
+        "TOP-SECRET",
+        "TS"
+      ],
+      "parent": "list/defaults_aus_gov:security_classification"
+    },
+    "for_official_use_only": {
+      "name": "For Official Use Only",
+      "description": "Discontinued in 2018 classification reforms.",
+      "index": 19,
+      "activeTo": "2018-10-01T00:00:00Z",
+      "aliases": [
+        "FOUO"
+      ],
+      "parent": "list/defaults_aus_gov:security_classification"
+    },
+    "confidential": {
+      "name": "CONFIDENTIAL",
+      "description": "Discontinued in 2018 classification reforms.",
+      "index": 25,
+      "activeTo": "2018-10-01T00:00:00Z",
+      "parent": "list/defaults_aus_gov:security_classification"
+    },
+    "highly_protected": {
+      "name": "HIGHLY PROTECTED",
+      "description": "Discontinued in 2012 classification reforms.",
+      "index": 39,
+      "activeTo": "2012-08-01T00:00:00Z",
+      "parent": "list/defaults_aus_gov:security_classification"
+    },
+    "restricted": {
+      "name": "RESTRICTED",
+      "description": "Discontinued in 2012 classification reforms.",
+      "index": 25,
+      "activeTo": "2012-08-01T00:00:00Z",
+      "parent": "list/defaults_aus_gov:security_classification"
+    },
+    "x_in_confidence": {
+      "name": "X-IN-CONFIDENCE",
+      "description": "Discontinued in 2012 classification reforms.",
+      "index": 22,
+      "activeTo": "2012-08-01T00:00:00Z",
+      "parent": "list/defaults_aus_gov:security_classification"
+    }
+  }
+}

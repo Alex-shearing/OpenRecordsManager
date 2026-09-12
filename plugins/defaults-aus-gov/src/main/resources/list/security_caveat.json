@@ -1,0 +1,26 @@
+{
+  "name": "Security Caveat",
+  "defaultEntries": {
+    "delicate_source": {
+      "name": "DELICATE SOURCE",
+      "parent": "list/defaults_aus_gov:security_caveat"
+    },
+    "orcon": {
+      "name": "ORCON",
+      "parent": "list/defaults_aus_gov:security_caveat"
+    },
+    "exclusive_for": {
+      "name": "EXCLUSIVE FOR",
+      "parent": "list/defaults_aus_gov:security_caveat"
+    },
+    "cabinet": {
+      "name": "CABINET",
+      "parent": "list/defaults_aus_gov:security_caveat"
+    },
+    "national_cabinet": {
+      "name": "NATIONAL CABINET",
+      "activeTo": "2025-07-01T00:00:00Z",
+      "parent": "list/defaults_aus_gov:security_caveat"
+    }
+  }
+}

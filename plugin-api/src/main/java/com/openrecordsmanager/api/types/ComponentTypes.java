@@ -48,7 +48,7 @@ public class ComponentTypes {
 
     public static @Nullable ComponentType<?> fromName(String name) {
         for (ComponentType<?> value : VALUES) {
-            if (Objects.equals(value.name, name)) return value;
+            if (Objects.equals(value.name(), name)) return value;
         }
         return null;
     }

@@ -1,0 +1,6 @@
+{
+  "name": "Allowed Security Caveat",
+  "type": "list_multiple",
+  "description": "List of security caveats that the user is able to access.",
+  "listType": "list/defaults_aus_gov:security_caveat"
+}
