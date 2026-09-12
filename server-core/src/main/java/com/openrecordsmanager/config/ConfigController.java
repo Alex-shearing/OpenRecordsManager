@@ -4,9 +4,11 @@ import com.openrecordsmanager.config.dto.ConfigResponse;
 import com.openrecordsmanager.config.dto.ConfigTypeResponse;
 import com.openrecordsmanager.rest.swagger.DefaultApiResponses;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Schema;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import tools.jackson.databind.JsonNode;
 
 import java.util.Map;
 import java.util.Optional;
@@ -39,7 +41,11 @@ public class ConfigController {
 
     @PutMapping(value = "/", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Set a config value in the database")
-    public Set<ConfigResponse> setConfigs(@RequestBody Map<String, Object> values) {
+    public Set<ConfigResponse> setConfigs(
+            @RequestBody
+            @Schema(description = "Config key → JSON value", additionalProperties = Schema.AdditionalPropertiesValue.TRUE)
+            Map<String, JsonNode> values
+    ) {
         return values.entrySet().stream()
                 .map(e -> this.config.setConfig(e.getKey(), e.getValue()))
                 .collect(Collectors.toSet());

@@ -13,7 +13,7 @@ import com.openrecordsmanager.auth.entity.AuthProvider;
 import com.openrecordsmanager.config.ConfigService;
 import com.openrecordsmanager.database.DataRepository;
 import com.openrecordsmanager.plugin.registry.ComponentCatalog;
-import com.openrecordsmanager.property.ObjectProperty;
+import com.openrecordsmanager.property.ObjectPropertyApplier;
 import com.openrecordsmanager.rest.dto.ActionResponse;
 import com.openrecordsmanager.rest.errors.ResourceInUseException;
 import com.openrecordsmanager.rest.errors.ResourceNotFoundException;
@@ -34,19 +34,22 @@ public class UserService {
     private final ComponentCatalog catalog;
     private final AuditService auditService;
     private final AuditPolicyService auditPolicyService;
+    private final ObjectPropertyApplier propertyApplier;
 
     public UserService(
             DataRepository repository,
             ConfigService config,
             ComponentCatalog catalog,
             AuditService auditService,
-            AuditPolicyService auditPolicyService
+            AuditPolicyService auditPolicyService,
+            ObjectPropertyApplier propertyApplier
     ) {
         this.repository = repository;
         this.config = config;
         this.catalog = catalog;
         this.auditService = auditService;
         this.auditPolicyService = auditPolicyService;
+        this.propertyApplier = propertyApplier;
     }
 
     @Transactional(readOnly = true)
@@ -76,14 +79,7 @@ public class UserService {
         changes.add(AuditPropertyChange.newProperty("authProvider", input.authProvider()));
 
         User user = new User(input.username(), authProvider);
-        input.properties().forEach((identifier, value) -> {
-            ObjectProperty<?> property = this.repository.objectPropertyRepo.findById(identifier)
-                    .filter(p -> !p.isUserHidden())
-                    .orElseThrow(() -> new ResourceNotFoundException(ComponentTypes.OBJECT_PROPERTY, identifier));
-
-            Object newValue = user.setPropertyUntyped(property, value);
-            changes.add(AuditPropertyChange.newProperty(identifier.toString(), newValue));
-        });
+        this.propertyApplier.applyOnCreate(user, input.properties(), true, changes);
 
         this.repository.userRepo.saveAndFlush(user);
 
@@ -114,7 +110,7 @@ public class UserService {
 
             String oldUsername = user.getUsername();
             user.setUsername(input.username());
-            changes.add(new AuditPropertyChange("username", oldUsername, input.username()));
+            changes.add(AuditPropertyChange.of("username", oldUsername, input.username()));
         }
 
         if (input.authProvider() != null && (user.getAuthProvider() == null || !input.authProvider().equals(user.getAuthProvider().getId()))) {
@@ -123,7 +119,7 @@ public class UserService {
 
             UUID oldProviderId = user.getAuthProvider() != null ? user.getAuthProvider().getId() : null;
             user.setAuthProvider(authProvider);
-            changes.add(new AuditPropertyChange("authProvider", oldProviderId, authProvider.getId()));
+            changes.add(AuditPropertyChange.of("authProvider", oldProviderId, authProvider.getId()));
         }
 
         if (input.enabled() != null && input.enabled() != user.isEnabled()) {
@@ -133,7 +129,7 @@ public class UserService {
 
             boolean oldEnabled = user.isEnabled();
             user.setEnabled(input.enabled());
-            changes.add(new AuditPropertyChange("enabled", oldEnabled, input.enabled()));
+            changes.add(AuditPropertyChange.of("enabled", oldEnabled, input.enabled()));
 
             if (!input.enabled()) {
                 user.bumpSessionEpoch();
@@ -141,17 +137,7 @@ public class UserService {
         }
 
         if (input.properties() != null) {
-            input.properties().forEach((identifier, value) -> {
-                ObjectProperty<?> property = this.repository.objectPropertyRepo.findById(identifier)
-                        .filter(p -> !p.isUserHidden())
-                        .orElseThrow(() -> new ResourceNotFoundException(ComponentTypes.OBJECT_PROPERTY, identifier));
-
-                Object oldValue = user.getProperty(property);
-                Object newValue = user.setPropertyUntyped(property, value);
-                if (oldValue != newValue) {
-                    changes.add(new AuditPropertyChange(identifier.toString(), oldValue, newValue));
-                }
-            });
+            this.propertyApplier.applyOnUpdate(user, input.properties(), true, changes);
         }
 
         this.repository.userRepo.saveAndFlush(user);

@@ -31,6 +31,9 @@ public class DatabaseDialectConfiguration {
                     "hibernate.connection.handling_mode",
                     "DELAYED_ACQUISITION_AND_RELEASE_AFTER_TRANSACTION"
             );
+            // Spring Boot 4 / Hibernate 7.2 auto-picks Jackson 2 when both Jackson versions exist;
+            // property values typed as tools.jackson.databind.JsonNode need Jackson 3.
+            properties.put("hibernate.type.json_format_mapper", new ToolsJacksonJsonFormatMapper());
         };
     }
 

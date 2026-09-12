@@ -262,19 +262,19 @@ public class AuthService implements UserAuthContext {
         if (input.name() != null && !input.name().equals(provider.name)) {
             String oldName = provider.name;
             provider.name = input.name();
-            changes.add(new AuditPropertyChange("name", oldName, input.name()));
+            changes.add(AuditPropertyChange.of("name", oldName, input.name()));
         }
 
         if (input.settings() != null) {
             Map<String, Object> oldSettings = new HashMap<>(provider.settings);
             provider.settings = new HashMap<>(input.settings());
-            changes.add(new AuditPropertyChange("settings", oldSettings.keySet(), input.settings().keySet()));
+            changes.add(AuditPropertyChange.of("settings", oldSettings.keySet(), input.settings().keySet()));
         }
 
         if (input.enabled() != null && input.enabled() != provider.isEnabled()) {
             boolean oldEnabled = provider.isEnabled();
             provider.setEnabled(input.enabled());
-            changes.add(new AuditPropertyChange("enabled", oldEnabled, input.enabled()));
+            changes.add(AuditPropertyChange.of("enabled", oldEnabled, input.enabled()));
 
             if (!input.enabled()) {
                 this.bumpSessionEpochForAuthProvider(provider.getId());

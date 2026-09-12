@@ -15,6 +15,7 @@ import jakarta.persistence.*;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 import org.jspecify.annotations.Nullable;
+import tools.jackson.databind.JsonNode;
 
 import java.time.Instant;
 import java.util.*;
@@ -23,7 +24,7 @@ import java.util.stream.Collectors;
 @Entity
 @Table(name = "record")
 @SuppressWarnings({"NotNullFieldNotInitialized", "CanBeFinal"})
-public class Record extends ObjectPropertyHolder<Record, RecordPropertyValue<?>> {
+public class Record extends ObjectPropertyHolder<Record, RecordPropertyValue> {
     private static final Map<ResourceIdentifier, BuiltinPropertyMapper<Record, ?>> BUILTIN_PROPERTY_MAPPERS = Map.of(
             BuiltinProperties.TITLE_ID, BuiltinPropertyMapper.of(
                     Record::getTitle,
@@ -97,7 +98,7 @@ public class Record extends ObjectPropertyHolder<Record, RecordPropertyValue<?>>
 
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "record", fetch = FetchType.EAGER)
     @MapKey(name = "property")
-    private Map<ObjectProperty<?>, RecordPropertyValue<?>> properties = new HashMap<>();
+    private Map<ObjectProperty<?>, RecordPropertyValue> properties = new HashMap<>();
 
     @Deprecated
     protected Record() {
@@ -106,9 +107,7 @@ public class Record extends ObjectPropertyHolder<Record, RecordPropertyValue<?>>
     public Record(String title, RecordType type) {
         this.id = UUID.randomUUID();
         this.type = type;
-        type.properties.forEach(p -> {
-            this.setPropertyUntyped(p.property, p.getDefault());
-        });
+        type.properties.forEach(p -> this.setPropertyFromJson(p.property, p.getDefault()));
         this.title = title;
         this.dateCreated = Instant.now();
         this.dateModified = Instant.now();
@@ -156,14 +155,14 @@ public class Record extends ObjectPropertyHolder<Record, RecordPropertyValue<?>>
 
     public void setType(RecordType type) {
         this.type = type;
-        Map<ObjectProperty<?>, RecordPropertyValue<?>> oldProperties = Map.copyOf(this.properties);
+        Map<ObjectProperty<?>, RecordPropertyValue> oldProperties = Map.copyOf(this.properties);
 
         this.properties.clear();
-        type.properties.forEach(p -> this.setPropertyUntyped(p.property, p.getDefault()));
+        type.properties.forEach(p -> this.setPropertyFromJson(p.property, p.getDefault()));
 
         oldProperties.forEach((property, holder) -> {
             if (this.canSetProperty(property)) {
-                this.setPropertyUntyped(property, holder.value);
+                this.setPropertyFromJson(property, holder.value);
             }
         });
 
@@ -181,8 +180,8 @@ public class Record extends ObjectPropertyHolder<Record, RecordPropertyValue<?>>
     }
 
     @Override
-    public <V> RecordPropertyValue<V> createProperty(ObjectProperty<V> property, @Nullable V value) {
-        return new RecordPropertyValue<>(this, property, value);
+    public RecordPropertyValue createProperty(ObjectProperty<?> property, @Nullable JsonNode value) {
+        return new RecordPropertyValue(this, property, value);
     }
 
     @Override
@@ -198,7 +197,7 @@ public class Record extends ObjectPropertyHolder<Record, RecordPropertyValue<?>>
     }
 
     @Override
-    protected Map<ObjectProperty<?>, RecordPropertyValue<?>> getDynamicProperties() {
+    protected Map<ObjectProperty<?>, RecordPropertyValue> getDynamicProperties() {
         return this.properties;
     }
 

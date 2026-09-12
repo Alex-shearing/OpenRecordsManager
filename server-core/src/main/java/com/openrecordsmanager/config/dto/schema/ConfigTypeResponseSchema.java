@@ -1,6 +1,7 @@
 package com.openrecordsmanager.config.dto.schema;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import tools.jackson.databind.JsonNode;
 
 import java.util.List;
 
@@ -128,8 +129,8 @@ public final class ConfigTypeResponseSchema {
             String name,
             String description,
             @Schema(type = "string", allowableValues = {"object"}) String type,
-            Object currentValue,
-            Object defaultValue
+            JsonNode currentValue,
+            JsonNode defaultValue
     ) {
     }
 }

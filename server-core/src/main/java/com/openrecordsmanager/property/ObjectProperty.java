@@ -11,6 +11,7 @@ import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 import org.hibernate.type.descriptor.java.ObjectJavaType;
 import org.jspecify.annotations.Nullable;
+import tools.jackson.databind.JsonNode;
 
 import java.util.Objects;
 
@@ -49,7 +50,7 @@ public class ObjectProperty<T> {
     @Column()
     @Nullable
     @JdbcTypeCode(SqlTypes.JSON)
-    private T defaultValue;
+    private JsonNode defaultValue;
 
     @Column(nullable = false)
     private boolean userHidden;
@@ -66,7 +67,7 @@ public class ObjectProperty<T> {
             @Nullable ListType listType,
             @Nullable String validator,
             @Nullable String securityFilter,
-            @Nullable T defaultValue,
+            @Nullable JsonNode defaultValue,
             boolean userHidden
     ) {
         this.id = identifier;
@@ -128,11 +129,11 @@ public class ObjectProperty<T> {
         this.securityFilter = securityFilter;
     }
 
-    public @Nullable T getDefaultValue() {
+    public @Nullable JsonNode getDefaultValue() {
         return defaultValue;
     }
 
-    public void setDefaultValue(@Nullable T defaultValue) {
+    public void setDefaultValue(@Nullable JsonNode defaultValue) {
         this.defaultValue = defaultValue;
     }
 

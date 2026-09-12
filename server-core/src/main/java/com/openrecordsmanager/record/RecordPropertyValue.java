@@ -8,13 +8,14 @@ import jakarta.persistence.*;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 import org.jspecify.annotations.Nullable;
+import tools.jackson.databind.JsonNode;
 
 import java.util.UUID;
 
 @Entity
 @Table(name = "record_property_value")
 @SuppressWarnings("NotNullFieldNotInitialized")
-public class RecordPropertyValue<T> implements ObjectPropertyHolder.ObjectPropertyValue<T> {
+public class RecordPropertyValue implements ObjectPropertyHolder.ObjectPropertyValue {
     @Id
     public UUID id;
 
@@ -24,18 +25,18 @@ public class RecordPropertyValue<T> implements ObjectPropertyHolder.ObjectProper
 
     @ManyToOne(targetEntity = ObjectProperty.class, optional = false)
     @JoinColumn(nullable = false)
-    public ObjectProperty<T> property;
+    public ObjectProperty<?> property;
 
     @Column(name = "property_value")
     @JdbcTypeCode(SqlTypes.JSON)
     @Nullable
-    public T value;
+    public JsonNode value;
 
     @Deprecated
     protected RecordPropertyValue() {
     }
 
-    public RecordPropertyValue(Record record, ObjectProperty<T> property, @Nullable T value) {
+    public RecordPropertyValue(Record record, ObjectProperty<?> property, @Nullable JsonNode value) {
         this.id = UUID.randomUUID();
         this.record = record;
         this.property = property;
@@ -47,22 +48,22 @@ public class RecordPropertyValue<T> implements ObjectPropertyHolder.ObjectProper
             return true;
         }
 
-        return expressions.checkPropertyExpression(this.id, this.property.getSecurityFilter(), this.value, actor, record);
+        Object domain = this.record.getProperty(this.property);
+        return expressions.checkPropertyExpression(this.id, this.property.getSecurityFilter(), domain, actor, record);
     }
 
     @Override
-    public ObjectProperty<T> getProperty() {
+    public ObjectProperty<?> getProperty() {
         return this.property;
     }
 
     @Override
-    public @Nullable T getValue() {
+    public @Nullable JsonNode getStoredValue() {
         return this.value;
     }
 
     @Override
-    public void setValue(@Nullable T value) {
+    public void setStoredValue(@Nullable JsonNode value) {
         this.value = value;
     }
-
 }

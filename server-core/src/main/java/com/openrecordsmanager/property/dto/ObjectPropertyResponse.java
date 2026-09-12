@@ -7,6 +7,7 @@ import com.openrecordsmanager.property.ObjectProperty;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import org.jspecify.annotations.Nullable;
+import tools.jackson.databind.JsonNode;
 
 public record ObjectPropertyResponse(
         @NotBlank ResourceIdentifier id,
@@ -16,7 +17,7 @@ public record ObjectPropertyResponse(
         @Nullable SimpleListTypeResponse listType,
         @Nullable String validator,
         @Nullable String securityFilter,
-        @Nullable Object defaultValue,
+        @Nullable JsonNode defaultValue,
         boolean userHidden
 ) {
     public static ObjectPropertyResponse of(ObjectProperty<?> property) {

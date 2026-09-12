@@ -4,6 +4,7 @@ import com.openrecordsmanager.api.audit.AuditEntityType;
 import com.openrecordsmanager.api.audit.AuditOperation;
 import com.openrecordsmanager.api.config.ConfigStore;
 import com.openrecordsmanager.api.config.ConfigType;
+import com.openrecordsmanager.api.template.property.PropertyType;
 import com.openrecordsmanager.api.types.ComponentTypes;
 import com.openrecordsmanager.audit.AuditContext;
 import com.openrecordsmanager.audit.AuditEventDescriptions;
@@ -19,6 +20,7 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import tools.jackson.databind.JsonNode;
 
 import java.util.Map;
 import java.util.Objects;
@@ -50,12 +52,12 @@ public class ConfigService implements ConfigStore {
     }
 
     @Transactional
-    public ConfigResponse setConfig(String id, Object value) {
+    public ConfigResponse setConfig(String id, @Nullable JsonNode value) {
         if (AuditContext.isCaptureEnabled()) {
             this.auditPolicyService.validateCommentRequired(AuditEntityType.CONFIG, AuditOperation.UPDATE);
         }
         ConfigItem oldConfig = this.repository.configRepo.findByConfigKey(id).orElse(null);
-        Object oldValue = oldConfig == null ? null : oldConfig.getValue();
+        JsonNode oldValue = oldConfig == null ? null : oldConfig.getValue();
 
         ConfigItem configItem = oldConfig != null ? oldConfig : new ConfigItem(this.catalog, id, value);
         configItem.setValue(catalog, value);
@@ -93,17 +95,16 @@ public class ConfigService implements ConfigStore {
     }
 
     @Transactional(readOnly = true)
-    public <T> Set<ConfigTypeResponse> getAllConfigTypes() {
+    public Set<ConfigTypeResponse> getAllConfigTypes() {
         Set<ConfigTypeResponse> results = this.catalog.getRegistry(ComponentTypes.CONFIG).stream()
                 .filter(configType -> !configType.key().startsWith("server."))
                 .map(cfg -> {
-                    ConfigType<T> cfgT = (ConfigType<T>) cfg;
-
-                    T current = this.repository.configRepo.findByConfigKey(cfg.key())
+                    JsonNode current = this.repository.configRepo.findByConfigKey(cfg.key())
                             .map(ConfigItem::getValue)
-                            .map(cfgT.type()::parseValue)
-                            .orElse(cfgT.defaultValue());
-                    return ConfigTypeResponse.from(cfgT, current);
+                            .orElseGet(() -> cfg.defaultValue() == null
+                                    ? null
+                                    : PropertyType.toTree(cfg.defaultValue()));
+                    return ConfigTypeResponse.from(cfg, current);
                 })
                 .collect(Collectors.toSet());
         this.auditService.recordCollectionRead(AuditEntityType.CONFIG, results.size());

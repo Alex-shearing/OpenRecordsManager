@@ -11,6 +11,7 @@ import jakarta.persistence.Table;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 import org.jspecify.annotations.Nullable;
+import tools.jackson.databind.JsonNode;
 
 import java.text.MessageFormat;
 
@@ -25,13 +26,13 @@ public class ConfigItem {
     @Column(name = "config_value")
     @JdbcTypeCode(SqlTypes.JSON)
     @Nullable
-    private Object configValue;
+    private JsonNode configValue;
 
     @Deprecated
     protected ConfigItem() {
     }
 
-    public ConfigItem(ComponentCatalog catalog, String configKey, Object configValue) {
+    public ConfigItem(ComponentCatalog catalog, String configKey, @Nullable JsonNode configValue) {
         this.configKey = configKey;
         this.setValue(catalog, configValue);
     }
@@ -47,19 +48,19 @@ public class ConfigItem {
                 .orElseThrow(() -> new ResourceNotFoundException(ComponentTypes.CONFIG, this.configKey));
     }
 
-    public @Nullable Object getValue() {
+    public @Nullable JsonNode getValue() {
         return this.configValue;
     }
 
-    public void setValue(ComponentCatalog catalog, @Nullable Object value) {
+    public void setValue(ComponentCatalog catalog, @Nullable JsonNode value) {
         ConfigType<?> key = this.getConfigKey(catalog);
-        Object parsed = key.type().parseValue(value);
-        if (parsed == null && value != null) {
+        Object parsed = key.type().parse(value);
+        if (parsed == null && value != null && !value.isNull()) {
             throw new IllegalArgumentException(MessageFormat.format(
                     "Unable to parse configuration value as {0}",
                     key.type().getName()
             ));
         }
-        this.configValue = parsed;
+        this.configValue = value;
     }
 }

@@ -6,13 +6,14 @@ import jakarta.persistence.*;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 import org.jspecify.annotations.Nullable;
+import tools.jackson.databind.JsonNode;
 
 import java.util.UUID;
 
 @Entity
 @Table(name = "user_property_value")
 @SuppressWarnings("NotNullFieldNotInitialized")
-public class UserPropertyValue<T> implements ObjectPropertyHolder.ObjectPropertyValue<T> {
+public class UserPropertyValue implements ObjectPropertyHolder.ObjectPropertyValue {
     @Id
     public UUID id;
 
@@ -22,18 +23,18 @@ public class UserPropertyValue<T> implements ObjectPropertyHolder.ObjectProperty
 
     @ManyToOne(targetEntity = ObjectProperty.class, optional = false)
     @JoinColumn(nullable = false)
-    public ObjectProperty<T> property;
+    public ObjectProperty<?> property;
 
     @Column(name = "property_value")
     @JdbcTypeCode(SqlTypes.JSON)
     @Nullable
-    public T value;
+    public JsonNode value;
 
     @Deprecated
     protected UserPropertyValue() {
     }
 
-    public UserPropertyValue(User user, ObjectProperty<T> property, @Nullable T value) {
+    public UserPropertyValue(User user, ObjectProperty<?> property, @Nullable JsonNode value) {
         this.id = UUID.randomUUID();
         this.user = user;
         this.property = property;
@@ -41,17 +42,17 @@ public class UserPropertyValue<T> implements ObjectPropertyHolder.ObjectProperty
     }
 
     @Override
-    public ObjectProperty<T> getProperty() {
+    public ObjectProperty<?> getProperty() {
         return this.property;
     }
 
     @Override
-    public @Nullable T getValue() {
+    public @Nullable JsonNode getStoredValue() {
         return this.value;
     }
 
     @Override
-    public void setValue(@Nullable T value) {
+    public void setStoredValue(@Nullable JsonNode value) {
         this.value = value;
     }
 }

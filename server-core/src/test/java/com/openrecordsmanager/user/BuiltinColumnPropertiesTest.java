@@ -10,13 +10,12 @@ import com.openrecordsmanager.recordtype.RecordType;
 import com.openrecordsmanager.recordtype.RecordTypeProperty;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import tools.jackson.databind.node.JsonNodeFactory;
 
 import java.time.Instant;
 import java.util.Set;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 class BuiltinColumnPropertiesTest {
 
@@ -54,7 +53,7 @@ class BuiltinColumnPropertiesTest {
                 null,
                 SecurityFilterUsage.SHOW_ALL,
                 Set.of(
-                        new RecordTypeProperty<>(notesProperty, "default notes"),
+                        new RecordTypeProperty<>(notesProperty, JsonNodeFactory.instance.stringNode("default notes")),
                         new RecordTypeProperty<>(titleProperty, null)
                 )
         );
@@ -64,8 +63,8 @@ class BuiltinColumnPropertiesTest {
         assertEquals("tba", record.getTitle());
         assertEquals("default notes", record.getNotes());
         assertEquals("default notes", record.getProperty(notesProperty));
-        assertEquals("default notes", record.toPropertyMap(true).get(BuiltinProperties.NOTES_ID.toString()));
-        assertEquals("tba", record.toPropertyMap(true).get(BuiltinProperties.TITLE_ID.toString()));
+        assertEquals("default notes", record.toWireMap().get(BuiltinProperties.NOTES_ID.toString()).asString());
+        assertEquals("tba", record.toWireMap().get(BuiltinProperties.TITLE_ID.toString()).asString());
     }
 
     @Test
@@ -82,8 +81,8 @@ class BuiltinColumnPropertiesTest {
 
         assertEquals("Ada", user.getGivenName());
         assertEquals("Ada", user.getProperty(givenNameProperty));
-        assertEquals("Ada", user.toPropertyMap(true).get(BuiltinProperties.GIVEN_NAME_ID.toString()));
-        assertNotNull(user.toPropertyMap(true).get(BuiltinProperties.DATE_CREATED_ID.toString()));
+        assertEquals("Ada", user.toWireMap().get(BuiltinProperties.GIVEN_NAME_ID.toString()).asString());
+        assertNotNull(user.toWireMap().get(BuiltinProperties.DATE_CREATED_ID.toString()));
     }
 
     @Test
@@ -131,7 +130,7 @@ class BuiltinColumnPropertiesTest {
                 null,
                 null,
                 SecurityFilterUsage.SHOW_ALL,
-                Set.of(new RecordTypeProperty<>(notesProperty, "default notes"))
+                Set.of(new RecordTypeProperty<>(notesProperty, JsonNodeFactory.instance.textNode("default notes")))
         );
 
         Record record = new Record("tba", recordType);

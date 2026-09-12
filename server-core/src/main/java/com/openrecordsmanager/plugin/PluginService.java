@@ -133,7 +133,7 @@ public class PluginService {
                 );
             } else {
                 List<AuditPropertyChange> changes = List.of(
-                        new AuditPropertyChange("version", existing.get().getVersion(), plugin.getVersion())
+                        AuditPropertyChange.of("version", existing.get().getVersion(), plugin.getVersion())
                 );
                 this.auditService.addEvent(
                         AuditOperation.UPDATE,
@@ -168,7 +168,7 @@ public class PluginService {
         if (input.enabled() != null && input.enabled() != plugin.isEnabled()) {
             boolean oldEnabled = plugin.isEnabled();
             plugin.setEnabled(input.enabled());
-            changes.add(new AuditPropertyChange("enabled", oldEnabled, input.enabled()));
+            changes.add(AuditPropertyChange.of("enabled", oldEnabled, input.enabled()));
         }
 
         this.repository.pluginRepo.saveAndFlush(plugin);

@@ -2,6 +2,7 @@ package com.openrecordsmanager.rest.swagger;
 
 import com.openrecordsmanager.auth.AuthService;
 import com.openrecordsmanager.rest.dto.ApiResponseV1;
+import io.swagger.v3.core.converter.ModelConverter;
 import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.Operation;
@@ -11,6 +12,7 @@ import io.swagger.v3.oas.models.security.SecurityRequirement;
 import io.swagger.v3.oas.models.security.SecurityScheme;
 import org.springdoc.core.customizers.OpenApiCustomizer;
 import org.springdoc.core.customizers.OperationCustomizer;
+import org.springdoc.core.utils.SpringDocUtils;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpHeaders;
@@ -18,9 +20,20 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.method.HandlerMethod;
+import tools.jackson.databind.JsonNode;
 
 @Configuration
 public class SwaggerConfiguration {
+
+    static {
+        // Prefer free-form JSON over JsonNode bean introspection (also covers early schema caching).
+        SpringDocUtils.getConfig().replaceWithSchema(JsonNode.class, JsonNodeModelConverter.freeFormJsonSchema());
+    }
+
+    @Bean
+    public ModelConverter jsonNodeModelConverter() {
+        return new JsonNodeModelConverter();
+    }
 
     /**
      * Fix discriminated unions on {@link com.openrecordsmanager.config.dto.ConfigTypeResponse}

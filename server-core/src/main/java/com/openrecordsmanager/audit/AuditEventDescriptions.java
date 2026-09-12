@@ -40,6 +40,6 @@ public final class AuditEventDescriptions {
             @Nullable Object oldValue,
             @Nullable Object newValue
     ) {
-        return List.of(new AuditPropertyChange(field, oldValue, newValue));
+        return List.of(AuditPropertyChange.of(field, oldValue, newValue));
     }
 }

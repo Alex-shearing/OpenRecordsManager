@@ -10,6 +10,7 @@ import jakarta.persistence.*;
 import org.jspecify.annotations.Nullable;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
+import tools.jackson.databind.JsonNode;
 
 import java.time.Instant;
 import java.util.*;
@@ -17,7 +18,7 @@ import java.util.*;
 @Entity
 @Table(name = "user_details")
 @SuppressWarnings({"NotNullFieldNotInitialized", "CanBeFinal"})
-public class User extends ObjectPropertyHolder<User, UserPropertyValue<?>> implements UserDetails {
+public class User extends ObjectPropertyHolder<User, UserPropertyValue> implements UserDetails {
     private static final Map<ResourceIdentifier, BuiltinPropertyMapper<User, ?>> BUILTIN_PROPERTY_MAPPERS = Map.of(
             BuiltinProperties.DATE_CREATED_ID, BuiltinPropertyMapper.of(
                     User::getDateCreated,
@@ -96,7 +97,7 @@ public class User extends ObjectPropertyHolder<User, UserPropertyValue<?>> imple
 
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "user", fetch = FetchType.EAGER)
     @MapKey(name = "property")
-    private Map<ObjectProperty<?>, UserPropertyValue<?>> properties = new HashMap<>();
+    private Map<ObjectProperty<?>, UserPropertyValue> properties = new HashMap<>();
 
     @Deprecated
     protected User() {
@@ -191,12 +192,12 @@ public class User extends ObjectPropertyHolder<User, UserPropertyValue<?>> imple
     }
 
     @Override
-    public <V> UserPropertyValue<V> createProperty(ObjectProperty<V> property, @Nullable V value) {
-        return new UserPropertyValue<>(this, property, value);
+    public UserPropertyValue createProperty(ObjectProperty<?> property, @Nullable JsonNode value) {
+        return new UserPropertyValue(this, property, value);
     }
 
     @Override
-    protected Map<ObjectProperty<?>, UserPropertyValue<?>> getDynamicProperties() {
+    protected Map<ObjectProperty<?>, UserPropertyValue> getDynamicProperties() {
         return this.properties;
     }
 

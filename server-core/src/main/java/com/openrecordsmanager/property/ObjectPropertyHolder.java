@@ -1,19 +1,49 @@
 package com.openrecordsmanager.property;
 
 import com.openrecordsmanager.api.ResourceIdentifier;
+import com.openrecordsmanager.api.errors.InputValidationException;
+import com.openrecordsmanager.api.template.property.PropertyType;
 import org.jspecify.annotations.Nullable;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.NullNode;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
-public abstract class ObjectPropertyHolder<SELF extends ObjectPropertyHolder<SELF, T>, T extends ObjectPropertyHolder.ObjectPropertyValue<?>> {
+/**
+ * Typed property bag for users/records.
+ * Domain access uses {@code T}; wire/storage uses {@link JsonNode}.
+ */
+public abstract class ObjectPropertyHolder<SELF extends ObjectPropertyHolder<SELF, V>, V extends ObjectPropertyHolder.ObjectPropertyValue> {
+
+    private static volatile @Nullable PropertyValueCodec codec;
+
+    static void installCodec(PropertyValueCodec propertyValueCodec) {
+        codec = propertyValueCodec;
+    }
+
+    static void uninstallCodec(PropertyValueCodec propertyValueCodec) {
+        if (codec == propertyValueCodec) {
+            codec = null;
+        }
+    }
 
     public abstract Set<ObjectProperty<?>> getPropertyKeys();
 
-    protected abstract Map<ObjectProperty<?>, T> getDynamicProperties();
+    protected abstract Map<ObjectProperty<?>, V> getDynamicProperties();
 
-    public final Map<String, @Nullable Object> toPropertyMap(boolean forUser) {
-        return new PropertyMap(this, forUser);
+    /**
+     * API wire map (list values as id strings).
+     */
+    public final Map<String, @Nullable JsonNode> toWireMap() {
+        return new WirePropertyMap(this);
+    }
+
+    /**
+     * Domain map for CEL (heterogeneous {@code T} values; erasure only at this DYN boundary).
+     */
+    public final Map<String, @Nullable Object> toDomainMap() {
+        return new DomainPropertyMap(this);
     }
 
     public <K> @Nullable K getProperty(ObjectProperty<K> property) {
@@ -23,27 +53,31 @@ public abstract class ObjectPropertyHolder<SELF extends ObjectPropertyHolder<SEL
             return property.getType().parseValue(builtinMapper.get(this.self()));
         }
 
-        T value = this.getDynamicProperties().get(property);
-        if (value == null) {
+        V stored = this.getDynamicProperties().get(property);
+        if (stored == null) {
             return null;
         }
-        Object hydrated = ListElementPropertyResolver.hydrateStoredStatic(property, value.getValue());
-        return property.getType().parseValue(hydrated);
+
+        JsonNode raw = stored.getStoredValue();
+        PropertyValueCodec activeCodec = codec;
+        if (activeCodec != null) {
+            @SuppressWarnings("unchecked")
+            K hydrated = (K) activeCodec.hydrate(property, raw);
+            return hydrated;
+        }
+        return property.getType().parse(raw);
     }
 
     public abstract boolean canSetProperty(ObjectProperty<?> property);
 
-    public abstract <V> T createProperty(ObjectProperty<V> property, @Nullable V value);
+    public abstract V createProperty(ObjectProperty<?> property, @Nullable JsonNode storedValue);
 
     protected abstract Map<ResourceIdentifier, BuiltinPropertyMapper<SELF, ?>> getBuiltinPropertyMappers();
 
     protected abstract SELF self();
 
     /**
-     * Set a property on the holder, creating it if allowed.
-     *
-     * @param property the property to set/create
-     * @param value    the value to set to
+     * Set a typed domain property. Persists as {@link JsonNode} via the codec when installed.
      */
     public final <K> void setProperty(ObjectProperty<K> property, @Nullable K value) {
         if (!this.canSetProperty(property)) {
@@ -63,46 +97,109 @@ public abstract class ObjectPropertyHolder<SELF extends ObjectPropertyHolder<SEL
         K oldValue = this.getProperty(property);
         if (!Objects.equals(oldValue, value)) {
             this.touchDateModified();
-            T holder = this.getDynamicProperties().get(property);
-            if (holder == null) {
-                holder = this.createProperty(property, value);
-                this.getDynamicProperties().put(property, holder);
+
+            JsonNode stored = NullNode.getInstance();
+            PropertyValueCodec activeCodec = codec;
+            if (activeCodec != null) {
+                stored = activeCodec.toStored(property, value);
+            } else if (value != null) {
+                stored = PropertyType.toTree(value);
             }
 
-            // ListElement uses @JsonValue so Hibernate JSON persistence writes resource id
-            // string(s); getProperty hydrates id strings back to ListElement after reload.
-            holder.setValueUntyped(value);
+            V holder = this.getDynamicProperties().get(property);
+            if (holder == null) {
+                holder = this.createProperty(property, stored);
+                this.getDynamicProperties().put(property, holder);
+            } else {
+                holder.setStoredValue(stored);
+            }
         }
     }
 
-    public final <K> @Nullable K setPropertyUntyped(ObjectProperty<K> property, @Nullable Object value) {
-        Object resolved = ListElementPropertyResolver.resolveInputStatic(property, value);
-        K newValue = property.getType().parseValue(resolved);
+    /**
+     * Set from wire/storage {@link JsonNode}: parse once to domain, then store as JsonNode.
+     */
+    public final <K> @Nullable K setPropertyFromJson(ObjectProperty<K> property, @Nullable JsonNode value) {
+        PropertyValueCodec activeCodec = codec;
+        K newValue;
+        if (activeCodec != null) {
+            newValue = activeCodec.parse(property, value);
+        } else {
+            newValue = property.getType().parse(value);
+            if (newValue == null && value != null && !value.isNull()) {
+                throw new InputValidationException(Map.of(
+                        property.getId().toString(),
+                        "unable to parse value as " + property.getType().getName()
+                ));
+            }
+        }
+
         this.setProperty(property, newValue);
         return newValue;
     }
 
     public abstract void touchDateModified();
 
-    public interface ObjectPropertyValue<T> {
-        ObjectProperty<T> getProperty();
+    public interface ObjectPropertyValue {
+        ObjectProperty<?> getProperty();
 
-        @Nullable T getValue();
+        @Nullable JsonNode getStoredValue();
 
-        void setValue(@Nullable T value);
+        void setStoredValue(@Nullable JsonNode value);
+    }
 
-        default void setValueUntyped(@Nullable Object value) {
-            this.setValue(this.getProperty().getType().parseValue(value));
+    private static final class WirePropertyMap extends AbstractMap<String, JsonNode> {
+        private final ObjectPropertyHolder<?, ?> holder;
+
+        private WirePropertyMap(ObjectPropertyHolder<?, ?> holder) {
+            this.holder = holder;
+        }
+
+        @Override
+        public @Nullable JsonNode get(Object key) {
+            if (!(key instanceof String keyString)) {
+                return null;
+            }
+            return findProperty(keyString)
+                    .map(property -> encode(property, this.holder.getProperty(property)))
+                    .orElse(null);
+        }
+
+        @Override
+        public Set<Entry<String, JsonNode>> entrySet() {
+            return this.holder.getPropertyKeys().stream()
+                    .filter(entry -> !entry.isUserHidden())
+                    .map(entry -> new AbstractMap.SimpleEntry<>(
+                            entry.getId().toString(),
+                            encode(entry, this.holder.getProperty(entry))
+                    ))
+                    .collect(Collectors.toSet());
+        }
+
+        private Optional<ObjectProperty<?>> findProperty(String keyString) {
+            return this.holder.getPropertyKeys().stream()
+                    .filter(property -> !property.isUserHidden())
+                    .filter(property -> property.getId().toString().equals(keyString))
+                    .findFirst();
+        }
+
+        private static JsonNode encode(ObjectProperty<?> property, @Nullable Object domainValue) {
+            PropertyValueCodec activeCodec = codec;
+            if (activeCodec != null) {
+                return activeCodec.encode(property, domainValue);
+            }
+            if (domainValue == null) {
+                return NullNode.getInstance();
+            }
+            return PropertyType.toTree(domainValue);
         }
     }
 
-    public static class PropertyMap extends AbstractMap<String, Object> {
+    private static final class DomainPropertyMap extends AbstractMap<String, Object> {
         private final ObjectPropertyHolder<?, ?> holder;
-        private final boolean forUser;
 
-        public PropertyMap(ObjectPropertyHolder<?, ?> holder, boolean forUser) {
+        private DomainPropertyMap(ObjectPropertyHolder<?, ?> holder) {
             this.holder = holder;
-            this.forUser = forUser;
         }
 
         @Override
@@ -110,36 +207,22 @@ public abstract class ObjectPropertyHolder<SELF extends ObjectPropertyHolder<SEL
             if (!(key instanceof String keyString)) {
                 return null;
             }
-
-            Optional<ObjectProperty<?>> propKey = this.holder.getPropertyKeys().stream()
-                    .filter(property -> !this.forUser || !property.isUserHidden())
+            return this.holder.getPropertyKeys().stream()
                     .filter(property -> property.getId().toString().equals(keyString))
-                    .findFirst();
-
-            return propKey
-                    .map(property -> this.mapValue(property, this.holder.getProperty(property)))
+                    .findFirst()
+                    .map(this.holder::getProperty)
                     .orElse(null);
         }
 
         @Override
-        @SuppressWarnings("DataFlowIssue") // IDEA things SimpleEntry cannot take a null value
+        @SuppressWarnings("DataFlowIssue")
         public Set<Entry<String, Object>> entrySet() {
             return this.holder.getPropertyKeys().stream()
-                    .filter(entry -> !this.forUser || !entry.isUserHidden())
                     .map(entry -> new AbstractMap.SimpleEntry<String, Object>(
                             entry.getId().toString(),
-                            this.mapValue(entry, this.holder.getProperty(entry))
+                            this.holder.getProperty(entry)
                     ))
                     .collect(Collectors.toSet());
-        }
-
-        private @Nullable Object mapValue(ObjectProperty<?> property, @Nullable Object domainValue) {
-            // API responses (forUser=true) expose list values as resource id strings.
-            // CEL / internal maps keep live ListElement instances for comparisons.
-            if (this.forUser) {
-                return ListElementPropertyResolver.toApiValue(property, domainValue);
-            }
-            return domainValue;
         }
     }
 }

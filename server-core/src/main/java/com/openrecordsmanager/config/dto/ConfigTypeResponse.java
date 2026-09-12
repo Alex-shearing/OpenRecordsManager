@@ -1,12 +1,13 @@
 package com.openrecordsmanager.config.dto;
 
 import com.openrecordsmanager.api.config.ConfigType;
+import com.openrecordsmanager.api.template.property.PropertyType;
 import com.openrecordsmanager.config.dto.schema.ConfigTypeResponseSchema;
 import io.swagger.v3.oas.annotations.media.DiscriminatorMapping;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import org.jspecify.annotations.Nullable;
+import tools.jackson.databind.JsonNode;
 
 @Schema(
         oneOf = {
@@ -34,20 +35,20 @@ import org.jspecify.annotations.Nullable;
 public record ConfigTypeResponse(
         @NotBlank String key,
         @NotBlank String name,
-        @Nullable Object currentValue,
+        @Nullable JsonNode currentValue,
         @NotBlank String description,
-        @Nullable Object defaultValue,
-        @NotNull ConfigValueType type
+        @Nullable JsonNode defaultValue,
+        @NotBlank @Schema(description = "PropertyType name (config-supported subset)") String type
 ) {
 
-    public static <T> ConfigTypeResponse from(ConfigType<T> ob, T val) {
+    public static <T> ConfigTypeResponse from(ConfigType<T> ob, @Nullable JsonNode currentValue) {
         return new ConfigTypeResponse(
                 ob.key(),
                 ob.name(),
-                val,
+                currentValue,
                 ob.description(),
-                ob.defaultValue(),
-                ConfigValueType.fromPropertyType(ob.type())
+                ob.defaultValue() == null ? null : PropertyType.toTree(ob.defaultValue()),
+                ob.type().getName()
         );
     }
 }

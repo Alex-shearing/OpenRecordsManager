@@ -25,7 +25,7 @@ public class AuditEmitterImpl implements AuditEmitter {
                 AuditOperation.UPDATE,
                 this.targetType,
                 this.targetId,
-                List.of(new AuditPropertyChange(propertyId, oldValue, newValue)),
+                List.of(AuditPropertyChange.of(propertyId, oldValue, newValue)),
                 null,
                 null
         );

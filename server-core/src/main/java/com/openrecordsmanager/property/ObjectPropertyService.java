@@ -20,6 +20,7 @@ import com.openrecordsmanager.rest.errors.ResourceNotFoundException;
 import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import tools.jackson.databind.JsonNode;
 
 import java.util.Map;
 import java.util.Set;
@@ -140,7 +141,7 @@ public class ObjectPropertyService {
             @Nullable ResourceIdentifier listTypeId,
             @Nullable String validator,
             @Nullable String securityFilter,
-            @Nullable Object defaultValue,
+            @Nullable JsonNode defaultValue,
             boolean userHidden
     ) {
         ListType listType = resolveListType(type, listTypeId);
@@ -171,9 +172,15 @@ public class ObjectPropertyService {
             @Nullable ListType listType,
             @Nullable String validator,
             @Nullable String securityFilter,
-            @Nullable Object defaultValue,
+            @Nullable JsonNode defaultValue,
             boolean userHidden
     ) {
+        if (defaultValue != null && !defaultValue.isNull() && type.parse(defaultValue) == null) {
+            throw new InputValidationException(Map.of(
+                    "defaultValue",
+                    "unable to parse defaultValue as " + type.getName()
+            ));
+        }
         return new ObjectProperty<>(
                 id,
                 name,
@@ -182,7 +189,7 @@ public class ObjectPropertyService {
                 listType,
                 validator,
                 securityFilter,
-                type.parseValue(defaultValue),
+                defaultValue,
                 userHidden
         );
     }
@@ -192,7 +199,14 @@ public class ObjectPropertyService {
         property.setDescription(input.description());
         property.setValidator(input.validator());
         property.setSecurityFilter(input.securityFilter());
-        property.setDefaultValue(property.getType().parseValue(input.defaultValue()));
+        JsonNode defaultValue = input.defaultValue();
+        if (defaultValue != null && !defaultValue.isNull() && property.getType().parse(defaultValue) == null) {
+            throw new InputValidationException(Map.of(
+                    "defaultValue",
+                    "unable to parse defaultValue as " + property.getType().getName()
+            ));
+        }
+        property.setDefaultValue(defaultValue);
         property.setUserHidden(input.userHidden());
     }
 }

@@ -2,6 +2,7 @@ package com.openrecordsmanager.plugin.registry.mapper;
 
 import com.openrecordsmanager.api.ResourceIdentifier;
 import com.openrecordsmanager.api.template.property.ObjectPropertyTemplate;
+import com.openrecordsmanager.api.template.property.PropertyType;
 import com.openrecordsmanager.api.types.ComponentType;
 import com.openrecordsmanager.api.types.ComponentTypes;
 import com.openrecordsmanager.audit.AuditService;
@@ -56,7 +57,7 @@ public class ObjectPropertyTemplateRegistrationMapper extends TemplateRegistrati
                 listType,
                 expressions.buildExpression(definition.validator()),
                 expressions.buildExpression(definition.securityFilter()),
-                definition.defaultValue(),
+                PropertyType.toTree(definition.defaultValue()),
                 definition.userHidden()
         );
 

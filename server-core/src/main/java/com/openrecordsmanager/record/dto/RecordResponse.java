@@ -4,6 +4,7 @@ import com.openrecordsmanager.api.ResourceIdentifier;
 import com.openrecordsmanager.record.Record;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import tools.jackson.databind.JsonNode;
 
 import java.util.List;
 import java.util.Map;
@@ -12,7 +13,7 @@ import java.util.UUID;
 public record RecordResponse(
         @NotBlank UUID id,
         @NotBlank ResourceIdentifier type,
-        @NotNull Map<String, Object> properties,
+        @NotNull Map<String, JsonNode> properties,
         @NotNull List<String> revisions
 ) {
 
@@ -20,7 +21,7 @@ public record RecordResponse(
         return new RecordResponse(
                 record.getId(),
                 record.getType().id,
-                record.toPropertyMap(true),
+                record.toWireMap(),
                 record.getRevisionList()
         );
     }

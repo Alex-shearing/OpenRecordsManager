@@ -3,23 +3,23 @@ package com.openrecordsmanager.api.template.property;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.openrecordsmanager.api.template.list.IListElement;
 import org.jspecify.annotations.Nullable;
+import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.databind.node.NullNode;
 
 import java.time.Instant;
 import java.util.*;
 
+/**
+ * Pure value coercion for object properties and config keys.
+ * Wire/storage uses {@link JsonNode}; domain values are typed {@code T}.
+ * List id ↔ entity bridging lives in server-core {@code PropertyValueCodec}.
+ */
 @SuppressWarnings("unused")
 public abstract class PropertyType<T> {
     public static final Map<String, PropertyType<?>> TYPES = new HashMap<>(16);
-    private static final ObjectMapper JSON = JsonMapper.builder().build();
-
-    public static final PropertyType<String> CALCULATED = new PropertyType<>("calculated", String.class, false) {
-        @Override
-        protected String coerce(@Nullable Object value) {
-            return "tba";
-        }
-    };
+    public static final ObjectMapper JSON = JsonMapper.builder().build();
 
     public static final PropertyType<String> STRING = new PropertyType<>("string", String.class, true) {
         @Override
@@ -92,10 +92,27 @@ public abstract class PropertyType<T> {
         }
     };
 
-    public static final PropertyType<Object> OBJECT = new PropertyType<>("object", Object.class, true) {
+    /**
+     * Structured config blobs (e.g. database settings) as JSON trees.
+     */
+    public static final PropertyType<JsonNode> OBJECT = new PropertyType<>("object", JsonNode.class, true) {
         @Override
-        protected @Nullable Object coerce(@Nullable Object value) {
-            throw new UnsupportedOperationException("object config values are not supported");
+        protected @Nullable JsonNode coerce(@Nullable Object value) {
+            if (value == null) {
+                return null;
+            }
+            if (value instanceof JsonNode node) {
+                return node.isNull() ? null : node;
+            }
+            return JSON.valueToTree(value);
+        }
+
+        @Override
+        public @Nullable JsonNode parse(@Nullable JsonNode node) {
+            if (node == null || node.isNull()) {
+                return null;
+            }
+            return node;
         }
     };
 
@@ -124,10 +141,6 @@ public abstract class PropertyType<T> {
             return null;
         }
 
-        /**
-         * Avoid {@link Class#isInstance(Object)} short-circuit on raw {@link Collection}s of strings
-         * from the API; only accept collections whose elements are already {@link IListElement}.
-         */
         @Override
         public @Nullable Collection<IListElement> parseValue(@Nullable Object value) {
             return this.coerce(value);
@@ -142,6 +155,13 @@ public abstract class PropertyType<T> {
             }
             if (value instanceof Date date) {
                 return date.toInstant();
+            }
+            if (value instanceof String s) {
+                try {
+                    return Instant.parse(s.trim());
+                } catch (Exception ignored) {
+                    return null;
+                }
             }
             return null;
         }
@@ -204,28 +224,68 @@ public abstract class PropertyType<T> {
 
     protected abstract @Nullable T coerce(@Nullable Object value);
 
-    @SuppressWarnings("unchecked")
-    public @Nullable T parseValue(@Nullable Object value) {
-        if (value == null) {
+    /**
+     * Primary parse entry: wire/storage {@link JsonNode} → domain {@code T}.
+     */
+    public @Nullable T parse(@Nullable JsonNode node) {
+        if (node == null || node instanceof NullNode || node.isNull()) {
             return null;
         }
-        if (value instanceof String s) {
-            try {
-                return JSON.readValue(s, JSON.constructType(this.valueClass));
-            } catch (Exception ignored) {
-                // fall through to plain string handling/coercion
+        if (this.valueClass.isInstance(node)) {
+            @SuppressWarnings("unchecked")
+            T typed = (T) node;
+            return typed;
+        }
+        Object javaValue = JSON.convertValue(node, Object.class);
+        return this.parseValue(javaValue);
+    }
+
+    /**
+     * Coerce a domain or legacy raw value (e.g. env strings, in-memory tests).
+     * Prefer {@link #parse(JsonNode)} for wire/storage.
+     */
+    @SuppressWarnings("unchecked")
+    public @Nullable T parseValue(@Nullable Object value) {
+        switch (value) {
+            case null -> {
+                return null;
             }
-            return this.coerce(value);
+            case JsonNode node -> {
+                return this.parse(node);
+            }
+            case String s when looksLikeJson(s) -> {
+                try {
+                    return this.parse(JSON.readTree(s));
+                } catch (Exception ignored) {
+                    // fall through
+                }
+            }
+            default -> {
+            }
         }
         if (this.valueClass.isInstance(value)) {
             return (T) value;
         }
-        try {
-            return JSON.convertValue(value, this.valueClass);
-        } catch (Exception ignored) {
-            // fall through to type-specific coercion
-        }
         return this.coerce(value);
+    }
+
+    public static JsonNode toTree(@Nullable Object domain) {
+        if (domain == null) {
+            return NullNode.getInstance();
+        }
+        if (domain instanceof JsonNode node) {
+            return node;
+        }
+        return JSON.valueToTree(domain);
+    }
+
+    private static boolean looksLikeJson(String s) {
+        String trimmed = s.trim();
+        if (trimmed.isEmpty()) {
+            return false;
+        }
+        char first = trimmed.charAt(0);
+        return first == '"' || first == '{' || first == '[';
     }
 
     public boolean supportsConfig() {

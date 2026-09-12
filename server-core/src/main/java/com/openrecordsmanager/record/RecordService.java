@@ -13,7 +13,7 @@ import com.openrecordsmanager.database.DataRepository;
 import com.openrecordsmanager.filestore.store.FileStore;
 import com.openrecordsmanager.plugin.ExpressionsService;
 import com.openrecordsmanager.plugin.registry.ComponentCatalog;
-import com.openrecordsmanager.property.ObjectProperty;
+import com.openrecordsmanager.property.ObjectPropertyApplier;
 import com.openrecordsmanager.record.dto.NewRecordRequest;
 import com.openrecordsmanager.record.dto.RecordResponse;
 import com.openrecordsmanager.record.dto.RecordRevisionResponse;
@@ -39,6 +39,7 @@ public class RecordService {
     private final ExpressionsService expressions;
     private final AuditService auditService;
     private final AuditPolicyService auditPolicyService;
+    private final ObjectPropertyApplier propertyApplier;
 
     public RecordService(
             DataRepository repository,
@@ -46,7 +47,8 @@ public class RecordService {
             ComponentCatalog catalog,
             ExpressionsService expressions,
             AuditService auditService,
-            AuditPolicyService auditPolicyService
+            AuditPolicyService auditPolicyService,
+            ObjectPropertyApplier propertyApplier
     ) {
         this.repository = repository;
         this.config = config;
@@ -54,6 +56,7 @@ public class RecordService {
         this.expressions = expressions;
         this.auditService = auditService;
         this.auditPolicyService = auditPolicyService;
+        this.propertyApplier = propertyApplier;
     }
 
     @Transactional(readOnly = true)
@@ -79,13 +82,7 @@ public class RecordService {
         changes.add(AuditPropertyChange.newProperty("type", input.type()));
 
         Record record = new Record(recordTitle, type);
-        input.properties().forEach((identifier, value) -> {
-            ObjectProperty<?> property = this.repository.objectPropertyRepo.findById(identifier)
-                    .orElseThrow(() -> new ResourceNotFoundException(ComponentTypes.OBJECT_PROPERTY, identifier));
-
-            Object newValue = record.setPropertyUntyped(property, value);
-            changes.add(AuditPropertyChange.newProperty(identifier.toString(), newValue));
-        });
+        this.propertyApplier.applyOnCreate(record, input.properties(), false, changes);
 
         this.repository.recordRepo.saveAndFlush(record);
 
@@ -116,20 +113,11 @@ public class RecordService {
 
             ResourceIdentifier oldType = record.getType().id;
             record.setType(newType);
-            changes.add(new AuditPropertyChange("type", oldType, input.type()));
+            changes.add(AuditPropertyChange.of("type", oldType, input.type()));
         }
 
         if (input.properties() != null) {
-            input.properties().forEach((identifier, value) -> {
-                ObjectProperty<?> property = this.repository.objectPropertyRepo.findById(identifier)
-                        .orElseThrow(() -> new ResourceNotFoundException(ComponentTypes.OBJECT_PROPERTY, identifier));
-
-                Object oldValue = record.getProperty(property);
-                Object newValue = record.setPropertyUntyped(property, value);
-                if (oldValue != newValue) {
-                    changes.add(new AuditPropertyChange(identifier.toString(), oldValue, newValue));
-                }
-            });
+            this.propertyApplier.applyOnUpdate(record, input.properties(), false, changes);
         }
 
         this.repository.recordRepo.saveAndFlush(record);

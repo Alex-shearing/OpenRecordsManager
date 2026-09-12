@@ -3,6 +3,7 @@ package com.openrecordsmanager.property;
 import com.openrecordsmanager.api.ResourceIdentifier;
 import com.openrecordsmanager.api.builtin.BuiltinConfigs;
 import com.openrecordsmanager.api.errors.InputValidationException;
+import com.openrecordsmanager.api.template.list.IListElement;
 import com.openrecordsmanager.api.template.property.PropertyType;
 import com.openrecordsmanager.database.DataRepository;
 import com.openrecordsmanager.database.SqliteTestSupport;
@@ -15,15 +16,19 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.JsonNodeFactory;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
-class ListElementPropertyResolverTest {
+class PropertyValueCodecTest {
 
+    private static final JsonNodeFactory NODES = JsonNodeFactory.instance;
     private static final ResourceIdentifier LIST_ID = ResourceIdentifier.valueOf("test:resolver_list");
     private static final ResourceIdentifier ELEMENT_A = ResourceIdentifier.valueOf("test:resolver_a");
     private static final ResourceIdentifier ELEMENT_B = ResourceIdentifier.valueOf("test:resolver_b");
@@ -34,28 +39,27 @@ class ListElementPropertyResolverTest {
 
     @DynamicPropertySource
     static void properties(DynamicPropertyRegistry registry) {
-        SqliteTestSupport.registerPrimaryMemoryDatabase(registry, ListElementPropertyResolverTest.class);
+        SqliteTestSupport.registerPrimaryMemoryDatabase(registry, PropertyValueCodecTest.class);
         registry.add(BuiltinConfigs.PLUGINS_SKIP_SYNC.key(), () -> "true");
         registry.add(BuiltinConfigs.COOKIE_SECURE.key(), () -> "false");
     }
 
     @Autowired
-    private ListElementPropertyResolver resolver;
+    private PropertyValueCodec codec;
 
     @Autowired
     private DataRepository repository;
 
-    private ObjectProperty<com.openrecordsmanager.api.template.list.IListElement> listItemProperty;
-    private ObjectProperty<java.util.Collection<com.openrecordsmanager.api.template.list.IListElement>> listMultipleProperty;
+    private ObjectProperty<IListElement> listItemProperty;
+    private ObjectProperty<Collection<IListElement>> listMultipleProperty;
     private ListElement elementA;
     private ListElement elementB;
 
     @BeforeEach
     void setUp() {
-        ListType listType = this.repository.listTypeRepo.findById(LIST_ID).orElseGet(() -> {
-            ListType created = new ListType(LIST_ID, "Resolver list");
-            return this.repository.listTypeRepo.saveAndFlush(created);
-        });
+        ListType listType = this.repository.listTypeRepo.findById(LIST_ID).orElseGet(() ->
+                this.repository.listTypeRepo.saveAndFlush(new ListType(LIST_ID, "Resolver list"))
+        );
 
         ListType otherList = this.repository.listTypeRepo.findById(OTHER_LIST).orElseGet(() ->
                 this.repository.listTypeRepo.saveAndFlush(new ListType(OTHER_LIST, "Other list"))
@@ -78,94 +82,95 @@ class ListElementPropertyResolverTest {
         );
 
         this.listItemProperty = this.repository.objectPropertyRepo.findById(ITEM_PROP)
-                .map(p -> (ObjectProperty<com.openrecordsmanager.api.template.list.IListElement>) p)
-                .orElseGet(() -> {
-                    ObjectProperty<com.openrecordsmanager.api.template.list.IListElement> created = new ObjectProperty<>(
-                            ITEM_PROP,
-                            "List item",
-                            "List item",
-                            PropertyType.LIST_ITEM,
-                            listType,
-                            null,
-                            null,
-                            null,
-                            false
-                    );
-                    return this.repository.objectPropertyRepo.saveAndFlush(created);
-                });
+                .map(p -> (ObjectProperty<IListElement>) p)
+                .orElseGet(() -> this.repository.objectPropertyRepo.saveAndFlush(new ObjectProperty<>(
+                        ITEM_PROP,
+                        "List item",
+                        "List item",
+                        PropertyType.LIST_ITEM,
+                        listType,
+                        null,
+                        null,
+                        null,
+                        false
+                )));
 
         this.listMultipleProperty = this.repository.objectPropertyRepo.findById(MULTI_PROP)
-                .map(p -> (ObjectProperty<java.util.Collection<com.openrecordsmanager.api.template.list.IListElement>>) p)
-                .orElseGet(() -> {
-                    ObjectProperty<java.util.Collection<com.openrecordsmanager.api.template.list.IListElement>> created = new ObjectProperty<>(
-                            MULTI_PROP,
-                            "List multiple",
-                            "List multiple",
-                            PropertyType.LIST_MULTIPLE,
-                            listType,
-                            null,
-                            null,
-                            null,
-                            false
-                    );
-                    return this.repository.objectPropertyRepo.saveAndFlush(created);
-                });
+                .map(p -> (ObjectProperty<Collection<IListElement>>) p)
+                .orElseGet(() -> this.repository.objectPropertyRepo.saveAndFlush(new ObjectProperty<>(
+                        MULTI_PROP,
+                        "List multiple",
+                        "List multiple",
+                        PropertyType.LIST_MULTIPLE,
+                        listType,
+                        null,
+                        null,
+                        null,
+                        false
+                )));
     }
 
     @Test
-    void resolveInputListItemFromString() {
-        Object resolved = this.resolver.resolveInput(this.listItemProperty, ELEMENT_A.toString());
+    void parseListItemFromString() {
+        Object resolved = this.codec.parse(this.listItemProperty, NODES.textNode(ELEMENT_A.toString()));
         assertEquals(this.elementA, resolved);
     }
 
     @Test
-    void resolveInputListMultipleFromStrings() {
-        Object resolved = this.resolver.resolveInput(
+    void parseListMultipleFromStrings() {
+        Object resolved = this.codec.parse(
                 this.listMultipleProperty,
-                List.of(ELEMENT_A.toString(), ELEMENT_B.toString())
+                NODES.arrayNode().add(ELEMENT_A.toString()).add(ELEMENT_B.toString())
         );
         assertEquals(List.of(this.elementA, this.elementB), resolved);
     }
 
     @Test
-    void resolveInputUnknownIdThrows() {
+    void parseUnknownIdThrows() {
         assertThrows(
                 ResourceNotFoundException.class,
-                () -> this.resolver.resolveInput(this.listItemProperty, "test:missing_element")
+                () -> this.codec.parse(this.listItemProperty, NODES.textNode("test:missing_element"))
         );
     }
 
     @Test
-    void resolveInputWrongListThrows() {
+    void parseWrongListThrows() {
         assertThrows(
                 ResourceNotFoundException.class,
-                () -> this.resolver.resolveInput(this.listItemProperty, OTHER_ELEMENT.toString())
+                () -> this.codec.parse(this.listItemProperty, NODES.textNode(OTHER_ELEMENT.toString()))
         );
     }
 
     @Test
-    void resolveInputInvalidCollectionThrows() {
+    void parseInvalidCollectionThrows() {
         assertThrows(
                 InputValidationException.class,
-                () -> this.resolver.resolveInput(this.listMultipleProperty, ELEMENT_A.toString())
+                () -> this.codec.parse(this.listMultipleProperty, NODES.textNode(ELEMENT_A.toString()))
         );
     }
 
     @Test
-    void toStoredValueAndHydrateRoundTrip() {
-        Object stored = this.resolver.toStoredValue(this.listItemProperty, this.elementA);
-        assertEquals(ELEMENT_A.toString(), stored);
+    void toStoredAndHydrateRoundTrip() {
+        JsonNode stored = this.codec.toStored(this.listItemProperty, this.elementA);
+        assertEquals(ELEMENT_A.toString(), stored.asString());
 
-        Object hydrated = this.resolver.hydrateStored(this.listItemProperty, stored);
+        Object hydrated = this.codec.hydrate(this.listItemProperty, stored);
         assertEquals(this.elementA, hydrated);
 
-        Object multiStored = this.resolver.toStoredValue(
+        JsonNode multiStored = this.codec.toStored(
                 this.listMultipleProperty,
                 List.of(this.elementA, this.elementB)
         );
-        assertEquals(List.of(ELEMENT_A.toString(), ELEMENT_B.toString()), multiStored);
+        assertTrue(multiStored.isArray());
+        assertEquals(ELEMENT_A.toString(), multiStored.get(0).asString());
+        assertEquals(ELEMENT_B.toString(), multiStored.get(1).asString());
 
-        Object multiHydrated = this.resolver.hydrateStored(this.listMultipleProperty, multiStored);
+        Object multiHydrated = this.codec.hydrate(this.listMultipleProperty, multiStored);
         assertEquals(List.of(this.elementA, this.elementB), multiHydrated);
+    }
+
+    @Test
+    void encodeListItemAsIdString() {
+        assertEquals(ELEMENT_A.toString(), this.codec.encode(this.listItemProperty, this.elementA).asString());
     }
 }

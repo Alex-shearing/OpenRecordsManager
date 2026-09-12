@@ -2,6 +2,7 @@ package com.openrecordsmanager.api.builtin;
 
 import com.openrecordsmanager.api.config.ConfigType;
 import com.openrecordsmanager.api.template.property.PropertyType;
+import tools.jackson.databind.JsonNode;
 
 import java.util.List;
 import java.util.UUID;
@@ -10,12 +11,12 @@ public class BuiltinConfigs {
 
     // Server only settings
 
-    public static final ConfigType<Object> DATABASE_PRIMARY = ConfigType.builder("server.database.primary", PropertyType.OBJECT)
+    public static final ConfigType<JsonNode> DATABASE_PRIMARY = ConfigType.builder("server.database.primary", PropertyType.OBJECT)
             .name("Primary Database Connection")
             .description("The primary connection to the database, this connection will be used for read/write operations.")
             .build();
 
-    public static final ConfigType<Object> DATABASE_READ_ONLY = ConfigType.builder("server.database.read-only", PropertyType.OBJECT)
+    public static final ConfigType<JsonNode> DATABASE_READ_ONLY = ConfigType.builder("server.database.read-only", PropertyType.OBJECT)
             .name("Read-Only Database Connection")
             .description("A connection to a secondary/read-only database, this connection will only be used for read operations.")
             .build();

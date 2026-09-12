@@ -3,8 +3,10 @@ package com.openrecordsmanager.api;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.openrecordsmanager.api.builtin.BuiltinPlugin;
+import com.openrecordsmanager.api.errors.InputValidationException;
 
 import java.io.Serializable;
+import java.util.Map;
 import java.util.regex.Pattern;
 
 public record ResourceIdentifier(String source, String item) implements Serializable {
@@ -23,7 +25,10 @@ public record ResourceIdentifier(String source, String item) implements Serializ
     public static ResourceIdentifier valueOf(String identifier) {
         String[] parts = identifier.split(":");
         if (parts.length != 2) {
-            throw new IllegalArgumentException(String.format("Resource identifier '%s' is invalid. Could not split correctly", identifier));
+            throw new InputValidationException(Map.of(
+                    "value",
+                    String.format("Resource identifier '%s' is invalid. Could not split correctly", identifier)
+            ));
         }
 
         return new ResourceIdentifier(parts[0], parts[1]);
