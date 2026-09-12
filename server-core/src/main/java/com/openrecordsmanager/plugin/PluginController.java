@@ -1,6 +1,7 @@
 package com.openrecordsmanager.plugin;
 
 import com.openrecordsmanager.plugin.dto.PluginResponse;
+import com.openrecordsmanager.plugin.dto.PluginTypeRequest;
 import com.openrecordsmanager.plugin.dto.SimplePluginResponse;
 import com.openrecordsmanager.plugin.dto.UpdatePluginRequest;
 import com.openrecordsmanager.rest.swagger.ConflictApiResponse;
@@ -41,10 +42,13 @@ public class PluginController {
     }
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(summary = "Upload a plugin JAR")
+    @Operation(summary = "Upload a plugin JAR or template ZIP")
     @ConflictApiResponse
-    public PluginResponse uploadPlugin(@RequestPart("jar") MultipartFile jar) throws IOException {
-        return this.service.upload(jar.getInputStream());
+    public PluginResponse uploadPlugin(
+            @RequestPart("file") MultipartFile file,
+            @RequestParam("type") PluginTypeRequest type
+    ) throws IOException {
+        return this.service.upload(file.getInputStream(), type);
     }
 
     @PutMapping(value = "/{name}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)

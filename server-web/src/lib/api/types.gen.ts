@@ -3492,10 +3492,12 @@ export type ListPluginsResponse = ListPluginsResponses[keyof ListPluginsResponse
 
 export type UploadPluginData = {
     body?: {
-        jar: Blob | File;
+        file: Blob | File;
     };
     path?: never;
-    query?: never;
+    query: {
+        type: 'ZIP' | 'JAR';
+    };
     url: '/api/plugins';
 };
 

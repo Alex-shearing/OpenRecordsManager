@@ -25,9 +25,9 @@ import java.util.stream.Stream;
 
 /**
  * Registers JSON templates from folders named after {@link ComponentType#name()} inside a single
- * plugin artifact (the plugin class's {@link CodeSource}).
+ * plugin artifact (JAR, ZIP, or exploded directory).
  * <p>
- * Id is the filename without {@code .json}. Scanning is scoped to that JAR/directory so a shared
+ * Id is the filename without {@code .json}. Scanning is scoped to one archive/directory so a shared
  * plugin {@link ClassLoader} cannot re-register another plugin's templates.
  */
 public final class TemplateJsonLoader {
@@ -48,19 +48,27 @@ public final class TemplateJsonLoader {
             return;
         }
         try {
-            Path path = Path.of(location.toURI());
-            if (Files.isDirectory(path)) {
-                registerFromDirectory(registry, path);
-            } else {
-                registerFromJar(registry, path);
-            }
+            registerFromPath(registry, Path.of(location.toURI()));
         } catch (URISyntaxException e) {
             throw new UncheckedIOException(
                     "Failed to resolve templates for " + pluginClass.getName(),
                     new IOException(e)
             );
+        }
+    }
+
+    /**
+     * Loads templates from a plugin JAR/ZIP file or an exploded classpath directory.
+     */
+    public static void registerFromPath(RegistrationContext registry, Path path) {
+        try {
+            if (Files.isDirectory(path)) {
+                registerFromDirectory(registry, path);
+            } else {
+                registerFromArchiveFile(registry, path);
+            }
         } catch (IOException e) {
-            throw new UncheckedIOException("Failed to load templates for " + pluginClass.getName(), e);
+            throw new UncheckedIOException("Failed to load templates from " + path, e);
         }
     }
 
@@ -98,7 +106,7 @@ public final class TemplateJsonLoader {
         }
     }
 
-    private static void registerFromJar(RegistrationContext registry, Path jarPath) throws IOException {
+    private static void registerFromArchiveFile(RegistrationContext registry, Path jarPath) throws IOException {
         try (JarFile jarFile = new JarFile(jarPath.toFile())) {
             for (TemplateRegistrationMapper<?, ?> mapper : ComponentCatalog.TEMPLATE_MAPPERS) {
                 registerFolderFromJar(registry, jarFile, mapper.componentType());

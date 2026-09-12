@@ -211,7 +211,8 @@ class PluginServiceIntegrationTest {
 
         this.mockMvc.perform(
                         multipart("/api/plugins")
-                                .file(new MockMultipartFile("jar", "filestore-local-0.1.0.jar", "application/java-archive", jarBytes))
+                                .file(new MockMultipartFile("file", "filestore-local-0.1.0.jar", "application/java-archive", jarBytes))
+                                .param("type", "JAR")
                                 .header("Authorization", "Bearer " + token)
                                 .header("X-ORM-Audit-Comment", "install plugin")
                                 .accept(MediaType.APPLICATION_JSON)

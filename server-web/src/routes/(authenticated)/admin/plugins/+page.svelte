@@ -56,7 +56,7 @@
 
 		const file = uploadFiles?.[0];
 		if (!file) {
-			formError = 'Select a plugin JAR file to upload.';
+			formError = 'Select a plugin JAR or ZIP file to upload.';
 			return;
 		}
 
@@ -68,9 +68,11 @@
 		submitting = true;
 		formError = '';
 
+		const type = file.name.toLowerCase().endsWith('.zip') ? 'ZIP' : 'JAR';
 		const { error } = await PluginController.uploadPlugin({
 			client: getApiClient(),
-			body: { jar: file },
+			body: { file },
+			query: { type },
 			headers: auditComment.trim() ? { 'X-ORM-Audit-Comment': auditComment.trim() } : undefined,
 		});
 
@@ -160,7 +162,7 @@
 </script>
 
 <h1 class="mb-2 text-2xl font-semibold">Plugins</h1>
-<p class="mb-6 text-hint">Upload plugin JARs, enable or disable plugins, and remove plugins from the workgroup.</p>
+<p class="mb-6 text-hint">Upload plugin JARs or template ZIPs, enable or disable plugins, and remove plugins from the workgroup.</p>
 
 {#if data.error}
 	<p class="text-destructive">{data.error}</p>
@@ -238,14 +240,14 @@
 
 	<form class="mt-6 card p-5" onsubmit={handleUpload}>
 		<h2 class="mb-1 text-lg font-medium">Upload plugin</h2>
-		<p class="mb-4 text-hint">Select a JAR with Plugin-Id and Plugin-Version manifest attributes.</p>
+		<p class="mb-4 text-hint">Select a JAR or ZIP with a root plugin.json (id and version). ZIPs are templates-only.</p>
 
 		<label class="flex flex-col gap-1">
-			<span class="text-label">Plugin JAR</span>
+			<span class="text-label">Plugin archive</span>
 			<input
 				type="file"
-				name="jar"
-				accept=".jar,application/java-archive"
+				name="file"
+				accept=".jar,.zip,application/java-archive,application/zip"
 				disabled={submitting}
 				class="input w-full max-w-md"
 				bind:files={uploadFiles}

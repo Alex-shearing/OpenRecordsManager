@@ -8,6 +8,7 @@ import com.openrecordsmanager.audit.AuditService;
 import com.openrecordsmanager.audit.RequiresAuditComment;
 import com.openrecordsmanager.database.DataRepository;
 import com.openrecordsmanager.plugin.dto.PluginResponse;
+import com.openrecordsmanager.plugin.dto.PluginTypeRequest;
 import com.openrecordsmanager.plugin.dto.SimplePluginResponse;
 import com.openrecordsmanager.plugin.dto.UpdatePluginRequest;
 import com.openrecordsmanager.rest.errors.ResourceInUseException;
@@ -87,16 +88,19 @@ public class PluginService {
 
     @Transactional
     @RequiresAuditComment(operation = AuditOperation.CREATE, targetType = AuditEntityType.PLUGIN)
-    public PluginResponse upload(InputStream jarStream) throws IOException {
-        Path tempDest = this.pluginManager.getDirectory().resolve("upload-" + System.nanoTime() + ".jar");
+    public PluginResponse upload(InputStream archiveStream, PluginTypeRequest extension) throws IOException {
+        Path tempDest = this.pluginManager.getDirectory().resolve("upload-" + System.nanoTime() + "." + extension);
         try {
-            PluginManager.LocalPluginInfo pluginInfo = this.pluginManager.getPluginInfo(jarStream, tempDest);
+            PluginManager.LocalPluginInfo pluginInfo = this.pluginManager.getPluginInfo(archiveStream, tempDest);
             if (pluginInfo == null) {
-                throw new IllegalArgumentException("plugin JAR must contain Plugin-Id and Plugin-Version manifest attributes");
+                throw new IllegalArgumentException(
+                        "plugin archive must contain a root " + PluginDescriptor.FILE_NAME
+                                + " with non-blank id and version"
+                );
             }
 
             if (BuiltinPlugin.BUILTIN_PLUGIN_NAME.equals(pluginInfo.name())) {
-                throw new ResourceInUseException("the builtin plugin cannot be uploaded");
+                throw new ResourceInUseException("the builtin plugin cannot be modified");
             }
 
             Optional<PersistedPlugin> existing = this.repository.pluginRepo.findById(pluginInfo.name());
@@ -112,7 +116,9 @@ public class PluginService {
                 }
             }
 
-            Path finalDest = this.pluginManager.getDirectory().resolve(pluginInfo.name() + "-" + pluginInfo.version() + ".jar");
+            Path finalDest = this.pluginManager.getDirectory().resolve(
+                    pluginInfo.name() + "-" + pluginInfo.version() + "." + extension
+            );
             if (!tempDest.equals(finalDest)) {
                 Files.move(tempDest, finalDest, StandardCopyOption.REPLACE_EXISTING);
             }

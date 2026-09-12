@@ -83,6 +83,28 @@ class TemplateJsonLoaderTest {
         assertTrue(otherContext.ids().isEmpty(), "other plugin must not inherit aus-gov templates");
     }
 
+    @Test
+    void registersFromZipArchive() throws Exception {
+        Path templatesRoot = tempDir.resolve("zip-templates");
+        writeTemplates(templatesRoot);
+        Path zip = tempDir.resolve("pack.zip");
+        try (JarOutputStream jos = new JarOutputStream(Files.newOutputStream(zip))) {
+            try (var paths = Files.walk(templatesRoot)) {
+                for (Path path : paths.filter(Files::isRegularFile).toList()) {
+                    String entryName = templatesRoot.relativize(path).toString().replace('\\', '/');
+                    jos.putNextEntry(new JarEntry(entryName));
+                    jos.write(Files.readAllBytes(path));
+                    jos.closeEntry();
+                }
+            }
+        }
+
+        RecordingContext context = new RecordingContext();
+        TemplateJsonLoader.registerFromPath(context, zip);
+
+        assertEquals(List.of("colors", "red", "favorite_color"), context.ids());
+    }
+
     private void writeTemplates(Path root) throws Exception {
         Path listDir = root.resolve("list");
         Path elementDir = root.resolve("list_element");
