@@ -17,7 +17,7 @@
 	const isActive = $derived(page.url.pathname === hrefPrefix || page.url.pathname.startsWith(`${hrefPrefix}/`));
 </script>
 
-<NavigationMenu.Item>
+<NavigationMenu.Item class="relative">
 	<NavigationMenu.Trigger
 		class="group inline-flex items-center gap-1 rounded-md px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-surface-hover hover:text-foreground data-[state=open]:bg-surface-hover data-active:bg-primary/8 data-active:text-primary"
 		data-active={isActive ? '' : undefined}
@@ -28,7 +28,9 @@
 			aria-hidden="true"
 		/>
 	</NavigationMenu.Trigger>
-	<NavigationMenu.Content>
+	<NavigationMenu.Content
+		class="absolute top-full left-0 z-20 mt-1 rounded-lg border border-border bg-surface shadow-lg"
+	>
 		<ul class="grid min-w-48 gap-1 p-2">
 			{@render children()}
 		</ul>

@@ -3,8 +3,10 @@
 	import type { SimplePluginResponse } from '$lib/api/types.gen';
 	import { getApiClient } from '$lib/api-client';
 	import AuditSaveCard from '$lib/components/AuditSaveCard.svelte';
-	import AppDialog from '$lib/components/AppDialog.svelte';
 	import DialogActions from '$lib/components/DialogActions.svelte';
+	import MonoId from '$lib/components/MonoId.svelte';
+	import TableCard from '$lib/components/TableCard.svelte';
+	import TargetDialog from '$lib/components/TargetDialog.svelte';
 	import { invalidateAll } from '$app/navigation';
 	import toast from 'svelte-hot-french-toast';
 
@@ -27,7 +29,6 @@
 	let submitting = $state(false);
 	let formError = $state('');
 	let deleteTarget = $state<SimplePluginResponse | null>(null);
-	let deleteOpen = $state(false);
 
 	const dirtyNames = $derived(
 		sortedPlugins
@@ -147,7 +148,6 @@
 		});
 
 		submitting = false;
-		deleteOpen = false;
 		deleteTarget = null;
 
 		if (error) {
@@ -162,80 +162,61 @@
 </script>
 
 <h1 class="mb-2 text-2xl font-semibold">Plugins</h1>
-<p class="mb-6 text-hint">Upload plugin JARs or template ZIPs, enable or disable plugins, and remove plugins from the workgroup.</p>
+<p class="mb-6 text-hint">
+	Upload plugin JARs or template ZIPs, enable or disable plugins, and remove plugins from the workgroup.
+</p>
 
 {#if data.error}
 	<p class="text-destructive">{data.error}</p>
 {:else}
 	<form id="plugins-save-form" onsubmit={handleSave}>
-		<section class="card">
-			<div class="card-header">
-				<h2 class="text-lg font-medium">Installed plugins</h2>
-			</div>
-
-			{#if sortedPlugins.length === 0}
-				<p class="p-5 text-hint">No plugins are registered.</p>
-			{:else}
-				<div class="overflow-x-auto">
-					<table class="w-full text-sm">
-						<thead class="border-b border-border text-left text-label">
-							<tr>
-								<th class="px-5 py-3 font-medium">Plugin</th>
-								<th class="px-5 py-3 font-medium">Enabled</th>
-								<th class="px-5 py-3 font-medium">Modified</th>
-								<th class="px-5 py-3 font-medium"><span class="sr-only">Actions</span></th>
-							</tr>
-						</thead>
-						<tbody class="divide-y divide-border">
-							{#each sortedPlugins as plugin (plugin.name)}
-								<tr>
-									<td class="px-5 py-4">
-										<p class="font-mono font-medium">{plugin.name}</p>
-										<p class="text-hint">Version {plugin.version ?? '—'}</p>
-										{#if !plugin.loaded}
-											<p class="text-hint">Not loaded</p>
-										{/if}
-									</td>
-									<td class="px-5 py-4">
-										{#if plugin.name !== 'builtin'}
-											<input
-												type="checkbox"
-												class="size-4 rounded border-border-input"
-												disabled={submitting}
-												aria-label="Enable {plugin.name}"
-												bind:checked={draftEnabled[plugin.name!]}
-											/>
-										{:else}
-											<span class="text-hint">Always on</span>
-										{/if}
-									</td>
-									<td class="px-5 py-4 text-foreground">
-										<time datetime={plugin.dateModified}>
-											{new Date(plugin.dateModified).toLocaleString()}
-										</time>
-									</td>
-									<td class="px-5 py-4 text-right">
-										{#if plugin.name !== 'builtin'}
-											<button
-												type="button"
-												class="btn-ghost text-destructive"
-												disabled={submitting}
-												onclick={() => {
-													deleteTarget = plugin;
-													deleteOpen = true;
-												}}
-											>
-												Delete
-											</button>
-										{/if}
-									</td>
-								</tr>
-							{/each}
-						</tbody>
-					</table>
-				</div>
-			{/if}
-		</section>
+		<TableCard title="Installed plugins" items={sortedPlugins} empty="No plugins are registered." getKey={p => p.name}>
+			{#snippet header()}
+				<th class="px-5 py-3 font-medium">Plugin</th>
+				<th class="px-5 py-3 font-medium">Enabled</th>
+				<th class="px-5 py-3 font-medium">Modified</th>
+				<th class="px-5 py-3 font-medium"><span class="sr-only">Actions</span></th>
+			{/snippet}
+			{#snippet row(plugin)}
+				<td class="px-5 py-4">
+					<p class="font-medium"><MonoId value={plugin.name!} /></p>
+					<p class="text-hint">Version {plugin.version ?? '—'}</p>
+					{#if !plugin.loaded}
+						<p class="text-hint">Not loaded</p>
+					{/if}
+				</td>
+				<td class="px-5 py-4">
+					{#if plugin.name !== 'builtin'}
+						<input
+							type="checkbox"
+							class="size-4 rounded border-border-input"
+							disabled={submitting}
+							aria-label="Enable {plugin.name}"
+							bind:checked={draftEnabled[plugin.name!]}
+						/>
+					{:else}
+						<span class="text-hint">Always on</span>
+					{/if}
+				</td>
+				<td class="px-5 py-4 text-foreground">
+					<time datetime={plugin.dateModified}>
+						{new Date(plugin.dateModified).toLocaleString()}
+					</time>
+				</td>
+				<td class="px-5 py-4 text-right">
+					{#if plugin.name !== 'builtin'}
+						<button
+							type="button"
+							class="btn-ghost text-destructive"
+							disabled={submitting}
+							onclick={() => (deleteTarget = plugin)}
+						>
+							Delete
+						</button>
+					{/if}
+				</td>
+			{/snippet}
+		</TableCard>
 	</form>
 
 	<form class="mt-6 card p-5" onsubmit={handleUpload}>
@@ -273,17 +254,9 @@
 	/>
 {/if}
 
-<AppDialog
-	bind:open={deleteOpen}
-	title="Delete plugin"
-	onclose={() => {
-		deleteTarget = null;
-	}}
->
-	{#snippet description()}
-		{#if deleteTarget}
-			Remove <span class="font-mono">{deleteTarget.name}</span> from the database and this server?
-		{/if}
+<TargetDialog bind:target={deleteTarget} title="Delete plugin">
+	{#snippet description(target)}
+		Remove <MonoId value={target.name} /> from the database and this server?
 	{/snippet}
 	{#snippet footer()}
 		<DialogActions
@@ -294,4 +267,4 @@
 			onconfirm={confirmDelete}
 		/>
 	{/snippet}
-</AppDialog>
+</TargetDialog>

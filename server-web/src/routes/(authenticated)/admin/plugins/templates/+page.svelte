@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { TemplateController } from '$lib/api';
 	import { getApiClient } from '$lib/api-client';
+	import MonoId from '$lib/components/MonoId.svelte';
 
 	let { data } = $props();
 
@@ -141,10 +142,10 @@
 											onchange={event => setSelected(key, event.currentTarget.checked)}
 										/>
 									</td>
-									<td class="px-5 py-4 font-mono font-medium">{template.type}</td>
+									<td class="px-5 py-4"><MonoId value={template.type} /></td>
 									<td class="px-5 py-4">
 										<p class="font-medium">{template.name}</p>
-										<p class="font-mono text-hint">{template.id}</p>
+										<p><MonoId value={template.id} muted /></p>
 									</td>
 								</tr>
 							{/each}

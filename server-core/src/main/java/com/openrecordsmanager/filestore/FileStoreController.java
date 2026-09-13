@@ -52,8 +52,8 @@ public class FileStoreController {
     @PutMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Modify file store config")
     @NotFoundApiResponse
-    public SimpleFileStoreResponse fileStore_update(@PathVariable("id") UUID id, @RequestBody Map<String, ?> properties) {
-        return this.storeService.update(id, properties);
+    public SimpleFileStoreResponse fileStore_update(@PathVariable("id") UUID id, @RequestBody UpdateFileStoreRequest input) {
+        return this.storeService.update(id, input);
     }
 
     @DeleteMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)

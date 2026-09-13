@@ -46,22 +46,40 @@
 			{#if field.description}
 				<span class="text-hint">{field.description}</span>
 			{/if}
-			<input
-				id="{idPrefix}-{key}"
-				type={inputType(field)}
-				name={key}
-				bind:value={values[key]}
-				{required}
-				minlength={field.minLength ?? undefined}
-				maxlength={field.maxLength ?? undefined}
-				pattern={field.pattern ?? undefined}
-				autocomplete={field.writeOnly ? 'current-password' : undefined}
-				disabled={submitting}
-				class="input"
-				aria-invalid={fieldErrors[key] ? 'true' : undefined}
-				aria-describedby={fieldErrors[key] ? `${idPrefix}-${key}-error` : undefined}
-				placeholder=" "
-			/>
+			{#if field.enum && field.enum.length > 0}
+				<select
+					id="{idPrefix}-{key}"
+					name={key}
+					bind:value={values[key]}
+					{required}
+					disabled={submitting}
+					class="input"
+					aria-invalid={fieldErrors[key] ? 'true' : undefined}
+					aria-describedby={fieldErrors[key] ? `${idPrefix}-${key}-error` : undefined}
+				>
+					<option value="" disabled={required}>Select…</option>
+					{#each field.enum as v (v)}
+						<option value={v}>{v}</option>
+					{/each}
+				</select>
+			{:else}
+				<input
+					id="{idPrefix}-{key}"
+					type={inputType(field)}
+					name={key}
+					bind:value={values[key]}
+					{required}
+					minlength={field.minLength ?? undefined}
+					maxlength={field.maxLength ?? undefined}
+					pattern={field.pattern ?? undefined}
+					autocomplete={field.writeOnly ? 'current-password' : undefined}
+					disabled={submitting}
+					class="input"
+					aria-invalid={fieldErrors[key] ? 'true' : undefined}
+					aria-describedby={fieldErrors[key] ? `${idPrefix}-${key}-error` : undefined}
+					placeholder=" "
+				/>
+			{/if}
 			{#if fieldErrors[key]}
 				<span id="{idPrefix}-{key}-error" class="text-sm text-destructive" role="alert">
 					{fieldErrors[key]}

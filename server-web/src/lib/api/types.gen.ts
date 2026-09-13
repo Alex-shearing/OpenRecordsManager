@@ -166,6 +166,7 @@ export type InputFormSchemaField = {
     maxLength?: number;
     pattern?: string;
     contentEncoding?: string;
+    enum?: Array<string>;
 };
 
 export type UpdateAuthProviderRequest = {
@@ -2277,7 +2278,10 @@ export type FileStoreRetrieveOneResponse = FileStoreRetrieveOneResponses[keyof F
 
 export type FileStoreUpdateData = {
     body: {
-        [key: string]: unknown;
+        properties: {
+            [key: string]: unknown;
+        };
+        middlewares: Array<string>;
     };
     path: {
         id: string;

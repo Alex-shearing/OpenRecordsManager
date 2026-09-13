@@ -2,6 +2,7 @@
 	import { AuthController } from '$lib/api';
 	import type { ActionResponse } from '$lib/api/types.gen';
 	import { getApiClient } from '$lib/api-client';
+	import MonoId from '$lib/components/MonoId.svelte';
 	import PageContent from '$lib/components/layout/PageContent.svelte';
 	import UserActionDialog from '$lib/components/UserActionDialog.svelte';
 	import { goto } from '$app/navigation';
@@ -44,7 +45,7 @@
 				</div>
 				<div>
 					<dt class="text-hint">User ID</dt>
-					<dd class="font-mono text-sm">{data.me.id}</dd>
+					<dd><MonoId value={data.me.id} /></dd>
 				</div>
 				{#each Object.entries(data.me.properties) as [key, value] (key)}
 					<div>

@@ -13,6 +13,7 @@ import com.openrecordsmanager.filestore.dto.FileStoreResponse;
 import com.openrecordsmanager.filestore.dto.FileStoreTypeResponse;
 import com.openrecordsmanager.filestore.dto.NewFileStoreRequest;
 import com.openrecordsmanager.filestore.dto.SimpleFileStoreResponse;
+import com.openrecordsmanager.filestore.dto.UpdateFileStoreRequest;
 import com.openrecordsmanager.filestore.middleware.Middleware;
 import com.openrecordsmanager.plugin.registry.ComponentCatalog;
 import com.openrecordsmanager.rest.errors.ResourceInUseException;
@@ -20,7 +21,8 @@ import com.openrecordsmanager.rest.errors.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -89,10 +91,18 @@ public class FileStoreService {
 
     @Transactional
     @RequiresAuditComment(operation = AuditOperation.UPDATE, targetType = AuditEntityType.FILE_STORE)
-    public SimpleFileStoreResponse update(UUID id, Map<String, ?> properties) throws ResourceNotFoundException {
+    public SimpleFileStoreResponse update(UUID id, UpdateFileStoreRequest input) throws ResourceNotFoundException {
         FileStore store = this.repository.fileStoreRepo.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("file store", id));
-        store.setProperties(this.catalog, properties);
+        store.setProperties(this.catalog, input.properties());
+
+        List<Middleware> middlewares = new ArrayList<>(input.middlewares().size());
+        for (UUID middlewareId : input.middlewares()) {
+            Middleware mw = this.repository.fileStoreMiddlewareRepo.findById(middlewareId)
+                    .orElseThrow(() -> new ResourceNotFoundException("file store middleware", middlewareId));
+            middlewares.add(mw);
+        }
+        store.setMiddlewares(middlewares);
 
         this.repository.fileStoreRepo.saveAndFlush(store);
 

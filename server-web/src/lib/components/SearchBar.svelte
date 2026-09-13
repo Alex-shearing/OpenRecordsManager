@@ -28,6 +28,10 @@
 			return;
 		}
 
+		if (event.target instanceof HTMLInputElement && event.target.type) {
+			return;
+		}
+
 		if (event.altKey || event.shiftKey) {
 			return;
 		}

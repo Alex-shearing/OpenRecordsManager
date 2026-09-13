@@ -2,6 +2,7 @@
 	import { AuditController, AuditOperation } from '$lib/api';
 	import { getApiClient } from '$lib/api-client';
 	import AuditSaveCard from '$lib/components/AuditSaveCard.svelte';
+	import MonoId from '$lib/components/MonoId.svelte';
 	import {
 		buildPolicyDraft,
 		findChangedPolicies,
@@ -201,7 +202,7 @@
 								<tr>
 									<td class="px-5 py-4 align-top">
 										<p class="font-medium">{formatEntityType(entityType)}</p>
-										<p class="font-mono text-xs text-hint">{entityType}</p>
+										<p><MonoId value={entityType} muted /></p>
 									</td>
 									{#each Object.keys(AuditOperation) as operation (operation)}
 										{@const policy = operations.get(operation)}

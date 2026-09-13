@@ -1,6 +1,7 @@
 package com.openrecordsmanager.plugin;
 
 import com.openrecordsmanager.database.schema.SchemaMigrationReadyEvent;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
@@ -12,8 +13,8 @@ public class PluginLifecycle {
         this.pluginSyncService = pluginSyncService;
     }
 
-    @EventListener(SchemaMigrationReadyEvent.class)
-    public void onSchemaMigrationReady() {
+    @EventListener({ApplicationReadyEvent.class, SchemaMigrationReadyEvent.class})
+    public void syncWhenSchemaReady() {
         this.pluginSyncService.syncAndReloadOnStartup();
     }
 }
