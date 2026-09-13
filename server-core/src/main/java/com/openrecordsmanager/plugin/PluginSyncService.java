@@ -253,8 +253,7 @@ public class PluginSyncService {
 
     private void reloadEnabledPlugins() {
         this.pluginRepository.flush();
-        Set<String> enabledPluginNames = this.pluginManager.getEnabledPluginNames();
-        this.pluginManager.reload(enabledPluginNames);
+        this.pluginManager.reload(this.pluginManager.getEnabledPluginNames());
         this.componentCatalog.reload(this.pluginManager);
     }
 

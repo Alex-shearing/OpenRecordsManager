@@ -5,18 +5,14 @@ import com.openrecordsmanager.api.template.TemplateComponent;
 import com.openrecordsmanager.api.types.ComponentType;
 import com.openrecordsmanager.plugin.registry.ComponentCatalog;
 import com.openrecordsmanager.plugin.registry.mapper.TemplateRegistrationMapper;
-import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
-import java.net.URISyntaxException;
-import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.security.CodeSource;
 import java.util.Comparator;
 import java.util.List;
 import java.util.jar.JarEntry;
@@ -34,27 +30,6 @@ public final class TemplateJsonLoader {
     private static final Logger LOGGER = LoggerFactory.getLogger(TemplateJsonLoader.class);
 
     private TemplateJsonLoader() {
-    }
-
-    /**
-     * Loads templates only from {@code pluginClass}'s code source (one plugin JAR or exploded root).
-     */
-    public static void registerAll(RegistrationContext registry, Class<?> pluginClass) {
-        URL location = codeSourceLocation(pluginClass);
-        if (location == null || !"file".equals(location.getProtocol())) {
-            if (location != null) {
-                LOGGER.warn("Unsupported plugin code source for templates: {}", location);
-            }
-            return;
-        }
-        try {
-            registerFromPath(registry, Path.of(location.toURI()));
-        } catch (URISyntaxException e) {
-            throw new UncheckedIOException(
-                    "Failed to resolve templates for " + pluginClass.getName(),
-                    new IOException(e)
-            );
-        }
     }
 
     /**
@@ -142,10 +117,5 @@ public final class TemplateJsonLoader {
                 registry.registerComponent(id, component);
             }
         }
-    }
-
-    private static @Nullable URL codeSourceLocation(Class<?> pluginClass) {
-        CodeSource codeSource = pluginClass.getProtectionDomain().getCodeSource();
-        return codeSource != null ? codeSource.getLocation() : null;
     }
 }

@@ -2,20 +2,18 @@ package com.openrecordsmanager.plugin;
 
 import com.openrecordsmanager.api.Plugin;
 import com.openrecordsmanager.api.RegistrationContext;
-import com.openrecordsmanager.template.TemplateJsonLoader;
-
-import java.nio.file.Path;
 
 /**
  * Synthetic plugin for a templates-only {@code .zip} archive (no SPI / ClassLoader entry).
+ * <p>
+ * JSON templates are registered by {@link com.openrecordsmanager.plugin.registry.ComponentCatalog}
+ * from {@link LoadedPlugin#archive()}; {@link #initialise} is intentionally empty.
  */
 public final class JsonTemplatePackPlugin implements Plugin {
     private final String id;
-    private final Path archivePath;
 
-    public JsonTemplatePackPlugin(String id, Path archivePath) {
+    public JsonTemplatePackPlugin(String id) {
         this.id = id;
-        this.archivePath = archivePath;
     }
 
     @Override
@@ -25,6 +23,6 @@ public final class JsonTemplatePackPlugin implements Plugin {
 
     @Override
     public void initialise(RegistrationContext registry) {
-        TemplateJsonLoader.registerFromPath(registry, this.archivePath);
+        // Templates loaded via LoadedPlugin.archive → TemplateJsonLoader.registerFromPath
     }
 }

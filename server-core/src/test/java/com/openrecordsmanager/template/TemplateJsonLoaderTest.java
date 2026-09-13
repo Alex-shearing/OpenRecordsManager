@@ -5,12 +5,10 @@ import com.openrecordsmanager.api.RegistrationContext;
 import com.openrecordsmanager.api.template.list.ListElementTemplate;
 import com.openrecordsmanager.api.template.list.ListTemplate;
 import com.openrecordsmanager.api.template.property.ObjectPropertyTemplate;
+import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
-import java.net.URL;
-import java.net.URLClassLoader;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -31,12 +29,9 @@ class TemplateJsonLoaderTest {
     void registersJsonFilesUsingFolderAndFilename() throws Exception {
         Path root = tempDir.resolve("plugin-a");
         writeTemplates(root);
-        compileMarker(root, "com.example.PluginA");
 
         RecordingContext context = new RecordingContext();
-        try (URLClassLoader classLoader = new URLClassLoader(new URL[]{root.toUri().toURL()}, null)) {
-            TemplateJsonLoader.registerAll(context, Class.forName("com.example.PluginA", true, classLoader));
-        }
+        TemplateJsonLoader.registerFromPath(context, root);
 
         assertEquals(List.of("colors", "red", "favorite_color"), context.ids());
         assertInstanceOf(ListTemplate.class, context.components().get("colors"));
@@ -50,12 +45,9 @@ class TemplateJsonLoaderTest {
     void ignoresMissingFolders() throws Exception {
         Path root = tempDir.resolve("empty-plugin");
         Files.createDirectories(root);
-        compileMarker(root, "com.example.EmptyPlugin");
 
         RecordingContext context = new RecordingContext();
-        try (URLClassLoader classLoader = new URLClassLoader(new URL[]{root.toUri().toURL()}, null)) {
-            TemplateJsonLoader.registerAll(context, Class.forName("com.example.EmptyPlugin", true, classLoader));
-        }
+        TemplateJsonLoader.registerFromPath(context, root);
         assertTrue(context.ids().isEmpty());
     }
 
@@ -66,18 +58,13 @@ class TemplateJsonLoaderTest {
 
         Path ausGovJar = tempDir.resolve("aus-gov.jar");
         Path otherJar = tempDir.resolve("other.jar");
-        buildJar(ausGovJar, "com.example.AusGov", templatesRoot);
-        buildJar(otherJar, "com.example.Other", null);
+        buildJar(ausGovJar, templatesRoot);
+        buildJar(otherJar, null);
 
         RecordingContext ausGovContext = new RecordingContext();
         RecordingContext otherContext = new RecordingContext();
-        try (URLClassLoader shared = new URLClassLoader(
-                new URL[]{ausGovJar.toUri().toURL(), otherJar.toUri().toURL()},
-                null
-        )) {
-            TemplateJsonLoader.registerAll(ausGovContext, Class.forName("com.example.AusGov", true, shared));
-            TemplateJsonLoader.registerAll(otherContext, Class.forName("com.example.Other", true, shared));
-        }
+        TemplateJsonLoader.registerFromPath(ausGovContext, ausGovJar);
+        TemplateJsonLoader.registerFromPath(otherContext, otherJar);
 
         assertFalse(ausGovContext.ids().isEmpty());
         assertTrue(otherContext.ids().isEmpty(), "other plugin must not inherit aus-gov templates");
@@ -88,16 +75,7 @@ class TemplateJsonLoaderTest {
         Path templatesRoot = tempDir.resolve("zip-templates");
         writeTemplates(templatesRoot);
         Path zip = tempDir.resolve("pack.zip");
-        try (JarOutputStream jos = new JarOutputStream(Files.newOutputStream(zip))) {
-            try (var paths = Files.walk(templatesRoot)) {
-                for (Path path : paths.filter(Files::isRegularFile).toList()) {
-                    String entryName = templatesRoot.relativize(path).toString().replace('\\', '/');
-                    jos.putNextEntry(new JarEntry(entryName));
-                    jos.write(Files.readAllBytes(path));
-                    jos.closeEntry();
-                }
-            }
-        }
+        buildJar(zip, templatesRoot);
 
         RecordingContext context = new RecordingContext();
         TemplateJsonLoader.registerFromPath(context, zip);
@@ -136,51 +114,34 @@ class TemplateJsonLoaderTest {
                 """);
     }
 
-    private void buildJar(Path jar, String className, Path templatesRoot) throws Exception {
-        Path classes = tempDir.resolve("classes-" + jar.getFileName());
-        Files.createDirectories(classes);
-        compileMarker(classes, className);
-        String classPath = className.replace('.', '/') + ".class";
-        byte[] classBytes = Files.readAllBytes(classes.resolve(classPath));
-
+    private void buildJar(Path jar, Path templatesRoot) throws Exception {
         try (JarOutputStream jos = new JarOutputStream(Files.newOutputStream(jar))) {
-            jos.putNextEntry(new JarEntry(classPath));
-            jos.write(classBytes);
-            jos.closeEntry();
-            if (templatesRoot != null) {
-                try (var paths = Files.walk(templatesRoot)) {
-                    for (Path path : paths.filter(Files::isRegularFile).toList()) {
-                        String entryName = templatesRoot.relativize(path).toString().replace('\\', '/');
-                        jos.putNextEntry(new JarEntry(entryName));
-                        jos.write(Files.readAllBytes(path));
-                        jos.closeEntry();
-                    }
+            if (templatesRoot == null) {
+                jos.putNextEntry(new JarEntry("META-INF/"));
+                jos.closeEntry();
+                return;
+            }
+            try (var paths = Files.walk(templatesRoot)) {
+                for (Path path : paths.filter(Files::isRegularFile).toList()) {
+                    String entryName = templatesRoot.relativize(path).toString().replace('\\', '/');
+                    jos.putNextEntry(new JarEntry(entryName));
+                    jos.write(Files.readAllBytes(path));
+                    jos.closeEntry();
                 }
             }
         }
-    }
-
-    private void compileMarker(Path outputDir, String binaryName) throws Exception {
-        String packageName = binaryName.substring(0, binaryName.lastIndexOf('.'));
-        String simpleName = binaryName.substring(binaryName.lastIndexOf('.') + 1);
-        Path srcDir = tempDir.resolve("src-" + simpleName);
-        Path src = srcDir.resolve(packageName.replace('.', '/') + "/" + simpleName + ".java");
-        Files.createDirectories(src.getParent());
-        Files.writeString(src, "package " + packageName + "; public class " + simpleName + " {}", StandardCharsets.UTF_8);
-
-        Process process = new ProcessBuilder(
-                "javac",
-                "-d", outputDir.toString(),
-                src.toString()
-        ).inheritIO().start();
-        assertEquals(0, process.waitFor(), "javac failed for " + binaryName);
     }
 
     private static final class RecordingContext implements RegistrationContext {
         private final Map<String, Component> registered = new LinkedHashMap<>();
 
         @Override
-        public void registerComponent(String id, Component component) {
+        public String getName() {
+            return "test";
+        }
+
+        @Override
+        public void registerComponent(@NonNull String id, @NonNull Component component) {
             this.registered.put(id, component);
         }
 

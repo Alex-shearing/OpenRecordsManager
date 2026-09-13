@@ -29,12 +29,12 @@ public record PluginDescriptor(String id, String version) {
         if (node == null || !node.isObject()) {
             throw new IOException(FILE_NAME + " must be a JSON object");
         }
-        String id = node.get("id").asString();
-        String version = node.get("version").asString();
-        if (id == null || id.isBlank()) {
+        String id = node.optional("id").map(JsonNode::asString).orElse("");
+        String version = node.optional("version").map(JsonNode::asString).orElse("");
+        if (id.isBlank()) {
             throw new IllegalArgumentException(FILE_NAME + " requires a non-blank id");
         }
-        if (version == null || version.isBlank()) {
+        if (version.isBlank()) {
             throw new IllegalArgumentException(FILE_NAME + " requires a non-blank version");
         }
 

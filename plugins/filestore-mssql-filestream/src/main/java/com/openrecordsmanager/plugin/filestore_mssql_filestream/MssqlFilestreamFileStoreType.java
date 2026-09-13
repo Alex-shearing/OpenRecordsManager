@@ -12,9 +12,7 @@ import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.sql.*;
-import java.util.Locale;
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -55,9 +53,7 @@ public class MssqlFilestreamFileStoreType
         try (Connection connection = openConnection(settings);
              Statement statement = connection.createStatement()) {
             statement.execute(ENSURE_TABLE_SQL);
-            LOGGER.info("Ensured FILESTREAM table {} exists in database {}", TABLE, databaseName);
-        } catch (InputValidationException e) {
-            throw e;
+            LOGGER.info("Ensured FILESTREAM table {} exists in database", TABLE);
         } catch (SQLException e) {
             throw new InputValidationException(Map.of(
                     "jdbcUrl",

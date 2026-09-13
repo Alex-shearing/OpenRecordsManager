@@ -17,7 +17,9 @@ import com.openrecordsmanager.plugin.registry.ComponentCatalog;
 import com.openrecordsmanager.rest.errors.ResourceNotFoundException;
 import org.jspecify.annotations.Nullable;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.core.env.AbstractEnvironment;
 import org.springframework.core.env.Environment;
+import org.springframework.core.env.PropertySource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import tools.jackson.databind.JsonNode;
@@ -78,14 +80,48 @@ public class ConfigService implements ConfigStore {
 
     @Override
     public <T> @Nullable T getValue(ConfigType<T> key) {
-        String envRaw = this.environment.getProperty(key.key());
+        // Prefer file/env overrides, but never DatabaseConfigSource: that uses a separate JDBC
+        // connection and will deadlock with an open write TX on system_configurations (SQL Server).
+        String envRaw = this.resolveNonDatabaseProperty(key.key());
         if (envRaw != null) {
             T fromEnv = key.type().parseValue(envRaw);
             if (fromEnv != null) {
                 return fromEnv;
             }
         }
+
+        if (!key.key().startsWith("server.")) {
+            Optional<ConfigItem> stored = this.repository.configRepo.findByConfigKey(key.key());
+            if (stored.isPresent()) {
+                T fromDb = key.type().parse(stored.get().getValue());
+                if (fromDb != null) {
+                    return fromDb;
+                }
+            }
+        }
+
         return key.defaultValue();
+    }
+
+    /**
+     * Resolves a property from Environment sources except {@link DatabaseConfigSource} and Boot's
+     * aggregating {@code configurationProperties} source (which would re-enter the DB source).
+     */
+    private @Nullable String resolveNonDatabaseProperty(String key) {
+        if (!(this.environment instanceof AbstractEnvironment abstractEnvironment)) {
+            return null;
+        }
+
+        for (PropertySource<?> source : abstractEnvironment.getPropertySources()) {
+            if (source instanceof DatabaseConfigSource || "configurationProperties".equals(source.getName())) {
+                continue;
+            }
+            Object value = source.getProperty(key);
+            if (value != null) {
+                return value.toString();
+            }
+        }
+        return null;
     }
 
     private Optional<ConfigType<?>> getConfigByKey(String key) {

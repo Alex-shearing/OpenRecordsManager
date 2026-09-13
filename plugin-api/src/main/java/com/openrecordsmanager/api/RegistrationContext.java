@@ -3,6 +3,8 @@ package com.openrecordsmanager.api;
 import com.openrecordsmanager.api.config.ConfigType;
 
 public interface RegistrationContext {
+    String getName();
+
     void registerComponent(String id, Component component);
 
     default void registerConfig(ConfigType<?>... configs) {

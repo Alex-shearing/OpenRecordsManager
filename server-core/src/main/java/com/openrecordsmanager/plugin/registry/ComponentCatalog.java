@@ -1,13 +1,16 @@
 package com.openrecordsmanager.plugin.registry;
 
-import com.openrecordsmanager.api.*;
+import com.openrecordsmanager.api.Component;
+import com.openrecordsmanager.api.ComponentAccess;
+import com.openrecordsmanager.api.RegistrationContext;
+import com.openrecordsmanager.api.ResourceIdentifier;
 import com.openrecordsmanager.api.template.TemplateComponent;
 import com.openrecordsmanager.api.template.list.ListTemplate;
 import com.openrecordsmanager.api.types.ComponentType;
 import com.openrecordsmanager.api.types.ComponentTypes;
+import com.openrecordsmanager.plugin.LoadedPlugin;
 import com.openrecordsmanager.plugin.PluginManager;
 import com.openrecordsmanager.plugin.registry.mapper.*;
-import com.openrecordsmanager.template.TemplateJsonLoader;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -89,11 +92,9 @@ public class ComponentCatalog implements ComponentAccess {
 
     private void loadCatalog(PluginManager pluginManager) {
         Builder builder = new Builder();
-        for (Plugin plugin : pluginManager.getPlugins()) {
-            LOGGER.info("Initializing plugin {}...", plugin.getName());
-            RegistrationContextImpl context = new RegistrationContextImpl(builder, plugin);
-            TemplateJsonLoader.registerAll(context, plugin.getClass());
-            plugin.initialise(context);
+        for (LoadedPlugin loaded : pluginManager.getLoadedPlugins()) {
+            LOGGER.info("Initializing plugin {}...", loaded.name());
+            loaded.initialize(builder);
         }
         builder.build();
     }
@@ -115,15 +116,15 @@ public class ComponentCatalog implements ComponentAccess {
     }
 
 
-    private class Builder {
+    public class Builder {
         private final Map<ComponentType<?>, ComponentRegistry<?>.Builder> builder = ComponentCatalog.this.componentsMap
                 .entrySet().stream()
                 .map(a -> Map.entry(a.getKey(), a.getValue().builder()))
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 
         @SuppressWarnings("unchecked")
-        private <T extends Component> void registerInstance(RegistrationContextImpl context, String id, T component) {
-            ResourceIdentifier identifier = new ResourceIdentifier(context.plugin.getName(), id);
+        public <T extends Component> void registerInstance(RegistrationContext context, String id, T component) {
+            ResourceIdentifier identifier = new ResourceIdentifier(context.getName(), id);
 
             ComponentType<T> type = ComponentTypes.fromObject(component);
             ComponentRegistry<T>.Builder typeBuilder = (ComponentRegistry<T>.Builder) this.builder.get(type);
@@ -141,13 +142,6 @@ public class ComponentCatalog implements ComponentAccess {
 
         public void build() {
             this.builder.forEach((_, b) -> b.build());
-        }
-    }
-
-    private record RegistrationContextImpl(Builder builder, Plugin plugin) implements RegistrationContext {
-        @Override
-        public void registerComponent(String id, Component component) {
-            this.builder.registerInstance(this, id, component);
         }
     }
 }

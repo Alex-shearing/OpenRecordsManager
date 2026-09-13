@@ -17,6 +17,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.file.Files;
@@ -28,12 +29,12 @@ import java.util.zip.ZipFile;
 @Service
 public class PluginManager {
     private static final Logger LOGGER = LoggerFactory.getLogger(PluginManager.class);
+    private static final LoadedPlugin BUILTIN_PLUGIN = new LoadedPlugin(new BuiltinPlugin(), null);
 
     private final Path directory;
     private final PluginRepository pluginRepo;
 
-    private ImmutableList<Plugin> plugins = ImmutableList.of(new BuiltinPlugin());
-    private Set<String> loadedPersistedNames = Set.of();
+    private ImmutableList<LoadedPlugin> loadedPlugins = ImmutableList.of(BUILTIN_PLUGIN);
     private @Nullable URLClassLoader classLoader;
 
     public PluginManager(
@@ -58,12 +59,12 @@ public class PluginManager {
         this.instantiatePlugins(pluginsToLoad);
     }
 
-    public List<Plugin> getPlugins() {
-        return this.plugins;
+    public List<LoadedPlugin> getLoadedPlugins() {
+        return this.loadedPlugins;
     }
 
     public boolean isLoaded(String name) {
-        return this.loadedPersistedNames.contains(name);
+        return this.loadedPlugins.stream().anyMatch(loadedPlugin -> loadedPlugin.name().equals(name));
     }
 
     public Path getDirectory() {
@@ -180,8 +181,8 @@ public class PluginManager {
     }
 
     private void instantiatePlugins(LocalPluginInfo[] pluginList) {
-        List<Plugin> loadedPlugins = new ArrayList<>();
-        loadedPlugins.add(new BuiltinPlugin());
+        List<LoadedPlugin> loadedPlugins = new ArrayList<>();
+        loadedPlugins.add(BUILTIN_PLUGIN);
 
         // Load jar plugins
         LocalPluginInfo[] jars = Arrays.stream(pluginList)
@@ -200,10 +201,13 @@ public class PluginManager {
         this.close();
         this.classLoader = new URLClassLoader(urls, this.getClass().getClassLoader());
 
-        ServiceLoader<Plugin> loader = ServiceLoader.load(Plugin.class, this.classLoader);
-
-        for (Plugin plugin : loader) {
-            loadedPlugins.add(plugin);
+        for (Plugin plugin : ServiceLoader.load(Plugin.class, this.classLoader)) {
+            try {
+                URI jarUrl = plugin.getClass().getProtectionDomain().getCodeSource().getLocation().toURI();
+                loadedPlugins.add(new LoadedPlugin(plugin, Path.of(jarUrl)));
+            } catch (Exception e) {
+                LOGGER.error("Failed to load plugin jar for {}", plugin.getName(), e);
+            }
         }
 
         // Load zip plugins
@@ -212,13 +216,13 @@ public class PluginManager {
                 .toArray(LocalPluginInfo[]::new);
 
         for (LocalPluginInfo zip : zips) {
-            loadedPlugins.add(new JsonTemplatePackPlugin(zip.name(), zip.file().toPath()));
+            loadedPlugins.add(new LoadedPlugin(
+                    new JsonTemplatePackPlugin(zip.name()),
+                    zip.file().toPath()
+            ));
         }
 
-        this.plugins = ImmutableList.copyOf(loadedPlugins);
-        this.loadedPersistedNames = Arrays.stream(pluginList)
-                .map(LocalPluginInfo::name)
-                .collect(java.util.stream.Collectors.toUnmodifiableSet());
+        this.loadedPlugins = ImmutableList.copyOf(loadedPlugins);
     }
 
     @PreDestroy
