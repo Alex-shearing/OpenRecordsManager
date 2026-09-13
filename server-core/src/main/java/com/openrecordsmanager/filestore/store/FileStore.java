@@ -97,7 +97,9 @@ public class FileStore {
     }
 
     public Map<String, ?> getProperties(ComponentCatalog catalog) {
-        return JsonSchemaValidator.serializeSettings(this.getStoreType(catalog).parseSettings(this.properties));
+        return JsonSchemaValidator.serializeSettingsForClient(
+                this.getStoreType(catalog).parseSettings(this.properties)
+        );
     }
 
     public InputStream getFile(ComponentCatalog catalog, FileStoreEntry entry) throws IOException {
@@ -116,7 +118,12 @@ public class FileStore {
 
     public void setProperties(ComponentCatalog catalog, Map<String, ?> properties) {
         FileStoreType<?> type = this.getStoreType(catalog);
-        this.properties = JsonSchemaValidator.serializeSettings(type.parseSettings(properties));
+        Map<String, Object> merged = JsonSchemaValidator.mergeWriteOnlyFromExisting(
+                type.getSettingsClass(),
+                properties,
+                this.properties
+        );
+        this.properties = JsonSchemaValidator.serializeSettings(type.parseSettings(merged));
         type.initializeUntyped(this.properties);
     }
 

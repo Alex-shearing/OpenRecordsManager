@@ -39,7 +39,7 @@
 	{@render before?.()}
 
 	{#each Object.entries(schema.properties) as [key, field] (key)}
-		{@const required = schema.required.includes(key)}
+		{@const required = schema.required.includes(key) && !field.writeOnly && field.format !== 'password'}
 
 		<label class="flex flex-col gap-1">
 			<span>{field.title}</span>
@@ -72,7 +72,7 @@
 					minlength={field.minLength ?? undefined}
 					maxlength={field.maxLength ?? undefined}
 					pattern={field.pattern ?? undefined}
-					autocomplete={field.writeOnly ? 'current-password' : undefined}
+					autocomplete={field.writeOnly || field.format === 'password' ? 'current-password' : undefined}
 					disabled={submitting}
 					class="input w-full"
 					aria-invalid={fieldErrors[key] ? 'true' : undefined}

@@ -8,8 +8,6 @@ import com.openrecordsmanager.api.RegistrationContext;
  */
 public class FileStoreMssqlFilestreamPlugin implements Plugin {
 
-    public static final MssqlFilestreamFileStoreType MSSQL_FILESTREAM_FILE_STORE_TYPE = new MssqlFilestreamFileStoreType();
-
     @Override
     public String getName() {
         return "filestore_mssql_filestream";
@@ -17,6 +15,6 @@ public class FileStoreMssqlFilestreamPlugin implements Plugin {
 
     @Override
     public void initialise(RegistrationContext registry) {
-        registry.registerComponent("filestream", MSSQL_FILESTREAM_FILE_STORE_TYPE);
+        registry.registerComponent("filestream", new MssqlFilestreamFileStoreType());
     }
 }

@@ -6,6 +6,7 @@ import com.networknt.schema.SchemaRegistry;
 import com.networknt.schema.SpecificationVersion;
 import com.openrecordsmanager.api.ComponentReference;
 import com.openrecordsmanager.api.errors.InputValidationException;
+import org.jspecify.annotations.Nullable;
 import tools.jackson.databind.DeserializationFeature;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
@@ -15,10 +16,7 @@ import tools.jackson.databind.node.ArrayNode;
 import tools.jackson.databind.node.ObjectNode;
 
 import java.lang.reflect.RecordComponent;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public final class JsonSchemaValidator {
     public static final ObjectMapper MAPPER = JsonMapper.builder()
@@ -105,12 +103,7 @@ public final class JsonSchemaValidator {
         List<String> required = new ArrayList<>();
 
         for (RecordComponent component : recordClass.getRecordComponents()) {
-            SchemaField field = component.getAnnotation(SchemaField.class);
-            if (field == null) {
-                throw new IllegalArgumentException(
-                        "Record component '" + component.getName() + "' on " + recordClass.getName()
-                                + " must be annotated with @SchemaField");
-            }
+            SchemaField field = requireSchemaField(recordClass, component);
 
             ObjectNode property = properties.putObject(component.getName());
             applyFieldType(property, component.getType(), field);
@@ -148,6 +141,9 @@ public final class JsonSchemaValidator {
 
     private static void applyFieldType(ObjectNode property, Class<?> componentType, SchemaField field) {
         property.put("title", field.title());
+        if (isWriteOnly(field)) {
+            property.put("writeOnly", true);
+        }
 
         if (componentType.isEnum()) {
             property.put("type", "string");
@@ -161,9 +157,6 @@ public final class JsonSchemaValidator {
         if (componentType == byte[].class) {
             property.put("type", "string");
             property.put("contentEncoding", "base64");
-            if (field.format() == SchemaFieldFormat.PASSWORD) {
-                property.put("writeOnly", true);
-            }
             return;
         }
 
@@ -186,15 +179,27 @@ public final class JsonSchemaValidator {
 
         property.put("type", "string");
 
-        if (field.format() == SchemaFieldFormat.PASSWORD) {
-            property.put("writeOnly", true);
-        } else if (field.format() == SchemaFieldFormat.EMAIL) {
+        if (field.format() == SchemaFieldFormat.EMAIL) {
             property.put("format", "email");
         }
     }
 
     private static boolean isStringLike(Class<?> componentType) {
         return componentType == String.class || componentType == char.class || componentType == Character.class;
+    }
+
+    static boolean isWriteOnly(SchemaField field) {
+        return field.writeOnly() || field.format() == SchemaFieldFormat.PASSWORD;
+    }
+
+    private static SchemaField requireSchemaField(Class<? extends Record> recordClass, RecordComponent component) {
+        SchemaField field = component.getAnnotation(SchemaField.class);
+        if (field == null) {
+            throw new IllegalArgumentException(
+                    "Record component '" + component.getName() + "' on " + recordClass.getName()
+                            + " must be annotated with @SchemaField");
+        }
+        return field;
     }
 
     /**
@@ -211,5 +216,56 @@ public final class JsonSchemaValidator {
 
     public static Map<String, ?> serializeSettings(Record record) throws InputValidationException {
         return validateAndSerialize(record.getClass(), record);
+    }
+
+    /**
+     * Like {@link #serializeSettings} but omits write-only fields so secrets are absent from API responses.
+     */
+    public static Map<String, ?> serializeSettingsForClient(Record record) throws InputValidationException {
+        Map<String, Object> serialized = new LinkedHashMap<>(serializeSettings(record));
+        for (RecordComponent component : record.getClass().getRecordComponents()) {
+            SchemaField field = requireSchemaField(record.getClass(), component);
+            if (isWriteOnly(field)) {
+                serialized.remove(component.getName());
+            }
+        }
+        return serialized;
+    }
+
+    /**
+     * Copies write-only values from {@code existing} into {@code incoming} when the client omitted them
+     * or sent a blank value (empty string / empty byte array). Used on settings updates.
+     */
+    public static Map<String, Object> mergeWriteOnlyFromExisting(
+            Class<? extends Record> recordClass,
+            Map<String, ?> incoming,
+            Map<String, ?> existing
+    ) {
+        Map<String, Object> merged = new LinkedHashMap<>();
+        if (incoming != null) {
+            merged.putAll(incoming);
+        }
+        if (existing == null || existing.isEmpty()) {
+            return merged;
+        }
+
+        for (RecordComponent component : recordClass.getRecordComponents()) {
+            String name = component.getName();
+            if (!isBlankValue(merged.get(name)) || !existing.containsKey(name)) {
+                continue;
+            }
+            merged.put(name, existing.get(name));
+        }
+        return merged;
+    }
+
+    private static boolean isBlankValue(@Nullable Object value) {
+        return switch (value) {
+            case null -> true;
+            case String stringValue -> stringValue.isBlank();
+            case byte[] bytes -> bytes.length == 0;
+            case List<?> list -> list.isEmpty();
+            default -> false;
+        };
     }
 }

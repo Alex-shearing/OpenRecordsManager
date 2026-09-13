@@ -51,7 +51,9 @@ public class Middleware {
     }
 
     public Map<String, ?> getProperties(ComponentCatalog catalog) {
-        return JsonSchemaValidator.serializeSettings(this.getMiddlewareType(catalog).parseSettings(this.properties));
+        return JsonSchemaValidator.serializeSettingsForClient(
+                this.getMiddlewareType(catalog).parseSettings(this.properties)
+        );
     }
 
     public FileStoreMiddlewareType<?> getMiddlewareType(ComponentCatalog catalog) {
@@ -70,7 +72,12 @@ public class Middleware {
 
     public void setProperties(ComponentCatalog catalog, Map<String, ?> properties) {
         FileStoreMiddlewareType<?> type = this.getMiddlewareType(catalog);
-        this.properties = JsonSchemaValidator.serializeSettings(type.parseSettings(properties));
+        Map<String, Object> merged = JsonSchemaValidator.mergeWriteOnlyFromExisting(
+                type.getSettingsClass(),
+                properties,
+                this.properties
+        );
+        this.properties = JsonSchemaValidator.serializeSettings(type.parseSettings(merged));
         type.initializeUntyped(this.properties);
     }
 

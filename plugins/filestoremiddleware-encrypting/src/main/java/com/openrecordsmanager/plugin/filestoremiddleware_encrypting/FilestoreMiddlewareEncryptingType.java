@@ -4,8 +4,6 @@ import com.openrecordsmanager.api.errors.InputValidationException;
 import com.openrecordsmanager.api.filestore.FileStoreMiddlewareType;
 import com.openrecordsmanager.api.schema.SchemaField;
 import com.openrecordsmanager.api.schema.SchemaFieldFormat;
-import com.openrecordsmanager.api.types.MaskingConverter;
-import tools.jackson.databind.annotation.JsonSerialize;
 
 import javax.crypto.Cipher;
 import javax.crypto.CipherInputStream;
@@ -135,8 +133,7 @@ public class FilestoreMiddlewareEncryptingType extends FileStoreMiddlewareType<F
     }
 
     public record EncryptingMiddlewareSettings(
-            @SchemaField(title = "Secret Key", format = SchemaFieldFormat.PASSWORD)
-            @JsonSerialize(converter = MaskingConverter.class) byte[] secretKey,
+            @SchemaField(title = "Secret Key", format = SchemaFieldFormat.PASSWORD, writeOnly = true) byte[] secretKey,
             @SchemaField(title = "Algorithm") EncryptionType algorithm
     ) {
     }
