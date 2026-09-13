@@ -166,12 +166,16 @@ GO
 CREATE TABLE plugin (
     name NVARCHAR(255) NOT NULL PRIMARY KEY,
     version NVARCHAR(255) NOT NULL,
-    file_id UNIQUEIDENTIFIER UNIQUE,
+    file_id UNIQUEIDENTIFIER NULL,
     enabled BIT NOT NULL CONSTRAINT df_plugin_enabled DEFAULT 1,
     date_created DATETIMEOFFSET NOT NULL,
     date_modified DATETIMEOFFSET NOT NULL,
     CONSTRAINT fk_plugin_file FOREIGN KEY (file_id) REFERENCES file_store_entry (id)
 );
+GO
+
+-- SQL Server UNIQUE constraints allow only one NULL; plugins without a stored file need many NULLs.
+CREATE UNIQUE INDEX uq_plugin_file_id ON plugin (file_id) WHERE file_id IS NOT NULL;
 GO
 
 CREATE TABLE record (

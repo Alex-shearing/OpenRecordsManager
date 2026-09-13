@@ -17,7 +17,7 @@ public class PersistedPlugin {
     private String version;
 
     @OneToOne(cascade = CascadeType.ALL)
-    @JoinColumn
+    @JoinColumn(unique = false)
     private @Nullable FileStoreEntry file;
 
     @Column(nullable = false)
