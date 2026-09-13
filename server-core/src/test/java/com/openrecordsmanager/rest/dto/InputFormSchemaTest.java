@@ -1,6 +1,6 @@
 package com.openrecordsmanager.rest.dto;
 
-import com.openrecordsmanager.api.schema.SchemaField;
+import io.swagger.v3.oas.annotations.media.Schema;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -13,8 +13,8 @@ class InputFormSchemaTest {
     }
 
     record Settings(
-            @SchemaField(title = "Mode") SampleMode mode,
-            @SchemaField(title = "Name") String name
+            @Schema(title = "Mode") SampleMode mode,
+            @Schema(title = "Name") String name
     ) {
     }
 

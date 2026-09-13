@@ -1,5 +1,11 @@
 package com.openrecordsmanager.api.schema;
 
+import com.github.victools.jsonschema.generator.*;
+import com.github.victools.jsonschema.module.jackson.JacksonOption;
+import com.github.victools.jsonschema.module.jackson.JacksonSchemaModule;
+import com.github.victools.jsonschema.module.jakarta.validation.JakartaValidationModule;
+import com.github.victools.jsonschema.module.jakarta.validation.JakartaValidationOption;
+import com.github.victools.jsonschema.module.swagger2.Swagger2Module;
 import com.networknt.schema.Error;
 import com.networknt.schema.Schema;
 import com.networknt.schema.SchemaRegistry;
@@ -12,11 +18,10 @@ import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.json.JsonMapper;
 import tools.jackson.databind.module.SimpleModule;
-import tools.jackson.databind.node.ArrayNode;
 import tools.jackson.databind.node.ObjectNode;
 
-import java.lang.reflect.RecordComponent;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 public final class JsonSchemaValidator {
     public static final ObjectMapper MAPPER = JsonMapper.builder()
@@ -26,14 +31,70 @@ public final class JsonSchemaValidator {
                     .addKeyDeserializer(ComponentReference.class, new ComponentReference.RefKeyDeserializer())
             )
             .build();
+
     private static final SchemaRegistry SCHEMA_REGISTRY =
             SchemaRegistry.withDefaultDialect(SpecificationVersion.DRAFT_2020_12);
+
+    private static final SchemaGenerator SCHEMA_GENERATOR = createSchemaGenerator();
+
+    private static final ConcurrentHashMap<Class<? extends Record>, ObjectNode> GENERATED_SCHEMAS = new ConcurrentHashMap<>();
+    private static final ConcurrentHashMap<Class<? extends Record>, Schema> COMPILED_SCHEMAS = new ConcurrentHashMap<>();
 
     private JsonSchemaValidator() {
     }
 
+    private static SchemaGenerator createSchemaGenerator() {
+        SchemaGeneratorConfigBuilder configBuilder = new SchemaGeneratorConfigBuilder(
+                MAPPER,
+                SchemaVersion.DRAFT_2020_12,
+                OptionPreset.PLAIN_JSON
+        )
+                .with(new JacksonSchemaModule(JacksonOption.RESPECT_JSONPROPERTY_REQUIRED))
+                .with(new Swagger2Module())
+                .with(new JakartaValidationModule(
+                        JakartaValidationOption.NOT_NULLABLE_FIELD_IS_REQUIRED,
+                        JakartaValidationOption.NOT_NULLABLE_METHOD_IS_REQUIRED,
+                        JakartaValidationOption.INCLUDE_PATTERN_EXPRESSIONS
+                ))
+                .with(
+                        Option.FORBIDDEN_ADDITIONAL_PROPERTIES_BY_DEFAULT,
+                        Option.FLATTENED_ENUMS,
+                        Option.EXTRA_OPEN_API_FORMAT_VALUES,
+                        Option.INLINE_ALL_SCHEMAS
+                )
+                .without(Option.SCHEMA_VERSION_INDICATOR);
+
+        // Treat byte[] as OpenAPI "byte" (base64 string) for form schemas.
+        configBuilder.forFields().withTargetTypeOverridesResolver(field -> {
+            if (field.getType().getErasedType() == byte[].class) {
+                return List.of(field.getContext().resolve(String.class));
+            }
+            return null;
+        });
+        configBuilder.forFields().withInstanceAttributeOverride((node, field, context) -> {
+            if (field.getDeclaredType().getErasedType() == byte[].class
+                    || field.getRawMember() != null && field.getRawMember().getType() == byte[].class) {
+                node.put("type", "string");
+                node.put("format", "byte");
+                node.put("contentEncoding", "base64");
+            }
+            // Swagger @Schema defaultValue sentinel leaks into JSON Schema otherwise.
+            if ("##default".equals(node.path("default").asString(null))) {
+                node.remove("default");
+            }
+        });
+
+        return new SchemaGenerator(configBuilder.build());
+    }
+
     public static Schema getSchema(Class<? extends Record> recordClass) {
-        return SCHEMA_REGISTRY.getSchema(jsonSchemaFromClass(recordClass));
+        return COMPILED_SCHEMAS.computeIfAbsent(recordClass, type ->
+                SCHEMA_REGISTRY.getSchema(getSchemaNode(type))
+        );
+    }
+
+    public static ObjectNode getSchemaNode(Class<? extends Record> recordClass) {
+        return GENERATED_SCHEMAS.computeIfAbsent(recordClass, SCHEMA_GENERATOR::generateSchema);
     }
 
     public static Map<String, Object> validateAndSerialize(Class<? extends Record> recordClass, Object inputs) throws InputValidationException {
@@ -93,115 +154,6 @@ public final class JsonSchemaValidator {
         return field.isEmpty() ? "_form" : field;
     }
 
-    private static JsonNode jsonSchemaFromClass(Class<? extends Record> recordClass) {
-        ObjectNode schema = MAPPER.createObjectNode();
-        schema.put("$schema", "https://json-schema.org/draft/2020-12/schema");
-        schema.put("type", "object");
-        schema.put("additionalProperties", false);
-
-        ObjectNode properties = schema.putObject("properties");
-        List<String> required = new ArrayList<>();
-
-        for (RecordComponent component : recordClass.getRecordComponents()) {
-            SchemaField field = requireSchemaField(recordClass, component);
-
-            ObjectNode property = properties.putObject(component.getName());
-            applyFieldType(property, component.getType(), field);
-
-            if (!field.description().isEmpty()) {
-                property.put("description", field.description());
-            }
-
-            if (isStringLike(component.getType()) || component.getType().isEnum() || component.getType() == byte[].class) {
-                if (field.minLength() >= 0) {
-                    property.put("minLength", field.minLength());
-                }
-
-                if (field.maxLength() >= 0) {
-                    property.put("maxLength", field.maxLength());
-                }
-
-                if (!field.pattern().isEmpty()) {
-                    property.put("pattern", field.pattern());
-                }
-            }
-
-            if (field.required()) {
-                required.add(component.getName());
-            }
-        }
-
-        if (!required.isEmpty()) {
-            ArrayNode requiredNode = schema.putArray("required");
-            required.forEach(requiredNode::add);
-        }
-
-        return schema;
-    }
-
-    private static void applyFieldType(ObjectNode property, Class<?> componentType, SchemaField field) {
-        property.put("title", field.title());
-        if (isWriteOnly(field)) {
-            property.put("writeOnly", true);
-        }
-
-        if (componentType.isEnum()) {
-            property.put("type", "string");
-            ArrayNode enumValues = property.putArray("enum");
-            for (Object constant : componentType.getEnumConstants()) {
-                enumValues.add(((Enum<?>) constant).name());
-            }
-            return;
-        }
-
-        if (componentType == byte[].class) {
-            property.put("type", "string");
-            property.put("contentEncoding", "base64");
-            return;
-        }
-
-        if (componentType == boolean.class || componentType == Boolean.class) {
-            property.put("type", "boolean");
-            return;
-        }
-
-        if (componentType == int.class || componentType == Integer.class
-                || componentType == long.class || componentType == Long.class) {
-            property.put("type", "integer");
-            return;
-        }
-
-        if (componentType == double.class || componentType == Double.class
-                || componentType == float.class || componentType == Float.class) {
-            property.put("type", "number");
-            return;
-        }
-
-        property.put("type", "string");
-
-        if (field.format() == SchemaFieldFormat.EMAIL) {
-            property.put("format", "email");
-        }
-    }
-
-    private static boolean isStringLike(Class<?> componentType) {
-        return componentType == String.class || componentType == char.class || componentType == Character.class;
-    }
-
-    static boolean isWriteOnly(SchemaField field) {
-        return field.writeOnly() || field.format() == SchemaFieldFormat.PASSWORD;
-    }
-
-    private static SchemaField requireSchemaField(Class<? extends Record> recordClass, RecordComponent component) {
-        SchemaField field = component.getAnnotation(SchemaField.class);
-        if (field == null) {
-            throw new IllegalArgumentException(
-                    "Record component '" + component.getName() + "' on " + recordClass.getName()
-                            + " must be annotated with @SchemaField");
-        }
-        return field;
-    }
-
     /**
      * Converts the provided data into the provided record type.
      *
@@ -223,49 +175,57 @@ public final class JsonSchemaValidator {
      */
     public static Map<String, ?> serializeSettingsForClient(Record record) throws InputValidationException {
         Map<String, Object> serialized = new LinkedHashMap<>(serializeSettings(record));
-        for (RecordComponent component : record.getClass().getRecordComponents()) {
-            SchemaField field = requireSchemaField(record.getClass(), component);
-            if (isWriteOnly(field)) {
-                serialized.remove(component.getName());
-            }
+        for (String name : writeOnlyPropertyNames(record.getClass())) {
+            serialized.remove(name);
         }
         return serialized;
     }
 
     /**
-     * Copies write-only values from {@code existing} into {@code incoming} when the client omitted them
+     * Copies values from {@code existing} into {@code incoming} when the client omitted them
      * or sent a blank value (empty string / empty byte array). Used on settings updates.
      */
-    public static Map<String, Object> mergeWriteOnlyFromExisting(
-            Class<? extends Record> recordClass,
+    public static Map<String, Object> mergeFromExisting(
             Map<String, ?> incoming,
             Map<String, ?> existing
     ) {
-        Map<String, Object> merged = new LinkedHashMap<>();
-        if (incoming != null) {
-            merged.putAll(incoming);
-        }
-        if (existing == null || existing.isEmpty()) {
+        Map<String, Object> merged = new LinkedHashMap<>(incoming);
+        if (existing.isEmpty()) {
             return merged;
         }
 
-        for (RecordComponent component : recordClass.getRecordComponents()) {
-            String name = component.getName();
-            if (!isBlankValue(merged.get(name)) || !existing.containsKey(name)) {
-                continue;
+        for (Map.Entry<String, ?> entry : existing.entrySet()) {
+            if (isBlankValue(merged.get(entry.getKey()))) {
+                merged.put(entry.getKey(), entry.getValue());
             }
-            merged.put(name, existing.get(name));
         }
         return merged;
     }
 
+    private static List<String> writeOnlyPropertyNames(Class<? extends Record> recordClass) {
+        JsonNode properties = getSchemaNode(recordClass).get("properties");
+        if (properties != null && properties.isObject()) {
+            List<String> fromSchema = new ArrayList<>();
+            properties.properties().forEach(entry -> {
+                if (entry.getValue().path("writeOnly").asBoolean(false)
+                        || "password".equalsIgnoreCase(entry.getValue().path("format").asString(null))) {
+                    fromSchema.add(entry.getKey());
+                }
+            });
+            if (!fromSchema.isEmpty()) {
+                return fromSchema;
+            }
+        }
+
+        return List.of();
+    }
+
     private static boolean isBlankValue(@Nullable Object value) {
         return switch (value) {
-            case null -> true;
             case String stringValue -> stringValue.isBlank();
             case byte[] bytes -> bytes.length == 0;
             case List<?> list -> list.isEmpty();
-            default -> false;
+            case null, default -> false;
         };
     }
 }

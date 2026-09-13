@@ -118,8 +118,7 @@ public class FileStore {
 
     public void setProperties(ComponentCatalog catalog, Map<String, ?> properties) {
         FileStoreType<?> type = this.getStoreType(catalog);
-        Map<String, Object> merged = JsonSchemaValidator.mergeWriteOnlyFromExisting(
-                type.getSettingsClass(),
+        Map<String, Object> merged = JsonSchemaValidator.mergeFromExisting(
                 properties,
                 this.properties
         );

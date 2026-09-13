@@ -2,8 +2,7 @@ package com.openrecordsmanager.plugin.filestoremiddleware_encrypting;
 
 import com.openrecordsmanager.api.errors.InputValidationException;
 import com.openrecordsmanager.api.filestore.FileStoreMiddlewareType;
-import com.openrecordsmanager.api.schema.SchemaField;
-import com.openrecordsmanager.api.schema.SchemaFieldFormat;
+import io.swagger.v3.oas.annotations.media.Schema;
 
 import javax.crypto.Cipher;
 import javax.crypto.CipherInputStream;
@@ -133,8 +132,14 @@ public class FilestoreMiddlewareEncryptingType extends FileStoreMiddlewareType<F
     }
 
     public record EncryptingMiddlewareSettings(
-            @SchemaField(title = "Secret Key", format = SchemaFieldFormat.PASSWORD, writeOnly = true) byte[] secretKey,
-            @SchemaField(title = "Algorithm") EncryptionType algorithm
+            @Schema(
+                    title = "Secret Key",
+                    type = "string",
+                    format = "byte",
+                    accessMode = Schema.AccessMode.WRITE_ONLY
+            )
+            byte[] secretKey,
+            @Schema(title = "Algorithm") EncryptionType algorithm
     ) {
     }
 }

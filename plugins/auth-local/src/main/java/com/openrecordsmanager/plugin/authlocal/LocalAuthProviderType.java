@@ -6,8 +6,8 @@ import com.openrecordsmanager.api.auth.InputAuthProviderType;
 import com.openrecordsmanager.api.auth.UserAuthContext;
 import com.openrecordsmanager.api.auth.UserAuthDetails;
 import com.openrecordsmanager.api.config.ConfigStore;
-import com.openrecordsmanager.api.schema.SchemaField;
-import com.openrecordsmanager.api.schema.SchemaFieldFormat;
+import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.NotBlank;
 import com.openrecordsmanager.api.template.TemplateComponent;
 import org.jspecify.annotations.Nullable;
 import org.mindrot.jbcrypt.BCrypt;
@@ -22,8 +22,9 @@ public class LocalAuthProviderType extends InputAuthProviderType<LocalAuthProvid
     }
 
     public record LocalAuthInputs(
-            @SchemaField(title = "Username", minLength = 1) String username,
-            @SchemaField(title = "Password", format = SchemaFieldFormat.PASSWORD, minLength = 1) String password
+            @Schema(title = "Username") @NotBlank String username,
+            @Schema(title = "Password", format = "password", accessMode = Schema.AccessMode.WRITE_ONLY)
+            @NotBlank String password
     ) {
     }
 

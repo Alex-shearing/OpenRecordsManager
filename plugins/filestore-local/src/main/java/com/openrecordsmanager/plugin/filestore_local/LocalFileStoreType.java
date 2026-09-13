@@ -1,7 +1,8 @@
 package com.openrecordsmanager.plugin.filestore_local;
 
 import com.openrecordsmanager.api.filestore.FileStoreType;
-import com.openrecordsmanager.api.schema.SchemaField;
+import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.NotBlank;
 import org.jspecify.annotations.Nullable;
 
 import java.io.*;
@@ -51,7 +52,7 @@ public class LocalFileStoreType extends FileStoreType<LocalFileStoreType.LocalFi
     }
 
     public record LocalFileStoreSettings(
-            @SchemaField(title = "Root Directory", minLength = 1) String rootDir
+            @Schema(title = "Root Directory") @NotBlank String rootDir
     ) {
     }
 }

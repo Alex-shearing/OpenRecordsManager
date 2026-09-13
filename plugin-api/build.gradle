@@ -11,8 +11,17 @@ dependencies {
 
     // Jackson 3.x ecosystem dependencies
     api 'tools.jackson.core:jackson-databind:3.2.0'
+    api 'com.fasterxml.jackson.core:jackson-annotations:2.20'
 
-    // JSON Schema validation
+    // OpenAPI / validation annotations for plugin settings & input records (shared with springdoc)
+    api 'io.swagger.core.v3:swagger-annotations-jakarta:2.2.47'
+    api 'jakarta.validation:jakarta.validation-api:3.1.1'
+
+    // JSON Schema generation (Jackson 3) + validation
+    api 'com.github.victools:jsonschema-generator:5.0.0'
+    api 'com.github.victools:jsonschema-module-jackson:5.0.0'
+    api 'com.github.victools:jsonschema-module-swagger-2:5.0.0'
+    api 'com.github.victools:jsonschema-module-jakarta-validation:5.0.0'
     api 'com.networknt:json-schema-validator:3.0.6'
 }
 

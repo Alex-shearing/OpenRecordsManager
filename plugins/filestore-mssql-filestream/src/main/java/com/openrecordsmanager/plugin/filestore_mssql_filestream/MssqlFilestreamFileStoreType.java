@@ -2,8 +2,8 @@ package com.openrecordsmanager.plugin.filestore_mssql_filestream;
 
 import com.openrecordsmanager.api.errors.InputValidationException;
 import com.openrecordsmanager.api.filestore.FileStoreType;
-import com.openrecordsmanager.api.schema.SchemaField;
-import com.openrecordsmanager.api.schema.SchemaFieldFormat;
+import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.NotBlank;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -202,9 +202,10 @@ public class MssqlFilestreamFileStoreType
     }
 
     public record MssqlFilestreamFileStoreSettings(
-            @SchemaField(title = "JDBC URL", minLength = 1) String jdbcUrl,
-            @SchemaField(title = "Username", minLength = 1) String username,
-            @SchemaField(title = "Password", format = SchemaFieldFormat.PASSWORD, minLength = 1) String password
+            @Schema(title = "JDBC URL") @NotBlank String jdbcUrl,
+            @Schema(title = "Username") String username,
+            @Schema(title = "Password", format = "password", accessMode = Schema.AccessMode.WRITE_ONLY)
+            String password
     ) {
     }
 }

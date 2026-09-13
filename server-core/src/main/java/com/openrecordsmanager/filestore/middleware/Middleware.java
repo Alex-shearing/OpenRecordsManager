@@ -72,8 +72,7 @@ public class Middleware {
 
     public void setProperties(ComponentCatalog catalog, Map<String, ?> properties) {
         FileStoreMiddlewareType<?> type = this.getMiddlewareType(catalog);
-        Map<String, Object> merged = JsonSchemaValidator.mergeWriteOnlyFromExisting(
-                type.getSettingsClass(),
+        Map<String, Object> merged = JsonSchemaValidator.mergeFromExisting(
                 properties,
                 this.properties
         );

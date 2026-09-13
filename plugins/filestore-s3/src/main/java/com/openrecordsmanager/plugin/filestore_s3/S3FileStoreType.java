@@ -1,7 +1,8 @@
 package com.openrecordsmanager.plugin.filestore_s3;
 
 import com.openrecordsmanager.api.filestore.FileStoreType;
-import com.openrecordsmanager.api.schema.SchemaField;
+import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.NotBlank;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,8 +50,8 @@ public class S3FileStoreType extends FileStoreType<S3FileStoreType.S3FileStoreSe
     }
 
     public record S3FileStoreSettings(
-            @SchemaField(title = "Bucket", minLength = 1) String bucket,
-            @SchemaField(title = "Endpoint", minLength = 1) String endpoint
+            @Schema(title = "Bucket") @NotBlank String bucket,
+            @Schema(title = "Endpoint") @NotBlank String endpoint
     ) {
     }
 }

@@ -1,6 +1,8 @@
 package com.openrecordsmanager.api.schema;
 
 import com.openrecordsmanager.api.errors.InputValidationException;
+import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.NotBlank;
 import org.junit.jupiter.api.Test;
 import tools.jackson.databind.JsonNode;
 
@@ -12,20 +14,28 @@ import static org.junit.jupiter.api.Assertions.*;
 class JsonSchemaValidatorTest {
 
     public record LoginInputs(
-            @SchemaField(title = "Username", minLength = 1) String username,
-            @SchemaField(title = "Password", format = SchemaFieldFormat.PASSWORD, minLength = 1) String password
+            @Schema(title = "Username") @NotBlank String username,
+            @Schema(title = "Password", format = "password", accessMode = Schema.AccessMode.WRITE_ONLY)
+            @NotBlank String password
     ) {
     }
 
     public record ExplicitWriteOnlyInputs(
-            @SchemaField(title = "Name", minLength = 1) String name,
-            @SchemaField(title = "Token", writeOnly = true, minLength = 1) String token
+            @Schema(title = "Name") @NotBlank String name,
+            @Schema(title = "Token", accessMode = Schema.AccessMode.WRITE_ONLY)
+            @NotBlank String token
     ) {
     }
 
     public record SecretKeyInputs(
-            @SchemaField(title = "Label", minLength = 1) String label,
-            @SchemaField(title = "Secret Key", format = SchemaFieldFormat.PASSWORD) byte[] secretKey
+            @Schema(title = "Label") @NotBlank String label,
+            @Schema(
+                    title = "Secret Key",
+                    type = "string",
+                    format = "byte",
+                    accessMode = Schema.AccessMode.WRITE_ONLY
+            )
+            byte[] secretKey
     ) {
     }
 
@@ -36,13 +46,23 @@ class JsonSchemaValidatorTest {
         assertEquals("object", schema.get("type").stringValue());
         assertFalse(schema.get("additionalProperties").booleanValue());
         assertEquals("Username", schema.get("properties").get("username").get("title").stringValue());
-        assertEquals(1, schema.get("properties").get("username").get("minLength").intValue());
+        assertTrue(schema.get("properties").get("username").get("minLength").intValue() >= 1);
         assertTrue(schema.get("properties").get("password").get("writeOnly").booleanValue());
+        assertEquals("password", schema.get("properties").get("password").get("format").stringValue());
 
         JsonNode required = schema.get("required");
         assertEquals(2, required.size());
         assertTrue(required.toString().contains("username"));
         assertTrue(required.toString().contains("password"));
+    }
+
+    @Test
+    void stripsSwaggerDefaultSentinel() {
+        record Bare(@Schema(title = "Name") String name) {
+        }
+
+        JsonNode schema = JsonSchemaValidator.getSchemaNode(Bare.class);
+        assertFalse(schema.get("properties").get("name").has("default"));
     }
 
     @Test
@@ -54,7 +74,7 @@ class JsonSchemaValidatorTest {
 
     enum SampleEnum {ALPHA, BETA}
 
-    public record EnumInputs(@SchemaField(title = "Mode") SampleEnum mode) {
+    public record EnumInputs(@Schema(title = "Mode") SampleEnum mode) {
     }
 
     @Test
@@ -122,40 +142,39 @@ class JsonSchemaValidatorTest {
     }
 
     @Test
-    void mergeWriteOnlyFromExistingFillsBlankPassword() {
+    void mergeFromExistingFillsBlankAndMissingValues() {
         Map<String, Object> incoming = new HashMap<>();
-        incoming.put("username", "alice");
+        incoming.put("username", "");
         incoming.put("password", "");
 
-        Map<String, Object> merged = JsonSchemaValidator.mergeWriteOnlyFromExisting(
-                LoginInputs.class,
+        Map<String, Object> merged = JsonSchemaValidator.mergeFromExisting(
                 incoming,
-                Map.of("username", "old", "password", "kept-secret")
+                Map.of("username", "kept-user", "password", "kept-secret")
         );
 
-        assertEquals("alice", merged.get("username"));
+        assertEquals("kept-user", merged.get("username"));
         assertEquals("kept-secret", merged.get("password"));
     }
 
     @Test
-    void mergeWriteOnlyFromExistingKeepsExplicitNewPassword() {
-        Map<String, Object> merged = JsonSchemaValidator.mergeWriteOnlyFromExisting(
-                LoginInputs.class,
+    void mergeFromExistingKeepsExplicitNewValues() {
+        Map<String, Object> merged = JsonSchemaValidator.mergeFromExisting(
                 Map.of("username", "alice", "password", "new-secret"),
                 Map.of("username", "old", "password", "kept-secret")
         );
 
+        assertEquals("alice", merged.get("username"));
         assertEquals("new-secret", merged.get("password"));
     }
 
     @Test
-    void mergeWriteOnlyFromExistingFillsMissingKey() {
-        Map<String, Object> merged = JsonSchemaValidator.mergeWriteOnlyFromExisting(
-                LoginInputs.class,
+    void mergeFromExistingFillsMissingKey() {
+        Map<String, Object> merged = JsonSchemaValidator.mergeFromExisting(
                 Map.of("username", "alice"),
                 Map.of("username", "old", "password", "kept-secret")
         );
 
+        assertEquals("alice", merged.get("username"));
         assertEquals("kept-secret", merged.get("password"));
     }
 }
