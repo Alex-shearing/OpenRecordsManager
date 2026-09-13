@@ -21,8 +21,6 @@ import com.openrecordsmanager.rest.errors.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -95,14 +93,6 @@ public class FileStoreService {
         FileStore store = this.repository.fileStoreRepo.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("file store", id));
         store.setProperties(this.catalog, input.properties());
-
-        List<Middleware> middlewares = new ArrayList<>(input.middlewares().size());
-        for (UUID middlewareId : input.middlewares()) {
-            Middleware mw = this.repository.fileStoreMiddlewareRepo.findById(middlewareId)
-                    .orElseThrow(() -> new ResourceNotFoundException("file store middleware", middlewareId));
-            middlewares.add(mw);
-        }
-        store.setMiddlewares(middlewares);
 
         this.repository.fileStoreRepo.saveAndFlush(store);
 

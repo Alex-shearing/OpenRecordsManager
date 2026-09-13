@@ -34,7 +34,7 @@
 
 	let editTarget = $state<SimpleFileStoreResponse | null>(null);
 	let editTypeId = $state('');
-	let editMiddlewares = $state<string[]>([]);
+	let editMiddlewareIds = $state<string[]>([]);
 	let editValues = $state<Record<string, string>>({});
 	let editFieldErrors = $state<Record<string, string>>({});
 	let editFormError = $state('');
@@ -103,7 +103,7 @@
 		editTarget = store;
 		editTypeId = store.type;
 		editValues = {};
-		editMiddlewares = [];
+		editMiddlewareIds = [];
 		editFieldErrors = {};
 		editFormError = '';
 		editAuditComment = '';
@@ -122,7 +122,7 @@
 		}
 
 		editTypeId = result.data.type;
-		editMiddlewares = result.data.middlewares ?? [];
+		editMiddlewareIds = result.data.middlewares;
 		editValues = toFormValues(result.data.properties);
 	}
 
@@ -139,7 +139,6 @@
 			path: { id: editTarget.id },
 			body: {
 				properties: editValues,
-				middlewares: editMiddlewares,
 			},
 			headers: auditHeaders(editAuditComment),
 		});
@@ -297,12 +296,23 @@
 					<input class="input w-full" value={editTypeId} readonly disabled />
 				</label>
 
-				<MiddlewarePicker
-					middlewares={data.middlewares}
-					bind:selected={editMiddlewares}
-					disabled={submitting}
-					showEmpty
-				/>
+				<div class="flex flex-col gap-1">
+					<span class="text-label">Middlewares</span>
+					<p class="text-hint">Middlewares are fixed at creation and cannot be changed.</p>
+					{#if editMiddlewareIds.length === 0}
+						<p class="text-hint">None</p>
+					{:else}
+						<ul class="flex flex-col gap-2">
+							{#each editMiddlewareIds as id (id)}
+								{@const middleware = data.middlewares.find(m => m.id === id)}
+								<li>
+									<span class="font-medium">{middleware?.type ?? 'Unknown'}</span>
+									<span class="block"><MonoId value={id} muted /></span>
+								</li>
+							{/each}
+						</ul>
+					{/if}
+				</div>
 
 				{#if editType}
 					{#key editTarget?.id}

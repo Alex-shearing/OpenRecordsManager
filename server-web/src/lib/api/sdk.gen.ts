@@ -311,7 +311,7 @@ export class PluginController {
     }
     
     /**
-     * Upload a plugin JAR
+     * Upload a plugin JAR or template ZIP
      */
     public static uploadPlugin<ThrowOnError extends boolean = false>(options: Options<UploadPluginData, ThrowOnError>) {
         return options.client.post<UploadPluginResponses, UploadPluginErrors, ThrowOnError>({

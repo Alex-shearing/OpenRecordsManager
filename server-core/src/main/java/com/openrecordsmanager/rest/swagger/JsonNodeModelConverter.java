@@ -10,16 +10,22 @@ import tools.jackson.databind.JsonNode;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.Iterator;
+import java.util.List;
 
 /**
  * Maps Jackson 3 {@link JsonNode} to a free-form OpenAPI schema.
  * Without this, springdoc does not represent JsonNode correctly.
+ *
+ * <p>Uses {@code oneOf: [{}]} rather than a typeless schema: springdoc's OpenAPI 3.1
+ * {@code handleSchemaTypes} otherwise defaults typeless schemas to {@code type: object},
+ * which makes TypeScript generators emit object maps instead of {@code unknown}.
  */
 public final class JsonNodeModelConverter implements ModelConverter {
 
     static Schema<?> freeFormJsonSchema() {
         return new Schema<>()
-                .description("Arbitrary JSON value (string, number, boolean, object, array, or null)");
+                .description("Arbitrary JSON value (string, number, boolean, object, array, or null)")
+                .oneOf(List.of(new Schema<>()));
     }
 
     @Override

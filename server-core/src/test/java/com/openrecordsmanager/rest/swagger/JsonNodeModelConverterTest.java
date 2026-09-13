@@ -11,6 +11,7 @@ import org.springdoc.core.utils.SpringDocUtils;
 import tools.jackson.databind.JsonNode;
 
 import java.util.Map;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -30,6 +31,16 @@ class JsonNodeModelConverterTest {
         assertNotNull(resolved.schema);
         assertNull(resolved.schema.getProperties(), "JsonNode must not expose bean getters");
         assertFalse(hasJsonNodeBeanNoise(resolved.schema));
+        assertFalse(isObjectOnly(resolved.schema), "JsonNode must not collapse to type=object");
+    }
+
+    @Test
+    void freeFormSchemaSurvivesOpenApi31HandleSchemaTypes() {
+        Schema<?> schema = JsonNodeModelConverter.freeFormJsonSchema();
+        SpringDocUtils.handleSchemaTypes(schema);
+
+        assertFalse(isObjectOnly(schema), "springdoc must not rewrite free-form JsonNode to type=object");
+        assertNotNull(schema.getOneOf());
     }
 
     @Test
@@ -48,7 +59,19 @@ class JsonNodeModelConverterTest {
         assertNotNull(additional, "properties map should declare additionalProperties");
         if (additional instanceof Schema<?> valueSchema) {
             assertFalse(hasJsonNodeBeanNoise(valueSchema));
+            assertFalse(isObjectOnly(valueSchema), "map values must stay free-form JSON, not object");
         }
+    }
+
+    private static boolean isObjectOnly(Schema<?> schema) {
+        if (schema.getOneOf() != null || schema.getAnyOf() != null || schema.getAllOf() != null) {
+            return false;
+        }
+        Set<String> types = schema.getTypes();
+        if (types != null) {
+            return types.equals(Set.of("object"));
+        }
+        return "object".equals(schema.getType());
     }
 
     private static boolean hasJsonNodeBeanNoise(Schema<?> schema) {

@@ -66,13 +66,6 @@ public class FileStore {
         this.middlewares.add(new MiddlewareUsage(middleware, index));
     }
 
-    public void setMiddlewares(List<Middleware> middlewares) {
-        this.middlewares.clear();
-        for (int i = 0; i < middlewares.size(); i++) {
-            this.middlewares.add(new MiddlewareUsage(middlewares.get(i), i));
-        }
-    }
-
     public FileStoreEntry newFile(ComponentCatalog catalog, InputStream file, String extension) {
         HashFunction hashFunction = FileStoreService.getHashFunction(FileStoreService.CURRENT_HASH_ALGORITHM);
 

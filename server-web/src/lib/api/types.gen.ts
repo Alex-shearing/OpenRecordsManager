@@ -64,6 +64,9 @@ export type UpdateObjectPropertyRequest = {
     description: string;
     validator?: string;
     securityFilter?: string;
+    /**
+     * Arbitrary JSON value (string, number, boolean, object, array, or null)
+     */
     defaultValue?: unknown;
     userHidden: boolean;
 };
@@ -76,6 +79,9 @@ export type ObjectPropertyResponse = {
     listType?: SimpleListTypeResponse;
     validator?: string;
     securityFilter?: string;
+    /**
+     * Arbitrary JSON value (string, number, boolean, object, array, or null)
+     */
     defaultValue?: unknown;
     userHidden?: boolean;
 };
@@ -112,6 +118,12 @@ export type UpdateListElementRequest = {
     aliases: Array<string>;
 };
 
+export type UpdateFileStoreRequest = {
+    properties: {
+        [key: string]: unknown;
+    };
+};
+
 export type SimpleFileStoreResponse = {
     id: string;
     type: string;
@@ -124,7 +136,10 @@ export type SimpleMiddlewareResponse = {
 
 export type ConfigResponse = {
     key: string;
-    value: unknown;
+    /**
+     * Arbitrary JSON value (string, number, boolean, object, array, or null)
+     */
+    value?: unknown;
 };
 
 export type NewAuthProviderRequest = {
@@ -204,6 +219,9 @@ export type AuditPolicyResponse = {
 export type NewUserRequest = {
     username: string;
     authProvider?: string;
+    /**
+     * Property id → JSON value
+     */
     properties: {
         [key: string]: unknown;
     };
@@ -211,6 +229,9 @@ export type NewUserRequest = {
 
 export type NewRecordRequest = {
     type: string;
+    /**
+     * Property id → JSON value
+     */
     properties: {
         [key: string]: unknown;
     };
@@ -224,6 +245,9 @@ export type NewObjectPropertyRequest = {
     listType?: string;
     validator?: string;
     securityFilter?: string;
+    /**
+     * Arbitrary JSON value (string, number, boolean, object, array, or null)
+     */
     defaultValue?: unknown;
     userHidden: boolean;
 };
@@ -316,6 +340,9 @@ export type TemplateComponent = {
 
 export type RecordTypePropertyResponse = {
     property: ObjectPropertyResponse;
+    /**
+     * Arbitrary JSON value (string, number, boolean, object, array, or null)
+     */
     default?: unknown;
 };
 
@@ -426,7 +453,13 @@ export type ConfigTypeObjectResponse = {
     name: string;
     description: string;
     type: 'object';
+    /**
+     * Arbitrary JSON value (string, number, boolean, object, array, or null)
+     */
     currentValue?: unknown;
+    /**
+     * Arbitrary JSON value (string, number, boolean, object, array, or null)
+     */
     defaultValue?: unknown;
 };
 
@@ -517,7 +550,13 @@ export type AuditEventResponse = {
 
 export type AuditPropertyChange = {
     property?: string;
+    /**
+     * Arbitrary JSON value (string, number, boolean, object, array, or null)
+     */
     oldValue?: unknown;
+    /**
+     * Arbitrary JSON value (string, number, boolean, object, array, or null)
+     */
     newValue?: unknown;
 };
 
@@ -2277,12 +2316,7 @@ export type FileStoreRetrieveOneResponses = {
 export type FileStoreRetrieveOneResponse = FileStoreRetrieveOneResponses[keyof FileStoreRetrieveOneResponses];
 
 export type FileStoreUpdateData = {
-    body: {
-        properties: {
-            [key: string]: unknown;
-        };
-        middlewares: Array<string>;
-    };
+    body: UpdateFileStoreRequest;
     path: {
         id: string;
     };
@@ -2622,6 +2656,9 @@ export type MiddlewareUpdateResponses = {
 export type MiddlewareUpdateResponse = MiddlewareUpdateResponses[keyof MiddlewareUpdateResponses];
 
 export type SetConfigsData = {
+    /**
+     * Config key → JSON value
+     */
     body: {
         [key: string]: unknown;
     };
@@ -3500,7 +3537,7 @@ export type UploadPluginData = {
     };
     path?: never;
     query: {
-        type: 'ZIP' | 'JAR';
+        type: 'zip' | 'jar';
     };
     url: '/api/plugins';
 };
