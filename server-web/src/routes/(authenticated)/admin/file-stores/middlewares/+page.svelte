@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { FileStoreController } from '$lib/api';
-	import type { SimpleMiddlewareResponse } from '$lib/api/types.gen';
-	import { getApiClient } from '$lib/api-client';
+	import type { MiddlewareResponse, SimpleMiddlewareResponse } from '$lib/api/types.gen';
+	import { auditHeaders, getApiClient } from '$lib/api-client';
 	import DialogActions from '$lib/components/DialogActions.svelte';
 	import MonoId from '$lib/components/MonoId.svelte';
 	import SchemaForm from '$lib/components/SchemaForm.svelte';
@@ -25,29 +25,23 @@
 	let createAuditComment = $state('');
 	let submitting = $state(false);
 
-	let editTarget = $state<SimpleMiddlewareResponse | null>(null);
-	let editTypeId = $state('');
+	let editTarget = $state<MiddlewareResponse>();
 	let editValues = $state<Record<string, string>>({});
 	let editFieldErrors = $state<Record<string, string>>({});
 	let editFormError = $state('');
 	let editAuditComment = $state('');
 	let editLoading = $state(false);
 
-	let deleteTarget = $state<SimpleMiddlewareResponse | null>(null);
+	let deleteTarget = $state<SimpleMiddlewareResponse>();
 	let deleteFormError = $state('');
 	let deleteAuditComment = $state('');
 
 	const createType = $derived(sortedTypes.find(type => type.id === createTypeId));
-	const editType = $derived(sortedTypes.find(type => type.id === editTypeId));
 
 	function toFormValues(properties: Record<string, unknown> | undefined): Record<string, string> {
 		return Object.fromEntries(
 			Object.entries(properties ?? {}).map(([key, value]) => [key, value == null ? '' : String(value)])
 		);
-	}
-
-	function auditHeaders(comment: string) {
-		return comment.trim() ? { 'X-ORM-Audit-Comment': comment.trim() } : undefined;
 	}
 
 	function resetCreateForm() {
@@ -91,13 +85,11 @@
 	}
 
 	async function openEdit(middleware: SimpleMiddlewareResponse) {
-		editTarget = middleware;
-		editTypeId = middleware.type;
+		editLoading = true;
 		editValues = {};
 		editFieldErrors = {};
 		editFormError = '';
 		editAuditComment = '';
-		editLoading = true;
 
 		const { data: result, error } = await FileStoreController.middlewareRetrieveOne({
 			client: getApiClient(),
@@ -106,12 +98,12 @@
 
 		editLoading = false;
 
-		if (error || !result?.success || !result.data) {
-			editFormError = error?.error ?? 'Failed to load middleware.';
+		if (error) {
+			toast.error('Failed to load middleware: ' + error.error);
 			return;
 		}
 
-		editTypeId = result.data.type;
+		editTarget = result.data;
 		editValues = toFormValues(result.data.properties);
 	}
 
@@ -139,7 +131,7 @@
 		}
 
 		toast.success('Updated middleware.');
-		editTarget = null;
+		editTarget = undefined;
 		await invalidateAll();
 	}
 
@@ -167,7 +159,7 @@
 		}
 
 		toast.success('Deleted middleware.');
-		deleteTarget = null;
+		deleteTarget = undefined;
 		await invalidateAll();
 	}
 </script>
@@ -195,13 +187,18 @@
 				<MonoId value={middleware.id} />
 			</td>
 			<td class="px-5 py-4 text-right">
-				<button type="button" class="btn-ghost" disabled={submitting} onclick={() => openEdit(middleware)}>
+				<button
+					type="button"
+					class="btn-ghost"
+					disabled={submitting || editLoading}
+					onclick={() => openEdit(middleware)}
+				>
 					Edit
 				</button>
 				<button
 					type="button"
 					class="btn-ghost text-destructive"
-					disabled={submitting}
+					disabled={submitting || editLoading}
 					onclick={() => {
 						deleteTarget = middleware;
 						deleteAuditComment = '';
@@ -224,7 +221,7 @@
 			<label class="mb-4 flex flex-col gap-1">
 				<span class="text-label">Type</span>
 				<select
-					class="input w-full max-w-md"
+					class="input w-full"
 					bind:value={createTypeId}
 					disabled={submitting}
 					onchange={() => {
@@ -257,8 +254,7 @@
 									required={data.auditCommentRequired.create}
 									disabled={submitting}
 									rows={3}
-									class="input w-full max-w-md"
-								></textarea>
+									class="input w-full"></textarea>
 							</label>
 						{/snippet}
 					</SchemaForm>
@@ -278,54 +274,42 @@
 	{#snippet description(target)}
 		Update properties for <MonoId value={target.id} />.
 	{/snippet}
-	{#snippet body()}
-		{#if editLoading}
-			<p class="text-hint">Loading…</p>
-		{:else}
-			<form id="middleware-edit-form" class="flex flex-col gap-4" onsubmit={handleEdit}>
-				<label class="flex flex-col gap-1">
-					<span class="text-label">Type</span>
-					<input class="input" value={editTypeId} readonly disabled />
-				</label>
+	{#snippet body(target)}
+		{@const targetType = sortedTypes.find(type => type.id === target.type)}
+		<form id="middleware-edit-form" class="flex flex-col gap-4" onsubmit={handleEdit}>
+			<label class="flex flex-col gap-1">
+				<span class="text-label">Type</span>
+				<input class="input w-full" value={target.type} readonly disabled />
+			</label>
 
-				{#if editType}
-					{#key editTarget?.id}
-						<SchemaForm
-							schema={editType.settingsSchema}
-							bind:values={editValues}
-							fieldErrors={editFieldErrors}
-							formError={editFormError}
-							{submitting}
-							idPrefix="middleware-edit"
-						>
-							{#snippet after()}
-								<label class="flex flex-col gap-1">
-									<span class="text-label">Audit comment</span>
-									<textarea
-										bind:value={editAuditComment}
-										required={data.auditCommentRequired.update}
-										disabled={submitting}
-										rows={3}
-										class="input w-full"
-									></textarea>
-								</label>
-							{/snippet}
-						</SchemaForm>
-					{/key}
-				{:else if editFormError}
-					<p class="text-sm text-destructive" role="alert">{editFormError}</p>
-				{/if}
-			</form>
-		{/if}
+			{#if targetType}
+				{#key target.id}
+					<SchemaForm
+						schema={targetType.settingsSchema}
+						bind:values={editValues}
+						fieldErrors={editFieldErrors}
+						formError={editFormError}
+						{submitting}
+						idPrefix="middleware-edit"
+					></SchemaForm>
+				{/key}
+			{:else}
+				<p class="text-sm text-destructive" role="alert">Unknown middleware type.</p>
+			{/if}
+
+			<label class="flex flex-col gap-1">
+				<span class="text-label">Audit comment</span>
+				<textarea
+					bind:value={editAuditComment}
+					required={data.auditCommentRequired.update}
+					disabled={submitting}
+					rows={3}
+					class="input w-full"></textarea>
+			</label>
+		</form>
 	{/snippet}
 	{#snippet footer()}
-		<DialogActions
-			formId="middleware-edit-form"
-			confirmLabel="Save"
-			confirmingLabel="Saving…"
-			submitting={submitting || editLoading}
-			disabled={editLoading || !editType}
-		/>
+		<DialogActions formId="middleware-edit-form" confirmLabel="Save" confirmingLabel="Saving…" {submitting} />
 	{/snippet}
 </TargetDialog>
 
@@ -350,8 +334,7 @@
 					required={data.auditCommentRequired.delete}
 					disabled={submitting}
 					rows={3}
-					class="input w-full"
-				></textarea>
+					class="input w-full"></textarea>
 			</label>
 			{#if deleteFormError}
 				<p class="text-sm text-destructive" role="alert">{deleteFormError}</p>

@@ -5,6 +5,7 @@ import { createClient, createConfig, type Client } from '$lib/api/client';
 
 const SCHEMA_UPGRADE_HEADER = 'X-ORM-Schema-Upgrade-Required';
 export const CSRF_HEADER = 'X-CSRF-TOKEN';
+export const AUDIT_COMMENT_HEADER = 'X-ORM-Audit-Comment';
 
 const baseUrl = (
 	env.PUBLIC_API_URL || (typeof window !== 'undefined' ? (window.__ORM_UI__?.apiBaseUrl ?? '') : '')
@@ -84,6 +85,12 @@ export function getApiClient(): Client {
 	}
 
 	return apiClient;
+}
+
+/** Optional request headers carrying an audit comment when non-blank. */
+export function auditHeaders(comment: string): { [AUDIT_COMMENT_HEADER]: string } | undefined {
+	const trimmed = comment.trim();
+	return trimmed ? { [AUDIT_COMMENT_HEADER]: trimmed } : undefined;
 }
 
 function shouldAttemptRefresh(url: string): boolean {

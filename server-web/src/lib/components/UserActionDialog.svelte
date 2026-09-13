@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { ActionResponse } from '$lib/api/types.gen';
 	import { UserController } from '$lib/api';
-	import { getApiClient } from '$lib/api-client';
+	import { auditHeaders, getApiClient } from '$lib/api-client';
 	import AppDialog from './AppDialog.svelte';
 	import DialogActions from './DialogActions.svelte';
 	import SchemaForm from './SchemaForm.svelte';
@@ -51,7 +51,7 @@
 			client: getApiClient(),
 			path: { id: userId, action: action.id },
 			body: values,
-			headers: auditComment.trim() ? { 'X-ORM-Audit-Comment': auditComment.trim() } : undefined,
+			headers: auditHeaders(auditComment),
 		});
 
 		submitting = false;

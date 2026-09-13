@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { PluginController } from '$lib/api';
 	import type { SimplePluginResponse } from '$lib/api/types.gen';
-	import { getApiClient } from '$lib/api-client';
+	import { auditHeaders, getApiClient } from '$lib/api-client';
 	import AuditSaveCard from '$lib/components/AuditSaveCard.svelte';
 	import DialogActions from '$lib/components/DialogActions.svelte';
 	import MonoId from '$lib/components/MonoId.svelte';
@@ -28,7 +28,7 @@
 	let auditComment = $state('');
 	let submitting = $state(false);
 	let formError = $state('');
-	let deleteTarget = $state<SimplePluginResponse | null>(null);
+	let deleteTarget = $state<SimplePluginResponse>();
 
 	const dirtyNames = $derived(
 		sortedPlugins
@@ -69,12 +69,12 @@
 		submitting = true;
 		formError = '';
 
-		const type = file.name.toLowerCase().endsWith('.zip') ? 'ZIP' : 'JAR';
+		const type = file.name.toLowerCase().endsWith('.zip') ? 'zip' : 'jar';
 		const { error } = await PluginController.uploadPlugin({
 			client: getApiClient(),
 			body: { file },
 			query: { type },
-			headers: auditComment.trim() ? { 'X-ORM-Audit-Comment': auditComment.trim() } : undefined,
+			headers: auditHeaders(auditComment),
 		});
 
 		submitting = false;
@@ -101,7 +101,7 @@
 		formError = '';
 
 		try {
-			const headers = auditComment.trim() ? { 'X-ORM-Audit-Comment': auditComment.trim() } : undefined;
+			const headers = auditHeaders(auditComment);
 			const client = getApiClient();
 
 			for (const name of dirtyNames) {
@@ -113,7 +113,7 @@
 				});
 
 				if (error) {
-					formError = error.error ?? `Failed to update plugin ${name}.`;
+					formError = `Failed to update plugin ${name}: ${error.error}`;
 					return;
 				}
 			}
@@ -144,14 +144,14 @@
 		const { error } = await PluginController.deletePlugin({
 			client: getApiClient(),
 			path: { name },
-			headers: auditComment.trim() ? { 'X-ORM-Audit-Comment': auditComment.trim() } : undefined,
+			headers: auditHeaders(auditComment),
 		});
 
 		submitting = false;
-		deleteTarget = null;
+		deleteTarget = undefined;
 
 		if (error) {
-			formError = error.error ?? 'Failed to delete plugin.';
+			formError = 'Failed to delete plugin: ' + error.error;
 			return;
 		}
 

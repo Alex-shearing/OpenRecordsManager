@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { FileStoreController } from '$lib/api';
-	import type { SimpleFileStoreResponse } from '$lib/api/types.gen';
-	import { getApiClient } from '$lib/api-client';
+	import type { FileStoreResponse, SimpleFileStoreResponse } from '$lib/api/types.gen';
+	import { auditHeaders, getApiClient } from '$lib/api-client';
 	import DialogActions from '$lib/components/DialogActions.svelte';
 	import MiddlewarePicker from '$lib/components/MiddlewarePicker.svelte';
 	import MonoId from '$lib/components/MonoId.svelte';
@@ -32,18 +32,14 @@
 
 	const createType = $derived(sortedTypes.find(type => type.id === createTypeId));
 
-	let editTarget = $state<SimpleFileStoreResponse | null>(null);
-	let editTypeId = $state('');
-	let editMiddlewareIds = $state<string[]>([]);
+	let editTarget = $state<FileStoreResponse>();
 	let editValues = $state<Record<string, string>>({});
 	let editFieldErrors = $state<Record<string, string>>({});
 	let editFormError = $state('');
 	let editAuditComment = $state('');
 	let editLoading = $state(false);
 
-	const editType = $derived(sortedTypes.find(type => type.id === editTypeId));
-
-	let deleteTarget = $state<SimpleFileStoreResponse | null>(null);
+	let deleteTarget = $state<SimpleFileStoreResponse>();
 	let deleteFormError = $state('');
 	let deleteAuditComment = $state('');
 
@@ -51,18 +47,6 @@
 		return Object.fromEntries(
 			Object.entries(properties ?? {}).map(([key, value]) => [key, value == null ? '' : String(value)])
 		);
-	}
-
-	function auditHeaders(comment: string) {
-		return comment.trim() ? { 'X-ORM-Audit-Comment': comment.trim() } : undefined;
-	}
-
-	function resetCreateForm() {
-		createValues = {};
-		selectedMiddlewareIds = [];
-		createFieldErrors = {};
-		createFormError = '';
-		createAuditComment = '';
 	}
 
 	async function handleCreate(event: SubmitEvent) {
@@ -90,24 +74,27 @@
 
 		if (error) {
 			createFieldErrors = (error.errorData ?? {}) as Record<string, string>;
-			createFormError = error.error ?? 'Failed to create file store.';
+			createFormError = 'Failed to create file store' + error.error;
 			return;
 		}
 
 		toast.success('Created file store.');
-		resetCreateForm();
+
+		createValues = {};
+		selectedMiddlewareIds = [];
+		createFieldErrors = {};
+		createFormError = '';
+		createAuditComment = '';
+
 		await invalidateAll();
 	}
 
 	async function openEdit(store: SimpleFileStoreResponse) {
-		editTarget = store;
-		editTypeId = store.type;
+		editLoading = true;
 		editValues = {};
-		editMiddlewareIds = [];
 		editFieldErrors = {};
 		editFormError = '';
 		editAuditComment = '';
-		editLoading = true;
 
 		const { data: result, error } = await FileStoreController.fileStoreRetrieveOne({
 			client: getApiClient(),
@@ -116,13 +103,12 @@
 
 		editLoading = false;
 
-		if (error || !result?.success || !result.data) {
-			editFormError = error?.error ?? 'Failed to load file store.';
+		if (error) {
+			toast.error('Failed to load file store: ' + error.error);
 			return;
 		}
 
-		editTypeId = result.data.type;
-		editMiddlewareIds = result.data.middlewares;
+		editTarget = result.data;
 		editValues = toFormValues(result.data.properties);
 	}
 
@@ -152,7 +138,7 @@
 		}
 
 		toast.success('Updated file store.');
-		editTarget = null;
+		editTarget = undefined;
 		await invalidateAll();
 	}
 
@@ -172,12 +158,12 @@
 		submitting = false;
 
 		if (error) {
-			deleteFormError = error.error ?? 'Failed to delete file store.';
+			deleteFormError = 'Failed to delete file store: ' + error.error;
 			return;
 		}
 
 		toast.success('Deleted file store.');
-		deleteTarget = null;
+		deleteTarget = undefined;
 		await invalidateAll();
 	}
 </script>
@@ -200,11 +186,13 @@
 				<MonoId value={store.id} />
 			</td>
 			<td class="px-5 py-4 text-right">
-				<button type="button" class="btn-ghost" disabled={submitting} onclick={() => openEdit(store)}>Edit</button>
+				<button type="button" class="btn-ghost" disabled={submitting || editLoading} onclick={() => openEdit(store)}>
+					Edit
+				</button>
 				<button
 					type="button"
 					class="btn-ghost text-destructive"
-					disabled={submitting}
+					disabled={submitting || editLoading}
 					onclick={() => {
 						deleteTarget = store;
 						deleteAuditComment = '';
@@ -286,71 +274,59 @@
 	{#snippet description(target)}
 		Update settings for <MonoId value={target.id} />.
 	{/snippet}
-	{#snippet body()}
-		{#if editLoading}
-			<p class="text-hint">Loading…</p>
-		{:else}
-			<form id="file-store-edit-form" class="flex flex-col gap-4" onsubmit={handleEdit}>
-				<label class="flex flex-col gap-1">
-					<span class="text-label">Type</span>
-					<input class="input w-full" value={editTypeId} readonly disabled />
-				</label>
+	{#snippet body(target)}
+		{@const targetType = sortedTypes.find(type => type.id === editTarget?.type)}
+		<form id="file-store-edit-form" class="flex flex-col gap-4" onsubmit={handleEdit}>
+			<label class="flex flex-col gap-1">
+				<span class="text-label">Type</span>
+				<input class="input w-full" value={target.type} readonly disabled />
+			</label>
 
-				<div class="flex flex-col gap-1">
-					<span class="text-label">Middlewares</span>
-					<p class="text-hint">Middlewares are fixed at creation and cannot be changed.</p>
-					{#if editMiddlewareIds.length === 0}
-						<p class="text-hint">None</p>
-					{:else}
-						<ul class="flex flex-col gap-2">
-							{#each editMiddlewareIds as id (id)}
-								{@const middleware = data.middlewares.find(m => m.id === id)}
-								<li>
-									<span class="font-medium">{middleware?.type ?? 'Unknown'}</span>
-									<span class="block"><MonoId value={id} muted /></span>
-								</li>
-							{/each}
-						</ul>
-					{/if}
-				</div>
+			{#if targetType}
+				{#key target.id}
+					<SchemaForm
+						schema={targetType.settingsSchema}
+						bind:values={editValues}
+						fieldErrors={editFieldErrors}
+						formError={editFormError}
+						{submitting}
+						idPrefix="file-store-edit"
+					></SchemaForm>
+				{/key}
+			{:else}
+				<p class="text-sm text-destructive" role="alert">Unknown file store type.</p>
+			{/if}
 
-				{#if editType}
-					{#key editTarget?.id}
-						<SchemaForm
-							schema={editType.settingsSchema}
-							bind:values={editValues}
-							fieldErrors={editFieldErrors}
-							formError={editFormError}
-							{submitting}
-							idPrefix="file-store-edit"
-						>
-							{#snippet after()}
-								<label class="flex flex-col gap-1">
-									<span class="text-label">Audit comment</span>
-									<textarea
-										bind:value={editAuditComment}
-										required={data.auditCommentRequired.update}
-										disabled={submitting}
-										rows={3}
-										class="input w-full"></textarea>
-								</label>
-							{/snippet}
-						</SchemaForm>
-					{/key}
-				{:else if editFormError}
-					<p class="text-sm text-destructive" role="alert">{editFormError}</p>
+			<div class="flex flex-col gap-1">
+				<span class="text-label">Middlewares</span>
+				{#if target.middlewares.length === 0}
+					<p class="text-hint">None</p>
+				{:else}
+					<ul class="flex flex-col gap-2">
+						{#each target.middlewares as id (id)}
+							{@const middleware = data.middlewares.find(m => m.id === id)}
+							<li>
+								<span class="font-medium">{middleware?.type ?? 'Unknown'}</span>
+								<span class="block"><MonoId value={id} muted /></span>
+							</li>
+						{/each}
+					</ul>
 				{/if}
-			</form>
-		{/if}
+			</div>
+
+			<label class="flex flex-col gap-1">
+				<span class="text-label">Audit comment</span>
+				<textarea
+					bind:value={editAuditComment}
+					required={data.auditCommentRequired.update}
+					disabled={submitting}
+					rows={3}
+					class="input w-full"></textarea>
+			</label>
+		</form>
 	{/snippet}
 	{#snippet footer()}
-		<DialogActions
-			formId="file-store-edit-form"
-			confirmLabel="Save"
-			confirmingLabel="Saving…"
-			submitting={submitting || editLoading}
-			disabled={editLoading || !editType}
-		/>
+		<DialogActions formId="file-store-edit-form" confirmLabel="Save" confirmingLabel="Saving…" {submitting} />
 	{/snippet}
 </TargetDialog>
 

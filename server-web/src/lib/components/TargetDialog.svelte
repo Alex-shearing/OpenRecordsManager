@@ -3,7 +3,7 @@
 	import AppDialog from './AppDialog.svelte';
 
 	let {
-		target = $bindable(null as T | null),
+		target = $bindable(undefined),
 		title,
 		description,
 		body,
@@ -12,7 +12,7 @@
 		id,
 		size = 'default',
 	}: {
-		target?: T | null;
+		target?: T;
 		title?: string;
 		description?: Snippet<[T]>;
 		body?: Snippet<[T]>;
@@ -23,7 +23,7 @@
 	} = $props();
 
 	function handleClose() {
-		target = null;
+		target = undefined;
 		onclose?.();
 	}
 </script>

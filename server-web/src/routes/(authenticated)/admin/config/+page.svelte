@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { ConfigController } from '$lib/api';
-	import { getApiClient } from '$lib/api-client';
+	import { auditHeaders, getApiClient } from '$lib/api-client';
 	import ConfigSettingRow from '$lib/components/ConfigSettingRow.svelte';
 	import AuditSaveCard from '$lib/components/AuditSaveCard.svelte';
 	import { buildSavedValues, findChangedConfigs, groupConfigs } from '$lib/config/config-utils';
@@ -32,7 +32,7 @@
 		formError = '';
 
 		try {
-			const headers = auditComment.trim() ? { 'X-ORM-Audit-Comment': auditComment.trim() } : undefined;
+			const headers = auditHeaders(auditComment);
 
 			const { error } = await ConfigController.setConfigs({
 				client: getApiClient(),
