@@ -10,6 +10,7 @@
 		footer,
 		onclose,
 		id,
+		size = 'default',
 	}: {
 		target?: T | null;
 		title?: string;
@@ -18,6 +19,7 @@
 		footer?: Snippet<[T]>;
 		onclose?: () => void;
 		id?: string;
+		size?: 'default' | 'wide';
 	} = $props();
 
 	function handleClose() {
@@ -48,6 +50,7 @@
 	open={!!target}
 	{title}
 	{id}
+	{size}
 	onclose={handleClose}
 	description={description ? desc : undefined}
 	body={body ? bod : undefined}

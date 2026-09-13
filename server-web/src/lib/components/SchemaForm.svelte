@@ -53,7 +53,7 @@
 					bind:value={values[key]}
 					{required}
 					disabled={submitting}
-					class="input"
+					class="input w-full"
 					aria-invalid={fieldErrors[key] ? 'true' : undefined}
 					aria-describedby={fieldErrors[key] ? `${idPrefix}-${key}-error` : undefined}
 				>
@@ -74,7 +74,7 @@
 					pattern={field.pattern ?? undefined}
 					autocomplete={field.writeOnly ? 'current-password' : undefined}
 					disabled={submitting}
-					class="input"
+					class="input w-full"
 					aria-invalid={fieldErrors[key] ? 'true' : undefined}
 					aria-describedby={fieldErrors[key] ? `${idPrefix}-${key}-error` : undefined}
 					placeholder=" "

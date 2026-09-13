@@ -3,6 +3,7 @@
 	import type { SimpleFileStoreResponse } from '$lib/api/types.gen';
 	import { getApiClient } from '$lib/api-client';
 	import DialogActions from '$lib/components/DialogActions.svelte';
+	import MiddlewarePicker from '$lib/components/MiddlewarePicker.svelte';
 	import MonoId from '$lib/components/MonoId.svelte';
 	import SchemaForm from '$lib/components/SchemaForm.svelte';
 	import TableCard from '$lib/components/TableCard.svelte';
@@ -64,37 +65,10 @@
 		createAuditComment = '';
 	}
 
-	function onCreateTypeChange() {
-		createValues = {};
-		createFieldErrors = {};
-		createFormError = '';
-	}
-
-	function toggleMiddleware(target: 'create' | 'edit', id: string, checked: boolean) {
-		const current = target === 'create' ? selectedMiddlewareIds : editMiddlewares;
-		const next = checked
-			? current.includes(id)
-				? current
-				: [...current, id]
-			: current.filter(middlewareId => middlewareId !== id);
-
-		if (target === 'create') {
-			selectedMiddlewareIds = next;
-		} else {
-			editMiddlewares = next;
-		}
-	}
-
 	async function handleCreate(event: SubmitEvent) {
 		event.preventDefault();
-
 		if (!createTypeId) {
 			createFormError = 'Select a file store type.';
-			return;
-		}
-
-		if (data.auditCommentRequired.create && !createAuditComment.trim()) {
-			createFormError = 'An audit comment is required for this action.';
 			return;
 		}
 
@@ -147,23 +121,14 @@
 			return;
 		}
 
-		const detail = result.data;
-		editTypeId = detail.type;
-		editMiddlewares = detail.middlewares ?? [];
-		editValues = toFormValues(detail.properties);
+		editTypeId = result.data.type;
+		editMiddlewares = result.data.middlewares ?? [];
+		editValues = toFormValues(result.data.properties);
 	}
 
 	async function handleEdit(event: SubmitEvent) {
 		event.preventDefault();
-
-		if (!editTarget) {
-			return;
-		}
-
-		if (data.auditCommentRequired.update && !editAuditComment.trim()) {
-			editFormError = 'An audit comment is required for this action.';
-			return;
-		}
+		if (!editTarget) return;
 
 		submitting = true;
 		editFieldErrors = {};
@@ -192,21 +157,9 @@
 		await invalidateAll();
 	}
 
-	function openDelete(store: SimpleFileStoreResponse) {
-		deleteTarget = store;
-		deleteFormError = '';
-		deleteAuditComment = '';
-	}
-
-	async function confirmDelete() {
-		if (!deleteTarget) {
-			return;
-		}
-
-		if (data.auditCommentRequired.delete && !deleteAuditComment.trim()) {
-			deleteFormError = 'An audit comment is required for this action.';
-			return;
-		}
+	async function handleDelete(event: SubmitEvent) {
+		event.preventDefault();
+		if (!deleteTarget) return;
 
 		submitting = true;
 		deleteFormError = '';
@@ -231,10 +184,7 @@
 </script>
 
 <h1 class="mb-2 text-2xl font-semibold">File stores</h1>
-<p class="mb-6 text-hint">
-	Create and manage file stores for this workgroup. Attach middlewares when creating or editing a store; checked order
-	is the application order.
-</p>
+<p class="mb-6 text-hint">Create and manage file stores for this workgroup.</p>
 
 {#if data.error}
 	<p class="text-destructive">{data.error}</p>
@@ -251,19 +201,16 @@
 				<MonoId value={store.id} />
 			</td>
 			<td class="px-5 py-4 text-right">
-				<button
-					type="button"
-					class="btn-ghost"
-					disabled={submitting || submitting || submitting}
-					onclick={() => openEdit(store)}
-				>
-					Edit
-				</button>
+				<button type="button" class="btn-ghost" disabled={submitting} onclick={() => openEdit(store)}>Edit</button>
 				<button
 					type="button"
 					class="btn-ghost text-destructive"
-					disabled={submitting || submitting || submitting}
-					onclick={() => openDelete(store)}
+					disabled={submitting}
+					onclick={() => {
+						deleteTarget = store;
+						deleteAuditComment = '';
+						deleteFormError = '';
+					}}
 				>
 					Delete
 				</button>
@@ -271,7 +218,7 @@
 		{/snippet}
 	</TableCard>
 
-	<form class="mt-6 card p-5" onsubmit={handleCreate} novalidate>
+	<form class="mt-6 card p-5" onsubmit={handleCreate}>
 		<h2 class="mb-1 text-lg font-medium">Create file store</h2>
 		<p class="mb-4 text-hint">Choose a type, configure its settings, and optionally attach middlewares in order.</p>
 
@@ -281,10 +228,14 @@
 			<label class="mb-4 flex flex-col gap-1">
 				<span class="text-label">Type</span>
 				<select
-					class="input w-full max-w-md"
+					class="input w-full"
 					bind:value={createTypeId}
 					disabled={submitting}
-					onchange={onCreateTypeChange}
+					onchange={() => {
+						createValues = {};
+						createFieldErrors = {};
+						createFormError = '';
+					}}
 				>
 					{#each sortedTypes as type (type.id)}
 						<option value={type.id}>{type.id}</option>
@@ -303,36 +254,11 @@
 						idPrefix="file-store-create"
 					>
 						{#snippet after()}
-							{#if data.middlewares.length > 0}
-								<fieldset>
-									<legend class="mb-2 text-label">Middlewares</legend>
-									<p class="mb-2 text-hint">Checked order is the application order.</p>
-									<ul class="flex flex-col gap-2">
-										{#each data.middlewares as middleware (middleware.id)}
-											<li>
-												<label class="flex items-start gap-2 text-sm">
-													<input
-														type="checkbox"
-														class="mt-0.5 size-4 rounded border-border-input"
-														disabled={submitting}
-														checked={selectedMiddlewareIds.includes(middleware.id)}
-														onchange={event =>
-															toggleMiddleware(
-																'create',
-																middleware.id,
-																(event.currentTarget as HTMLInputElement).checked
-															)}
-													/>
-													<span>
-														<span class="font-medium">{middleware.type}</span>
-														<span class="block"><MonoId value={middleware.id} muted /></span>
-													</span>
-												</label>
-											</li>
-										{/each}
-									</ul>
-								</fieldset>
-							{/if}
+							<MiddlewarePicker
+								middlewares={data.middlewares}
+								bind:selected={selectedMiddlewareIds}
+								disabled={submitting}
+							/>
 
 							<label class="flex flex-col gap-1">
 								<span class="text-label">Audit comment</span>
@@ -341,7 +267,7 @@
 									required={data.auditCommentRequired.create}
 									disabled={submitting}
 									rows={3}
-									class="input w-full max-w-md"></textarea>
+									class="input w-full"></textarea>
 							</label>
 						{/snippet}
 					</SchemaForm>
@@ -357,7 +283,7 @@
 	</form>
 {/if}
 
-<TargetDialog bind:target={editTarget} title="Edit file store">
+<TargetDialog bind:target={editTarget} title="Edit file store" size="wide">
 	{#snippet description(target)}
 		Update settings for <MonoId value={target.id} />.
 	{/snippet}
@@ -365,43 +291,18 @@
 		{#if editLoading}
 			<p class="text-hint">Loading…</p>
 		{:else}
-			<form id="file-store-edit-form" class="flex flex-col gap-4" onsubmit={handleEdit} novalidate>
+			<form id="file-store-edit-form" class="flex flex-col gap-4" onsubmit={handleEdit}>
 				<label class="flex flex-col gap-1">
 					<span class="text-label">Type</span>
-					<input class="input" value={editTypeId} readonly disabled />
+					<input class="input w-full" value={editTypeId} readonly disabled />
 				</label>
 
-				{#if data.middlewares.length > 0}
-					<fieldset>
-						<legend class="mb-2 text-label">Middlewares</legend>
-						<p class="mb-2 text-hint">Checked order is the application order.</p>
-						<ul class="flex flex-col gap-2">
-							{#each data.middlewares as middleware (middleware.id)}
-								<li>
-									<label class="flex items-start gap-2 text-sm">
-										<input
-											type="checkbox"
-											class="mt-0.5 size-4 rounded border-border-input"
-											disabled={submitting}
-											checked={editMiddlewares.includes(middleware.id)}
-											onchange={event =>
-												toggleMiddleware('edit', middleware.id, (event.currentTarget as HTMLInputElement).checked)}
-										/>
-										<span>
-											<span class="font-medium">{middleware.type}</span>
-											<span class="block"><MonoId value={middleware.id} muted /></span>
-										</span>
-									</label>
-								</li>
-							{/each}
-						</ul>
-					</fieldset>
-				{:else}
-					<div>
-						<p class="text-label">Middlewares</p>
-						<p class="text-hint">None available</p>
-					</div>
-				{/if}
+				<MiddlewarePicker
+					middlewares={data.middlewares}
+					bind:selected={editMiddlewares}
+					disabled={submitting}
+					showEmpty
+				/>
 
 				{#if editType}
 					{#key editTarget?.id}
@@ -443,31 +344,40 @@
 	{/snippet}
 </TargetDialog>
 
-<TargetDialog bind:target={deleteTarget} title="Delete file store" onclose={() => (deleteFormError = '')}>
+<TargetDialog
+	bind:target={deleteTarget}
+	title="Delete file store"
+	onclose={() => {
+		deleteFormError = '';
+		deleteAuditComment = '';
+	}}
+>
 	{#snippet description(target)}
 		Remove store <MonoId value={target.id} /> ({target.type})? This fails if the store still has files.
 	{/snippet}
 	{#snippet body()}
-		<label class="flex flex-col gap-1">
-			<span class="text-label">Audit comment</span>
-			<textarea
-				bind:value={deleteAuditComment}
-				required={data.auditCommentRequired.delete}
-				disabled={submitting}
-				rows={3}
-				class="input w-full"></textarea>
-		</label>
-		{#if deleteFormError}
-			<p class="mt-3 text-sm text-destructive" role="alert">{deleteFormError}</p>
-		{/if}
+		<form id="file-store-delete-form" class="flex flex-col gap-4" onsubmit={handleDelete}>
+			<label class="flex flex-col gap-1">
+				<span class="text-label">Audit comment</span>
+				<textarea
+					bind:value={deleteAuditComment}
+					required={data.auditCommentRequired.delete}
+					disabled={submitting}
+					rows={3}
+					class="input w-full"></textarea>
+			</label>
+			{#if deleteFormError}
+				<p class="text-sm text-destructive" role="alert">{deleteFormError}</p>
+			{/if}
+		</form>
 	{/snippet}
 	{#snippet footer()}
 		<DialogActions
+			formId="file-store-delete-form"
 			variant="destructive"
 			confirmLabel="Delete"
 			confirmingLabel="Deleting…"
 			{submitting}
-			onconfirm={confirmDelete}
 		/>
 	{/snippet}
 </TargetDialog>

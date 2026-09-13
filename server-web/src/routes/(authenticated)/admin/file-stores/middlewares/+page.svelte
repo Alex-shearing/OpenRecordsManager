@@ -57,22 +57,10 @@
 		createAuditComment = '';
 	}
 
-	function onCreateTypeChange() {
-		createValues = {};
-		createFieldErrors = {};
-		createFormError = '';
-	}
-
 	async function handleCreate(event: SubmitEvent) {
 		event.preventDefault();
-
 		if (!createTypeId) {
 			createFormError = 'Select a middleware type.';
-			return;
-		}
-
-		if (data.auditCommentRequired.create && !createAuditComment.trim()) {
-			createFormError = 'An audit comment is required for this action.';
 			return;
 		}
 
@@ -129,15 +117,7 @@
 
 	async function handleEdit(event: SubmitEvent) {
 		event.preventDefault();
-
-		if (!editTarget) {
-			return;
-		}
-
-		if (data.auditCommentRequired.update && !editAuditComment.trim()) {
-			editFormError = 'An audit comment is required for this action.';
-			return;
-		}
+		if (!editTarget) return;
 
 		submitting = true;
 		editFieldErrors = {};
@@ -163,26 +143,14 @@
 		await invalidateAll();
 	}
 
-	function openDelete(middleware: SimpleMiddlewareResponse) {
-		deleteTarget = middleware;
-		deleteFormError = '';
-		deleteAuditComment = '';
-	}
-
-	async function confirmDelete() {
-		if (!deleteTarget) {
-			return;
-		}
-
-		if (data.auditCommentRequired.delete && !deleteAuditComment.trim()) {
-			deleteFormError = 'An audit comment is required for this action.';
-			return;
-		}
+	async function handleDelete(event: SubmitEvent) {
+		event.preventDefault();
+		if (!deleteTarget) return;
 
 		submitting = true;
 		deleteFormError = '';
 
-		const { error } = await FileStoreController.middlewareDelete({
+		const { error, response } = await FileStoreController.middlewareDelete({
 			client: getApiClient(),
 			path: { id: deleteTarget.id },
 			headers: auditHeaders(deleteAuditComment),
@@ -191,7 +159,10 @@
 		submitting = false;
 
 		if (error) {
-			deleteFormError = error.error;
+			deleteFormError =
+				response?.status === 409
+					? (error.error ?? 'This middleware is in use by one or more file stores and cannot be deleted.')
+					: (error.error ?? 'Failed to delete middleware.');
 			return;
 		}
 
@@ -224,19 +195,18 @@
 				<MonoId value={middleware.id} />
 			</td>
 			<td class="px-5 py-4 text-right">
-				<button
-					type="button"
-					class="btn-ghost"
-					disabled={submitting || submitting || submitting}
-					onclick={() => openEdit(middleware)}
-				>
+				<button type="button" class="btn-ghost" disabled={submitting} onclick={() => openEdit(middleware)}>
 					Edit
 				</button>
 				<button
 					type="button"
 					class="btn-ghost text-destructive"
-					disabled={submitting || submitting || submitting}
-					onclick={() => openDelete(middleware)}
+					disabled={submitting}
+					onclick={() => {
+						deleteTarget = middleware;
+						deleteAuditComment = '';
+						deleteFormError = '';
+					}}
 				>
 					Delete
 				</button>
@@ -244,7 +214,7 @@
 		{/snippet}
 	</TableCard>
 
-	<form class="mt-6 card p-5" onsubmit={handleCreate} novalidate>
+	<form class="mt-6 card p-5" onsubmit={handleCreate}>
 		<h2 class="mb-1 text-lg font-medium">Create middleware</h2>
 		<p class="mb-4 text-hint">Choose a type and configure its properties.</p>
 
@@ -257,7 +227,11 @@
 					class="input w-full max-w-md"
 					bind:value={createTypeId}
 					disabled={submitting}
-					onchange={onCreateTypeChange}
+					onchange={() => {
+						createValues = {};
+						createFieldErrors = {};
+						createFormError = '';
+					}}
 				>
 					{#each sortedTypes as type (type.id)}
 						<option value={type.id}>{type.id}</option>
@@ -283,7 +257,8 @@
 									required={data.auditCommentRequired.create}
 									disabled={submitting}
 									rows={3}
-									class="input w-full max-w-md"></textarea>
+									class="input w-full max-w-md"
+								></textarea>
 							</label>
 						{/snippet}
 					</SchemaForm>
@@ -307,7 +282,7 @@
 		{#if editLoading}
 			<p class="text-hint">Loading…</p>
 		{:else}
-			<form id="middleware-edit-form" class="flex flex-col gap-4" onsubmit={handleEdit} novalidate>
+			<form id="middleware-edit-form" class="flex flex-col gap-4" onsubmit={handleEdit}>
 				<label class="flex flex-col gap-1">
 					<span class="text-label">Type</span>
 					<input class="input" value={editTypeId} readonly disabled />
@@ -331,7 +306,8 @@
 										required={data.auditCommentRequired.update}
 										disabled={submitting}
 										rows={3}
-										class="input w-full"></textarea>
+										class="input w-full"
+									></textarea>
 								</label>
 							{/snippet}
 						</SchemaForm>
@@ -353,32 +329,42 @@
 	{/snippet}
 </TargetDialog>
 
-<TargetDialog bind:target={deleteTarget} title="Delete file store middleware" onclose={() => (deleteFormError = '')}>
+<TargetDialog
+	bind:target={deleteTarget}
+	title="Delete file store middleware"
+	onclose={() => {
+		deleteFormError = '';
+		deleteAuditComment = '';
+	}}
+>
 	{#snippet description(target)}
 		Remove <span class="font-medium">{target.type}</span> (<MonoId value={target.id} />)? This fails if it is attached
 		to a file store.
 	{/snippet}
 	{#snippet body()}
-		<label class="flex flex-col gap-1">
-			<span class="text-label">Audit comment</span>
-			<textarea
-				bind:value={deleteAuditComment}
-				required={data.auditCommentRequired.delete}
-				disabled={submitting}
-				rows={3}
-				class="input w-full"></textarea>
-		</label>
-		{#if deleteFormError}
-			<p class="mt-3 text-sm text-destructive" role="alert">{deleteFormError}</p>
-		{/if}
+		<form id="middleware-delete-form" class="flex flex-col gap-4" onsubmit={handleDelete}>
+			<label class="flex flex-col gap-1">
+				<span class="text-label">Audit comment</span>
+				<textarea
+					bind:value={deleteAuditComment}
+					required={data.auditCommentRequired.delete}
+					disabled={submitting}
+					rows={3}
+					class="input w-full"
+				></textarea>
+			</label>
+			{#if deleteFormError}
+				<p class="text-sm text-destructive" role="alert">{deleteFormError}</p>
+			{/if}
+		</form>
 	{/snippet}
 	{#snippet footer()}
 		<DialogActions
+			formId="middleware-delete-form"
 			variant="destructive"
 			confirmLabel="Delete"
 			confirmingLabel="Deleting…"
 			{submitting}
-			onconfirm={confirmDelete}
 		/>
 	{/snippet}
 </TargetDialog>

@@ -9,6 +9,7 @@
 		footer,
 		onclose,
 		id,
+		size = 'default',
 	}: {
 		open?: boolean;
 		title?: string;
@@ -17,6 +18,7 @@
 		footer?: Snippet;
 		onclose?: () => void;
 		id?: string;
+		size?: 'default' | 'wide';
 	} = $props();
 
 	let dialog = $state<HTMLDialogElement>();
@@ -44,7 +46,12 @@
 	}
 </script>
 
-<dialog bind:this={dialog} {id} class="app-dialog" onclose={handleClose}>
+<dialog
+	bind:this={dialog}
+	{id}
+	class={['app-dialog', size === 'wide' && 'app-dialog-wide']}
+	onclose={handleClose}
+>
 	{#if title || description}
 		<div class="card-header flex items-start justify-between gap-4">
 			<div>
@@ -101,6 +108,11 @@
 			transform 160ms ease-out,
 			overlay 160ms allow-discrete,
 			display 160ms allow-discrete;
+	}
+
+	.app-dialog-wide {
+		width: min(48rem, calc(100vw - 2rem));
+		max-width: min(48rem, calc(100vw - 2rem));
 	}
 
 	.app-dialog[open] {
