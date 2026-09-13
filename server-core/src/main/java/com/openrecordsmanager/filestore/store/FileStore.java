@@ -55,6 +55,7 @@ public class FileStore {
         this.id = UUID.randomUUID();
         this.type = catalog.getRegistry(ComponentTypes.FILE_STORE).getId(type).orElseThrow();
         this.properties = JsonSchemaValidator.serializeSettings(type.parseSettings(properties));
+        type.initializeUntyped(this.properties);
     }
 
     public UUID getId() {
@@ -114,7 +115,9 @@ public class FileStore {
     }
 
     public void setProperties(ComponentCatalog catalog, Map<String, ?> properties) {
-        this.properties = JsonSchemaValidator.serializeSettings(this.getStoreType(catalog).parseSettings(properties));
+        FileStoreType<?> type = this.getStoreType(catalog);
+        this.properties = JsonSchemaValidator.serializeSettings(type.parseSettings(properties));
+        type.initializeUntyped(this.properties);
     }
 
     public List<MiddlewareUsage> getMiddlewares() {

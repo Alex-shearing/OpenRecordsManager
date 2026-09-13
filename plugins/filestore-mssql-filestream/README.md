@@ -8,18 +8,27 @@ Stores file blobs in a Microsoft SQL Server **FILESTREAM** column using JDBC/TDS
 
 ## Settings
 
-| Field      | Description                                                       |
-|------------|-------------------------------------------------------------------|
-| `jdbcUrl`  | SQL Server JDBC URL (must point at a FILESTREAM-enabled database) |
-| `username` | Database user                                                     |
-| `password` | Database password                                                 |
+| Field      | Description                                                                               |
+| ---------- | ----------------------------------------------------------------------------------------- |
+| `jdbcUrl`  | SQL Server JDBC URL (must point at a FILESTREAM-enabled **user** database — not `master`) |
+| `username` | Database user                                                                             |
+| `password` | Database password                                                                         |
 
-## Schema
+Example JDBC URL:
 
-Run [`schema.sql`](src/main/resources/schema.sql) (or equivalent) before creating a file store instance. The plugin does
-not create the table or FILESTREAM filegroup.
+```text
+jdbc:sqlserver://localhost:1433;databaseName=orm_files;encrypt=true;trustServerCertificate=true
+```
 
-Columns:
+## Prerequisites
+
+1. FILESTREAM enabled at the SQL Server **instance** level
+2. A **FILESTREAM filegroup** (and file) on the target database
+3. JDBC URL must use that user database (`databaseName=...`), not `master` / `tempdb` / etc.
+
+On create/update, the plugin connects and creates `dbo.filestream_store` if it is missing. It does **not** create the FILESTREAM filegroup for you.
+
+## Schema columns
 
 - `id` — `UNIQUEIDENTIFIER ROWGUIDCOL`; returned as the opaque store key
 - `file_data` — `VARBINARY(MAX) FILESTREAM`

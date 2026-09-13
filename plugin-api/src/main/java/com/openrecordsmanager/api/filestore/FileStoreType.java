@@ -55,6 +55,20 @@ public abstract class FileStoreType<S extends Record> implements Component {
         return this.retrieve(this.parseSettings(properties), data);
     }
 
+    /**
+     * Validates settings against the live backend and performs any one-time setup
+     * required before this instance can be used. Invoked before persisting create/update.
+     */
+    public void initialize(S settings) {
+    }
+
+    /**
+     * Initializes using untyped settings (typically raw JSON maps from the API).
+     */
+    public final void initializeUntyped(Map<String, ?> settings) {
+        this.initialize(this.parseSettings(settings));
+    }
+
     public S parseSettings(Map<String, ?> properties) {
         return JsonSchemaValidator.toRecord(this.settingsClass, properties);
     }

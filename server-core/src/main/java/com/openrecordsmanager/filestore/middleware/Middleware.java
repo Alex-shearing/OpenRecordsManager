@@ -42,7 +42,8 @@ public class Middleware {
     public Middleware(ComponentCatalog catalog, FileStoreMiddlewareType<?> type, Map<String, ?> properties) {
         this.id = UUID.randomUUID();
         this.type = catalog.getRegistry(ComponentTypes.FILE_STORE_MIDDLEWARE).getId(type).orElseThrow();
-        this.properties = JsonSchemaValidator.serializeSettings(this.getMiddlewareType(catalog).parseSettings(properties));
+        this.properties = JsonSchemaValidator.serializeSettings(type.parseSettings(properties));
+        type.initializeUntyped(this.properties);
     }
 
     public UUID getId() {
@@ -68,7 +69,9 @@ public class Middleware {
     }
 
     public void setProperties(ComponentCatalog catalog, Map<String, ?> properties) {
-        this.properties = JsonSchemaValidator.serializeSettings(this.getMiddlewareType(catalog).parseSettings(properties));
+        FileStoreMiddlewareType<?> type = this.getMiddlewareType(catalog);
+        this.properties = JsonSchemaValidator.serializeSettings(type.parseSettings(properties));
+        type.initializeUntyped(this.properties);
     }
 
 }

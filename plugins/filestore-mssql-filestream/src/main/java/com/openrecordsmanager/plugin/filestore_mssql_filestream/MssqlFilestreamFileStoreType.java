@@ -1,5 +1,6 @@
 package com.openrecordsmanager.plugin.filestore_mssql_filestream;
 
+import com.openrecordsmanager.api.errors.InputValidationException;
 import com.openrecordsmanager.api.filestore.FileStoreType;
 import com.openrecordsmanager.api.schema.SchemaField;
 import com.openrecordsmanager.api.schema.SchemaFieldFormat;
@@ -11,25 +12,58 @@ import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.sql.*;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 /**
  * Stores files in a Microsoft SQL Server FILESTREAM column via JDBC/TDS streaming.
  *
- * <p>Requires the {@code dbo.orm_filestream_store} table from {@code schema.sql}.
+ * <p>On initialize, ensures {@code dbo.filestream_store} exists.
  */
 public class MssqlFilestreamFileStoreType
         extends FileStoreType<MssqlFilestreamFileStoreType.MssqlFilestreamFileStoreSettings> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(MssqlFilestreamFileStoreType.class);
 
+    private static final String TABLE = "dbo.filestream_store";
+
     private static final String INSERT_SQL =
-            "INSERT INTO dbo.filestream_store (id, file_data, file_extension) VALUES (?, ?, ?)";
+            "INSERT INTO " + TABLE + " (id, file_data, file_extension) VALUES (?, ?, ?)";
     private static final String SELECT_SQL =
-            "SELECT file_data FROM dbo.filestream_store WHERE id = ?";
+            "SELECT file_data FROM " + TABLE + " WHERE id = ?";
+
+    private static final String ENSURE_TABLE_SQL = """
+            IF OBJECT_ID(N'dbo.filestream_store', N'U') IS NULL
+            BEGIN
+                CREATE TABLE dbo.filestream_store (
+                    id UNIQUEIDENTIFIER ROWGUIDCOL NOT NULL UNIQUE DEFAULT NEWSEQUENTIALID(),
+                    file_data VARBINARY(MAX) FILESTREAM NOT NULL,
+                    file_extension NVARCHAR(32) NULL,
+                    created_at DATETIME2 NOT NULL DEFAULT SYSUTCDATETIME()
+                );
+            END
+            """;
 
     public MssqlFilestreamFileStoreType() {
         super(MssqlFilestreamFileStoreSettings.class);
+    }
+
+    @Override
+    public void initialize(MssqlFilestreamFileStoreSettings settings) {
+        try (Connection connection = openConnection(settings);
+             Statement statement = connection.createStatement()) {
+            statement.execute(ENSURE_TABLE_SQL);
+            LOGGER.info("Ensured FILESTREAM table {} exists in database {}", TABLE, databaseName);
+        } catch (InputValidationException e) {
+            throw e;
+        } catch (SQLException e) {
+            throw new InputValidationException(Map.of(
+                    "jdbcUrl",
+                    "Failed to connect or create " + TABLE + ": " + e.getMessage()
+            ));
+        }
     }
 
     @Override

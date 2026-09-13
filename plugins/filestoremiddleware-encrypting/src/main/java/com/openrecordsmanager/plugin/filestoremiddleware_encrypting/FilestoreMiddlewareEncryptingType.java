@@ -1,5 +1,6 @@
 package com.openrecordsmanager.plugin.filestoremiddleware_encrypting;
 
+import com.openrecordsmanager.api.errors.InputValidationException;
 import com.openrecordsmanager.api.filestore.FileStoreMiddlewareType;
 import com.openrecordsmanager.api.schema.SchemaField;
 import com.openrecordsmanager.api.schema.SchemaFieldFormat;
@@ -21,11 +22,38 @@ import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.security.spec.AlgorithmParameterSpec;
 import java.util.List;
+import java.util.Map;
 import java.util.Vector;
 
 public class FilestoreMiddlewareEncryptingType extends FileStoreMiddlewareType<FilestoreMiddlewareEncryptingType.EncryptingMiddlewareSettings> {
     public FilestoreMiddlewareEncryptingType() {
         super(EncryptingMiddlewareSettings.class);
+    }
+
+    @Override
+    public void initialize(EncryptingMiddlewareSettings settings) {
+        try {
+            Cipher cipher = Cipher.getInstance(settings.algorithm().getTransformation());
+            SecretKeySpec secretKey = new SecretKeySpec(settings.secretKey(), settings.algorithm().getSecretKeySpec());
+            byte[] iv = new byte[settings.algorithm().getIvLength()];
+            SecureRandom.getInstanceStrong().nextBytes(iv);
+            cipher.init(Cipher.ENCRYPT_MODE, secretKey, settings.algorithm().createParameterSpec(iv));
+        } catch (InvalidKeyException e) {
+            throw new InputValidationException(Map.of(
+                    "secretKey",
+                    "Invalid secret key for " + settings.algorithm().name() + ": " + e.getMessage()
+            ));
+        } catch (NoSuchAlgorithmException | NoSuchPaddingException e) {
+            throw new InputValidationException(Map.of(
+                    "algorithm",
+                    "Unsupported algorithm " + settings.algorithm().name() + ": " + e.getMessage()
+            ));
+        } catch (InvalidAlgorithmParameterException e) {
+            throw new InputValidationException(Map.of(
+                    "algorithm",
+                    "Invalid algorithm parameters for " + settings.algorithm().name() + ": " + e.getMessage()
+            ));
+        }
     }
 
     @Override
