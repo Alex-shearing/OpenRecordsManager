@@ -109,30 +109,6 @@ subprojects {
         options.encoding = 'UTF-8'
     }
 
-    // Automatically ship plugin.json identity into plugin jar files
-    if (it.path.startsWith(':plugins:')) {
-        def pluginJsonDir = layout.buildDirectory.dir('generated/plugin-json')
-        def pluginId = project.name
-        def pluginVersion = project.version.toString()
-        tasks.register('generatePluginJson') {
-            inputs.property('pluginId', pluginId)
-            inputs.property('pluginVersion', pluginVersion)
-            outputs.dir(pluginJsonDir)
-            doLast {
-                def dir = pluginJsonDir.get().asFile
-                dir.mkdirs()
-                new File(dir, 'plugin.json').text =
-                        "{\"id\":\"${pluginId}\",\"version\":\"${pluginVersion}\"}\n"
-            }
-        }
-        tasks.named('jar', Jar) {
-            dependsOn('generatePluginJson')
-            from(pluginJsonDir) {
-                include 'plugin.json'
-            }
-        }
-    }
-
     tasks.register('applyNullMarked') {
         group = 'formatting'
         description = 'Automatically injects JSpecify @NullMarked package-info.java files into all package trees.'

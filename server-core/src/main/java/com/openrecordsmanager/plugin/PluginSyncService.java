@@ -50,7 +50,6 @@ public class PluginSyncService {
     public void syncAndReloadOnStartup() {
         if (this.isSyncSkipped()) {
             LOGGER.info("Plugin sync is disabled, skipping startup sync");
-            this.refreshLastSeenMaxDateModified();
             return;
         }
         this.syncAndReload(true);
@@ -93,22 +92,22 @@ public class PluginSyncService {
     private boolean synchronizeWithServer(UUID defaultStore) {
         LOGGER.info("Synchronizing local plugins with database");
 
-        PluginManager.LocalPluginInfo[] localPluginInfos = this.pluginManager.getLocalPlugins();
+        LocalPluginInfo[] localPluginInfos = this.pluginManager.loadLocalPluginFiles();
         FileStore fileStore = this.fileStoreRepository.findById(defaultStore)
                 .orElseThrow(() -> new ResourceNotFoundException("default store", defaultStore.toString()));
 
         List<PersistedPlugin> missingPlugins = new ArrayList<>(this.pluginRepository.findAll());
         boolean needsReload = false;
 
-        for (PluginManager.LocalPluginInfo localPlugin : localPluginInfos) {
-            Optional<PersistedPlugin> optPersistedPlugin = this.pluginRepository.findById(localPlugin.name());
+        for (LocalPluginInfo localPlugin : localPluginInfos) {
+            Optional<PersistedPlugin> optPersistedPlugin = this.pluginRepository.findById(localPlugin.id());
 
             if (optPersistedPlugin.isEmpty()) {
                 LOGGER.info(
                         "This server has a new plugin {} that does not exist in the database, it will be uploaded",
-                        localPlugin.name()
+                        localPlugin.id()
                 );
-                PersistedPlugin newPlugin = new PersistedPlugin(localPlugin.name(), localPlugin.version());
+                PersistedPlugin newPlugin = new PersistedPlugin(localPlugin.id(), localPlugin.version());
                 try {
                     this.pluginManager.uploadPlugin(this.componentCatalog, fileStore, newPlugin, localPlugin);
                 } catch (IOException e) {
@@ -117,18 +116,18 @@ public class PluginSyncService {
                 continue;
             }
 
-            missingPlugins.removeIf(plugin -> Objects.equals(plugin.getName(), localPlugin.name()));
+            missingPlugins.removeIf(plugin -> Objects.equals(plugin.getName(), localPlugin.id()));
 
             PersistedPlugin persistedPlugin = optPersistedPlugin.get();
             if (!persistedPlugin.isEnabled()) {
-                LOGGER.info("Skipping sync for disabled plugin {}", localPlugin.name());
+                LOGGER.info("Skipping sync for disabled plugin {}", localPlugin.id());
                 continue;
             }
 
             if (persistedPlugin.getFile() == null) {
                 LOGGER.info(
                         "Plugin {} is registered locally without a file store entry, uploading",
-                        localPlugin.name()
+                        localPlugin.id()
                 );
                 try {
                     this.pluginManager.uploadPlugin(this.componentCatalog, fileStore, persistedPlugin, localPlugin);
@@ -144,7 +143,7 @@ public class PluginSyncService {
             if (localVersion.isGreaterThan(persistedVersion)) {
                 LOGGER.info(
                         "This server has a newer version of the {} plugin than the database ({} > {}), it will be uploaded",
-                        localPlugin.name(),
+                        localPlugin.id(),
                         localPlugin.version(),
                         persistedPlugin.getVersion()
                 );
@@ -165,7 +164,7 @@ public class PluginSyncService {
                 );
 
                 try {
-                    Files.deleteIfExists(localPlugin.file().toPath());
+                    Files.deleteIfExists(localPlugin.getPathOrThrow());
                     this.pluginManager.downloadPlugin(this.componentCatalog, fileStore, persistedPlugin);
                 } catch (IOException e) {
                     throw new RuntimeException(e);
@@ -176,7 +175,7 @@ public class PluginSyncService {
             }
 
             try {
-                String localHash = com.google.common.io.Files.asByteSource(localPlugin.file())
+                String localHash = com.google.common.io.Files.asByteSource(localPlugin.getFileOrThrow())
                         .hash(FileStoreService.getHashFunction(persistedPlugin.getFile().hashAlgorithm))
                         .toString();
 
@@ -227,11 +226,11 @@ public class PluginSyncService {
     }
 
     private void registerLocalPluginsOnly() {
-        for (PluginManager.LocalPluginInfo localPlugin : this.pluginManager.getLocalPlugins()) {
-            Optional<PersistedPlugin> existing = this.pluginRepository.findById(localPlugin.name());
+        for (LocalPluginInfo localPlugin : this.pluginManager.loadLocalPluginFiles()) {
+            Optional<PersistedPlugin> existing = this.pluginRepository.findById(localPlugin.id());
             if (existing.isEmpty()) {
-                LOGGER.info("Registering local plugin {} in database", localPlugin.name());
-                this.pluginRepository.save(new PersistedPlugin(localPlugin.name(), localPlugin.version()));
+                LOGGER.info("Registering local plugin {} in database", localPlugin.id());
+                this.pluginRepository.save(new PersistedPlugin(localPlugin.id(), localPlugin.version()));
                 continue;
             }
 
@@ -241,7 +240,7 @@ public class PluginSyncService {
             if (localVersion.isGreaterThan(persistedVersion)) {
                 LOGGER.info(
                         "Updating local plugin {} from version {} to {}",
-                        localPlugin.name(),
+                        localPlugin.id(),
                         persistedPlugin.getVersion(),
                         localPlugin.version()
                 );

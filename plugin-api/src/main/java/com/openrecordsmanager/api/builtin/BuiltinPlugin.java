@@ -6,13 +6,7 @@ import com.openrecordsmanager.api.ResourceIdentifier;
 import com.openrecordsmanager.api.template.property.ObjectPropertyTemplate;
 
 public class BuiltinPlugin implements Plugin {
-
     public static final String BUILTIN_PLUGIN_NAME = "builtin";
-
-    @Override
-    public String getName() {
-        return BUILTIN_PLUGIN_NAME;
-    }
 
     @Override
     public void initialise(RegistrationContext registry) {

@@ -152,8 +152,8 @@ class PluginServiceIntegrationTest {
     @Test
     void listIncludesLocalPluginsWhenDatabaseIsEmpty() throws Exception {
         String token = this.adminBearerToken();
-        int expected = (int) Arrays.stream(this.pluginManager.getLocalPlugins())
-                .map(PluginManager.LocalPluginInfo::name)
+        int expected = (int) Arrays.stream(this.pluginManager.loadLocalPluginFiles())
+                .map(LocalPluginInfo::id)
                 .distinct()
                 .count();
 
@@ -172,12 +172,16 @@ class PluginServiceIntegrationTest {
         String token = this.adminBearerToken();
 
         this.mockMvc.perform(
-                        get("/api/plugins/auth-oidc")
+                        get("/api/plugins/auth_oidc")
                                 .header("Authorization", "Bearer " + token)
                                 .accept(MediaType.APPLICATION_JSON)
                 )
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.name").value("auth-oidc"))
+                .andExpect(jsonPath("$.data.id").value("auth_oidc"))
+                .andExpect(jsonPath("$.data.displayName").value("OpenID Connect"))
+                .andExpect(jsonPath("$.data.description").value(
+                        "Authenticate users via an external OpenID Connect identity provider."
+                ))
                 .andExpect(jsonPath("$.data.enabled").value(true))
                 .andExpect(jsonPath("$.data.loaded").value(true));
     }
@@ -187,7 +191,7 @@ class PluginServiceIntegrationTest {
         String token = this.adminBearerToken();
 
         this.mockMvc.perform(
-                        put("/api/plugins/auth-oidc")
+                        put("/api/plugins/auth_oidc")
                                 .header("Authorization", "Bearer " + token)
                                 .header("X-ORM-Audit-Comment", "disable plugin")
                                 .contentType(MediaType.APPLICATION_JSON)
@@ -201,7 +205,7 @@ class PluginServiceIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.enabled").value(false));
 
-        assertFalse(this.repository.pluginRepo.findById("auth-oidc").orElseThrow().isEnabled());
+        assertFalse(this.repository.pluginRepo.findById("auth_oidc").orElseThrow().isEnabled());
     }
 
     @Test
@@ -218,17 +222,21 @@ class PluginServiceIntegrationTest {
                                 .accept(MediaType.APPLICATION_JSON)
                 )
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.name").value("filestore-local"))
+                .andExpect(jsonPath("$.data.id").value("filestore_local"))
+                .andExpect(jsonPath("$.data.displayName").value("Local File Store"))
+                .andExpect(jsonPath("$.data.description").value(
+                        "Store files on the local filesystem under a configured root directory."
+                ))
                 .andExpect(jsonPath("$.data.version").value("0.1.0"))
                 .andExpect(jsonPath("$.data.enabled").value(true))
                 .andExpect(jsonPath("$.data.loaded").value(true));
 
-        assertTrue(this.repository.pluginRepo.findById("filestore-local").isPresent());
+        assertTrue(this.repository.pluginRepo.findById("filestore_local").isPresent());
 
         AuditEventEntity event = this.repository.auditEventRepo
                 .findByTargetTypeAndTargetIdOrderByOccurredAtDesc(
                         AuditEntityType.PLUGIN.key(),
-                        "filestore-local",
+                        "filestore_local",
                         Pageable.ofSize(10)
                 )
                 .stream()
@@ -249,7 +257,7 @@ class PluginServiceIntegrationTest {
         String token = this.adminBearerToken();
 
         this.mockMvc.perform(
-                        put("/api/plugins/filestore-local")
+                        put("/api/plugins/filestore_local")
                                 .header("Authorization", "Bearer " + token)
                                 .header("X-ORM-Audit-Comment", "disable plugin")
                                 .contentType(MediaType.APPLICATION_JSON)
@@ -264,24 +272,24 @@ class PluginServiceIntegrationTest {
                 .andExpect(jsonPath("$.data.enabled").value(false))
                 .andExpect(jsonPath("$.data.loaded").value(false));
 
-        assertFalse(this.repository.pluginRepo.findById("filestore-local").orElseThrow().isEnabled());
+        assertFalse(this.repository.pluginRepo.findById("filestore_local").orElseThrow().isEnabled());
     }
 
     @Test
     void deleteRemovesPluginFromDatabase() throws Exception {
         this.pluginSyncService.syncAndReload(true);
-        assertTrue(this.repository.pluginRepo.existsById("filestore-s3"));
+        assertTrue(this.repository.pluginRepo.existsById("filestore_s3"));
 
         String token = this.adminBearerToken();
 
         this.mockMvc.perform(
-                        delete("/api/plugins/filestore-s3")
+                        delete("/api/plugins/filestore_s3")
                                 .header("Authorization", "Bearer " + token)
                                 .header("X-ORM-Audit-Comment", "remove plugin")
                                 .accept(MediaType.APPLICATION_JSON)
                 )
                 .andExpect(status().isOk());
 
-        assertFalse(this.repository.pluginRepo.existsById("filestore-s3"));
+        assertFalse(this.repository.pluginRepo.existsById("filestore_s3"));
     }
 }

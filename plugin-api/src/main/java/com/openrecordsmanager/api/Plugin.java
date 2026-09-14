@@ -1,7 +1,8 @@
 package com.openrecordsmanager.api;
 
+/**
+ * Extension entry point discovered via {@link java.util.ServiceLoader}.
+ */
 public interface Plugin {
-    String getName();
-
     void initialise(RegistrationContext registry);
 }

@@ -13,7 +13,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
@@ -24,12 +23,15 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.*;
-import java.util.zip.ZipFile;
+import java.util.stream.Stream;
 
 @Service
 public class PluginManager {
     private static final Logger LOGGER = LoggerFactory.getLogger(PluginManager.class);
-    private static final LoadedPlugin BUILTIN_PLUGIN = new LoadedPlugin(new BuiltinPlugin(), null);
+    private static final LoadedPlugin BUILTIN_PLUGIN = new LoadedPlugin(
+            new LocalPluginInfo(BuiltinPlugin.BUILTIN_PLUGIN_NAME, "latest", "Builtin Components", "These are the builtin components, they cannot be modified.", null),
+            new BuiltinPlugin()
+    );
 
     private final Path directory;
     private final PluginRepository pluginRepo;
@@ -46,14 +48,14 @@ public class PluginManager {
         this.reload(null);
     }
 
-    public synchronized void reload(@Nullable Set<String> enabledPluginNames) {
-        LocalPluginInfo[] localPlugins = this.getLocalPlugins();
+    public synchronized void reload(@Nullable Set<String> enabledPluginIds) {
+        LocalPluginInfo[] localPlugins = this.loadLocalPluginFiles();
         LocalPluginInfo[] pluginsToLoad;
-        if (enabledPluginNames == null) {
+        if (enabledPluginIds == null) {
             pluginsToLoad = localPlugins;
         } else {
             pluginsToLoad = Arrays.stream(localPlugins)
-                    .filter(plugin -> enabledPluginNames.contains(plugin.name()))
+                    .filter(plugin -> enabledPluginIds.contains(plugin.id()))
                     .toArray(LocalPluginInfo[]::new);
         }
         this.instantiatePlugins(pluginsToLoad);
@@ -63,56 +65,39 @@ public class PluginManager {
         return this.loadedPlugins;
     }
 
+    public Optional<LoadedPlugin> getLoadedPlugin(String id) {
+        return this.loadedPlugins.stream().filter(plugin -> plugin.id().equals(id)).findFirst();
+    }
+
     public boolean isLoaded(String name) {
-        return this.loadedPlugins.stream().anyMatch(loadedPlugin -> loadedPlugin.name().equals(name));
+        return this.getLoadedPlugin(name).isPresent();
     }
 
     public Path getDirectory() {
         return this.directory;
     }
 
-    LocalPluginInfo[] getLocalPlugins() {
-        File loc = this.directory.toFile();
-        if (!loc.exists() || !loc.isDirectory()) {
+    LocalPluginInfo[] loadLocalPluginFiles() {
+        if (!Files.exists(this.directory) || !Files.isDirectory(this.directory)) {
             LOGGER.warn("Plugin directory '{}' not found, plugins will not be loaded", this.directory);
             return new LocalPluginInfo[0];
         }
 
-        File[] files = loc.listFiles((_, name) -> name.endsWith(".jar") || name.endsWith(".zip"));
-        if (files == null) {
-            LOGGER.warn("Failed to get files from plugin directory, plugins will not be loaded");
+        try (Stream<Path> files = Files.list(this.directory)) {
+            return files.map(path -> {
+                        try {
+                            return LocalPluginInfo.read(path);
+                        } catch (IOException | IllegalArgumentException e) {
+                            LOGGER.error("Failed to load {} for {}", LocalPluginInfo.FILE_NAME, path.getFileName(), e);
+                        }
+                        return null;
+                    })
+                    .filter(Objects::nonNull)
+                    .toArray(LocalPluginInfo[]::new);
+        } catch (IOException e) {
+            LOGGER.warn("Error accessing plugin directory '{}', plugins will not be loaded", this.directory, e);
             return new LocalPluginInfo[0];
         }
-
-        return Arrays.stream(files)
-                .filter(file -> !file.getName().startsWith("upload-"))
-                .map(this::getPluginInfo)
-                .filter(Objects::nonNull)
-                .toArray(LocalPluginInfo[]::new);
-    }
-
-    Optional<LocalPluginInfo> findLocalPlugin(String name) {
-        return Arrays.stream(this.getLocalPlugins())
-                .filter(plugin -> Objects.equals(plugin.name(), name))
-                .findFirst();
-    }
-
-    @Nullable
-    LocalPluginInfo getPluginInfo(File pluginFile) {
-        try (ZipFile jar = new ZipFile(pluginFile)) {
-            PluginDescriptor descriptor = PluginDescriptor.read(jar);
-            return new LocalPluginInfo(descriptor.id(), descriptor.version(), pluginFile);
-        } catch (IOException | IllegalArgumentException e) {
-            LOGGER.error("Failed to load {} for {}", PluginDescriptor.FILE_NAME, pluginFile.getName(), e);
-        }
-        return null;
-    }
-
-    @Nullable
-    LocalPluginInfo getPluginInfo(InputStream archiveStream, Path destFile) throws IOException {
-        Files.createDirectories(destFile.getParent());
-        Files.copy(archiveStream, destFile, StandardCopyOption.REPLACE_EXISTING);
-        return this.getPluginInfo(destFile.toFile());
     }
 
     void uploadPlugin(
@@ -124,10 +109,10 @@ public class PluginManager {
         persistedPlugin.setVersion(localPlugin.version());
         persistedPlugin.setFile(fileStore.newFile(
                 catalog,
-                Files.newInputStream(localPlugin.file().toPath()),
+                Files.newInputStream(localPlugin.getPathOrThrow()),
                 localPlugin.extension()
         ));
-        LOGGER.info("{} has been uploaded from {}", localPlugin.name(), localPlugin.file().getPath());
+        LOGGER.info("{} has been uploaded from {}", localPlugin.id(), localPlugin.getPathOrThrow());
         this.pluginRepo.saveAndFlush(persistedPlugin);
     }
 
@@ -165,10 +150,10 @@ public class PluginManager {
     }
 
     void deleteLocalPlugin(PersistedPlugin plugin) throws IOException {
-        LocalPluginInfo[] localPlugins = this.getLocalPlugins();
+        LocalPluginInfo[] localPlugins = this.loadLocalPluginFiles();
         for (LocalPluginInfo localPlugin : localPlugins) {
-            if (Objects.equals(localPlugin.name(), plugin.getName())) {
-                Files.deleteIfExists(localPlugin.file().toPath());
+            if (Objects.equals(localPlugin.id(), plugin.getName())) {
+                Files.deleteIfExists(localPlugin.getPathOrThrow());
                 return;
             }
         }
@@ -186,15 +171,15 @@ public class PluginManager {
 
         // Load jar plugins
         LocalPluginInfo[] jars = Arrays.stream(pluginList)
-                .filter(LocalPluginInfo::isJar)
+                .filter(info -> info.extension().equals("jar"))
                 .toArray(LocalPluginInfo[]::new);
 
         URL[] urls = new URL[jars.length];
         for (int i = 0; i < jars.length; i++) {
             try {
-                urls[i] = jars[i].file().toURI().toURL();
+                urls[i] = jars[i].getPathOrThrow().toAbsolutePath().normalize().toUri().toURL();
             } catch (MalformedURLException e) {
-                LOGGER.error("Failed to load URL for plugin stream {}", jars[i].file().getName());
+                LOGGER.error("Failed to load URL for plugin stream {}", jars[i].getFileName());
             }
         }
 
@@ -203,23 +188,24 @@ public class PluginManager {
 
         for (Plugin plugin : ServiceLoader.load(Plugin.class, this.classLoader)) {
             try {
-                URI jarUrl = plugin.getClass().getProtectionDomain().getCodeSource().getLocation().toURI();
-                loadedPlugins.add(new LoadedPlugin(plugin, Path.of(jarUrl)));
+                URI jarUrl = plugin.getClass().getProtectionDomain().getCodeSource().getLocation().toURI().normalize();
+                LocalPluginInfo info = Arrays.stream(jars)
+                        .filter(i -> i.path() != null && i.path().toUri().normalize().equals(jarUrl))
+                        .findFirst()
+                        .orElseThrow(() -> new IllegalStateException("Failed to find plugins local data " + jarUrl));
+                loadedPlugins.add(new LoadedPlugin(info, plugin));
             } catch (Exception e) {
-                LOGGER.error("Failed to load plugin jar for {}", plugin.getName(), e);
+                LOGGER.error("Failed to load plugin jar for {}", plugin.getClass().getName(), e);
             }
         }
 
         // Load zip plugins
         LocalPluginInfo[] zips = Arrays.stream(pluginList)
-                .filter(LocalPluginInfo::isZip)
+                .filter(info -> info.extension().equals("zip"))
                 .toArray(LocalPluginInfo[]::new);
 
         for (LocalPluginInfo zip : zips) {
-            loadedPlugins.add(new LoadedPlugin(
-                    new JsonTemplatePackPlugin(zip.name()),
-                    zip.file().toPath()
-            ));
+            loadedPlugins.add(new LoadedPlugin(zip, new JsonTemplatePackPlugin()));
         }
 
         this.loadedPlugins = ImmutableList.copyOf(loadedPlugins);
@@ -235,25 +221,6 @@ public class PluginManager {
                 LOGGER.error("Failed to close plugin ClassLoader", e);
             }
             this.classLoader = null;
-        }
-    }
-
-    record LocalPluginInfo(String name, String version, File file) {
-        boolean isJar() {
-            return this.file.getName().endsWith(".jar");
-        }
-
-        boolean isZip() {
-            return this.file.getName().endsWith(".zip");
-        }
-
-        String extension() {
-            String fileName = this.file.getName();
-            int dot = fileName.lastIndexOf('.');
-            if (dot < 0 || dot == fileName.length() - 1) {
-                return "jar";
-            }
-            return fileName.substring(dot + 1);
         }
     }
 

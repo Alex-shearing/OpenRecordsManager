@@ -195,7 +195,7 @@ public final class JsonSchemaValidator {
         }
 
         for (Map.Entry<String, ?> entry : existing.entrySet()) {
-            if (isBlankValue(merged.get(entry.getKey()))) {
+            if (!merged.containsKey(entry.getKey()) || isBlankValue(merged.get(entry.getKey()))) {
                 merged.put(entry.getKey(), entry.getValue());
             }
         }

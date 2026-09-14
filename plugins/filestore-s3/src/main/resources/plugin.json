@@ -1,0 +1,6 @@
+{
+  "id": "filestore_s3",
+  "version": "0.1.0",
+  "displayName": "S3 File Store",
+  "description": "Store files in an Amazon S3 compatible object storage bucket."
+}

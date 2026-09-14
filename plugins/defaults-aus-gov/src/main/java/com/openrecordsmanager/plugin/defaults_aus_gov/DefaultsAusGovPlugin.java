@@ -14,12 +14,6 @@ import com.openrecordsmanager.api.RegistrationContext;
  * - <a href="https://www.security.tas.gov.au/protective-security/information-security/infosec-2-protecting-official-information">Tasmanian Government Protective Security Policy</a>
  */
 public class DefaultsAusGovPlugin implements Plugin {
-
-    @Override
-    public String getName() {
-        return "defaults_aus_gov";
-    }
-
     @Override
     public void initialise(RegistrationContext registry) {
     }

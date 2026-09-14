@@ -136,7 +136,7 @@ class TemplateJsonLoaderTest {
         private final Map<String, Component> registered = new LinkedHashMap<>();
 
         @Override
-        public String getName() {
+        public @NonNull String id() {
             return "test";
         }
 

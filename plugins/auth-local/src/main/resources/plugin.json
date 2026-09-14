@@ -1,0 +1,6 @@
+{
+  "id": "auth_local",
+  "version": "0.1.0",
+  "displayName": "Local Authentication",
+  "description": "Username and password authentication with locally stored password hashes."
+}

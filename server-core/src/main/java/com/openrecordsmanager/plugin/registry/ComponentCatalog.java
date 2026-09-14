@@ -93,7 +93,7 @@ public class ComponentCatalog implements ComponentAccess {
     private void loadCatalog(PluginManager pluginManager) {
         Builder builder = new Builder();
         for (LoadedPlugin loaded : pluginManager.getLoadedPlugins()) {
-            LOGGER.info("Initializing plugin {}...", loaded.name());
+            LOGGER.info("Initializing plugin {}...", loaded.id());
             loaded.initialize(builder);
         }
         builder.build();
@@ -124,7 +124,7 @@ public class ComponentCatalog implements ComponentAccess {
 
         @SuppressWarnings("unchecked")
         public <T extends Component> void registerInstance(RegistrationContext context, String id, T component) {
-            ResourceIdentifier identifier = new ResourceIdentifier(context.getName(), id);
+            ResourceIdentifier identifier = new ResourceIdentifier(context.id(), id);
 
             ComponentType<T> type = ComponentTypes.fromObject(component);
             ComponentRegistry<T>.Builder typeBuilder = (ComponentRegistry<T>.Builder) this.builder.get(type);

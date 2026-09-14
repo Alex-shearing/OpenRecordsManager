@@ -51,7 +51,9 @@ export type UpdatePluginRequest = {
 };
 
 export type PluginResponse = {
-    name: string;
+    id: string;
+    displayName: string;
+    description: string;
     version: string;
     enabled?: boolean;
     dateCreated: string;
@@ -357,7 +359,9 @@ export type RecordTypeResponse = {
 };
 
 export type SimplePluginResponse = {
-    name: string;
+    id: string;
+    displayName: string;
+    description: string;
     version: string;
     enabled?: boolean;
     dateModified: string;
@@ -1046,10 +1050,10 @@ export type CreateRevision2Response = CreateRevision2Responses[keyof CreateRevis
 export type DeletePluginData = {
     body?: never;
     path: {
-        name: string;
+        id: string;
     };
     query?: never;
-    url: '/api/plugins/{name}';
+    url: '/api/plugins/{id}';
 };
 
 export type DeletePluginErrors = {
@@ -1127,10 +1131,10 @@ export type DeletePluginResponse = DeletePluginResponses[keyof DeletePluginRespo
 export type GetPluginData = {
     body?: never;
     path: {
-        name: string;
+        id: string;
     };
     query?: never;
-    url: '/api/plugins/{name}';
+    url: '/api/plugins/{id}';
 };
 
 export type GetPluginErrors = {
@@ -1209,10 +1213,10 @@ export type GetPluginResponse = GetPluginResponses[keyof GetPluginResponses];
 export type UpdatePluginData = {
     body: UpdatePluginRequest;
     path: {
-        name: string;
+        id: string;
     };
     query?: never;
-    url: '/api/plugins/{name}';
+    url: '/api/plugins/{id}';
 };
 
 export type UpdatePluginErrors = {

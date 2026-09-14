@@ -34,11 +34,11 @@ public class PluginController {
         return this.service.getAll(includeDisabled);
     }
 
-    @GetMapping(value = "/{name}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Get plugin details")
     @NotFoundApiResponse
-    public PluginResponse getPlugin(@PathVariable("name") String name) {
-        return this.service.get(name);
+    public PluginResponse getPlugin(@PathVariable("id") String id) {
+        return this.service.get(id);
     }
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
@@ -51,20 +51,20 @@ public class PluginController {
         return this.service.upload(file.getInputStream(), type);
     }
 
-    @PutMapping(value = "/{name}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @PutMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Update a plugin")
     @NotFoundApiResponse
     public PluginResponse updatePlugin(
-            @PathVariable("name") String name,
+            @PathVariable("id") String id,
             @RequestBody UpdatePluginRequest input
     ) {
-        return this.service.update(name, input);
+        return this.service.update(id, input);
     }
 
-    @DeleteMapping(value = "/{name}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @DeleteMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Delete a plugin")
     @NotFoundApiResponse
-    public void deletePlugin(@PathVariable("name") String name) throws IOException {
-        this.service.delete(name);
+    public void deletePlugin(@PathVariable("id") String id) throws IOException {
+        this.service.delete(id);
     }
 }

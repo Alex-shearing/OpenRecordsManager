@@ -7,16 +7,8 @@ import com.openrecordsmanager.api.RegistrationContext;
  * Main plugin class that registers the S3 file store type component.
  */
 public class FileStoreS3Plugin implements Plugin {
-
-    public static final S3FileStoreType S3_FILE_STORE_TYPE = new S3FileStoreType();
-
-    @Override
-    public String getName() {
-        return "filestore_s3";
-    }
-
     @Override
     public void initialise(RegistrationContext registry) {
-        registry.registerComponent("s3", S3_FILE_STORE_TYPE);
+        registry.registerComponent("s3", new S3FileStoreType());
     }
 }

@@ -22,8 +22,11 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
-import java.time.Instant;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 public class PluginService {
@@ -46,44 +49,22 @@ public class PluginService {
 
     @Transactional(readOnly = true)
     public Set<SimplePluginResponse> getAll(boolean includeDisabled) {
-        Map<String, SimplePluginResponse> plugins = new HashMap<>();
-
-        this.repository.pluginRepo.findAll().stream()
+        Set<SimplePluginResponse> response = this.repository.pluginRepo.findAll().stream()
                 .filter(plugin -> includeDisabled || plugin.isEnabled())
-                .forEach(p -> {
-                    plugins.put(p.getName(), SimplePluginResponse.of(p, this.pluginManager));
-                });
-
-        for (PluginManager.LocalPluginInfo localPlugin : this.pluginManager.getLocalPlugins()) {
-            plugins.putIfAbsent(
-                    localPlugin.name(),
-                    SimplePluginResponse.ofLocal(
-                            localPlugin.name(),
-                            localPlugin.version(),
-                            Instant.ofEpochMilli(localPlugin.file().lastModified()),
-                            this.pluginManager
-                    )
-            );
-        }
-
-        Set<SimplePluginResponse> response = Set.copyOf(plugins.values());
+                .map(plugin -> SimplePluginResponse.of(plugin, this.pluginManager))
+                .collect(Collectors.toSet());
+        
         this.auditService.recordCollectionRead(AuditEntityType.PLUGIN, response.size());
         return response;
     }
 
     @Transactional(readOnly = true)
     public PluginResponse get(String name) {
-        Optional<PersistedPlugin> persistedPlugin = this.repository.pluginRepo.findById(name);
-        if (persistedPlugin.isPresent()) {
-            this.auditService.addReadEvent(AuditEntityType.PLUGIN, name);
-            return PluginResponse.of(persistedPlugin.get(), this.pluginManager);
-        }
-
-        PluginManager.LocalPluginInfo localPlugin = this.pluginManager.findLocalPlugin(name)
+        PersistedPlugin persistedPlugin = this.repository.pluginRepo.findById(name)
                 .orElseThrow(() -> new ResourceNotFoundException("plugin", name));
-        Instant dateModified = Instant.ofEpochMilli(localPlugin.file().lastModified());
+
         this.auditService.addReadEvent(AuditEntityType.PLUGIN, name);
-        return PluginResponse.ofLocal(localPlugin.name(), localPlugin.version(), dateModified, this.pluginManager);
+        return PluginResponse.of(persistedPlugin, this.pluginManager);
     }
 
     @Transactional
@@ -91,19 +72,13 @@ public class PluginService {
     public PluginResponse upload(InputStream archiveStream, PluginTypeRequest extension) throws IOException {
         Path tempDest = this.pluginManager.getDirectory().resolve("upload-" + System.nanoTime() + "." + extension);
         try {
-            PluginManager.LocalPluginInfo pluginInfo = this.pluginManager.getPluginInfo(archiveStream, tempDest);
-            if (pluginInfo == null) {
-                throw new IllegalArgumentException(
-                        "plugin archive must contain a root " + PluginDescriptor.FILE_NAME
-                                + " with non-blank id and version"
-                );
-            }
+            LocalPluginInfo pluginInfo = LocalPluginInfo.readFromStream(archiveStream);
 
-            if (BuiltinPlugin.BUILTIN_PLUGIN_NAME.equals(pluginInfo.name())) {
+            if (BuiltinPlugin.BUILTIN_PLUGIN_NAME.equals(pluginInfo.id())) {
                 throw new ResourceInUseException("the builtin plugin cannot be modified");
             }
 
-            Optional<PersistedPlugin> existing = this.repository.pluginRepo.findById(pluginInfo.name());
+            Optional<PersistedPlugin> existing = this.repository.pluginRepo.findById(pluginInfo.id());
 
             if (existing.isPresent()) {
                 Semver existingVersion = new Semver(existing.get().getVersion());
@@ -117,16 +92,16 @@ public class PluginService {
             }
 
             Path finalDest = this.pluginManager.getDirectory().resolve(
-                    pluginInfo.name() + "-" + pluginInfo.version() + "." + extension
+                    pluginInfo.id() + "-" + pluginInfo.version() + "." + extension
             );
             if (!tempDest.equals(finalDest)) {
-                Files.move(tempDest, finalDest, StandardCopyOption.REPLACE_EXISTING);
+                Files.copy(archiveStream, finalDest, StandardCopyOption.REPLACE_EXISTING);
             }
 
             this.pluginSyncService.syncAndReload(true);
 
-            PersistedPlugin plugin = this.repository.pluginRepo.findById(pluginInfo.name())
-                    .orElseThrow(() -> new ResourceNotFoundException("plugin", pluginInfo.name()));
+            PersistedPlugin plugin = this.repository.pluginRepo.findById(pluginInfo.id())
+                    .orElseThrow(() -> new ResourceNotFoundException("plugin", pluginInfo.id()));
 
             if (existing.isEmpty()) {
                 this.auditService.addEvent(
@@ -164,11 +139,8 @@ public class PluginService {
             throw new ResourceInUseException("the builtin plugin cannot be modified");
         }
 
-        PersistedPlugin plugin = this.repository.pluginRepo.findById(name).orElseGet(() -> {
-            PluginManager.LocalPluginInfo localPlugin = this.pluginManager.findLocalPlugin(name)
-                    .orElseThrow(() -> new ResourceNotFoundException("plugin", name));
-            return new PersistedPlugin(localPlugin.name(), localPlugin.version());
-        });
+        PersistedPlugin plugin = this.repository.pluginRepo.findById(name)
+                .orElseThrow(() -> new ResourceNotFoundException("plugin", name));
 
         List<AuditPropertyChange> changes = new ArrayList<>();
         if (input.enabled() != null && input.enabled() != plugin.isEnabled()) {

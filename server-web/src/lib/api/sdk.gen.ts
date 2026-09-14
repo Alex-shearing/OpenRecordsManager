@@ -256,7 +256,7 @@ export class PluginController {
                     name: 'ORM-Authentication',
                     type: 'apiKey'
                 }],
-            url: '/api/plugins/{name}',
+            url: '/api/plugins/{id}',
             ...options
         });
     }
@@ -271,7 +271,7 @@ export class PluginController {
                     name: 'ORM-Authentication',
                     type: 'apiKey'
                 }],
-            url: '/api/plugins/{name}',
+            url: '/api/plugins/{id}',
             ...options
         });
     }
@@ -286,7 +286,7 @@ export class PluginController {
                     name: 'ORM-Authentication',
                     type: 'apiKey'
                 }],
-            url: '/api/plugins/{name}',
+            url: '/api/plugins/{id}',
             ...options,
             headers: {
                 'Content-Type': 'application/json',

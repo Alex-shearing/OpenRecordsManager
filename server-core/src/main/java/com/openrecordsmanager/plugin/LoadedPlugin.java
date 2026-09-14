@@ -5,34 +5,35 @@ import com.openrecordsmanager.api.Plugin;
 import com.openrecordsmanager.api.RegistrationContext;
 import com.openrecordsmanager.plugin.registry.ComponentCatalog;
 import com.openrecordsmanager.template.TemplateJsonLoader;
-import org.jspecify.annotations.Nullable;
-
-import java.nio.file.Path;
 
 /**
  * A {@link Plugin} instance currently loaded by {@link PluginManager}, with its on-disk archive
  * when loaded from the plugins directory (JAR or ZIP).
+ *
+ * @param info   info loaded from the local plugin file
+ * @param plugin runtime plugin instance
  */
-public record LoadedPlugin(Plugin plugin, @Nullable Path archive) {
-    public String name() {
-        return this.plugin.getName();
-    }
+public record LoadedPlugin(LocalPluginInfo info, Plugin plugin) {
 
     public void initialize(ComponentCatalog.Builder builder) {
-        RegistrationContextImpl context = new RegistrationContextImpl(builder, this.plugin);
+        RegistrationContextImpl context = new RegistrationContextImpl(builder, this.info.id());
 
-        if (this.archive != null) {
-            TemplateJsonLoader.registerFromPath(context, this.archive);
+        if (this.info.path() != null) {
+            TemplateJsonLoader.registerFromPath(context, this.info.path());
         }
         this.plugin.initialise(context);
     }
 
-    private record RegistrationContextImpl(ComponentCatalog.Builder builder,
-                                           Plugin plugin) implements RegistrationContext {
+    public String id() {
+        return this.info.id();
+    }
+
+    private record RegistrationContextImpl(ComponentCatalog.Builder builder, String pluginId)
+            implements RegistrationContext {
 
         @Override
-        public String getName() {
-            return plugin.getName();
+        public String id() {
+            return this.pluginId;
         }
 
         @Override

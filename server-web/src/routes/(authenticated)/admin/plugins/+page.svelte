@@ -12,13 +12,21 @@
 
 	let { data } = $props();
 
-	const sortedPlugins = $derived([...data.plugins].sort((a, b) => (a.name ?? '').localeCompare(b.name ?? '')));
+	const sortedPlugins = $derived(
+		[...data.plugins].sort((a, b) => {
+			const byDisplay = (a.displayName ?? a.id ?? '').localeCompare(b.displayName ?? b.id ?? '');
+			if (byDisplay !== 0) {
+				return byDisplay;
+			}
+			return (a.id ?? '').localeCompare(b.id ?? '');
+		})
+	);
 
 	function enabledDraft(plugins: SimplePluginResponse[]) {
 		return Object.fromEntries(
 			plugins
-				.filter(plugin => plugin.name && plugin.name !== 'builtin')
-				.map(plugin => [plugin.name!, plugin.enabled ?? false])
+				.filter(plugin => plugin.id && plugin.id !== 'builtin')
+				.map(plugin => [plugin.id!, plugin.enabled ?? false])
 		);
 	}
 
@@ -30,20 +38,20 @@
 	let formError = $state('');
 	let deleteTarget = $state<SimplePluginResponse>();
 
-	const dirtyNames = $derived(
+	const dirtyIds = $derived(
 		sortedPlugins
 			.filter(
-				plugin => plugin.name && plugin.name !== 'builtin' && draftEnabled[plugin.name] !== (plugin.enabled ?? false)
+				plugin => plugin.id && plugin.id !== 'builtin' && draftEnabled[plugin.id] !== (plugin.enabled ?? false)
 			)
-			.map(plugin => plugin.name!)
+			.map(plugin => plugin.id!)
 	);
 
 	$effect(() => {
 		for (const plugin of data.plugins) {
-			if (!plugin.name || plugin.name === 'builtin' || plugin.name in draftEnabled) {
+			if (!plugin.id || plugin.id === 'builtin' || plugin.id in draftEnabled) {
 				continue;
 			}
-			draftEnabled[plugin.name] = plugin.enabled ?? false;
+			draftEnabled[plugin.id] = plugin.enabled ?? false;
 		}
 	});
 
@@ -93,7 +101,7 @@
 	async function handleSave(event: SubmitEvent) {
 		event.preventDefault();
 
-		if (dirtyNames.length === 0) {
+		if (dirtyIds.length === 0) {
 			return;
 		}
 
@@ -104,23 +112,21 @@
 			const headers = auditHeaders(auditComment);
 			const client = getApiClient();
 
-			for (const name of dirtyNames) {
+			for (const id of dirtyIds) {
 				const { error } = await PluginController.updatePlugin({
 					client,
-					path: { name },
-					body: { enabled: draftEnabled[name] },
+					path: { id },
+					body: { enabled: draftEnabled[id] },
 					headers,
 				});
 
 				if (error) {
-					formError = `Failed to update plugin ${name}: ${error.error}`;
+					formError = `Failed to update plugin ${id}: ${error.error}`;
 					return;
 				}
 			}
 
-			toast.success(
-				dirtyNames.length === 1 ? 'Saved plugin changes.' : `Saved changes to ${dirtyNames.length} plugins.`
-			);
+			toast.success(dirtyIds.length === 1 ? 'Saved plugin changes.' : `Saved changes to ${dirtyIds.length} plugins.`);
 			await invalidateAll();
 		} finally {
 			submitting = false;
@@ -128,7 +134,7 @@
 	}
 
 	async function confirmDelete() {
-		if (!deleteTarget?.name || deleteTarget.name === 'builtin') {
+		if (!deleteTarget?.id || deleteTarget.id === 'builtin') {
 			return;
 		}
 
@@ -140,10 +146,10 @@
 		submitting = true;
 		formError = '';
 
-		const name = deleteTarget.name;
+		const id = deleteTarget.id;
 		const { error } = await PluginController.deletePlugin({
 			client: getApiClient(),
-			path: { name },
+			path: { id },
 			headers: auditHeaders(auditComment),
 		});
 
@@ -155,7 +161,7 @@
 			return;
 		}
 
-		toast.success(`Deleted plugin ${name}.`);
+		toast.success(`Deleted plugin ${id}.`);
 		auditComment = '';
 		await invalidateAll();
 	}
@@ -170,7 +176,7 @@
 	<p class="text-destructive">{data.error}</p>
 {:else}
 	<form id="plugins-save-form" onsubmit={handleSave}>
-		<TableCard title="Installed plugins" items={sortedPlugins} empty="No plugins are registered." getKey={p => p.name}>
+		<TableCard title="Installed plugins" items={sortedPlugins} empty="No plugins are registered." getKey={p => p.id}>
 			{#snippet header()}
 				<th class="px-5 py-3 font-medium">Plugin</th>
 				<th class="px-5 py-3 font-medium">Enabled</th>
@@ -179,20 +185,24 @@
 			{/snippet}
 			{#snippet row(plugin)}
 				<td class="px-5 py-4">
-					<p class="font-medium"><MonoId value={plugin.name!} /></p>
+					<p class="font-medium">{plugin.displayName ?? plugin.id}</p>
+					<p class="text-hint"><MonoId value={plugin.id!} /></p>
+					{#if plugin.description}
+						<p class="text-hint">{plugin.description}</p>
+					{/if}
 					<p class="text-hint">Version {plugin.version ?? '—'}</p>
 					{#if !plugin.loaded}
 						<p class="text-hint">Not loaded</p>
 					{/if}
 				</td>
 				<td class="px-5 py-4">
-					{#if plugin.name !== 'builtin'}
+					{#if plugin.id !== 'builtin'}
 						<input
 							type="checkbox"
 							class="size-4 rounded border-border-input"
 							disabled={submitting}
-							aria-label="Enable {plugin.name}"
-							bind:checked={draftEnabled[plugin.name!]}
+							aria-label="Enable {plugin.displayName ?? plugin.id}"
+							bind:checked={draftEnabled[plugin.id!]}
 						/>
 					{:else}
 						<span class="text-hint">Always on</span>
@@ -204,7 +214,7 @@
 					</time>
 				</td>
 				<td class="px-5 py-4 text-right">
-					{#if plugin.name !== 'builtin'}
+					{#if plugin.id !== 'builtin'}
 						<button
 							type="button"
 							class="btn-ghost text-destructive"
@@ -221,7 +231,10 @@
 
 	<form class="mt-6 card p-5" onsubmit={handleUpload}>
 		<h2 class="mb-1 text-lg font-medium">Upload plugin</h2>
-		<p class="mb-4 text-hint">Select a JAR or ZIP with a root plugin.json (id and version). ZIPs are templates-only.</p>
+		<p class="mb-4 text-hint">
+			Select a JAR or ZIP with a root plugin.json (id, version, displayName, and description). ZIPs are
+			templates-only.
+		</p>
 
 		<label class="flex flex-col gap-1">
 			<span class="text-label">Plugin archive</span>
@@ -249,14 +262,14 @@
 		requiredHint="Required when saving plugin changes."
 		{formError}
 		{submitting}
-		dirty={dirtyNames.length > 0}
+		dirty={dirtyIds.length > 0}
 		onreset={resetDraft}
 	/>
 {/if}
 
 <TargetDialog bind:target={deleteTarget} title="Delete plugin">
 	{#snippet description(target)}
-		Remove <MonoId value={target.name} /> from the database and this server?
+		Remove <MonoId value={target.id} /> from the database and this server?
 	{/snippet}
 	{#snippet footer()}
 		<DialogActions

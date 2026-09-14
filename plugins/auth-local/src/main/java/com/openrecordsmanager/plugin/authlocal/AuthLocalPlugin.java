@@ -14,12 +14,6 @@ public class AuthLocalPlugin implements Plugin {
             .description("Hashed password for the user")
             .userHidden()
             .build();
-
-    @Override
-    public String getName() {
-        return "auth_local";
-    }
-
     @Override
     public void initialise(RegistrationContext registry) {
         LOGGER.info("Initializing plugin...");

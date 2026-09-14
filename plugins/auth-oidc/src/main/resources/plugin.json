@@ -1,0 +1,6 @@
+{
+  "id": "auth_oidc",
+  "version": "0.1.0",
+  "displayName": "OpenID Connect",
+  "description": "Authenticate users via an external OpenID Connect identity provider."
+}
