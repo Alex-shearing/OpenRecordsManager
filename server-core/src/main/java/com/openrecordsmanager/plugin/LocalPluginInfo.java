@@ -47,8 +47,8 @@ public record LocalPluginInfo(
             ZipEntry entry;
             while ((entry = zis.getNextEntry()) != null) {
                 if (entry.getName().equals(FILE_NAME)) {
+                    // this closes the entry stream
                     info = parseWithDescriptorFile(zis, null);
-                    zis.closeEntry();
                     break;
                 }
                 zis.closeEntry();
@@ -67,7 +67,7 @@ public record LocalPluginInfo(
         if (node == null || !node.isObject()) {
             throw new IOException(FILE_NAME + " must be a JSON object");
         }
-        
+
         String id = requireNonBlank(node, "id");
         String version = requireNonBlank(node, "version");
         String displayName = requireNonBlank(node, "displayName");

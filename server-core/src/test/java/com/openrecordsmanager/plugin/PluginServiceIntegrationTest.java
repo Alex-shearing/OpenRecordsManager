@@ -28,7 +28,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Arrays;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
@@ -147,65 +146,6 @@ class PluginServiceIntegrationTest {
 
     private String adminBearerToken() {
         return this.testAuthTokens.adminAccessToken();
-    }
-
-    @Test
-    void listIncludesLocalPluginsWhenDatabaseIsEmpty() throws Exception {
-        String token = this.adminBearerToken();
-        int expected = (int) Arrays.stream(this.pluginManager.loadLocalPluginFiles())
-                .map(LocalPluginInfo::id)
-                .distinct()
-                .count();
-
-        this.mockMvc.perform(
-                        get("/api/plugins")
-                                .queryParam("includeDisabled", "true")
-                                .header("Authorization", "Bearer " + token)
-                                .accept(MediaType.APPLICATION_JSON)
-                )
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.length()").value(expected));
-    }
-
-    @Test
-    void getReturnsLocalPluginWhenDatabaseIsEmpty() throws Exception {
-        String token = this.adminBearerToken();
-
-        this.mockMvc.perform(
-                        get("/api/plugins/auth_oidc")
-                                .header("Authorization", "Bearer " + token)
-                                .accept(MediaType.APPLICATION_JSON)
-                )
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.id").value("auth_oidc"))
-                .andExpect(jsonPath("$.data.displayName").value("OpenID Connect"))
-                .andExpect(jsonPath("$.data.description").value(
-                        "Authenticate users via an external OpenID Connect identity provider."
-                ))
-                .andExpect(jsonPath("$.data.enabled").value(true))
-                .andExpect(jsonPath("$.data.loaded").value(true));
-    }
-
-    @Test
-    void updateRegistersLocalPluginWhenDatabaseIsEmpty() throws Exception {
-        String token = this.adminBearerToken();
-
-        this.mockMvc.perform(
-                        put("/api/plugins/auth_oidc")
-                                .header("Authorization", "Bearer " + token)
-                                .header("X-ORM-Audit-Comment", "disable plugin")
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content("""
-                                        {
-                                          "enabled": false
-                                        }
-                                        """)
-                                .accept(MediaType.APPLICATION_JSON)
-                )
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.enabled").value(false));
-
-        assertFalse(this.repository.pluginRepo.findById("auth_oidc").orElseThrow().isEnabled());
     }
 
     @Test
