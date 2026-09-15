@@ -10,6 +10,7 @@
 	import TargetDialog from '$lib/components/TargetDialog.svelte';
 	import { invalidateAll } from '$app/navigation';
 	import toast from 'svelte-hot-french-toast';
+	import { table } from 'node:console';
 
 	let { data } = $props();
 
@@ -277,6 +278,8 @@
 	{#snippet body(target)}
 		{@const targetType = sortedTypes.find(type => type.id === editTarget?.type)}
 		<form id="file-store-edit-form" class="flex flex-col gap-4" onsubmit={handleEdit}>
+			<span class="flex flex-col gap-1">There are currently {target.fileCount} files in this store.</span>
+
 			<label class="flex flex-col gap-1">
 				<span class="text-label">Type</span>
 				<input class="input w-full" value={target.type} readonly disabled />

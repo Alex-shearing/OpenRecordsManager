@@ -62,7 +62,7 @@ public class FileStoreService {
                 .orElseThrow(() -> new ResourceNotFoundException("file store", id.toString()));
 
         this.auditService.addReadEvent(AuditEntityType.FILE_STORE, id);
-        return FileStoreResponse.of(this.catalog, store);
+        return FileStoreResponse.of(this.catalog, store, this.repository.fileStoreRepo.countFilesByStoreId(id));
     }
 
     @Transactional

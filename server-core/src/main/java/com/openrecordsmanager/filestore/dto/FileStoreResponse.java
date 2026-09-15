@@ -16,9 +16,10 @@ public record FileStoreResponse(
         @NotBlank UUID id,
         @NotBlank ResourceIdentifier type,
         @NotNull Map<String, ?> properties,
-        @NotNull List<UUID> middlewares) {
+        @NotNull List<UUID> middlewares,
+        @NotNull long fileCount) {
 
-    public static FileStoreResponse of(ComponentCatalog catalog, FileStore store) {
+    public static FileStoreResponse of(ComponentCatalog catalog, FileStore store, long fileCount) {
         ResourceIdentifier storeTypeId = catalog.getRegistry(ComponentTypes.FILE_STORE)
                 .getId(store.getStoreType(catalog))
                 .orElseThrow(() -> new ResourceNotFoundException("store type for", store.getId()));
@@ -29,7 +30,8 @@ public record FileStoreResponse(
                 store.getProperties(catalog),
                 store.getMiddlewares().stream()
                         .map(usage -> usage.middleware.getId())
-                        .toList()
+                        .toList(),
+                fileCount
         );
     }
 }

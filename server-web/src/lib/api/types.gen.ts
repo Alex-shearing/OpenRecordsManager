@@ -381,6 +381,7 @@ export type FileStoreResponse = {
         [key: string]: unknown;
     };
     middlewares: Array<string>;
+    fileCount: number;
 };
 
 export type FileStoreTypeResponse = {

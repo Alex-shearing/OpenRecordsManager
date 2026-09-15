@@ -18,9 +18,9 @@ import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.security.spec.AlgorithmParameterSpec;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Vector;
 
 public class FilestoreMiddlewareEncryptingType extends FileStoreMiddlewareType<FilestoreMiddlewareEncryptingType.EncryptingMiddlewareSettings> {
     public FilestoreMiddlewareEncryptingType() {
@@ -71,15 +71,13 @@ public class FilestoreMiddlewareEncryptingType extends FileStoreMiddlewareType<F
             cipher.init(Cipher.ENCRYPT_MODE, secretKey, paramSpec);
 
             // Returns a concatenated single stream: [ Algorithm Length ] + [ Algorithm ] + [ Nonce Length ] + [ Nonce ] + [ Encrypted Body Bytes ]
-            Vector<InputStream> inputStreams = new Vector<>(List.of(
+            return new SequenceInputStream(Collections.enumeration(List.of(
                     new ByteArrayInputStream(new byte[]{(byte) settings.algorithm().name().length()}),
                     new ByteArrayInputStream(settings.algorithm().name().getBytes(StandardCharsets.UTF_8)),
                     new ByteArrayInputStream(new byte[]{(byte) iv.length}),
                     new ByteArrayInputStream(iv),
                     new CipherInputStream(data, cipher)
-            ));
-
-            return new SequenceInputStream(inputStreams.elements());
+            )));
         } catch (NoSuchAlgorithmException | NoSuchPaddingException | InvalidAlgorithmParameterException |
                  InvalidKeyException e) {
             FileStoreMiddlewareEncryptingPlugin.LOGGER.error("Failed to initialize file encryption", e);
