@@ -1,6 +1,6 @@
 {
   "id": "filestore_mssql_filestream",
   "version": "0.1.0",
-  "displayName": "SQL Server FILESTREAM",
-  "description": "Store files using Microsoft SQL Server FILESTREAM."
+  "displayName": "MSSQL Server FILESTREAM File Store Type",
+  "description": "Store files in a database using a Microsoft SQL Server FILESTREAM table."
 }

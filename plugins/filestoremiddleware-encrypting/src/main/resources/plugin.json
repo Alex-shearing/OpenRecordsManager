@@ -1,6 +1,6 @@
 {
   "id": "filestoremiddleware_encrypting",
   "version": "0.1.0",
-  "displayName": "Encrypting File Middleware",
-  "description": "Encrypt and decrypt file content as it is written to and read from a file store."
+  "displayName": "Encrypting File Store Middleware Type",
+  "description": "Encrypt and decrypt file content at rest in a file store."
 }
