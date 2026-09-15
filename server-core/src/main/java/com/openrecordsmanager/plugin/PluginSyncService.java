@@ -5,22 +5,21 @@ import com.openrecordsmanager.config.ConfigService;
 import com.openrecordsmanager.database.DatabaseWritableProbe;
 import com.openrecordsmanager.filestore.store.FileStore;
 import com.openrecordsmanager.filestore.store.FileStoreRepository;
-import com.openrecordsmanager.filestore.store.FileStoreService;
 import com.openrecordsmanager.plugin.registry.ComponentCatalog;
-import com.openrecordsmanager.rest.errors.ResourceNotFoundException;
-import org.semver4j.Semver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
-import java.nio.file.Files;
 import java.time.Instant;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 
 @Service
 public class PluginSyncService {
-    private static final Logger LOGGER = LoggerFactory.getLogger(PluginSyncService.class);
+    public static final Logger LOGGER = LoggerFactory.getLogger(PluginSyncService.class);
 
     private final PluginManager pluginManager;
     private final ComponentCatalog componentCatalog;
@@ -49,10 +48,12 @@ public class PluginSyncService {
 
     public void syncAndReloadOnStartup() {
         if (this.isSyncSkipped()) {
-            LOGGER.info("Plugin sync is disabled, skipping startup sync");
+            LOGGER.info("Plugin sync is disabled, skipping startup re-sync");
             return;
         }
-        this.syncAndReload(true);
+
+        LOGGER.info("Conducting startup plugin re-sync");
+        this.syncAndReload(false);
     }
 
     public void syncAndReloadIfChanged() {
@@ -65,6 +66,7 @@ public class PluginSyncService {
             return;
         }
 
+        LOGGER.info("Remote plugin changes detected, conducting plugin sync");
         this.syncAndReload(false);
     }
 
@@ -73,131 +75,35 @@ public class PluginSyncService {
             return;
         }
 
-        Optional<UUID> defaultStore = this.configService.getOptional(BuiltinConfigs.DEFAULT_FILE_STORE);
-        if (defaultStore.isEmpty()) {
-            LOGGER.debug("No default file store configured, registering local plugins without file upload");
-            this.registerLocalPluginsOnly();
-            this.reloadEnabledPlugins();
-            this.refreshLastSeenMaxDateModified();
-            return;
-        }
-
-        boolean changed = this.synchronizeWithServer(defaultStore.get());
+        boolean changed = this.synchronizeWithServer();
         if (changed || force) {
-            this.reloadEnabledPlugins();
+            this.pluginRepository.flush();
+            this.pluginManager.reload(this.componentCatalog);
         }
         this.refreshLastSeenMaxDateModified();
     }
 
-    private boolean synchronizeWithServer(UUID defaultStore) {
+    private boolean synchronizeWithServer() {
         LOGGER.info("Synchronizing local plugins with database");
 
-        LocalPluginInfo[] localPluginInfos = this.pluginManager.loadLocalPluginFiles();
-        FileStore fileStore = this.fileStoreRepository.findById(defaultStore)
-                .orElseThrow(() -> new ResourceNotFoundException("default store", defaultStore.toString()));
+        FileStore fileStore = this.configService.getOptional(BuiltinConfigs.DEFAULT_FILE_STORE)
+                .flatMap(this.fileStoreRepository::findById)
+                .orElse(null);
 
         List<PersistedPlugin> missingPlugins = new ArrayList<>(this.pluginRepository.findAll());
         boolean needsReload = false;
 
-        for (LocalPluginInfo localPlugin : localPluginInfos) {
-            Optional<PersistedPlugin> optPersistedPlugin = this.pluginRepository.findById(localPlugin.id());
-
-            if (optPersistedPlugin.isEmpty()) {
-                LOGGER.info(
-                        "This server has a new plugin {} that does not exist in the database, it will be uploaded",
-                        localPlugin.id()
-                );
-                PersistedPlugin newPlugin = new PersistedPlugin(localPlugin.id(), localPlugin.version());
-                try {
-                    this.pluginManager.uploadPlugin(this.componentCatalog, fileStore, newPlugin, localPlugin);
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-                continue;
-            }
-
-            missingPlugins.removeIf(plugin -> Objects.equals(plugin.getName(), localPlugin.id()));
-
-            PersistedPlugin persistedPlugin = optPersistedPlugin.get();
-            if (!persistedPlugin.isEnabled()) {
-                LOGGER.info("Skipping sync for disabled plugin {}", localPlugin.id());
-                continue;
-            }
-
-            if (persistedPlugin.getFile() == null) {
-                LOGGER.info(
-                        "Plugin {} is registered locally without a file store entry, uploading",
-                        localPlugin.id()
-                );
-                try {
-                    this.pluginManager.uploadPlugin(this.componentCatalog, fileStore, persistedPlugin, localPlugin);
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-                continue;
-            }
-
-            Semver persistedVersion = new Semver(persistedPlugin.getVersion());
-            Semver localVersion = new Semver(localPlugin.version());
-
-            if (localVersion.isGreaterThan(persistedVersion)) {
-                LOGGER.info(
-                        "This server has a newer version of the {} plugin than the database ({} > {}), it will be uploaded",
-                        localPlugin.id(),
-                        localPlugin.version(),
-                        persistedPlugin.getVersion()
-                );
-                try {
-                    this.pluginManager.uploadPlugin(this.componentCatalog, fileStore, persistedPlugin, localPlugin);
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-                continue;
-            }
-
-            if (localVersion.isLowerThan(persistedVersion)) {
-                LOGGER.info(
-                        "There is a newer version of the {} plugin in the database ({} > {}), it will be downloaded",
-                        persistedPlugin.getName(),
-                        persistedPlugin.getVersion(),
-                        localPlugin.version()
-                );
-
-                try {
-                    Files.deleteIfExists(localPlugin.getPathOrThrow());
-                    this.pluginManager.downloadPlugin(this.componentCatalog, fileStore, persistedPlugin);
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-
-                needsReload = true;
-                continue;
-            }
+        for (DiscoveredPlugin localPlugin : this.pluginManager.discoverLocalPlugins()) {
+            missingPlugins.removeIf(persistedPlugin -> Objects.equals(persistedPlugin.getName(), localPlugin.id()));
 
             try {
-                String localHash = com.google.common.io.Files.asByteSource(localPlugin.getFileOrThrow())
-                        .hash(FileStoreService.getHashFunction(persistedPlugin.getFile().hashAlgorithm))
-                        .toString();
-
-                if (!localHash.equals(persistedPlugin.getFile().hash)) {
-                    LOGGER.warn(
-                            "This server and the database both have {} version {}, but with a different hash ({} != {}). The local version will be reuploaded",
-                            persistedPlugin.getName(),
-                            persistedPlugin.getVersion(),
-                            localHash,
-                            persistedPlugin.getFile().hash
-                    );
-                    this.pluginManager.uploadPlugin(this.componentCatalog, fileStore, persistedPlugin, localPlugin);
+                // Sync the discovered plugin with the server, it will return true if we need to reload
+                if (localPlugin.synchronizeWithServer(this.pluginManager, this.componentCatalog, fileStore)) {
+                    needsReload = true;
                 }
             } catch (IOException e) {
-                throw new RuntimeException(e);
+                LOGGER.error("Failed to synchronize plugin {} with server", localPlugin.id(), e);
             }
-
-            LOGGER.info(
-                    "This server already has the same version of the {} plugin as the database {}",
-                    persistedPlugin.getName(),
-                    persistedPlugin.getVersion()
-            );
         }
 
         for (PersistedPlugin plugin : missingPlugins) {
@@ -215,7 +121,7 @@ public class PluginSyncService {
 
             LOGGER.info("There is a new plugin {} available, it will be downloaded", plugin.getName());
             try {
-                this.pluginManager.downloadPlugin(this.componentCatalog, fileStore, plugin);
+                this.pluginManager.downloadPlugin(this.componentCatalog, plugin);
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
@@ -223,37 +129,6 @@ public class PluginSyncService {
         }
 
         return needsReload;
-    }
-
-    private void registerLocalPluginsOnly() {
-        for (LocalPluginInfo localPlugin : this.pluginManager.loadLocalPluginFiles()) {
-            Optional<PersistedPlugin> existing = this.pluginRepository.findById(localPlugin.id());
-            if (existing.isEmpty()) {
-                LOGGER.info("Registering local plugin {} in database", localPlugin.id());
-                this.pluginRepository.save(new PersistedPlugin(localPlugin.id(), localPlugin.version()));
-                continue;
-            }
-
-            PersistedPlugin persistedPlugin = existing.get();
-            Semver localVersion = new Semver(localPlugin.version());
-            Semver persistedVersion = new Semver(persistedPlugin.getVersion());
-            if (localVersion.isGreaterThan(persistedVersion)) {
-                LOGGER.info(
-                        "Updating local plugin {} from version {} to {}",
-                        localPlugin.id(),
-                        persistedPlugin.getVersion(),
-                        localPlugin.version()
-                );
-                persistedPlugin.setVersion(localPlugin.version());
-                this.pluginRepository.save(persistedPlugin);
-            }
-        }
-    }
-
-    private void reloadEnabledPlugins() {
-        this.pluginRepository.flush();
-        this.pluginManager.reload(this.pluginManager.getEnabledPluginNames());
-        this.componentCatalog.reload(this.pluginManager);
     }
 
     private void refreshLastSeenMaxDateModified() {

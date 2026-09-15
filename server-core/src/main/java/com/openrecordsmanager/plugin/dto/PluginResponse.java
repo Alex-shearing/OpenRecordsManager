@@ -1,7 +1,7 @@
 package com.openrecordsmanager.plugin.dto;
 
+import com.openrecordsmanager.plugin.DiscoveredPlugin;
 import com.openrecordsmanager.plugin.LoadedPlugin;
-import com.openrecordsmanager.plugin.LocalPluginInfo;
 import com.openrecordsmanager.plugin.PersistedPlugin;
 import com.openrecordsmanager.plugin.PluginManager;
 import jakarta.validation.constraints.NotBlank;
@@ -21,11 +21,11 @@ public record PluginResponse(
         boolean loaded
 ) {
     public static PluginResponse of(PersistedPlugin plugin, PluginManager pluginManager) {
-        Optional<LocalPluginInfo> pluginMeta = pluginManager.getLoadedPlugin(plugin.getName()).map(LoadedPlugin::info);
+        Optional<DiscoveredPlugin> pluginMeta = pluginManager.getLoadedPlugin(plugin.getName()).map(LoadedPlugin::info);
         return new PluginResponse(
                 plugin.getName(),
-                pluginMeta.map(LocalPluginInfo::displayName).orElse(plugin.getName()),
-                pluginMeta.map(LocalPluginInfo::description).orElse(plugin.getName()),
+                pluginMeta.map(DiscoveredPlugin::displayName).orElse(plugin.getName()),
+                pluginMeta.map(DiscoveredPlugin::description).orElse(plugin.getName()),
                 plugin.getVersion(),
                 plugin.isEnabled(),
                 plugin.getDateCreated(),

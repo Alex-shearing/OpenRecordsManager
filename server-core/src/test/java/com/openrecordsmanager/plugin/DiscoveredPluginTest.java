@@ -2,6 +2,7 @@ package com.openrecordsmanager.plugin;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.semver4j.Semver;
 
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
@@ -12,23 +13,23 @@ import java.util.jar.JarOutputStream;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class LocalPluginInfoTest {
+class DiscoveredPluginTest {
 
     @TempDir
     Path tempDir;
 
     @Test
     void parsesValidPluginJson() throws Exception {
-        LocalPluginInfo info = LocalPluginInfo.parseWithDescriptorFile(new ByteArrayInputStream("""
+        DiscoveredPlugin info = DiscoveredPlugin.parseWithDescriptorFile(new ByteArrayInputStream("""
                 {
                   "id":"defaults_aus_gov",
                   "version":"0.1.0",
                   "displayName":"Australian Government Defaults",
                   "description":"Default lists and record types for Australian Government protective markings."
                 }
-                """.getBytes(StandardCharsets.UTF_8)), null);
+                """.getBytes(StandardCharsets.UTF_8)), null, null);
         assertEquals("defaults_aus_gov", info.id());
-        assertEquals("0.1.0", info.version());
+        assertEquals(new Semver("0.1.0"), info.version());
         assertEquals("Australian Government Defaults", info.displayName());
         assertEquals(
                 "Default lists and record types for Australian Government protective markings.",
@@ -39,24 +40,24 @@ class LocalPluginInfoTest {
 
     @Test
     void rejectsMissingId() {
-        assertThrows(IllegalArgumentException.class, () -> LocalPluginInfo.parseWithDescriptorFile(new ByteArrayInputStream("""
+        assertThrows(IllegalArgumentException.class, () -> DiscoveredPlugin.parseWithDescriptorFile(new ByteArrayInputStream("""
                 {
                   "version":"0.1.0",
                   "displayName":"Demo",
                   "description":"A demo plugin"
                 }
-                """.getBytes(StandardCharsets.UTF_8)), null));
+                """.getBytes(StandardCharsets.UTF_8)), null, null));
     }
 
     @Test
     void rejectsMissingDisplayName() {
-        assertThrows(IllegalArgumentException.class, () -> LocalPluginInfo.parseWithDescriptorFile(new ByteArrayInputStream("""
+        assertThrows(IllegalArgumentException.class, () -> DiscoveredPlugin.parseWithDescriptorFile(new ByteArrayInputStream("""
                 {
                   "id":"demo",
                   "version":"0.1.0",
                   "description":"A demo plugin"
                 }
-                """.getBytes(StandardCharsets.UTF_8)), null));
+                """.getBytes(StandardCharsets.UTF_8)), null, null));
     }
 
     @Test
@@ -70,16 +71,16 @@ class LocalPluginInfoTest {
                 {"id":"demo_zip","version":"2.0.0","displayName":"Demo Zip","description":"Demo zip plugin"}
                 """);
 
-        LocalPluginInfo fromJar = LocalPluginInfo.read(jar);
+        DiscoveredPlugin fromJar = DiscoveredPlugin.read(jar, null);
         assertEquals(
-                new LocalPluginInfo("demo", "1.2.3", "Demo", "Demo jar plugin", jar),
+                new DiscoveredPlugin("demo", new Semver("1.2.3"), "Demo", "Demo jar plugin", jar, null),
                 fromJar
         );
         assertNotNull(fromJar.path());
 
-        LocalPluginInfo fromZip = LocalPluginInfo.read(zip);
+        DiscoveredPlugin fromZip = DiscoveredPlugin.read(zip, null);
         assertEquals(
-                new LocalPluginInfo("demo_zip", "2.0.0", "Demo Zip", "Demo zip plugin", zip),
+                new DiscoveredPlugin("demo_zip", new Semver("2.0.0"), "Demo Zip", "Demo zip plugin", zip, null),
                 fromZip
         );
         assertNotNull(fromZip.path());
@@ -93,12 +94,12 @@ class LocalPluginInfoTest {
             jos.write("x".getBytes(StandardCharsets.UTF_8));
             jos.closeEntry();
         }
-        assertThrows(Exception.class, () -> LocalPluginInfo.read(jar));
+        assertThrows(Exception.class, () -> DiscoveredPlugin.read(jar, null));
     }
 
     private static void writeArchive(Path archive, String pluginJson) throws Exception {
         try (JarOutputStream jos = new JarOutputStream(Files.newOutputStream(archive))) {
-            jos.putNextEntry(new JarEntry(LocalPluginInfo.FILE_NAME));
+            jos.putNextEntry(new JarEntry(DiscoveredPlugin.FILE_NAME));
             jos.write(pluginJson.getBytes(StandardCharsets.UTF_8));
             jos.closeEntry();
         }

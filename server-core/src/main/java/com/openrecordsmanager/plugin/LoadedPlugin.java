@@ -13,7 +13,7 @@ import com.openrecordsmanager.template.TemplateJsonLoader;
  * @param info   info loaded from the local plugin file
  * @param plugin runtime plugin instance
  */
-public record LoadedPlugin(LocalPluginInfo info, Plugin plugin) {
+public record LoadedPlugin(DiscoveredPlugin info, Plugin plugin) {
 
     public void initialize(ComponentCatalog.Builder builder) {
         RegistrationContextImpl context = new RegistrationContextImpl(builder, this.info.id());

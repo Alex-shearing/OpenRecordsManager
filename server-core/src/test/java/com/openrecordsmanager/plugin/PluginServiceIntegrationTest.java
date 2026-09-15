@@ -79,8 +79,8 @@ class PluginServiceIntegrationTest {
     @BeforeEach
     void setUp() throws IOException {
         restorePluginJars();
-        this.pluginManager.reload(null);
-        this.catalog.reload(this.pluginManager);
+        this.repository.pluginRepo.deleteAll();
+        this.pluginManager.reload(this.catalog);
 
         if (DEFAULT_FILE_STORE.get().isEmpty()) {
             FileStoreType<?> localType = this.catalog.getRegistry(ComponentTypes.FILE_STORE)

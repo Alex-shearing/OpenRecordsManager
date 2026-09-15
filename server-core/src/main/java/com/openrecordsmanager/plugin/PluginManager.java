@@ -1,6 +1,7 @@
 package com.openrecordsmanager.plugin;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.io.MoreFiles;
 import com.openrecordsmanager.api.Plugin;
 import com.openrecordsmanager.api.builtin.BuiltinPlugin;
 import com.openrecordsmanager.filestore.store.FileStore;
@@ -8,6 +9,7 @@ import com.openrecordsmanager.filestore.store.FileStoreEntry;
 import com.openrecordsmanager.plugin.registry.ComponentCatalog;
 import jakarta.annotation.PreDestroy;
 import org.jspecify.annotations.Nullable;
+import org.semver4j.Semver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -23,13 +25,21 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.*;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @Service
 public class PluginManager {
-    private static final Logger LOGGER = LoggerFactory.getLogger(PluginManager.class);
+    public static final Logger LOGGER = LoggerFactory.getLogger(PluginManager.class);
     private static final LoadedPlugin BUILTIN_PLUGIN = new LoadedPlugin(
-            new LocalPluginInfo(BuiltinPlugin.BUILTIN_PLUGIN_NAME, "latest", "Builtin Components", "These are the builtin components, they cannot be modified.", null),
+            new DiscoveredPlugin(
+                    BuiltinPlugin.BUILTIN_PLUGIN_NAME,
+                    Semver.ZERO,
+                    "Builtin Components",
+                    "These are the builtin components, they cannot be modified.",
+                    null,
+                    null
+            ),
             new BuiltinPlugin()
     );
 
@@ -48,17 +58,17 @@ public class PluginManager {
         this.reload(null);
     }
 
-    public synchronized void reload(@Nullable Set<String> enabledPluginIds) {
-        LocalPluginInfo[] localPlugins = this.loadLocalPluginFiles();
-        LocalPluginInfo[] pluginsToLoad;
-        if (enabledPluginIds == null) {
-            pluginsToLoad = localPlugins;
-        } else {
-            pluginsToLoad = Arrays.stream(localPlugins)
-                    .filter(plugin -> enabledPluginIds.contains(plugin.id()))
-                    .toArray(LocalPluginInfo[]::new);
+    public synchronized void reload(@Nullable ComponentCatalog catalog) {
+        DiscoveredPlugin[] pluginsToLoad = this.discoverLocalPlugins()
+                .stream()
+                .filter(DiscoveredPlugin::isEnabled)
+                .toArray(DiscoveredPlugin[]::new);
+
+        this.loadPlugins(pluginsToLoad);
+
+        if (catalog != null) {
+            catalog.reload(this);
         }
-        this.instantiatePlugins(pluginsToLoad);
     }
 
     public List<LoadedPlugin> getLoadedPlugins() {
@@ -77,46 +87,58 @@ public class PluginManager {
         return this.directory;
     }
 
-    LocalPluginInfo[] loadLocalPluginFiles() {
+    Set<DiscoveredPlugin> discoverLocalPlugins() {
         if (!Files.exists(this.directory) || !Files.isDirectory(this.directory)) {
             LOGGER.warn("Plugin directory '{}' not found, plugins will not be loaded", this.directory);
-            return new LocalPluginInfo[0];
+            return Set.of();
         }
 
         try (Stream<Path> files = Files.list(this.directory)) {
-            return files.map(path -> {
+            return files
+                    .filter(path -> {
+                        String ext = MoreFiles.getFileExtension(path);
+                        return ext.equalsIgnoreCase("jar") || ext.equalsIgnoreCase("zip");
+                    })
+                    .map(path -> {
                         try {
-                            return LocalPluginInfo.read(path);
+                            return DiscoveredPlugin.read(path, this.pluginRepo);
                         } catch (IOException | IllegalArgumentException e) {
-                            LOGGER.error("Failed to load {} for {}", LocalPluginInfo.FILE_NAME, path.getFileName(), e);
+                            LOGGER.error("Failed to load {} for {}", DiscoveredPlugin.FILE_NAME, path.getFileName(), e);
                         }
                         return null;
                     })
                     .filter(Objects::nonNull)
-                    .toArray(LocalPluginInfo[]::new);
+                    .collect(Collectors.toSet());
         } catch (IOException e) {
             LOGGER.warn("Error accessing plugin directory '{}', plugins will not be loaded", this.directory, e);
-            return new LocalPluginInfo[0];
+            return Set.of();
         }
     }
 
     void uploadPlugin(
             ComponentCatalog catalog,
-            FileStore fileStore,
+            @Nullable FileStore fileStore,
             PersistedPlugin persistedPlugin,
-            LocalPluginInfo localPlugin
+            DiscoveredPlugin localPlugin
     ) throws IOException {
-        persistedPlugin.setVersion(localPlugin.version());
+        if (fileStore == null) {
+            LOGGER.info("{} would have been uploaded from {}, but no file store was provided", localPlugin.id(), localPlugin.getPathOrThrow());
+            return;
+        }
+        persistedPlugin.setVersion(localPlugin.version().toString());
+
+        Path path = localPlugin.getPathOrThrow();
         persistedPlugin.setFile(fileStore.newFile(
                 catalog,
-                Files.newInputStream(localPlugin.getPathOrThrow()),
-                localPlugin.extension()
+                Files.newInputStream(path),
+                MoreFiles.getFileExtension(path)
         ));
+
         LOGGER.info("{} has been uploaded from {}", localPlugin.id(), localPlugin.getPathOrThrow());
         this.pluginRepo.saveAndFlush(persistedPlugin);
     }
 
-    void downloadPlugin(ComponentCatalog catalog, FileStore fileStore, PersistedPlugin persistedPlugin) throws IOException {
+    void downloadPlugin(ComponentCatalog catalog, PersistedPlugin persistedPlugin) throws IOException {
         if (persistedPlugin.getFile() == null) {
             LOGGER.warn("attempted to download a plugin {} that does not have an associated file store entry", persistedPlugin.getName());
             return;
@@ -126,7 +148,7 @@ public class PluginManager {
         LOGGER.info("Downloading {} to {}", persistedPlugin.getName(), destFile);
         Files.createDirectories(this.directory);
 
-        try (InputStream inputStream = fileStore.getFile(catalog, persistedPlugin.getFile())) {
+        try (InputStream inputStream = persistedPlugin.getFile().store.getFile(catalog, persistedPlugin.getFile())) {
             Files.copy(inputStream, destFile, StandardCopyOption.REPLACE_EXISTING);
         }
 
@@ -150,29 +172,24 @@ public class PluginManager {
     }
 
     void deleteLocalPlugin(PersistedPlugin plugin) throws IOException {
-        LocalPluginInfo[] localPlugins = this.loadLocalPluginFiles();
-        for (LocalPluginInfo localPlugin : localPlugins) {
-            if (Objects.equals(localPlugin.id(), plugin.getName())) {
-                Files.deleteIfExists(localPlugin.getPathOrThrow());
-                return;
-            }
+        Set<DiscoveredPlugin> localPlugins = this.discoverLocalPlugins().stream()
+                .filter(p -> Objects.equals(p.id(), plugin.getName()))
+                .collect(Collectors.toSet());
+
+        for (DiscoveredPlugin localPlugin : localPlugins) {
+            Files.deleteIfExists(localPlugin.getPathOrThrow());
+            return;
         }
     }
 
-    Set<String> getEnabledPluginNames() {
-        return this.pluginRepo.findByEnabledTrue().stream()
-                .map(PersistedPlugin::getName)
-                .collect(java.util.stream.Collectors.toSet());
-    }
-
-    private void instantiatePlugins(LocalPluginInfo[] pluginList) {
+    private void loadPlugins(DiscoveredPlugin[] pluginList) {
         List<LoadedPlugin> loadedPlugins = new ArrayList<>();
         loadedPlugins.add(BUILTIN_PLUGIN);
 
         // Load jar plugins
-        LocalPluginInfo[] jars = Arrays.stream(pluginList)
-                .filter(info -> info.extension().equals("jar"))
-                .toArray(LocalPluginInfo[]::new);
+        DiscoveredPlugin[] jars = Arrays.stream(pluginList)
+                .filter(DiscoveredPlugin::isJar)
+                .toArray(DiscoveredPlugin[]::new);
 
         URL[] urls = new URL[jars.length];
         for (int i = 0; i < jars.length; i++) {
@@ -189,7 +206,7 @@ public class PluginManager {
         for (Plugin plugin : ServiceLoader.load(Plugin.class, this.classLoader)) {
             try {
                 URI jarUrl = plugin.getClass().getProtectionDomain().getCodeSource().getLocation().toURI().normalize();
-                LocalPluginInfo info = Arrays.stream(jars)
+                DiscoveredPlugin info = Arrays.stream(jars)
                         .filter(i -> i.path() != null && i.path().toUri().normalize().equals(jarUrl))
                         .findFirst()
                         .orElseThrow(() -> new IllegalStateException("Failed to find plugins local data " + jarUrl));
@@ -200,11 +217,11 @@ public class PluginManager {
         }
 
         // Load zip plugins
-        LocalPluginInfo[] zips = Arrays.stream(pluginList)
-                .filter(info -> info.extension().equals("zip"))
-                .toArray(LocalPluginInfo[]::new);
+        DiscoveredPlugin[] zips = Arrays.stream(pluginList)
+                .filter(DiscoveredPlugin::isZip)
+                .toArray(DiscoveredPlugin[]::new);
 
-        for (LocalPluginInfo zip : zips) {
+        for (DiscoveredPlugin zip : zips) {
             loadedPlugins.add(new LoadedPlugin(zip, new JsonTemplatePackPlugin()));
         }
 

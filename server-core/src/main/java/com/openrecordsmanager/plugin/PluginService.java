@@ -13,7 +13,6 @@ import com.openrecordsmanager.plugin.dto.SimplePluginResponse;
 import com.openrecordsmanager.plugin.dto.UpdatePluginRequest;
 import com.openrecordsmanager.rest.errors.ResourceInUseException;
 import com.openrecordsmanager.rest.errors.ResourceNotFoundException;
-import org.semver4j.Semver;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,7 +23,6 @@ import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -53,7 +51,7 @@ public class PluginService {
                 .filter(plugin -> includeDisabled || plugin.isEnabled())
                 .map(plugin -> SimplePluginResponse.of(plugin, this.pluginManager))
                 .collect(Collectors.toSet());
-        
+
         this.auditService.recordCollectionRead(AuditEntityType.PLUGIN, response.size());
         return response;
     }
@@ -70,40 +68,44 @@ public class PluginService {
     @Transactional
     @RequiresAuditComment(operation = AuditOperation.CREATE, targetType = AuditEntityType.PLUGIN)
     public PluginResponse upload(InputStream archiveStream, PluginTypeRequest extension) throws IOException {
-        Path tempDest = this.pluginManager.getDirectory().resolve("upload-" + System.nanoTime() + "." + extension);
-        try {
-            LocalPluginInfo pluginInfo = LocalPluginInfo.readFromStream(archiveStream);
+        Path tempDest = this.pluginManager.getDirectory()
+                .resolve("upload")
+                .resolve("upload-" + System.nanoTime() + "." + extension);
 
-            if (BuiltinPlugin.BUILTIN_PLUGIN_NAME.equals(pluginInfo.id())) {
+        try {
+            // Copy to a temp file
+            Files.createDirectories(tempDest.getParent());
+            Files.copy(archiveStream, tempDest);
+
+            // Parse metadata
+            DiscoveredPlugin uploadedMeta = DiscoveredPlugin.read(tempDest, this.repository.pluginRepo);
+
+            if (BuiltinPlugin.BUILTIN_PLUGIN_NAME.equals(uploadedMeta.id())) {
                 throw new ResourceInUseException("the builtin plugin cannot be modified");
             }
 
-            Optional<PersistedPlugin> existing = this.repository.pluginRepo.findById(pluginInfo.id());
-
-            if (existing.isPresent()) {
-                Semver existingVersion = new Semver(existing.get().getVersion());
-                Semver uploadedVersion = new Semver(pluginInfo.version());
-                if (!uploadedVersion.isGreaterThan(existingVersion)) {
-                    throw new ResourceInUseException(
-                            "plugin already exists with version " + existing.get().getVersion()
-                                    + "; uploaded version must be greater"
-                    );
-                }
+            DiscoveredPlugin.PluginComparison comparison = uploadedMeta.compareLocalToPersisted();
+            switch (comparison) {
+                case PERSISTED_NEWER, EQUAL -> throw new ResourceInUseException(
+                        "plugin already exists with same or newer version, uploaded version must be greater"
+                );
+                case SAME_VERSION_HASH_MISMATCH -> PluginManager.LOGGER.info(
+                        "Uploading a new plugin file for {} with the same version but different hash",
+                        uploadedMeta.id()
+                );
             }
 
             Path finalDest = this.pluginManager.getDirectory().resolve(
-                    pluginInfo.id() + "-" + pluginInfo.version() + "." + extension
+                    uploadedMeta.id() + "-" + uploadedMeta.version() + "." + extension
             );
-            if (!tempDest.equals(finalDest)) {
-                Files.copy(archiveStream, finalDest, StandardCopyOption.REPLACE_EXISTING);
-            }
+            Files.copy(tempDest, finalDest, StandardCopyOption.REPLACE_EXISTING);
 
             this.pluginSyncService.syncAndReload(true);
 
-            PersistedPlugin plugin = this.repository.pluginRepo.findById(pluginInfo.id())
-                    .orElseThrow(() -> new ResourceNotFoundException("plugin", pluginInfo.id()));
+            PersistedPlugin plugin = this.repository.pluginRepo.findById(uploadedMeta.id())
+                    .orElseThrow(() -> new ResourceNotFoundException("plugin", uploadedMeta.id()));
 
-            if (existing.isEmpty()) {
+            if (uploadedMeta.persistedPlugin() == null) {
                 this.auditService.addEvent(
                         AuditOperation.CREATE,
                         AuditEntityType.PLUGIN,
@@ -114,7 +116,11 @@ public class PluginService {
                 );
             } else {
                 List<AuditPropertyChange> changes = List.of(
-                        AuditPropertyChange.of("version", existing.get().getVersion(), plugin.getVersion())
+                        AuditPropertyChange.of(
+                                "version",
+                                uploadedMeta.persistedPlugin().getVersion(),
+                                plugin.getVersion()
+                        )
                 );
                 this.auditService.addEvent(
                         AuditOperation.UPDATE,
