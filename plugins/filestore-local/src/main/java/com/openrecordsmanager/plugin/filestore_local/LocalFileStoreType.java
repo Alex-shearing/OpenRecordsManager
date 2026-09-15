@@ -5,13 +5,18 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import org.jspecify.annotations.Nullable;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.file.FileAlreadyExistsException;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 import java.util.HexFormat;
 import java.util.concurrent.ThreadLocalRandom;
 
 /**
- * An implementation of local file system storage.
+ * Implementation of the file system storage.
  */
 public class LocalFileStoreType extends FileStoreType<LocalFileStoreType.LocalFileStoreSettings> {
 
@@ -21,34 +26,53 @@ public class LocalFileStoreType extends FileStoreType<LocalFileStoreType.LocalFi
 
     @Override
     public String save(LocalFileStoreSettings settings, InputStream data, @Nullable String extension) throws IOException {
-        Path destPath;
-        File file;
+        Path relativePath;
+        Path absolutePath;
         do {
-            destPath = this.getRandomPath();
-            file = Path.of(settings.rootDir()).resolve(destPath).toFile();
-        } while (file.exists());
+            relativePath = this.getRandomPath();
+            absolutePath = Path.of(settings.rootDir()).toAbsolutePath().resolve(relativePath).toAbsolutePath();
+        } while (Files.exists(absolutePath));
 
-        if (!file.getParentFile().exists()) {
-            file.getParentFile().mkdirs();
-        }
-        try (FileOutputStream out = new FileOutputStream(file)) {
+        FileStoreLocalPlugin.LOGGER.debug("Saving new file to destination path {}", relativePath);
+
+        Files.createDirectories(absolutePath.getParent());
+
+        try (OutputStream out = Files.newOutputStream(absolutePath, StandardOpenOption.CREATE_NEW)) {
             data.transferTo(out);
+        } catch (FileAlreadyExistsException e) {
+            FileStoreLocalPlugin.LOGGER.error(
+                    "Attempted to write to a file that already exists in the store ({}).",
+                    absolutePath,
+                    e
+            );
+            throw e;
         }
-        return destPath.toString();
+
+        FileStoreLocalPlugin.LOGGER.debug("File saved to destination path {} in store", absolutePath);
+
+        return relativePath.toString();
     }
 
     private Path getRandomPath() {
         String hexString = HexFormat.of().toHexDigits(ThreadLocalRandom.current().nextLong());
-        return Path.of(hexString.substring(0, 4), hexString.substring(4, 8), hexString.substring(8, 12), hexString.substring(12, 16));
+        return Path.of(
+                hexString.substring(0, 4),
+                hexString.substring(4, 8),
+                hexString.substring(8, 12),
+                hexString.substring(12, 16)
+        );
     }
 
     @Override
     public InputStream retrieve(LocalFileStoreSettings settings, String data) throws IOException {
-        File srcFile = new File(settings.rootDir(), data);
-        if (!srcFile.exists()) {
+        Path srcFile = Path.of(settings.rootDir()).toAbsolutePath().resolve(data);
+
+        FileStoreLocalPlugin.LOGGER.debug("Retrieving file from destination path {}", srcFile);
+
+        if (!Files.exists(srcFile)) {
             throw new IOException("File not found in local store: " + data);
         }
-        return new FileInputStream(srcFile);
+        return Files.newInputStream(srcFile);
     }
 
     public record LocalFileStoreSettings(
