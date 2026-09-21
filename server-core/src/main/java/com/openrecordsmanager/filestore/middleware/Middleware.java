@@ -12,6 +12,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import org.hibernate.annotations.JavaType;
 import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.id.uuid.UuidVersion7Strategy;
 import org.hibernate.type.SqlTypes;
 
 import java.io.InputStream;
@@ -40,7 +41,7 @@ public class Middleware {
     }
 
     public Middleware(ComponentCatalog catalog, FileStoreMiddlewareType<?> type, Map<String, ?> properties) {
-        this.id = UUID.randomUUID();
+        this.id = UuidVersion7Strategy.INSTANCE.generateUuid(null);
         this.type = catalog.getRegistry(ComponentTypes.FILE_STORE_MIDDLEWARE).getId(type).orElseThrow();
         this.properties = JsonSchemaValidator.serializeSettings(type.parseSettings(properties));
         type.initializeUntyped(this.properties);

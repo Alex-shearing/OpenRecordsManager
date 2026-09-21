@@ -14,6 +14,7 @@ import com.openrecordsmanager.plugin.registry.ComponentCatalog;
 import jakarta.persistence.*;
 import org.hibernate.annotations.JavaType;
 import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.id.uuid.UuidVersion7Strategy;
 import org.hibernate.type.SqlTypes;
 
 import java.io.IOException;
@@ -52,7 +53,7 @@ public class FileStore {
     }
 
     public FileStore(ComponentCatalog catalog, FileStoreType<?> type, Map<String, ?> properties) {
-        this.id = UUID.randomUUID();
+        this.id = UuidVersion7Strategy.INSTANCE.generateUuid(null);
         this.type = catalog.getRegistry(ComponentTypes.FILE_STORE).getId(type).orElseThrow();
         this.properties = JsonSchemaValidator.serializeSettings(type.parseSettings(properties));
         type.initializeUntyped(this.properties);

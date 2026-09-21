@@ -6,6 +6,7 @@ import com.openrecordsmanager.property.ObjectPropertyHolder;
 import com.openrecordsmanager.user.User;
 import jakarta.persistence.*;
 import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.id.uuid.UuidVersion7Strategy;
 import org.hibernate.type.SqlTypes;
 import org.jspecify.annotations.Nullable;
 import tools.jackson.databind.JsonNode;
@@ -37,7 +38,7 @@ public class RecordPropertyValue implements ObjectPropertyHolder.ObjectPropertyV
     }
 
     public RecordPropertyValue(Record record, ObjectProperty<?> property, @Nullable JsonNode value) {
-        this.id = UUID.randomUUID();
+        this.id = UuidVersion7Strategy.INSTANCE.generateUuid(null);
         this.record = record;
         this.property = property;
         this.value = value;

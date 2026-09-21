@@ -2,6 +2,7 @@ package com.openrecordsmanager.filestore.store;
 
 import com.openrecordsmanager.plugin.registry.ComponentCatalog;
 import jakarta.persistence.*;
+import org.hibernate.id.uuid.UuidVersion7Strategy;
 import org.jspecify.annotations.Nullable;
 
 import java.io.IOException;
@@ -40,7 +41,7 @@ public class FileStoreEntry {
     }
 
     public FileStoreEntry(FileStore store, String path, String hashAlgorithm, String hash, long sizeBytes, @Nullable String extension) {
-        this.id = UUID.randomUUID();
+        this.id = UuidVersion7Strategy.INSTANCE.generateUuid(null);
         this.store = store;
         this.path = path;
         this.hashAlgorithm = hashAlgorithm;

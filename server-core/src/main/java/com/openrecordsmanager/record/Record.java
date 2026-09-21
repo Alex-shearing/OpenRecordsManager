@@ -13,6 +13,7 @@ import com.openrecordsmanager.recordtype.RecordTypeProperty;
 import com.openrecordsmanager.user.User;
 import jakarta.persistence.*;
 import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.id.uuid.UuidVersion7Strategy;
 import org.hibernate.type.SqlTypes;
 import org.jspecify.annotations.Nullable;
 import tools.jackson.databind.JsonNode;
@@ -105,7 +106,7 @@ public class Record extends ObjectPropertyHolder<Record, RecordPropertyValue> {
     }
 
     public Record(String title, RecordType type) {
-        this.id = UUID.randomUUID();
+        this.id = UuidVersion7Strategy.INSTANCE.generateUuid(null);
         this.type = type;
         type.properties.forEach(p -> this.setPropertyFromJson(p.property, p.getDefault()));
         this.title = title;

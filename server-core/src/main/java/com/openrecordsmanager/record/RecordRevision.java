@@ -3,6 +3,7 @@ package com.openrecordsmanager.record;
 import com.openrecordsmanager.filestore.store.FileStoreEntry;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Pattern;
+import org.hibernate.id.uuid.UuidVersion7Strategy;
 
 import java.time.Instant;
 import java.util.UUID;
@@ -45,7 +46,7 @@ public class RecordRevision {
     }
 
     public RecordRevision(String version, Record record, FileStoreEntry file) {
-        this.id = UUID.randomUUID();
+        this.id = UuidVersion7Strategy.INSTANCE.generateUuid(null);
         this.version = version;
         this.record = record;
         this.file = file;

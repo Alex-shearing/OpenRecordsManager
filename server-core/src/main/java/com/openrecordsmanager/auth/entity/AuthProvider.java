@@ -10,6 +10,7 @@ import com.openrecordsmanager.plugin.registry.ComponentCatalog;
 import com.openrecordsmanager.rest.errors.ResourceNotFoundException;
 import jakarta.persistence.*;
 import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.id.uuid.UuidVersion7Strategy;
 import org.hibernate.type.SqlTypes;
 import org.jspecify.annotations.Nullable;
 import org.springframework.security.authentication.DisabledException;
@@ -52,7 +53,7 @@ public class AuthProvider {
             ComponentReference<? extends AuthProviderType<?>> providerType,
             Map<String, ?> settings
     ) {
-        this.id = UUID.randomUUID();
+        this.id = UuidVersion7Strategy.INSTANCE.generateUuid(null);
         this.name = name;
         this.providerType = providerType;
         this.setProperties(catalog, settings);

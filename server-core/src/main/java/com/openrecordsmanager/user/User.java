@@ -7,6 +7,7 @@ import com.openrecordsmanager.property.BuiltinPropertyMapper;
 import com.openrecordsmanager.property.ObjectProperty;
 import com.openrecordsmanager.property.ObjectPropertyHolder;
 import jakarta.persistence.*;
+import org.hibernate.id.uuid.UuidVersion7Strategy;
 import org.jspecify.annotations.Nullable;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -104,7 +105,7 @@ public class User extends ObjectPropertyHolder<User, UserPropertyValue> implemen
     }
 
     public User(String username, @Nullable AuthProvider authProvider) {
-        this.id = UUID.randomUUID();
+        this.id = UuidVersion7Strategy.INSTANCE.generateUuid(null);
         this.username = username;
         this.authProvider = authProvider;
         this.dateCreated = Instant.now();
