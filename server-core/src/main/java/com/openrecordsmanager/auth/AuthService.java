@@ -4,10 +4,12 @@ import com.openrecordsmanager.api.ComponentReference;
 import com.openrecordsmanager.api.audit.AuditEntityType;
 import com.openrecordsmanager.api.audit.AuditOperation;
 import com.openrecordsmanager.api.auth.AuthProviderType;
-import com.openrecordsmanager.api.auth.RedirectAuthProviderType;
+import com.openrecordsmanager.api.auth.PendingRedirectAuth;
+import com.openrecordsmanager.api.auth.RedirectAuthChallenge;
 import com.openrecordsmanager.api.auth.UserAuthContext;
 import com.openrecordsmanager.api.builtin.BuiltinConfigs;
 import com.openrecordsmanager.api.template.property.ObjectPropertyTemplate;
+import com.openrecordsmanager.api.types.ComponentTypes;
 import com.openrecordsmanager.audit.AuditPropertyChange;
 import com.openrecordsmanager.audit.AuditService;
 import com.openrecordsmanager.audit.RequiresAuditComment;
@@ -23,9 +25,9 @@ import com.openrecordsmanager.property.ObjectProperty;
 import com.openrecordsmanager.rest.errors.ResourceNotFoundException;
 import com.openrecordsmanager.user.User;
 import io.jsonwebtoken.Claims;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.apache.commons.lang3.StringUtils;
 import org.jspecify.annotations.Nullable;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -39,6 +41,7 @@ import java.net.URI;
 import java.time.Instant;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 public class AuthService implements UserAuthContext {
@@ -52,9 +55,11 @@ public class AuthService implements UserAuthContext {
     private final PluginAuthenticationProvider authenticationProvider;
     private final JwtSessionService jwtSessionService;
     private final DatabaseWritableProbe probe;
+    private final PendingRedirectAuthCookie pendingRedirectAuthCookie;
+    private final HttpOnlyCookies cookies;
     private final String cookieName;
     private final String refreshCookieName;
-    private final boolean cookieSecure;
+    private final String publicBaseUrl;
 
     public AuthService(
             DataRepository repository,
@@ -64,7 +69,9 @@ public class AuthService implements UserAuthContext {
             AuditService auditService,
             @Lazy PluginAuthenticationProvider authenticationProvider,
             JwtSessionService jwtSessionService,
-            DatabaseWritableProbe probe
+            DatabaseWritableProbe probe,
+            PendingRedirectAuthCookie pendingRedirectAuthCookie,
+            HttpOnlyCookies cookies
     ) {
         this.repository = repository;
         this.catalog = catalog;
@@ -73,28 +80,106 @@ public class AuthService implements UserAuthContext {
         this.authenticationProvider = authenticationProvider;
         this.jwtSessionService = jwtSessionService;
         this.probe = probe;
+        this.pendingRedirectAuthCookie = pendingRedirectAuthCookie;
+        this.cookies = cookies;
         this.cookieName = config.getOrThrow(BuiltinConfigs.COOKIE_NAME);
         this.refreshCookieName = config.getOrThrow(BuiltinConfigs.REFRESH_COOKIE_NAME);
-        this.cookieSecure = config.getOrThrow(BuiltinConfigs.COOKIE_SECURE);
+        this.publicBaseUrl = trimTrailingSlash(config.getOrThrow(BuiltinConfigs.PUBLIC_BASE_URL));
     }
 
     @Transactional(readOnly = true)
-    public Set<AuthProviderResponse> listProviders(boolean includeDisabled) {
+    public Set<SimpleAuthProviderResponse> listProviders() {
+        return this.repository.authProviderRepo.findByEnabledTrue().stream()
+                .map(provider -> SimpleAuthProviderResponse.of(this.catalog, provider))
+                .collect(Collectors.toSet());
+    }
+
+    @Transactional(readOnly = true)
+    public Set<AuthProviderResponse> listAllProviders() {
         return this.repository.authProviderRepo.findAll().stream()
-                .filter(p -> includeDisabled || p.isEnabled())
                 .map(provider -> AuthProviderResponse.of(this.catalog, provider))
                 .collect(Collectors.toSet());
     }
 
     @Transactional(readOnly = true)
-    public URI getRedirectLocation(UUID authProviderId) {
-        AuthProvider provider = this.repository.authProviderRepo.findById(authProviderId)
+    public AuthProviderResponse getProvider(UUID id) {
+        return this.repository.authProviderRepo.findById(id)
+                .map(provider -> AuthProviderResponse.of(this.catalog, provider))
+                .orElseThrow(() -> new ResourceNotFoundException("authentication provider", id));
+    }
+
+    /**
+     * Starts a redirect-based login: persists pending OAuth state in a signed cookie and returns
+     * the IdP authorization URI.
+     */
+    @Transactional(readOnly = true)
+    public URI beginRedirectLogin(
+            UUID authProviderId,
+            @Nullable String returnTo,
+            HttpServletResponse response
+    ) {
+        AuthProvider provider = this.repository.authProviderRepo.findByIdAndEnabledTrue(authProviderId)
                 .orElseThrow(() -> new ResourceNotFoundException("authentication provider", authProviderId.toString()));
-        if (!provider.isEnabled()) {
-            throw new ResourceNotFoundException("authentication provider", authProviderId.toString());
+
+        RedirectAuthChallenge challenge = provider.beginRedirectLogin(this.catalog, this.publicBaseUrl);
+
+        PendingRedirectAuth pending = new PendingRedirectAuth(
+                authProviderId,
+                challenge.state(),
+                challenge.attributes()
+        );
+        this.pendingRedirectAuthCookie.store(
+                response,
+                pending,
+                SafeRelativePaths.sanitizeOrNull(returnTo)
+        );
+        return challenge.redirectUri();
+    }
+
+    /**
+     * Completes a redirect-based browser login: validates pending state, issues session cookies,
+     * and returns the safe relative path to send the browser to.
+     */
+    @Transactional(readOnly = true)
+    public URI completeRedirectLogin(
+            UUID authProviderId,
+            HttpServletRequest request,
+            HttpServletResponse response
+    ) {
+        PendingRedirectAuthCookie.Loaded loaded = this.pendingRedirectAuthCookie.take(
+                request,
+                response,
+                authProviderId
+        );
+        if (loaded == null) {
+            throw new BadCredentialsException("Missing or invalid redirect authentication state");
         }
-        RedirectAuthProviderType type = provider.getProviderType(this.catalog, RedirectAuthProviderType.class);
-        return type.getRedirectTo(provider);
+
+        URI fullCallbackUri = this.buildFullCallbackUri(authProviderId, request.getQueryString());
+
+        Authentication authenticatedUser = this.authenticationProvider.authenticate(
+                new PluginAuthenticationProvider.RedirectToken(
+                        authProviderId,
+                        fullCallbackUri,
+                        loaded.pending()
+                )
+        );
+        if (!authenticatedUser.isAuthenticated() || authenticatedUser.getDetails() == null) {
+            throw new BadCredentialsException("Username or password is incorrect");
+        }
+
+        User user = (User) authenticatedUser.getDetails();
+        TokenPair pair = this.issueTokenPair(user);
+        this.setAuthCookies(response, pair);
+        return URI.create(SafeRelativePaths.orElse(loaded.returnTo(), "/"));
+    }
+
+    private URI buildFullCallbackUri(UUID authProviderId, @Nullable String queryString) {
+        String base = URI.create(this.publicBaseUrl + "/api/auth/callback/" + authProviderId).toString();
+        if (StringUtils.isBlank(queryString)) {
+            return URI.create(base);
+        }
+        return URI.create(base + "?" + queryString);
     }
 
     @Transactional(readOnly = true)
@@ -170,44 +255,36 @@ public class AuthService implements UserAuthContext {
             }
             return null;
         }
-        Cookie[] cookies = request.getCookies();
-        if (cookies == null) {
-            return null;
-        }
-        return Arrays.stream(cookies)
-                .filter(cookie -> cookie.getName().equals(cookieName))
-                .map(Cookie::getValue)
-                .filter(value -> value != null && !value.isBlank())
-                .findFirst()
-                .orElse(null);
-
+        return this.cookies.read(request, cookieName);
     }
 
     private void applyCookiesIfWebClient(HttpServletRequest request, HttpServletResponse response, TokenPair pair) {
         if (!"Web-Client".equals(request.getHeader(CLIENT_PLATFORM_HEADER_NAME))) {
             return;
         }
-        this.setCookie(response, this.cookieName, pair.accessToken(), secondsUntil(pair.accessExpires()));
-        this.setCookie(response, this.refreshCookieName, pair.refreshToken(), secondsUntil(pair.refreshExpires()));
+        this.setAuthCookies(response, pair);
     }
 
-    private void clearAuthCookies(HttpServletResponse response) {
-        this.setCookie(response, this.cookieName, "", 0);
-        this.setCookie(response, this.refreshCookieName, "", 0);
+    private void setAuthCookies(HttpServletResponse response, TokenPair pair) {
+        this.cookies.write(response, this.cookieName, pair.accessToken(), secondsUntil(pair.accessExpires()), "/");
+        this.cookies.write(response, this.refreshCookieName, pair.refreshToken(), secondsUntil(pair.refreshExpires()), "/");
     }
 
-    private void setCookie(HttpServletResponse response, String name, String value, long durationSeconds) {
-        Cookie cookie = new Cookie(name, value);
-        cookie.setMaxAge((int) Math.min(durationSeconds, Integer.MAX_VALUE));
-        cookie.setHttpOnly(true);
-        cookie.setSecure(this.cookieSecure);
-        cookie.setPath("/");
-        cookie.setAttribute("SameSite", this.cookieSecure ? "None" : "Lax");
-        response.addCookie(cookie);
+    public void clearAuthCookies(HttpServletResponse response) {
+        this.cookies.clear(response, this.cookieName, "/");
+        this.cookies.clear(response, this.refreshCookieName, "/");
+        this.pendingRedirectAuthCookie.clear(response);
     }
 
     private static long secondsUntil(Instant expires) {
         return Math.max(0, expires.getEpochSecond() - Instant.now().getEpochSecond());
+    }
+
+    private static String trimTrailingSlash(String url) {
+        if (url.endsWith("/")) {
+            return url.substring(0, url.length() - 1);
+        }
+        return url;
     }
 
     public String getCookieName() {
@@ -219,7 +296,6 @@ public class AuthService implements UserAuthContext {
     }
 
     @Override
-    @SuppressWarnings("unchecked")
     public <T> Optional<T> getUserProperty(String username, ObjectPropertyTemplate<T> property) {
         Optional<ObjectProperty<?>> prop = this.catalog.getTemplateRegistry(ComponentCatalog.OBJECT_PROPERTY_MAPPER)
                 .getRegistered(property, this.repository);
@@ -228,6 +304,7 @@ public class AuthService implements UserAuthContext {
             return Optional.empty();
         }
 
+        @SuppressWarnings("unchecked")
         ObjectProperty<T> typedProp = (ObjectProperty<T>) prop.get();
 
         return this.repository.userRepo.findByUsername(username)
@@ -235,18 +312,25 @@ public class AuthService implements UserAuthContext {
     }
 
     @RequiresAuditComment(operation = AuditOperation.CREATE, targetType = AuditEntityType.AUTH_PROVIDER)
-    public AuthProviderResponse createProvider(String name, ComponentReference<? extends AuthProviderType> type, Map<String, Object> settings) {
+    public AuthProviderResponse createProvider(
+            String name,
+            ComponentReference<? extends AuthProviderType<?>> type,
+            Map<String, ?> settings
+    ) {
+        AuthProviderType<?> providerType = type.getComponent(this.catalog)
+                .orElseThrow(() -> new ResourceNotFoundException("authentication provider", type.toString()));
+
         TemplateRegistrationMapper.registerDependencies(
                 this.repository,
                 this.catalog,
                 this.expressions,
                 this.auditService,
-                type.getComponent(this.catalog)
-                        .orElseThrow(() -> new ResourceNotFoundException("authentication provider", type.toString()))
+                providerType
         );
 
-        AuthProvider provider = new AuthProvider(name, type, settings);
+        AuthProvider provider = new AuthProvider(this.catalog, name, type, settings);
         this.repository.authProviderRepo.save(provider);
+
         this.auditService.addEvent(AuditOperation.CREATE, AuditEntityType.AUTH_PROVIDER, provider.getId());
         return AuthProviderResponse.of(this.catalog, provider);
     }
@@ -259,16 +343,16 @@ public class AuthService implements UserAuthContext {
 
         List<AuditPropertyChange> changes = new ArrayList<>();
 
-        if (input.name() != null && !input.name().equals(provider.name)) {
-            String oldName = provider.name;
-            provider.name = input.name();
+        if (input.name() != null && !input.name().equals(provider.getName())) {
+            String oldName = provider.getName();
+            provider.setName(input.name());
             changes.add(AuditPropertyChange.of("name", oldName, input.name()));
         }
 
         if (input.settings() != null) {
-            Map<String, Object> oldSettings = new HashMap<>(provider.settings);
-            provider.settings = new HashMap<>(input.settings());
-            changes.add(AuditPropertyChange.of("settings", oldSettings.keySet(), input.settings().keySet()));
+            Map<String, ?> oldSettings = new HashMap<>(provider.getSettings(this.catalog));
+            provider.setProperties(this.catalog, input.settings());
+            changes.add(AuditPropertyChange.of("settings", oldSettings.keySet(), provider.getSettings(this.catalog).keySet()));
         }
 
         if (input.enabled() != null && input.enabled() != provider.isEnabled()) {
@@ -293,5 +377,16 @@ public class AuthService implements UserAuthContext {
         );
 
         return AuthProviderResponse.of(this.catalog, provider);
+    }
+
+    @Transactional(readOnly = true)
+    public AuthProviderTypeResponse[] listProviderTypes() {
+        Stream<AuthProviderType<?>> input = this.catalog.getRegistry(ComponentTypes.INPUT_AUTH_PROVIDER).stream()
+                .map(i -> i);
+        Stream<AuthProviderType<?>> redirect = this.catalog.getRegistry(ComponentTypes.REDIRECT_AUTH_PROVIDER).stream()
+                .map(i -> (AuthProviderType<?>) i);
+        return Stream.concat(input, redirect)
+                .map(type -> AuthProviderTypeResponse.of(this.catalog, type))
+                .toArray(AuthProviderTypeResponse[]::new);
     }
 }

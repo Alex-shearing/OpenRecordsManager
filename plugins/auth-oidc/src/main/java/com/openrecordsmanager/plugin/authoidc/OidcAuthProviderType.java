@@ -1,5 +1,9 @@
 package com.openrecordsmanager.plugin.authoidc;
 
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
+import com.nimbusds.jose.JWSAlgorithm;
+import com.nimbusds.jose.proc.BadJOSEException;
 import com.nimbusds.jwt.JWT;
 import com.nimbusds.oauth2.sdk.*;
 import com.nimbusds.oauth2.sdk.auth.ClientAuthentication;
@@ -9,15 +13,15 @@ import com.nimbusds.oauth2.sdk.http.HTTPRequest;
 import com.nimbusds.oauth2.sdk.http.HTTPResponse;
 import com.nimbusds.oauth2.sdk.id.ClientID;
 import com.nimbusds.oauth2.sdk.id.Issuer;
-import com.nimbusds.oauth2.sdk.token.AccessToken;
-import com.nimbusds.oauth2.sdk.token.RefreshToken;
+import com.nimbusds.oauth2.sdk.id.State;
+import com.nimbusds.oauth2.sdk.pkce.CodeChallengeMethod;
+import com.nimbusds.oauth2.sdk.pkce.CodeVerifier;
 import com.nimbusds.openid.connect.sdk.*;
+import com.nimbusds.openid.connect.sdk.claims.IDTokenClaimsSet;
 import com.nimbusds.openid.connect.sdk.op.OIDCProviderConfigurationRequest;
 import com.nimbusds.openid.connect.sdk.op.OIDCProviderMetadata;
-import com.openrecordsmanager.api.auth.AuthProviderInstance;
-import com.openrecordsmanager.api.auth.RedirectAuthProviderType;
-import com.openrecordsmanager.api.auth.UserAuthContext;
-import com.openrecordsmanager.api.auth.UserAuthDetails;
+import com.nimbusds.openid.connect.sdk.validators.IDTokenValidator;
+import com.openrecordsmanager.api.auth.*;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,111 +29,268 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.time.Duration;
+import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
 
-public class OidcAuthProviderType extends RedirectAuthProviderType {
+public class OidcAuthProviderType extends RedirectAuthProviderType<OidcAuthSettings> {
     private static final Logger LOGGER = LoggerFactory.getLogger(OidcAuthProviderType.class);
 
-    @Override
-    public URI getRedirectTo(AuthProviderInstance instance) {
-        try {
-            // The client callback URL
-            URI callback = new URI("https://localhost:8080/api/v1/auth/callback/%s".formatted(instance.getId()));
-            OidcSettings settings = OidcSettings.parse(instance.getSettings());
+    static final String ATTR_NONCE = "nonce";
+    static final String ATTR_CODE_VERIFIER = "code_verifier";
 
-            // Generate random state string to securely pair the callback to this request
-//            State state = new State();
+    private static final long METADATA_CACHE_TTL_SECONDS = 600;
 
-            // Generate nonce for the ID token
-            Nonce nonce = new Nonce();
+    private final Cache<String, OIDCProviderMetadata> metadataCache = CacheBuilder.newBuilder()
+            .expireAfterAccess(Duration.ofSeconds(METADATA_CACHE_TTL_SECONDS))
+            .build();
 
-            // Compose the OpenID authentication request (for the code flow)
-            AuthenticationRequest request = new AuthenticationRequest.Builder(
-                    new ResponseType("code"),
-                    settings.scope(),
-                    settings.clientID(),
-                    callback)
-                    .endpointURI(settings.metadata().getAuthorizationEndpointURI())
-//                    .state(state)
-                    .nonce(nonce)
-                    .build();
-
-            return request.toURI();
-        } catch (URISyntaxException | IOException | ParseException e) {
-            throw new RuntimeException(e);
-        }
+    protected OidcAuthProviderType() {
+        super(OidcAuthSettings.class);
     }
 
     @Override
-    public @Nullable UserAuthDetails authenticateCallback(AuthProviderInstance instance, UserAuthContext context, URI uri) {
+    public RedirectAuthChallenge begin(URI callbackUri, OidcAuthSettings cfg) {
+        OidcSettings settings = this.resolveSettings(cfg);
+
+        State state = new State();
+        Nonce nonce = new Nonce();
+        CodeVerifier codeVerifier = new CodeVerifier();
+
+        AuthenticationRequest request = new AuthenticationRequest.Builder(
+                new ResponseType(ResponseType.Value.CODE),
+                settings.scope(),
+                settings.clientID(),
+                callbackUri
+        )
+                .endpointURI(settings.metadata().getAuthorizationEndpointURI())
+                .state(state)
+                .nonce(nonce)
+                .codeChallenge(codeVerifier, CodeChallengeMethod.S256)
+                .build();
+
+        return new RedirectAuthChallenge(request.toURI(), state.getValue(), Map.of(
+                ATTR_NONCE, nonce.getValue(),
+                ATTR_CODE_VERIFIER, codeVerifier.getValue()
+        ));
+    }
+
+    @Override
+    public @Nullable UserAuthDetails complete(
+            UserAuthContext context,
+            URI fullCallbackUri,
+            PendingRedirectAuth pending,
+            OidcAuthSettings cfg
+    ) {
+        OidcSettings settings = null;
+        JWT idToken = null;
         try {
-            AuthenticationResponse response = AuthenticationResponseParser.parse(uri);
-            OidcSettings settings = OidcSettings.parse(instance.getSettings());
-
-            // Check the state
-//            if (!response.getState().equals(state)) {
-//                System.err.println("Unexpected authentication response");
-//                return;
-//            }
-
+            AuthenticationResponse response = AuthenticationResponseParser.parse(fullCallbackUri);
             if (!response.indicatesSuccess()) {
-                LOGGER.error("Authentication error response received: {}", response.toErrorResponse().getErrorObject());
+                LOGGER.error("OIDC authentication error: {}", response.toErrorResponse().getErrorObject());
                 return null;
             }
 
-
-            AuthorizationCode code = response.toSuccessResponse().getAuthorizationCode();
-            URI callback = new URI("https://localhost:8080/api/v1/auth/callback/%s".formatted(instance.getId()));
-            AuthorizationGrant codeGrant = new AuthorizationCodeGrant(code, callback);
-
-            ClientAuthentication clientAuth = new ClientSecretBasic(settings.clientID(), settings.secret());
-
-            // Make the token request
-            TokenRequest request = new TokenRequest.Builder(settings.metadata().getTokenEndpointURI(), clientAuth, codeGrant).build();
-
-            TokenResponse tokenResponse = OIDCTokenResponseParser.parse(request.toHTTPRequest().send());
-
-            if (!tokenResponse.indicatesSuccess()) {
-                // We got an error response...
-                TokenErrorResponse errorResponse = tokenResponse.toErrorResponse();
-                LOGGER.error("Authorization error response received: {}", errorResponse.getErrorObject());
+            State expectedState = new State(pending.state());
+            if (response.getState() == null || !expectedState.equals(response.getState())) {
+                LOGGER.warn("OIDC state mismatch");
+                return null;
             }
 
+            String nonceValue = pending.attributes().get(ATTR_NONCE);
+            String codeVerifierValue = pending.attributes().get(ATTR_CODE_VERIFIER);
+            if (nonceValue == null || codeVerifierValue == null) {
+                LOGGER.warn("OIDC pending attributes missing nonce or code_verifier");
+                return null;
+            }
+
+            URI callbackUri = stripQuery(fullCallbackUri);
+
+            AuthorizationCode code = response.toSuccessResponse().getAuthorizationCode();
+            AuthorizationCodeGrant codeGrant = new AuthorizationCodeGrant(
+                    code,
+                    callbackUri,
+                    new CodeVerifier(codeVerifierValue)
+            );
+
+            settings = this.resolveSettings(cfg);
+
+            ClientAuthentication clientAuth = new ClientSecretBasic(settings.clientID(), settings.secret());
+            TokenRequest tokenRequest = new TokenRequest.Builder(
+                    settings.metadata().getTokenEndpointURI(),
+                    clientAuth,
+                    codeGrant
+            ).build();
+
+            TokenResponse tokenResponse = OIDCTokenResponseParser.parse(tokenRequest.toHTTPRequest().send());
+            if (!tokenResponse.indicatesSuccess()) {
+                LOGGER.error("OIDC token error: {}", tokenResponse.toErrorResponse().getErrorObject());
+                return null;
+            }
 
             OIDCTokenResponse successResponse = (OIDCTokenResponse) tokenResponse.toSuccessResponse();
+            idToken = successResponse.getOIDCTokens().getIDToken();
+            if (idToken == null) {
+                LOGGER.error("OIDC token response did not include an ID token");
+                return null;
+            }
 
-            // Get the ID and access token, the server may also return a refresh token
-            JWT idToken = successResponse.getOIDCTokens().getIDToken();
-            AccessToken accessToken = successResponse.getOIDCTokens().getAccessToken();
-            RefreshToken refreshToken = successResponse.getOIDCTokens().getRefreshToken();
+            IDTokenClaimsSet claims = this.validateIdToken(settings, idToken, new Nonce(nonceValue));
+            String username = resolveUsername(claims, settings.usernameClaim());
+            if (username == null || username.isBlank()) {
+                LOGGER.error(
+                        "OIDC ID token did not contain a usable username (claim '{}', sub={})",
+                        settings.usernameClaim(),
+                        claims.getSubject()
+                );
+                return null;
+            }
 
-            System.out.println(code);
+            LOGGER.info(
+                    "OIDC login mapped id_token to username '{}' via claim '{}' (sub={})",
+                    username,
+                    settings.usernameClaim(),
+                    claims.getSubject()
+            );
 
-            return new UserAuthDetails(instance, idToken.getJWTClaimsSet().getClaimAsString("name"), "admin");
+            String email = claims.getStringClaim("email");
+            if (email == null) {
+                email = "";
+            }
+
+            return new UserAuthDetails(username, email);
         } catch (ParseException e) {
-            LOGGER.error("OIDC redirect URI parse error: {}", e.getMessage());
+            LOGGER.error("OIDC callback parse error: {}", e.getMessage());
             return null;
-        } catch (URISyntaxException | IOException | java.text.ParseException e) {
+        } catch (BadJOSEException | com.nimbusds.jose.JOSEException e) {
+            String tokenIssuer = null;
+            try {
+                tokenIssuer = idToken.getJWTClaimsSet().getIssuer();
+            } catch (Exception ignored) {
+                // best-effort diagnostics only
+            }
+            LOGGER.error(
+                    "OIDC ID token validation failed: {} (expected issuer={}, token iss={})",
+                    e.getMessage(),
+                    settings.metadata().getIssuer(),
+                    tokenIssuer
+            );
+            return null;
+        } catch (GeneralException | URISyntaxException | IOException e) {
+            LOGGER.error("OIDC completion failed: {}", e.getMessage());
+            return null;
+        }
+    }
+
+    private IDTokenClaimsSet validateIdToken(OidcSettings settings, JWT idToken, Nonce nonce)
+            throws BadJOSEException, com.nimbusds.jose.JOSEException, GeneralException, IOException {
+        JWSAlgorithm alg = selectIdTokenAlgorithm(settings.metadata());
+        IDTokenValidator validator;
+        if (JWSAlgorithm.Family.HMAC_SHA.contains(alg)) {
+            validator = new IDTokenValidator(
+                    settings.metadata().getIssuer(),
+                    settings.clientID(),
+                    alg,
+                    settings.secret()
+            );
+        } else {
+            URI jwksUri = settings.metadata().getJWKSetURI();
+            if (jwksUri == null) {
+                throw new GeneralException("OIDC provider metadata is missing jwks_uri");
+            }
+            validator = new IDTokenValidator(
+                    settings.metadata().getIssuer(),
+                    settings.clientID(),
+                    alg,
+                    jwksUri.toURL()
+            );
+        }
+        return validator.validate(idToken, nonce);
+    }
+
+    static @Nullable String resolveUsername(IDTokenClaimsSet claims, String usernameClaim) {
+        String configured = claims.getStringClaim(usernameClaim);
+        if (configured != null && !configured.isBlank()) {
+            return configured;
+        }
+        return claims.getSubject() != null ? claims.getSubject().getValue() : null;
+    }
+
+    private OidcSettings resolveSettings(OidcAuthSettings cfg) {
+
+        return new OidcSettings(
+                new ClientID(cfg.clientId()),
+                new Secret(cfg.secret()),
+                parseScope(cfg.scope()),
+                cfg.usernameClaim(),
+                this.loadMetadata(URI.create(cfg.uri()))
+        );
+    }
+
+    private OIDCProviderMetadata loadMetadata(URI issuerUri) {
+        try {
+            return this.metadataCache.get(issuerUri.toString(), () -> {
+                OIDCProviderConfigurationRequest request = new OIDCProviderConfigurationRequest(new Issuer(issuerUri));
+                HTTPRequest httpRequest = request.toHTTPRequest();
+                URI discoveryUri = httpRequest.getURL().toURI();
+                HTTPResponse httpResponse = httpRequest.send();
+
+                int status = httpResponse.getStatusCode();
+                if (status / 100 != 2) {
+                    throw new IOException(
+                            "OIDC discovery failed for issuer %s (GET %s → HTTP %d). Use the OpenID issuer URL (not an IdP admin UI root)."
+                                    .formatted(issuerUri, discoveryUri, status)
+                    );
+                }
+
+                try {
+                    return OIDCProviderMetadata.parse(httpResponse.getBodyAsJSONObject());
+                } catch (ParseException e) {
+                    String contentType = httpResponse.getEntityContentType() != null
+                            ? httpResponse.getEntityContentType().toString()
+                            : "unknown";
+                    throw new IOException(
+                            "OIDC discovery for issuer %s (GET %s) returned %s instead of application/json. "
+                                    .formatted(issuerUri, discoveryUri, contentType),
+                            e
+                    );
+                }
+            });
+        } catch (ExecutionException e) {
+            LOGGER.error("Failed to cache OIDC metadata for {}", issuerUri, e);
             throw new RuntimeException(e);
         }
     }
 
-    private record OidcSettings(ClientID clientID, Secret secret, URI endpointURI, Scope scope,
-                                OIDCProviderMetadata metadata) {
-        static OidcSettings parse(Map<String, Object> settings) throws URISyntaxException, IOException, ParseException {
-            ClientID clientId = new ClientID(settings.get("client_id").toString());
-            Secret secret = new Secret(settings.get("secret").toString());
-            URI uri = new URI(settings.get("uri").toString());
-            Scope scope = new Scope((String[]) settings.get("scope"));
-
-            OIDCProviderConfigurationRequest request = new OIDCProviderConfigurationRequest(new Issuer(uri));
-
-            HTTPRequest httpRequest = request.toHTTPRequest();
-            HTTPResponse httpResponse = httpRequest.send();
-
-            OIDCProviderMetadata metadata = OIDCProviderMetadata.parse(httpResponse.getBodyAsJSONObject());
-
-            return new OidcSettings(clientId, secret, uri, scope, metadata);
+    static Scope parseScope(String s) {
+        Scope scope = Scope.parse(s);
+        if (!scope.contains("openid")) {
+            Scope withOpenId = new Scope("openid");
+            withOpenId.addAll(scope);
+            return withOpenId;
         }
+        return scope;
+    }
+
+    private static JWSAlgorithm selectIdTokenAlgorithm(OIDCProviderMetadata metadata) {
+        List<JWSAlgorithm> algs = metadata.getIDTokenJWSAlgs();
+        if (algs != null && !algs.isEmpty()) {
+            return algs.getFirst();
+        }
+        return JWSAlgorithm.RS256;
+    }
+
+    private static URI stripQuery(URI uri) throws URISyntaxException {
+        return new URI(uri.getScheme(), uri.getAuthority(), uri.getPath(), null, null);
+    }
+
+    private record OidcSettings(
+            ClientID clientID,
+            Secret secret,
+            Scope scope,
+            String usernameClaim,
+            OIDCProviderMetadata metadata
+    ) {
     }
 }

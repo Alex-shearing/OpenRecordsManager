@@ -45,6 +45,53 @@ export SERVER_DATABASE_READ_ONLY_URL=
 ./gradlew bootRun
 ```
 
+### Optional — Mock OIDC (local testing)
+
+Start [Soluto oidc-server-mock](https://github.com/Soluto/oidc-server-mock) as an optional Compose
+profile. Prefer running the ORM API on the host (`./gradlew bootRun`) so browser redirects and
+server-side discovery both use `localhost`:
+
+```bash
+# Mock IdP only (recommended for OIDC testing with bootRun / npm run dev)
+docker compose --profile oidc up -d
+```
+
+To bring up the mock together with the ORM API container instead:
+
+```bash
+docker compose --profile oidc up --build -d
+```
+
+The API service maps `localhost` to the Docker host (`extra_hosts`), so issuer
+`http://localhost:4011` works for server-side discovery when the mock is published on host port 4011. Prefer that over the Compose service hostname unless discovery endpoint URLs match what the
+API can reach.
+
+Wire ORM to the mock:
+
+1. In ORM, create an `oidc_auth` provider with settings (Compose defaults):
+
+```json
+{
+  "clientId": "orm-local",
+  "secret": "orm-local-secret",
+  "uri": "http://localhost:4011",
+  "scope": "openid profile",
+  "usernameClaim": "preferred_username"
+}
+```
+
+2. Set `MOCK_OIDC_REDIRECT_URI` to the exact callback for that provider —
+   `http://localhost:8080/api/auth/callback/<orm-provider-uuid>` — then recreate the mock
+   (`MOCK_OIDC_REDIRECT_URI=... docker compose --profile oidc up -d --force-recreate mock-oidc-server`).
+   The mock requires an exact redirect URI (no wildcards).
+3. Ensure `app.security.public-base-url` is `http://localhost:8080` (Compose API default, or set
+   `APP_SECURITY_PUBLIC_BASE_URL`).
+4. Create an ORM user whose **username** is `oidcuser` (or whatever `MOCK_OIDC_USERNAME` is) and
+   set that user’s auth provider to the OIDC provider you created. The default `admin` local user
+   will not work for OIDC login.
+5. Sign in via the OIDC provider; the mock login UI is at http://localhost:4011  
+   (defaults: `oidcuser` / `password`).
+
 ### Optional — Host the static files yourself
 
 Copy the `static/` directory from the distribution and use the sample configs under `deploy/`:

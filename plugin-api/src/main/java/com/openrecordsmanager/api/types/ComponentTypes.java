@@ -19,8 +19,8 @@ import java.util.Set;
 
 public class ComponentTypes {
     public static final ComponentType<ConfigType<?>> CONFIG = ComponentType.of("config", ConfigType.class);
-    public static final ComponentType<InputAuthProviderType<?>> INPUT_AUTH_PROVIDER = ComponentType.of("input_auth_provider", InputAuthProviderType.class);
-    public static final ComponentType<RedirectAuthProviderType> REDIRECT_AUTH_PROVIDER = ComponentType.of("redirect_auth_provider", RedirectAuthProviderType.class);
+    public static final ComponentType<InputAuthProviderType<?, ?>> INPUT_AUTH_PROVIDER = ComponentType.of("input_auth_provider", InputAuthProviderType.class);
+    public static final ComponentType<RedirectAuthProviderType<?>> REDIRECT_AUTH_PROVIDER = ComponentType.of("redirect_auth_provider", RedirectAuthProviderType.class);
     public static final ComponentType<FileStoreType<?>> FILE_STORE = ComponentType.of("file_store", FileStoreType.class);
     public static final ComponentType<FileStoreMiddlewareType<?>> FILE_STORE_MIDDLEWARE = ComponentType.of("file_store_middleware", FileStoreMiddlewareType.class);
     public static final ComponentType<UserActionType<?>> USER_ACTION = ComponentType.of("user_action", UserActionType.class);

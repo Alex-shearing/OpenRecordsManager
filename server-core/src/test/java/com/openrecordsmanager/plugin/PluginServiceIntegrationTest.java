@@ -163,9 +163,9 @@ class PluginServiceIntegrationTest {
                 )
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.id").value("filestore_local"))
-                .andExpect(jsonPath("$.data.displayName").value("Local File Store"))
+                .andExpect(jsonPath("$.data.displayName").value("File System Store Type"))
                 .andExpect(jsonPath("$.data.description").value(
-                        "Store files on the local filesystem under a configured root directory."
+                        "Store files on a standard filesystem under a configured root directory."
                 ))
                 .andExpect(jsonPath("$.data.version").value("0.1.0"))
                 .andExpect(jsonPath("$.data.enabled").value(true))

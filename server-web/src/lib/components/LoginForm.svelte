@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { AuthController } from '$lib/api';
-	import type { AuthProviderResponse } from '$lib/api/types.gen';
+	import type { SimpleAuthProviderResponse } from '$lib/api/types.gen';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
 	import SchemaForm from './SchemaForm.svelte';
@@ -10,12 +10,25 @@
 		inputProviders,
 		redirectProviders,
 	}: {
-		inputProviders: AuthProviderResponse[];
-		redirectProviders: AuthProviderResponse[];
+		inputProviders: SimpleAuthProviderResponse[];
+		redirectProviders: SimpleAuthProviderResponse[];
 	} = $props();
 
-	function providerLabel(provider: AuthProviderResponse): string {
+	function providerLabel(provider: SimpleAuthProviderResponse): string {
 		return provider.name || provider.type.type;
+	}
+
+	function safeRelativePath(path: string | null | undefined): string {
+		if (path == null || path.trim() === '') {
+			return '/';
+		}
+		if (!path.startsWith('/') || path.startsWith('//') || path.includes('\\')) {
+			return '/';
+		}
+		if (path.startsWith('/login')) {
+			return '/';
+		}
+		return path;
 	}
 
 	// svelte-ignore state_referenced_locally
@@ -26,6 +39,7 @@
 	let submitting = $state(false);
 
 	let selectedProvider = $derived(inputProviders.find(provider => provider.id === selectedProviderId));
+	let postLoginRedirect = $derived(safeRelativePath(page.url.searchParams.get('redirect')));
 
 	async function handleSubmit(event: SubmitEvent) {
 		event.preventDefault();
@@ -52,12 +66,7 @@
 			return;
 		}
 
-		let redirect = page.url.searchParams.get('redirect') || '/';
-		if (redirect.startsWith('/login')) {
-			redirect = '/';
-		}
-
-		await goto(redirect);
+		await goto(safeRelativePath(page.url.searchParams.get('redirect')));
 	}
 </script>
 
@@ -107,11 +116,13 @@
 
 		<ul class="list-panel">
 			{#each redirectProviders as provider (provider.id)}
+				{@const base = `${getApiClient().getConfig().baseUrl || ''}/api/auth/redirect/${provider.id}`}
+				{@const href =
+					postLoginRedirect !== '/'
+						? `${base}?redirect=${encodeURIComponent(postLoginRedirect)}`
+						: base}
 				<li>
-					<a
-						href={`${getApiClient().getConfig().baseUrl || ''}/api/auth/redirect/${provider.id}`}
-						class="list-panel-item text-center font-medium"
-					>
+					<a {href} class="list-panel-item text-center font-medium">
 						Continue with {providerLabel(provider)}
 					</a>
 				</li>

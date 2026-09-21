@@ -159,7 +159,7 @@ class PrimaryOfflineIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.state").value("READY"));
 
-        this.mockMvc.perform(get("/api/auth/providers").accept(MediaType.APPLICATION_JSON))
+        this.mockMvc.perform(get("/api/auth/available_providers").accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.length()").value(1));
     }

@@ -89,6 +89,8 @@ app:
   # Security settings #
   #####################
   security:
+    # Absolute public origin of this server. This URL is used when generating links to the site.
+    public-base-url: http://localhost:8080
     # Access JWT lifetime when the primary database is writable (seconds)
     access-token-expiration-seconds: 3600
     # Access JWT lifetime when the primary database is not writable (seconds)

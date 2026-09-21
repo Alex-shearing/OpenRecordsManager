@@ -20,6 +20,7 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.core.env.AbstractEnvironment;
 import org.springframework.core.env.Environment;
 import org.springframework.core.env.PropertySource;
+import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import tools.jackson.databind.JsonNode;
@@ -79,6 +80,7 @@ public class ConfigService implements ConfigStore {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public <T> @Nullable T getValue(ConfigType<T> key) {
         // Prefer file/env overrides, but never DatabaseConfigSource: that uses a separate JDBC
         // connection and will deadlock with an open write TX on system_configurations (SQL Server).
@@ -91,12 +93,16 @@ public class ConfigService implements ConfigStore {
         }
 
         if (!key.key().startsWith("server.")) {
-            Optional<ConfigItem> stored = this.repository.configRepo.findByConfigKey(key.key());
-            if (stored.isPresent()) {
-                T fromDb = key.type().parse(stored.get().getValue());
-                if (fromDb != null) {
-                    return fromDb;
+            try {
+                Optional<ConfigItem> stored = this.repository.configRepo.findByConfigKey(key.key());
+                if (stored.isPresent()) {
+                    T fromDb = key.type().parse(stored.get().getValue());
+                    if (fromDb != null) {
+                        return fromDb;
+                    }
                 }
+            } catch (DataAccessException ignored) {
+                // Primary unavailable (degraded / offline): fall through to defaults.
             }
         }
 

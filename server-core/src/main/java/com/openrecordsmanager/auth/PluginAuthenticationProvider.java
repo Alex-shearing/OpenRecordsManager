@@ -1,15 +1,14 @@
 package com.openrecordsmanager.auth;
 
-import com.openrecordsmanager.api.auth.AuthProviderType;
-import com.openrecordsmanager.api.auth.InputAuthProviderType;
-import com.openrecordsmanager.api.auth.RedirectAuthProviderType;
+import com.openrecordsmanager.api.auth.PendingRedirectAuth;
 import com.openrecordsmanager.api.auth.UserAuthDetails;
 import com.openrecordsmanager.auth.entity.AuthProvider;
-import com.openrecordsmanager.config.ConfigService;
 import com.openrecordsmanager.database.DataRepository;
 import com.openrecordsmanager.plugin.registry.ComponentCatalog;
 import com.openrecordsmanager.user.User;
 import org.jspecify.annotations.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.*;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
@@ -22,15 +21,14 @@ import java.util.Map;
 import java.util.UUID;
 
 public class PluginAuthenticationProvider implements AuthenticationProvider {
+    private static final Logger LOGGER = LoggerFactory.getLogger(PluginAuthenticationProvider.class);
     private final DataRepository repository;
     private final ComponentCatalog catalog;
-    private final ConfigService config;
     private final AuthService authService;
 
-    public PluginAuthenticationProvider(DataRepository repository, ComponentCatalog catalog, ConfigService config, AuthService authService) {
+    public PluginAuthenticationProvider(DataRepository repository, ComponentCatalog catalog, AuthService authService) {
         this.repository = repository;
         this.catalog = catalog;
-        this.config = config;
         this.authService = authService;
     }
 
@@ -44,29 +42,24 @@ public class PluginAuthenticationProvider implements AuthenticationProvider {
             throw new AuthenticationCredentialsNotFoundException("Credentials not found in login token");
         }
 
-        AuthProvider provider = this.repository.authProviderRepo.findById(token.provider)
+        AuthProvider provider = this.repository.authProviderRepo.findByIdAndEnabledTrue(token.provider)
                 .orElseThrow(() -> new ProviderNotFoundException("Provider " + token.provider + " not found"));
 
-        if (!provider.isEnabled()) {
-            throw new DisabledException("Authentication provider is disabled");
-        }
-
-        AuthProviderType type = provider.getProviderType(catalog, AuthProviderType.class);
-
-        UserAuthDetails authDetails = switch (type) {
-            case InputAuthProviderType<?> input ->
-                    input.authenticateUntyped(this.config, this.authService, provider, ((InputToken) token).data);
-            case RedirectAuthProviderType redirect ->
-                    redirect.authenticateCallback(provider, this.authService, ((RedirectToken) token).uri);
-            default -> throw new InternalAuthenticationServiceException("Unexpected provider type: " + type);
-        };
+        UserAuthDetails authDetails = provider.login(this.catalog, this.authService, token);
 
         if (authDetails == null) {
             throw new BadCredentialsException("Username or password is incorrect'");
         }
 
         User user = this.repository.userRepo.findByUsername(authDetails.getName())
-                .orElseThrow(() -> UsernameNotFoundException.fromUsername(authDetails.getName()));
+                .orElseThrow(() -> {
+                    LOGGER.warn(
+                            "No ORM user found for authenticated principal '{}' from provider {}",
+                            authDetails.getName(),
+                            provider.getId()
+                    );
+                    return UsernameNotFoundException.fromUsername(authDetails.getName());
+                });
 
         if (!user.isEnabled()) {
             throw new DisabledException("User account is disabled");
@@ -74,6 +67,12 @@ public class PluginAuthenticationProvider implements AuthenticationProvider {
 
         // Ensure the authentication provider used is the same one the user signed up with
         if (user.getAuthProvider() != provider) {
+            LOGGER.warn(
+                    "User '{}' is linked to provider {} but authenticated with {}",
+                    authDetails.getName(),
+                    user.getAuthProvider() != null ? user.getAuthProvider().getId() : null,
+                    provider.getId()
+            );
             throw new BadCredentialsException("The authentication provider used is not valid for this user");
         }
 
@@ -114,16 +113,22 @@ public class PluginAuthenticationProvider implements AuthenticationProvider {
 
     public static class RedirectToken extends AbstractPluginToken {
         private final URI uri;
+        private final PendingRedirectAuth pending;
 
-        public RedirectToken(UUID provider, URI uri) {
+        public RedirectToken(UUID provider, URI uri, PendingRedirectAuth pending) {
             super(provider);
             this.uri = uri;
+            this.pending = pending;
             this.setAuthenticated(false);
         }
 
         @Override
-        public @Nullable URI getCredentials() {
+        public URI getCredentials() {
             return this.uri;
+        }
+
+        public PendingRedirectAuth getPending() {
+            return this.pending;
         }
     }
 
@@ -137,7 +142,7 @@ public class PluginAuthenticationProvider implements AuthenticationProvider {
         }
 
         @Override
-        public @Nullable Map<String, String> getCredentials() {
+        public Map<String, String> getCredentials() {
             return this.data;
         }
     }

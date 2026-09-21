@@ -5,7 +5,7 @@ import com.openrecordsmanager.plugin.LoadedPlugin;
 import com.openrecordsmanager.plugin.PersistedPlugin;
 import com.openrecordsmanager.plugin.PluginManager;
 import jakarta.validation.constraints.NotBlank;
-import org.jspecify.annotations.Nullable;
+import jakarta.validation.constraints.NotNull;
 
 import java.time.Instant;
 import java.util.Optional;
@@ -15,10 +15,10 @@ public record PluginResponse(
         @NotBlank String displayName,
         @NotBlank String description,
         @NotBlank String version,
-        boolean enabled,
-        @Nullable Instant dateCreated,
-        @Nullable Instant dateModified,
-        boolean loaded
+        @NotNull boolean enabled,
+        @NotNull Instant dateCreated,
+        @NotNull Instant dateModified,
+        @NotNull boolean loaded
 ) {
     public static PluginResponse of(PersistedPlugin plugin, PluginManager pluginManager) {
         Optional<DiscoveredPlugin> pluginMeta = pluginManager.getLoadedPlugin(plugin.getName()).map(LoadedPlugin::info);

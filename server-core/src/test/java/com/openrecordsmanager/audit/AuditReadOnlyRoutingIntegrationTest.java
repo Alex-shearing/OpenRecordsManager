@@ -132,7 +132,7 @@ class AuditReadOnlyRoutingIntegrationTest {
 
     @Test
     void providersEndpointDoesNotFailAuditWithReadonly() throws Exception {
-        this.mockMvc.perform(get("/api/auth/providers").accept(MediaType.APPLICATION_JSON))
+        this.mockMvc.perform(get("/api/auth/available_providers").accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
         assertTrue(this.probe.isWritable(), "probe should remain writable after providers list audit");
     }

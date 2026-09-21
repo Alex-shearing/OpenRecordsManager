@@ -1,26 +1,14 @@
 package com.openrecordsmanager.auth.dto;
 
-import com.openrecordsmanager.api.ResourceIdentifier;
-import com.openrecordsmanager.api.auth.AuthProviderType;
-import com.openrecordsmanager.api.types.ComponentType;
-import com.openrecordsmanager.api.types.ComponentTypes;
+import com.openrecordsmanager.rest.dto.ComponentReferenceDto;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 
 import java.util.Map;
 
 public record NewAuthProviderRequest(
-        String name,
-        ResourceIdentifier typeId,
-        Type type,
-        Map<String, Object> settings
+        @NotBlank String name,
+        @NotNull ComponentReferenceDto type,
+        @NotNull Map<String, Object> settings
 ) {
-    public enum Type {
-        INPUT(ComponentTypes.INPUT_AUTH_PROVIDER),
-        REDIRECT(ComponentTypes.REDIRECT_AUTH_PROVIDER);
-
-        public final ComponentType<? extends AuthProviderType> type;
-
-        Type(ComponentType<? extends AuthProviderType> type) {
-            this.type = type;
-        }
-    }
 }

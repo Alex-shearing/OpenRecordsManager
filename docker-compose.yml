@@ -4,6 +4,10 @@
 #   docker compose --profile postgres --env-file docker/env/postgres.env up --build
 #   docker compose --profile mariadb  --env-file docker/env/mariadb.env  up --build
 #   docker compose --profile sqlserver --env-file docker/env/sqlserver.env up --build
+#
+# Optional mock OIDC IdP for local testing:
+#   docker compose --profile oidc up -d
+#   (see DEPLOYING.md — typically pair with ./gradlew bootRun on the host)
 
 services:
   api:
@@ -22,6 +26,7 @@ services:
       SERVER_PLUGINS_DIRECTORY: /app/plugins
       SERVER_WEB_DIRECTORY: /app/static
       APP_LOGGING_PATH: /app/data/logs/openrecordsmanager.log
+      APP_SECURITY_PUBLIC_BASE_URL: ${APP_SECURITY_PUBLIC_BASE_URL:-http://localhost:8080}
     depends_on:
       postgres:
         condition: service_healthy
@@ -33,14 +38,14 @@ services:
         condition: service_healthy
         required: false
     healthcheck:
-      test: [ "CMD", "curl", "-fsS", "http://127.0.0.1:8080/api/health/liveness" ]
+      test: ["CMD", "curl", "-fsS", "http://127.0.0.1:8080/api/health/liveness"]
       interval: 30s
       timeout: 5s
       retries: 3
       start_period: 90s
 
   postgres:
-    profiles: [ postgres ]
+    profiles: [postgres]
     image: postgres:16-alpine
     ports:
       - "5432:5432"
@@ -51,13 +56,13 @@ services:
     volumes:
       - postgres-data:/var/lib/postgresql/data
     healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U orm -d orm" ]
+      test: ["CMD-SHELL", "pg_isready -U orm -d orm"]
       interval: 5s
       timeout: 5s
       retries: 10
 
   mariadb:
-    profiles: [ mariadb ]
+    profiles: [mariadb]
     image: mariadb:11
     ports:
       - "3306:3306"
@@ -69,13 +74,13 @@ services:
     volumes:
       - mariadb-data:/var/lib/mysql
     healthcheck:
-      test: [ "CMD", "healthcheck.sh", "--connect", "--innodb_initialized" ]
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
       interval: 5s
       timeout: 5s
       retries: 10
 
   sqlserver:
-    profiles: [ sqlserver ]
+    profiles: [sqlserver]
     image: mcr.microsoft.com/mssql/server:2022-latest
     ports:
       - "1433:1433"
@@ -94,6 +99,82 @@ services:
       timeout: 5s
       retries: 12
       start_period: 40s
+
+  # --- Optional mock OIDC IdP for local testing (Soluto oidc-server-mock) ---
+
+  mock-oidc-server:
+    profiles: [oidc]
+    image: ${MOCK_OIDC_IMAGE:-ghcr.io/soluto/oidc-server-mock}:${MOCK_OIDC_TAG:-latest}
+    ports:
+      # Image listens on 8080 (not 80).
+      - "${MOCK_OIDC_PORT:-4011}:8080"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://+:8080
+      SERVER_OPTIONS_INLINE: |
+        {
+          "IssuerUri": "http://localhost:${MOCK_OIDC_PORT:-4011}",
+          "AccessTokenJwtType": "JWT",
+          "KeyManagement": {
+            "Enabled": false
+          },
+          "Discovery": {
+            "ShowKeySet": true
+          },
+          "Authentication": {
+            "CookieSameSiteMode": "Lax",
+            "CheckSessionCookieSameSiteMode": "Lax"
+          }
+        }
+      LOGIN_OPTIONS_INLINE: |
+        {
+          "AllowRememberLogin": false
+        }
+      LOGOUT_OPTIONS_INLINE: |
+        {
+          "AutomaticRedirectAfterSignOut": true
+        }
+      USERS_CONFIGURATION_INLINE: |
+        [
+          {
+            "SubjectId": "1",
+            "Username": "oidcuser",
+            "Password": "password",
+            "Claims": [
+              {
+                "Type": "name",
+                "Value": "OIDC Test User",
+                "ValueType": "string"
+              },
+              {
+                "Type": "email",
+                "Value": "oidcuser@example.com",
+                "ValueType": "string"
+              },
+              {
+                "Type": "preferred_username",
+                "Value": "oidcuser",
+                "ValueType": "string"
+              }
+            ]
+          }
+        ]
+      CLIENTS_CONFIGURATION_INLINE: |
+        [
+          {
+            "ClientId": "orm-local",
+            "ClientSecrets": ["orm-local-secret"],
+            "Description": "ORM local OIDC testing",
+            "AllowedGrantTypes": ["authorization_code"],
+            "RequirePkce": true,
+            "AllowAccessTokensViaBrowser": false,
+            "RedirectUris": ["${MOCK_OIDC_REDIRECT_URI:-http://localhost:8080/api/auth/callback/REPLACE_WITH_PROVIDER_UUID}"],
+            "AllowedScopes": ["openid", "profile", "email"],
+            "IdentityTokenLifetime": 3600,
+            "AccessTokenLifetime": 3600,
+            "AlwaysIncludeUserClaimsInIdToken": true
+          }
+        ]
 
 volumes:
   api-data:

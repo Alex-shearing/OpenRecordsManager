@@ -1,10 +1,6 @@
 package com.openrecordsmanager.auth;
 
-import com.openrecordsmanager.api.ComponentReference;
-import com.openrecordsmanager.auth.dto.AuthProviderResponse;
-import com.openrecordsmanager.auth.dto.LoginResponse;
-import com.openrecordsmanager.auth.dto.NewAuthProviderRequest;
-import com.openrecordsmanager.auth.dto.UpdateAuthProviderRequest;
+import com.openrecordsmanager.auth.dto.*;
 import com.openrecordsmanager.rest.dto.ApiResponseV1;
 import com.openrecordsmanager.rest.swagger.*;
 import io.swagger.v3.oas.annotations.Operation;
@@ -14,6 +10,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -30,6 +28,7 @@ import java.util.UUID;
 @InternalServerErrorApiResponse
 @ApiResponse(responseCode = "200")
 public class AuthController {
+    private static final Logger LOGGER = LoggerFactory.getLogger(AuthController.class);
 
     private final AuthService authService;
 
@@ -37,10 +36,38 @@ public class AuthController {
         this.authService = authService;
     }
 
+    @GetMapping(value = "/available_providers", produces = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(summary = "List available authentication providers.")
+    public Set<SimpleAuthProviderResponse> retrieveAvailableAuthProviders() {
+        return this.authService.listProviders();
+    }
+
     @GetMapping(value = "/providers", produces = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(summary = "List supported authentication providers.")
-    public Set<AuthProviderResponse> getAll(@RequestParam(defaultValue = "false") boolean includeDisabled) {
-        return this.authService.listProviders(includeDisabled);
+    @Operation(summary = "List all configured authentication providers.")
+    @PreAuthorize("isAuthenticated()")
+    @UnauthorizedApiResponse
+    @ForbiddenApiResponse
+    public Set<AuthProviderResponse> retrieveAllAuthProviders() {
+        return this.authService.listAllProviders();
+    }
+
+    @GetMapping(value = "/providers/types", produces = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(summary = "List installed authentication provider types and their settings schemas.")
+    @PreAuthorize("isAuthenticated()")
+    @UnauthorizedApiResponse
+    @ForbiddenApiResponse
+    public AuthProviderTypeResponse[] retrieveAuthProviderTypes() {
+        return this.authService.listProviderTypes();
+    }
+
+    @GetMapping(value = "/providers/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(summary = "Get authentication provider details including settings.")
+    @PreAuthorize("isAuthenticated()")
+    @UnauthorizedApiResponse
+    @ForbiddenApiResponse
+    @NotFoundApiResponse
+    public AuthProviderResponse getAuthProvider(@PathVariable("id") UUID id) {
+        return this.authService.getProvider(id);
     }
 
     @PutMapping(value = "/providers", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -48,10 +75,10 @@ public class AuthController {
     @PreAuthorize("isAuthenticated()")
     @ForbiddenApiResponse
     @UnauthorizedApiResponse
-    public AuthProviderResponse createProvider(@RequestBody NewAuthProviderRequest provider) {
+    public AuthProviderResponse createAuthProvider(@RequestBody NewAuthProviderRequest provider) {
         return this.authService.createProvider(
                 provider.name(),
-                ComponentReference.of(provider.type().type, provider.typeId()),
+                provider.type().toReference(),
                 provider.settings()
         );
     }
@@ -62,7 +89,7 @@ public class AuthController {
     @ForbiddenApiResponse
     @UnauthorizedApiResponse
     @NotFoundApiResponse
-    public AuthProviderResponse updateProvider(
+    public AuthProviderResponse updateAuthProvider(
             @PathVariable("id") UUID id,
             @RequestBody UpdateAuthProviderRequest input
     ) {
@@ -137,50 +164,44 @@ public class AuthController {
     @NotFoundApiResponse
     public UUID signup(@RequestBody Map<String, String> loginRequest) {
         // TODO: wire signup through AuthService
-        return null;
+        return UUID.randomUUID();
     }
 
-    @GetMapping(value = "/redirect/{auth_provider}", produces = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(summary = "Trigger a redirect from an authentication provider, implementations vary depending on the provider.")
+    @GetMapping(value = "/redirect/{auth_provider}")
+    @Operation(summary = "Start a redirect authentication flow and send the browser to the identity provider.")
     @NotFoundApiResponse
-    public ResponseEntity<Void> redirect(@PathVariable("auth_provider") UUID authProvider) {
+    public ResponseEntity<Void> redirect(
+            @PathVariable("auth_provider") UUID authProvider,
+            @RequestParam(value = "redirect", required = false) String redirect,
+            HttpServletResponse response
+    ) {
+        URI location = this.authService.beginRedirectLogin(authProvider, redirect, response);
         return ResponseEntity.status(HttpStatus.FOUND)
-                .location(this.authService.getRedirectLocation(authProvider))
+                .location(location)
                 .build();
     }
 
-    @GetMapping(value = "/callback/{auth_provider}", produces = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(summary = "Trigger a callback authentication provider, implementations vary depending on the provider.")
+    @GetMapping(value = "/callback/{auth_provider}")
+    @Operation(summary = "Complete a redirect authentication callback from an identity provider.")
     @NotFoundApiResponse
-    @ApiResponse(
-            responseCode = "401",
-            description = "Authentication Failed",
-            content = @Content(
-                    mediaType = MediaType.APPLICATION_JSON_VALUE,
-                    schema = @Schema(implementation = ApiResponseV1.class),
-                    examples = @ExampleObject(
-                            value = """
-                                    {
-                                      "success": false,
-                                      "errorCode": "Username or password is incorrect",
-                                      "timestamp": "2026-06-29T23:05:00Z"
-                                    }
-                                    """
-                    )
-            )
-    )
-    public LoginResponse callback(
+    public ResponseEntity<Void> callback(
             @PathVariable("auth_provider") UUID provider,
             HttpServletRequest request,
             HttpServletResponse response
     ) {
-        return this.authService.login(
-                new PluginAuthenticationProvider.RedirectToken(
-                        provider,
-                        URI.create(request.getRequestURI())
-                ),
-                request,
-                response
-        );
+        try {
+            URI returnTo = this.authService.completeRedirectLogin(provider, request, response);
+            return ResponseEntity.status(HttpStatus.FOUND)
+                    .location(returnTo)
+                    .build();
+        } catch (Exception e) {
+            LOGGER.warn("Redirect authentication callback failed for provider {}: {}", provider, e.getMessage(), e);
+
+            this.authService.clearAuthCookies(response);
+
+            return ResponseEntity.status(HttpStatus.FOUND)
+                    .location(URI.create("/login?error=auth_failed"))
+                    .build();
+        }
     }
 }

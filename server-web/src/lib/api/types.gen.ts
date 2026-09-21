@@ -55,10 +55,10 @@ export type PluginResponse = {
     displayName: string;
     description: string;
     version: string;
-    enabled?: boolean;
+    enabled: boolean;
     dateCreated: string;
     dateModified: string;
-    loaded?: boolean;
+    loaded: boolean;
 };
 
 export type UpdateObjectPropertyRequest = {
@@ -144,11 +144,15 @@ export type ConfigResponse = {
     value?: unknown;
 };
 
+export type ComponentReference = {
+    id: string;
+    type: string;
+};
+
 export type NewAuthProviderRequest = {
-    name?: string;
-    typeId?: string;
-    type?: 'INPUT' | 'REDIRECT';
-    settings?: {
+    name: string;
+    type: ComponentReference;
+    settings: {
         [key: string]: unknown;
     };
 };
@@ -156,34 +160,14 @@ export type NewAuthProviderRequest = {
 export type AuthProviderResponse = {
     id: string;
     name: string;
-    type: {
-        id: string;
-        type: string;
-        [key: string]: unknown | string;
+    type: ComponentReference;
+    enabled: boolean;
+    /**
+     * Provider settings with write-only fields omitted
+     */
+    settings?: {
+        [key: string]: unknown;
     };
-    loginSchema?: InputFormSchema;
-};
-
-export type InputFormSchema = {
-    type: string;
-    additionalProperties: boolean;
-    properties: {
-        [key: string]: InputFormSchemaField;
-    };
-    required: Array<string>;
-};
-
-export type InputFormSchemaField = {
-    type: string;
-    title: string;
-    description?: string;
-    writeOnly?: boolean;
-    format?: string;
-    minLength?: number;
-    maxLength?: number;
-    pattern?: string;
-    contentEncoding?: string;
-    enum?: Array<string>;
 };
 
 export type UpdateAuthProviderRequest = {
@@ -323,6 +307,28 @@ export type ActionResponse = {
     requiresAuditComment?: boolean;
 };
 
+export type InputFormSchema = {
+    type: string;
+    additionalProperties: boolean;
+    properties?: {
+        [key: string]: InputFormSchemaField;
+    };
+    required?: Array<string>;
+};
+
+export type InputFormSchemaField = {
+    type: string;
+    title: string;
+    description?: string;
+    writeOnly?: boolean;
+    format?: string;
+    minLength?: number;
+    maxLength?: number;
+    pattern?: string;
+    contentEncoding?: string;
+    enum?: Array<string>;
+};
+
 export type TemplateResponse = {
     id: string;
     name: string;
@@ -363,9 +369,9 @@ export type SimplePluginResponse = {
     displayName: string;
     description: string;
     version: string;
-    enabled?: boolean;
+    enabled: boolean;
     dateModified: string;
-    loaded?: boolean;
+    loaded: boolean;
 };
 
 export type SimpleObjectPropertyResponse = {
@@ -520,6 +526,18 @@ export type ConfigTypeUuidResponse = {
     type: 'uuid';
     currentValue?: string;
     defaultValue?: string;
+};
+
+export type AuthProviderTypeResponse = {
+    type: ComponentReference;
+    settingsSchema?: InputFormSchema;
+};
+
+export type SimpleAuthProviderResponse = {
+    id: string;
+    name: string;
+    type: ComponentReference;
+    loginSchema?: InputFormSchema;
 };
 
 export type AuditStatusResponse = {
@@ -2734,52 +2752,14 @@ export type SetConfigsResponses = {
 
 export type SetConfigsResponse = SetConfigsResponses[keyof SetConfigsResponses];
 
-export type GetAllData = {
+export type RetrieveAllAuthProvidersData = {
     body?: never;
-    path?: never;
-    query?: {
-        includeDisabled?: boolean;
-    };
-    url: '/api/auth/providers';
-};
-
-export type GetAllErrors = {
-    /**
-     * Internal Server error
-     */
-    500: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
-};
-
-export type GetAllError = GetAllErrors[keyof GetAllErrors];
-
-export type GetAllResponses = {
-    /**
-     * OK
-     */
-    200: {
-        success: true;
-        timestamp: unknown;
-        data: Array<AuthProviderResponse>;
-    };
-};
-
-export type GetAllResponse = GetAllResponses[keyof GetAllResponses];
-
-export type CreateProviderData = {
-    body: NewAuthProviderRequest;
     path?: never;
     query?: never;
     url: '/api/auth/providers';
 };
 
-export type CreateProviderErrors = {
+export type RetrieveAllAuthProvidersErrors = {
     /**
      * Unauthorized
      */
@@ -2815,9 +2795,67 @@ export type CreateProviderErrors = {
     };
 };
 
-export type CreateProviderError = CreateProviderErrors[keyof CreateProviderErrors];
+export type RetrieveAllAuthProvidersError = RetrieveAllAuthProvidersErrors[keyof RetrieveAllAuthProvidersErrors];
 
-export type CreateProviderResponses = {
+export type RetrieveAllAuthProvidersResponses = {
+    /**
+     * OK
+     */
+    200: {
+        success: true;
+        timestamp: unknown;
+        data: Array<AuthProviderResponse>;
+    };
+};
+
+export type RetrieveAllAuthProvidersResponse = RetrieveAllAuthProvidersResponses[keyof RetrieveAllAuthProvidersResponses];
+
+export type CreateAuthProviderData = {
+    body: NewAuthProviderRequest;
+    path?: never;
+    query?: never;
+    url: '/api/auth/providers';
+};
+
+export type CreateAuthProviderErrors = {
+    /**
+     * Unauthorized
+     */
+    401: {
+        success: false;
+        timestamp: unknown;
+        error: string;
+        errorData?: {
+            [key: string]: unknown;
+        };
+    };
+    /**
+     * Forbidden
+     */
+    403: {
+        success: false;
+        timestamp: unknown;
+        error: string;
+        errorData?: {
+            [key: string]: unknown;
+        };
+    };
+    /**
+     * Internal Server error
+     */
+    500: {
+        success: false;
+        timestamp: unknown;
+        error: string;
+        errorData?: {
+            [key: string]: unknown;
+        };
+    };
+};
+
+export type CreateAuthProviderError = CreateAuthProviderErrors[keyof CreateAuthProviderErrors];
+
+export type CreateAuthProviderResponses = {
     /**
      * OK
      */
@@ -2828,10 +2866,10 @@ export type CreateProviderResponses = {
     };
 };
 
-export type CreateProviderResponse = CreateProviderResponses[keyof CreateProviderResponses];
+export type CreateAuthProviderResponse = CreateAuthProviderResponses[keyof CreateAuthProviderResponses];
 
-export type UpdateProviderData = {
-    body: UpdateAuthProviderRequest;
+export type GetAuthProviderData = {
+    body?: never;
     path: {
         id: string;
     };
@@ -2839,7 +2877,7 @@ export type UpdateProviderData = {
     url: '/api/auth/providers/{id}';
 };
 
-export type UpdateProviderErrors = {
+export type GetAuthProviderErrors = {
     /**
      * Unauthorized
      */
@@ -2886,9 +2924,9 @@ export type UpdateProviderErrors = {
     };
 };
 
-export type UpdateProviderError = UpdateProviderErrors[keyof UpdateProviderErrors];
+export type GetAuthProviderError = GetAuthProviderErrors[keyof GetAuthProviderErrors];
 
-export type UpdateProviderResponses = {
+export type GetAuthProviderResponses = {
     /**
      * OK
      */
@@ -2899,7 +2937,78 @@ export type UpdateProviderResponses = {
     };
 };
 
-export type UpdateProviderResponse = UpdateProviderResponses[keyof UpdateProviderResponses];
+export type GetAuthProviderResponse = GetAuthProviderResponses[keyof GetAuthProviderResponses];
+
+export type UpdateAuthProviderData = {
+    body: UpdateAuthProviderRequest;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/auth/providers/{id}';
+};
+
+export type UpdateAuthProviderErrors = {
+    /**
+     * Unauthorized
+     */
+    401: {
+        success: false;
+        timestamp: unknown;
+        error: string;
+        errorData?: {
+            [key: string]: unknown;
+        };
+    };
+    /**
+     * Forbidden
+     */
+    403: {
+        success: false;
+        timestamp: unknown;
+        error: string;
+        errorData?: {
+            [key: string]: unknown;
+        };
+    };
+    /**
+     * Not Found
+     */
+    404: {
+        success: false;
+        timestamp: unknown;
+        error: string;
+        errorData?: {
+            [key: string]: unknown;
+        };
+    };
+    /**
+     * Internal Server error
+     */
+    500: {
+        success: false;
+        timestamp: unknown;
+        error: string;
+        errorData?: {
+            [key: string]: unknown;
+        };
+    };
+};
+
+export type UpdateAuthProviderError = UpdateAuthProviderErrors[keyof UpdateAuthProviderErrors];
+
+export type UpdateAuthProviderResponses = {
+    /**
+     * OK
+     */
+    200: {
+        success: true;
+        timestamp: unknown;
+        data: AuthProviderResponse;
+    };
+};
+
+export type UpdateAuthProviderResponse = UpdateAuthProviderResponses[keyof UpdateAuthProviderResponses];
 
 export type ListAuditPoliciesData = {
     body?: never;
@@ -5708,7 +5817,9 @@ export type RedirectData = {
     path: {
         auth_provider: string;
     };
-    query?: never;
+    query?: {
+        redirect?: string;
+    };
     url: '/api/auth/redirect/{auth_provider}';
 };
 
@@ -5732,18 +5843,16 @@ export type RedirectResponses = {
     200: unknown;
 };
 
-export type CallbackData = {
+export type RetrieveAuthProviderTypesData = {
     body?: never;
-    path: {
-        auth_provider: string;
-    };
+    path?: never;
     query?: never;
-    url: '/api/auth/callback/{auth_provider}';
+    url: '/api/auth/providers/types';
 };
 
-export type CallbackErrors = {
+export type RetrieveAuthProviderTypesErrors = {
     /**
-     * Authentication Failed
+     * Unauthorized
      */
     401: {
         success: false;
@@ -5754,9 +5863,9 @@ export type CallbackErrors = {
         };
     };
     /**
-     * Not Found
+     * Forbidden
      */
-    404: {
+    403: {
         success: false;
         timestamp: unknown;
         error: string;
@@ -5777,20 +5886,85 @@ export type CallbackErrors = {
     };
 };
 
-export type CallbackError = CallbackErrors[keyof CallbackErrors];
+export type RetrieveAuthProviderTypesError = RetrieveAuthProviderTypesErrors[keyof RetrieveAuthProviderTypesErrors];
 
-export type CallbackResponses = {
+export type RetrieveAuthProviderTypesResponses = {
     /**
      * OK
      */
     200: {
         success: true;
         timestamp: unknown;
-        data: LoginResponse;
+        data: Array<AuthProviderTypeResponse>;
     };
 };
 
-export type CallbackResponse = CallbackResponses[keyof CallbackResponses];
+export type RetrieveAuthProviderTypesResponse = RetrieveAuthProviderTypesResponses[keyof RetrieveAuthProviderTypesResponses];
+
+export type CallbackData = {
+    body?: never;
+    path: {
+        auth_provider: string;
+    };
+    query?: never;
+    url: '/api/auth/callback/{auth_provider}';
+};
+
+export type CallbackErrors = {
+    /**
+     * Not Found
+     */
+    404: ApiResponseV1;
+    /**
+     * Internal Server error
+     */
+    500: ApiResponseV1;
+};
+
+export type CallbackError = CallbackErrors[keyof CallbackErrors];
+
+export type CallbackResponses = {
+    /**
+     * OK
+     */
+    200: unknown;
+};
+
+export type RetrieveAvailableAuthProvidersData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/auth/available_providers';
+};
+
+export type RetrieveAvailableAuthProvidersErrors = {
+    /**
+     * Internal Server error
+     */
+    500: {
+        success: false;
+        timestamp: unknown;
+        error: string;
+        errorData?: {
+            [key: string]: unknown;
+        };
+    };
+};
+
+export type RetrieveAvailableAuthProvidersError = RetrieveAvailableAuthProvidersErrors[keyof RetrieveAvailableAuthProvidersErrors];
+
+export type RetrieveAvailableAuthProvidersResponses = {
+    /**
+     * OK
+     */
+    200: {
+        success: true;
+        timestamp: unknown;
+        data: Array<SimpleAuthProviderResponse>;
+    };
+};
+
+export type RetrieveAvailableAuthProvidersResponse = RetrieveAvailableAuthProvidersResponses[keyof RetrieveAvailableAuthProvidersResponses];
 
 export type GetAuditStatusData = {
     body?: never;

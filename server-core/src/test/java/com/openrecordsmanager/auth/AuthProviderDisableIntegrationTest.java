@@ -4,7 +4,6 @@ import com.openrecordsmanager.api.builtin.BuiltinConfigs;
 import com.openrecordsmanager.auth.dto.TokenPair;
 import com.openrecordsmanager.auth.entity.AuthProvider;
 import com.openrecordsmanager.database.DataRepository;
-import com.openrecordsmanager.user.User;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -53,7 +52,7 @@ class AuthProviderDisableIntegrationTest {
         AuthProvider provider = this.localProvider();
         TokenPair adminSession = this.testAuthTokens.tokenPairFor("admin");
 
-        this.mockMvc.perform(get("/api/auth/providers").accept(MediaType.APPLICATION_JSON))
+        this.mockMvc.perform(get("/api/auth/available_providers").accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data", hasSize(1)));
 
@@ -84,7 +83,7 @@ class AuthProviderDisableIntegrationTest {
                 )
                 .andExpect(status().isUnauthorized());
 
-        this.mockMvc.perform(get("/api/auth/providers").accept(MediaType.APPLICATION_JSON))
+        this.mockMvc.perform(get("/api/auth/available_providers").accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data", hasSize(0)));
 
@@ -116,7 +115,7 @@ class AuthProviderDisableIntegrationTest {
                 )
                 .andExpect(status().isOk());
 
-        this.mockMvc.perform(get("/api/auth/providers").accept(MediaType.APPLICATION_JSON))
+        this.mockMvc.perform(get("/api/auth/available_providers").accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data", hasSize(1)));
 

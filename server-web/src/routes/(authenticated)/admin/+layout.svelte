@@ -15,6 +15,7 @@
 			<SubNavList>
 				<SubNavLink href="/admin/config" match="exact">Configuration</SubNavLink>
 				<SubNavLink href="/admin/audit" match="exact">Audit</SubNavLink>
+				<SubNavLink href="/admin/auth-providers" match="exact">Login providers</SubNavLink>
 
 				<SubNavMenu label="Manage Plugins" hrefPrefix="/admin/plugins">
 					<SubNavMenuLink route="/(authenticated)/admin/plugins">Plugins</SubNavMenuLink>

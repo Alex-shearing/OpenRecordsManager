@@ -82,7 +82,7 @@ public class RestConfiguration {
             ComponentCatalog catalog,
             ConfigService config
     ) {
-        return new PluginAuthenticationProvider(this.repository, catalog, config, this.authService);
+        return new PluginAuthenticationProvider(this.repository, catalog, this.authService);
     }
 
     @Bean

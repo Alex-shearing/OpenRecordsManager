@@ -38,8 +38,8 @@
 <div class="flex flex-col gap-4">
 	{@render before?.()}
 
-	{#each Object.entries(schema.properties) as [key, field] (key)}
-		{@const required = schema.required.includes(key) && !field.writeOnly && field.format !== 'password'}
+	{#each schema.properties ? Object.entries(schema.properties) : [] as [key, field] (key)}
+		{@const required = schema.required?.includes(key) && !field.writeOnly && field.format !== 'password'}
 
 		<label class="flex flex-col gap-1">
 			<span>{field.title}</span>

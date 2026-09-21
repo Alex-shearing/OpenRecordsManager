@@ -32,6 +32,8 @@ public final class JsonSchemaValidator {
             )
             .build();
 
+    private static final Record EMPTY_RECORD = new EmptyRecord();
+
     private static final SchemaRegistry SCHEMA_REGISTRY =
             SchemaRegistry.withDefaultDialect(SpecificationVersion.DRAFT_2020_12);
 
@@ -162,6 +164,12 @@ public final class JsonSchemaValidator {
      * @return the record
      */
     public static <I extends Record> I toRecord(Class<I> recordClass, Map<String, ?> values) throws InputValidationException {
+        if (recordClass == Record.class) {
+            @SuppressWarnings("unchecked")
+            I rec = (I) EMPTY_RECORD;
+            return rec;
+        }
+
         Map<String, Object> validated = validateAndSerialize(recordClass, values);
         return MAPPER.convertValue(validated, recordClass);
     }
@@ -227,5 +235,8 @@ public final class JsonSchemaValidator {
             case List<?> list -> list.isEmpty();
             case null, default -> false;
         };
+    }
+
+    private record EmptyRecord() {
     }
 }

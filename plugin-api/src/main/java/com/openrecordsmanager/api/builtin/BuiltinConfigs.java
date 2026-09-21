@@ -175,6 +175,12 @@ public class BuiltinConfigs {
             .defaultValue(true)
             .build();
 
+    public static final ConfigType<String> PUBLIC_BASE_URL = ConfigType.builder("app.security.public-base-url", PropertyType.STRING)
+            .name("Public Base URL")
+            .description("Absolute public origin of this server. This URL is used when generating links to the site.")
+            .defaultValue("http://localhost:8080")
+            .build();
+
     // Web UI branding
 
     public static final ConfigType<String> WEB_PRODUCT_NAME = ConfigType.builder("app.web.product-name", PropertyType.STRING)

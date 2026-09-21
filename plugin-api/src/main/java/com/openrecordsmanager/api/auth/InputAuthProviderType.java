@@ -1,15 +1,15 @@
 package com.openrecordsmanager.api.auth;
 
-import com.openrecordsmanager.api.config.ConfigStore;
 import com.openrecordsmanager.api.schema.JsonSchemaValidator;
 import org.jspecify.annotations.Nullable;
 
 import java.util.Map;
 
-public abstract class InputAuthProviderType<I extends Record> implements AuthProviderType {
+public abstract class InputAuthProviderType<S extends Record, I extends Record> extends AuthProviderType<S> {
     private final Class<I> inputClass;
 
-    protected InputAuthProviderType(Class<I> inputClass) {
+    protected InputAuthProviderType(Class<S> settingsClass, Class<I> inputClass) {
+        super(settingsClass);
         this.inputClass = inputClass;
     }
 
@@ -17,28 +17,25 @@ public abstract class InputAuthProviderType<I extends Record> implements AuthPro
      * Attempt to authenticate a user with the provided credential input.
      *
      * @param context  usable context to pull user information
-     * @param instance the instance of the authentication provider being used
+     * @param settings the configured instance settings
      * @param inputs   the user provided inputs
      * @return the {@link UserAuthDetails} or null if no user was authenticated
      */
-    public abstract @Nullable UserAuthDetails authenticate(
-            ConfigStore config,
+    protected abstract @Nullable UserAuthDetails authenticate(
             UserAuthContext context,
-            AuthProviderInstance instance,
+            S settings,
             I inputs
     );
 
     public final @Nullable UserAuthDetails authenticateUntyped(
-            ConfigStore config,
             UserAuthContext context,
-            AuthProviderInstance instance,
+            Map<String, ?> settings,
             Map<String, String> inputs
     ) {
         return this.authenticate(
-                config,
                 context,
-                instance,
-                JsonSchemaValidator.toRecord(this.inputClass, inputs)
+                this.parseSettings(settings),
+                JsonSchemaValidator.toRecord(this.getInputClass(), inputs)
         );
     }
 
