@@ -66,6 +66,10 @@ public final class JsonSchemaValidator {
                 )
                 .without(Option.SCHEMA_VERSION_INDICATOR);
 
+        // Don't try to order fields, keep original definition order
+        configBuilder.forTypesInGeneral()
+                .withPropertySorter((_, _) -> 0);
+
         // Treat byte[] as OpenAPI "byte" (base64 string) for form schemas.
         configBuilder.forFields().withTargetTypeOverridesResolver(field -> {
             if (field.getType().getErasedType() == byte[].class) {
