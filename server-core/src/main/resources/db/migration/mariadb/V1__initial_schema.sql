@@ -113,6 +113,7 @@ CREATE INDEX idx_upv_property_id ON user_property_value (property_id);
 
 CREATE TABLE file_store (
     id BINARY(16) NOT NULL PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
     type VARCHAR(255) NOT NULL,
     properties JSON NOT NULL,
     date_created DATETIME(6) NOT NULL,
@@ -121,6 +122,7 @@ CREATE TABLE file_store (
 
 CREATE TABLE file_store_middleware (
     id BINARY(16) NOT NULL PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
     type VARCHAR(255) NOT NULL,
     properties JSON NOT NULL,
     date_created DATETIME(6) NOT NULL,

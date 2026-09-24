@@ -22,6 +22,7 @@ import com.openrecordsmanager.plugin.ExpressionsService;
 import com.openrecordsmanager.plugin.registry.ComponentCatalog;
 import com.openrecordsmanager.plugin.registry.mapper.TemplateRegistrationMapper;
 import com.openrecordsmanager.property.ObjectProperty;
+import com.openrecordsmanager.rest.CookieService;
 import com.openrecordsmanager.rest.errors.ResourceNotFoundException;
 import com.openrecordsmanager.user.User;
 import io.jsonwebtoken.Claims;

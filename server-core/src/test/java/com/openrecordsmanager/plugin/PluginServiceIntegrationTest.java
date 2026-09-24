@@ -86,7 +86,7 @@ class PluginServiceIntegrationTest {
             FileStoreType<?> localType = this.catalog.getRegistry(ComponentTypes.FILE_STORE)
                     .get(ResourceIdentifier.valueOf("filestore_local:local"))
                     .orElseThrow();
-            FileStore store = new FileStore(this.catalog, localType, Map.of("rootDir", FILE_STORE_ROOT.toString()));
+            FileStore store = new FileStore(this.catalog, "Test local store", localType, Map.of("rootDir", FILE_STORE_ROOT.toString()));
             this.repository.fileStoreRepo.saveAndFlush(store);
             DEFAULT_FILE_STORE.set(store.getId().toString());
         }

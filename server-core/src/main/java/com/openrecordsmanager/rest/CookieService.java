@@ -1,4 +1,4 @@
-package com.openrecordsmanager.auth;
+package com.openrecordsmanager.rest;
 
 import com.openrecordsmanager.api.builtin.BuiltinConfigs;
 import com.openrecordsmanager.config.ConfigService;

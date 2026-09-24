@@ -13,12 +13,16 @@
 	let { data } = $props();
 
 	const sortedMiddlewares = $derived(
-		[...data.middlewares].sort((a, b) => a.type.localeCompare(b.type) || a.id.localeCompare(b.id))
+		[...data.middlewares].sort((a, b) => {
+			const nameCmp = (a.name ?? '').localeCompare(b.name ?? '');
+			return nameCmp !== 0 ? nameCmp : (a.id ?? '').localeCompare(b.id ?? '');
+		})
 	);
 	const sortedTypes = $derived([...data.types].sort((a, b) => a.id.localeCompare(b.id)));
 
 	// svelte-ignore state_referenced_locally
 	let createTypeId = $state(data.types.at(0)?.id ?? '');
+	let createName = $state('');
 	let createValues = $state<Record<string, string>>({});
 	let createFieldErrors = $state<Record<string, string>>({});
 	let createFormError = $state('');
@@ -26,6 +30,7 @@
 	let submitting = $state(false);
 
 	let editTarget = $state<MiddlewareResponse>();
+	let editName = $state('');
 	let editValues = $state<Record<string, string>>({});
 	let editFieldErrors = $state<Record<string, string>>({});
 	let editFormError = $state('');
@@ -45,6 +50,7 @@
 	}
 
 	function resetCreateForm() {
+		createName = '';
 		createValues = {};
 		createFieldErrors = {};
 		createFormError = '';
@@ -65,6 +71,7 @@
 		const { error } = await FileStoreController.middlewareCreate({
 			client: getApiClient(),
 			body: {
+				name: createName,
 				type: createTypeId,
 				properties: createValues,
 			},
@@ -104,6 +111,7 @@
 		}
 
 		editTarget = result.data;
+		editName = result.data.name;
 		editValues = toFormValues(result.data.properties);
 	}
 
@@ -118,7 +126,10 @@
 		const { error } = await FileStoreController.middlewareUpdate({
 			client: getApiClient(),
 			path: { id: editTarget.id },
-			body: editValues,
+			body: {
+				name: editName,
+				properties: editValues,
+			},
 			headers: auditHeaders(editAuditComment),
 		});
 
@@ -177,12 +188,14 @@
 		getKey={m => m.id}
 	>
 		{#snippet header()}
+			<th class="px-5 py-3 font-medium">Name</th>
 			<th class="px-5 py-3 font-medium">Type</th>
 			<th class="px-5 py-3 font-medium">ID</th>
 			<th class="px-5 py-3 font-medium"><span class="sr-only">Actions</span></th>
 		{/snippet}
 		{#snippet row(middleware)}
-			<td class="px-5 py-4 font-medium">{middleware.type}</td>
+			<td class="px-5 py-4 font-medium">{middleware.name}</td>
+			<td class="px-5 py-4">{middleware.type}</td>
 			<td class="px-5 py-4">
 				<MonoId value={middleware.id} />
 			</td>
@@ -218,6 +231,11 @@
 		{#if sortedTypes.length === 0}
 			<p class="text-hint">No middleware types are available.</p>
 		{:else}
+			<label class="mb-4 flex flex-col gap-1">
+				<span class="text-label">Name</span>
+				<input class="input w-full" bind:value={createName} required disabled={submitting} />
+			</label>
+
 			<label class="mb-4 flex flex-col gap-1">
 				<span class="text-label">Type</span>
 				<select
@@ -262,7 +280,7 @@
 			{/if}
 
 			<div class="mt-4">
-				<button type="submit" class="btn-primary" disabled={submitting || !createTypeId}>
+				<button type="submit" class="btn-primary" disabled={submitting || !createTypeId || !createName}>
 					{submitting ? 'Creating…' : 'Create'}
 				</button>
 			</div>
@@ -277,6 +295,11 @@
 	{#snippet body(target)}
 		{@const targetType = sortedTypes.find(type => type.id === target.type)}
 		<form id="middleware-edit-form" class="flex flex-col gap-4" onsubmit={handleEdit}>
+			<label class="flex flex-col gap-1">
+				<span class="text-label">Name</span>
+				<input class="input w-full" bind:value={editName} required disabled={submitting} />
+			</label>
+
 			<label class="flex flex-col gap-1">
 				<span class="text-label">Type</span>
 				<input class="input w-full" value={target.type} readonly disabled />
@@ -322,7 +345,7 @@
 	}}
 >
 	{#snippet description(target)}
-		Remove <span class="font-medium">{target.type}</span> (<MonoId value={target.id} />)? This fails if it is attached
+		Remove <span class="font-medium">{target.name}</span> (<MonoId value={target.id} />)? This fails if it is attached
 		to a file store.
 	{/snippet}
 	{#snippet body()}

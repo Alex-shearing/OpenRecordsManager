@@ -121,18 +121,28 @@ export type UpdateListElementRequest = {
 };
 
 export type UpdateFileStoreRequest = {
-    properties: {
+    name?: string;
+    properties?: {
+        [key: string]: unknown;
+    };
+};
+
+export type UpdateFileStoreMiddlewareRequest = {
+    name?: string;
+    properties?: {
         [key: string]: unknown;
     };
 };
 
 export type SimpleFileStoreResponse = {
     id: string;
+    name: string;
     type: string;
 };
 
 export type SimpleMiddlewareResponse = {
     id: string;
+    name: string;
     type: string;
 };
 
@@ -257,6 +267,7 @@ export type NewListElementRequest = {
 };
 
 export type NewFileStoreRequest = {
+    name: string;
     type: string;
     properties: {
         [key: string]: unknown;
@@ -265,6 +276,7 @@ export type NewFileStoreRequest = {
 };
 
 export type NewFileStoreMiddlewareRequest = {
+    name: string;
     type: string;
     properties: {
         [key: string]: unknown;
@@ -382,12 +394,15 @@ export type SimpleObjectPropertyResponse = {
 
 export type FileStoreResponse = {
     id: string;
+    name: string;
     type: string;
     properties: {
         [key: string]: unknown;
     };
     middlewares: Array<string>;
     fileCount: number;
+    dateCreated: string;
+    dateModified: string;
 };
 
 export type FileStoreTypeResponse = {
@@ -397,10 +412,13 @@ export type FileStoreTypeResponse = {
 
 export type MiddlewareResponse = {
     id: string;
+    name: string;
     type: string;
     properties: {
         [key: string]: unknown;
     };
+    dateCreated: string;
+    dateModified: string;
 };
 
 export type MiddlewareTypeResponse = {
@@ -2595,9 +2613,7 @@ export type MiddlewareRetrieveOneResponses = {
 export type MiddlewareRetrieveOneResponse = MiddlewareRetrieveOneResponses[keyof MiddlewareRetrieveOneResponses];
 
 export type MiddlewareUpdateData = {
-    body: {
-        [key: string]: unknown;
-    };
+    body: UpdateFileStoreMiddlewareRequest;
     path: {
         id: string;
     };

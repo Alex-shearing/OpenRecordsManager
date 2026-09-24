@@ -18,7 +18,10 @@
 	const labelId = $props.id();
 
 	function compareAvailable(a: SimpleMiddlewareResponse, b: SimpleMiddlewareResponse) {
-		return a.type.localeCompare(b.type) || a.id.localeCompare(b.id);
+		const nameCmp = (a.name ?? '').localeCompare(b.name ?? '');
+		if (nameCmp !== 0) return nameCmp;
+		const typeCmp = a.type.localeCompare(b.type);
+		return typeCmp !== 0 ? typeCmp : a.id.localeCompare(b.id);
 	}
 </script>
 
@@ -47,7 +50,8 @@
 			{compareAvailable}
 		>
 			{#snippet item(middleware)}
-				<span class="font-medium">{middleware.type}</span>
+				<span class="font-medium">{middleware.name}</span>
+				<span class="block text-hint">{middleware.type}</span>
 				<span class="block"><MonoId value={middleware.id} muted /></span>
 			{/snippet}
 		</TransferList>

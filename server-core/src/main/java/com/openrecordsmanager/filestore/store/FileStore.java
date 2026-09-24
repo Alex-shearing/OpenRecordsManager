@@ -30,6 +30,9 @@ public class FileStore {
     private UUID id;
 
     @Column(nullable = false)
+    private String name;
+
+    @Column(nullable = false)
     @JavaType(ResourceIdentifierJavaType.class)
     private ResourceIdentifier type;
 
@@ -55,8 +58,9 @@ public class FileStore {
     protected FileStore() {
     }
 
-    public FileStore(ComponentCatalog catalog, FileStoreType<?> type, Map<String, ?> properties) {
+    public FileStore(ComponentCatalog catalog, String name, FileStoreType<?> type, Map<String, ?> properties) {
         this.id = UuidVersion7Strategy.INSTANCE.generateUuid(null);
+        this.name = name;
         this.type = catalog.getRegistry(ComponentTypes.FILE_STORE).getId(type).orElseThrow();
         this.properties = JsonSchemaValidator.serializeSettings(type.parseSettings(properties));
         type.initializeUntyped(this.properties);
@@ -66,6 +70,15 @@ public class FileStore {
 
     public UUID getId() {
         return id;
+    }
+
+    public String getName() {
+        return this.name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+        this.touchDateModified();
     }
 
     public Instant getDateCreated() {

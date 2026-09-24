@@ -10,20 +10,20 @@
 	import TargetDialog from '$lib/components/TargetDialog.svelte';
 	import { invalidateAll } from '$app/navigation';
 	import toast from 'svelte-hot-french-toast';
-	import { table } from 'node:console';
 
 	let { data } = $props();
 
 	const sortedStores = $derived(
 		[...data.stores].sort((a, b) => {
-			const typeCmp = (a.type ?? '').localeCompare(b.type ?? '');
-			return typeCmp !== 0 ? typeCmp : (a.id ?? '').localeCompare(b.id ?? '');
+			const nameCmp = (a.name ?? '').localeCompare(b.name ?? '');
+			return nameCmp !== 0 ? nameCmp : (a.id ?? '').localeCompare(b.id ?? '');
 		})
 	);
 	const sortedTypes = $derived([...data.types].sort((a, b) => a.id.localeCompare(b.id)));
 
 	// svelte-ignore state_referenced_locally
 	let createTypeId = $state(data.types.at(0)?.id ?? '');
+	let createName = $state('');
 	let createValues = $state<Record<string, string>>({});
 	let selectedMiddlewareIds = $state<string[]>([]);
 	let createFieldErrors = $state<Record<string, string>>({});
@@ -34,6 +34,7 @@
 	const createType = $derived(sortedTypes.find(type => type.id === createTypeId));
 
 	let editTarget = $state<FileStoreResponse>();
+	let editName = $state('');
 	let editValues = $state<Record<string, string>>({});
 	let editFieldErrors = $state<Record<string, string>>({});
 	let editFormError = $state('');
@@ -64,6 +65,7 @@
 		const { error } = await FileStoreController.fileStoreCreate({
 			client: getApiClient(),
 			body: {
+				name: createName,
 				type: createTypeId,
 				properties: createValues,
 				middlewares: selectedMiddlewareIds,
@@ -81,6 +83,7 @@
 
 		toast.success('Created file store.');
 
+		createName = '';
 		createValues = {};
 		selectedMiddlewareIds = [];
 		createFieldErrors = {};
@@ -110,6 +113,7 @@
 		}
 
 		editTarget = result.data;
+		editName = result.data.name;
 		editValues = toFormValues(result.data.properties);
 	}
 
@@ -125,6 +129,7 @@
 			client: getApiClient(),
 			path: { id: editTarget.id },
 			body: {
+				name: editName,
 				properties: editValues,
 			},
 			headers: auditHeaders(editAuditComment),
@@ -177,12 +182,14 @@
 {:else}
 	<TableCard title="File stores" items={sortedStores} empty="No file stores are registered." getKey={s => s.id}>
 		{#snippet header()}
+			<th class="px-5 py-3 font-medium">Name</th>
 			<th class="px-5 py-3 font-medium">Type</th>
 			<th class="px-5 py-3 font-medium">ID</th>
 			<th class="px-5 py-3 font-medium"><span class="sr-only">Actions</span></th>
 		{/snippet}
 		{#snippet row(store)}
-			<td class="px-5 py-4 font-medium">{store.type}</td>
+			<td class="px-5 py-4 font-medium">{store.name}</td>
+			<td class="px-5 py-4">{store.type}</td>
 			<td class="px-5 py-4">
 				<MonoId value={store.id} />
 			</td>
@@ -213,6 +220,11 @@
 		{#if sortedTypes.length === 0}
 			<p class="text-hint">No file store types are available.</p>
 		{:else}
+			<label class="mb-4 flex flex-col gap-1">
+				<span class="text-label">Name</span>
+				<input class="input w-full" bind:value={createName} required disabled={submitting} />
+			</label>
+
 			<label class="mb-4 flex flex-col gap-1">
 				<span class="text-label">Type</span>
 				<select
@@ -263,7 +275,7 @@
 			{/if}
 
 			<div class="mt-4">
-				<button type="submit" class="btn-primary" disabled={submitting || !createTypeId}>
+				<button type="submit" class="btn-primary" disabled={submitting || !createTypeId || !createName}>
 					{submitting ? 'Creating…' : 'Create'}
 				</button>
 			</div>
@@ -279,6 +291,11 @@
 		{@const targetType = sortedTypes.find(type => type.id === editTarget?.type)}
 		<form id="file-store-edit-form" class="flex flex-col gap-4" onsubmit={handleEdit}>
 			<span class="flex flex-col gap-1">There are currently {target.fileCount} files in this store.</span>
+
+			<label class="flex flex-col gap-1">
+				<span class="text-label">Name</span>
+				<input class="input w-full" bind:value={editName} required disabled={submitting} />
+			</label>
 
 			<label class="flex flex-col gap-1">
 				<span class="text-label">Type</span>
@@ -309,7 +326,7 @@
 						{#each target.middlewares as id (id)}
 							{@const middleware = data.middlewares.find(m => m.id === id)}
 							<li>
-								<span class="font-medium">{middleware?.type ?? 'Unknown'}</span>
+								<span class="font-medium">{middleware?.name ?? 'Unknown'}</span>
 								<span class="block"><MonoId value={id} muted /></span>
 							</li>
 						{/each}
@@ -342,7 +359,8 @@
 	}}
 >
 	{#snippet description(target)}
-		Remove store <MonoId value={target.id} /> ({target.type})? This fails if the store still has files.
+		Remove store <span class="font-medium">{target.name}</span> (<MonoId value={target.id} />)? This fails if the store
+		still has files.
 	{/snippet}
 	{#snippet body()}
 		<form id="file-store-delete-form" class="flex flex-col gap-4" onsubmit={handleDelete}>

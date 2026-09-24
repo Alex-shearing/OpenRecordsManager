@@ -30,6 +30,9 @@ public class Middleware {
     private UUID id;
 
     @Column(nullable = false)
+    private String name;
+
+    @Column(nullable = false)
     @JavaType(ResourceIdentifierJavaType.class)
     private ResourceIdentifier type;
 
@@ -47,8 +50,9 @@ public class Middleware {
     protected Middleware() {
     }
 
-    public Middleware(ComponentCatalog catalog, FileStoreMiddlewareType<?> type, Map<String, ?> properties) {
+    public Middleware(ComponentCatalog catalog, String name, FileStoreMiddlewareType<?> type, Map<String, ?> properties) {
         this.id = UuidVersion7Strategy.INSTANCE.generateUuid(null);
+        this.name = name;
         this.type = catalog.getRegistry(ComponentTypes.FILE_STORE_MIDDLEWARE).getId(type).orElseThrow();
         this.properties = JsonSchemaValidator.serializeSettings(type.parseSettings(properties));
         type.initializeUntyped(this.properties);
@@ -58,6 +62,15 @@ public class Middleware {
 
     public UUID getId() {
         return this.id;
+    }
+
+    public String getName() {
+        return this.name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+        this.touchDateModified();
     }
 
     public Instant getDateCreated() {

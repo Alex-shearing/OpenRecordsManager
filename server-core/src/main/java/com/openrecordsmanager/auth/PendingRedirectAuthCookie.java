@@ -3,6 +3,7 @@ package com.openrecordsmanager.auth;
 import com.openrecordsmanager.api.auth.PendingRedirectAuth;
 import com.openrecordsmanager.api.builtin.BuiltinConfigs;
 import com.openrecordsmanager.config.ConfigService;
+import com.openrecordsmanager.rest.CookieService;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtBuilder;
 import io.jsonwebtoken.Jwts;

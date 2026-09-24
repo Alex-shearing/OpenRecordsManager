@@ -16,6 +16,7 @@ import java.util.UUID;
 
 public record FileStoreResponse(
         @NotBlank UUID id,
+        @NotBlank String name,
         @NotBlank ResourceIdentifier type,
         @NotNull Map<String, ?> properties,
         @NotNull List<UUID> middlewares,
@@ -30,6 +31,7 @@ public record FileStoreResponse(
 
         return new FileStoreResponse(
                 store.getId(),
+                store.getName(),
                 storeTypeId,
                 store.getProperties(catalog),
                 store.getMiddlewares().stream()

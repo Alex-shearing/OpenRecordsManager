@@ -11,7 +11,6 @@ import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
@@ -87,8 +86,8 @@ public class FileStoreController {
     @PutMapping(value = "/middlewares/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Modify file store middleware config")
     @NotFoundApiResponse
-    public SimpleMiddlewareResponse middleware_update(@PathVariable("id") UUID id, @RequestBody Map<String, ?> properties) {
-        return this.middlewareService.update(id, properties);
+    public SimpleMiddlewareResponse middleware_update(@PathVariable("id") UUID id, @RequestBody UpdateFileStoreMiddlewareRequest input) {
+        return this.middlewareService.update(id, input);
     }
 
     @DeleteMapping(value = "/middlewares/{id}", produces = MediaType.APPLICATION_JSON_VALUE)

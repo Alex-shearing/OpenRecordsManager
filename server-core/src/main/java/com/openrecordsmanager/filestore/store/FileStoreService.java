@@ -71,7 +71,7 @@ public class FileStoreService {
         FileStoreType<?> type = this.catalog.getRegistry(ComponentTypes.FILE_STORE).get(input.type())
                 .orElseThrow(() -> new ResourceNotFoundException(ComponentTypes.FILE_STORE, input.type()));
 
-        FileStore store = new FileStore(this.catalog, type, input.properties());
+        FileStore store = new FileStore(this.catalog, input.name(), type, input.properties());
 
         for (UUID middleware : input.middlewares()) {
             Middleware mw = this.repository.fileStoreMiddlewareRepo.findById(middleware)
@@ -92,7 +92,13 @@ public class FileStoreService {
     public SimpleFileStoreResponse update(UUID id, UpdateFileStoreRequest input) throws ResourceNotFoundException {
         FileStore store = this.repository.fileStoreRepo.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("file store", id));
-        store.setProperties(this.catalog, input.properties());
+
+        if (input.name() != null) {
+            store.setName(input.name());
+        }
+        if (input.properties() != null) {
+            store.setProperties(this.catalog, input.properties());
+        }
 
         this.repository.fileStoreRepo.saveAndFlush(store);
 

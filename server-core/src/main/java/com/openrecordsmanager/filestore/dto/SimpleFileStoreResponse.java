@@ -11,13 +11,14 @@ import java.util.UUID;
 
 public record SimpleFileStoreResponse(
         @NotBlank UUID id,
+        @NotBlank String name,
         @NotBlank ResourceIdentifier type) {
 
     public static SimpleFileStoreResponse of(ComponentCatalog catalog, FileStore fileStore) {
-        ResourceIdentifier middlewareType = catalog.getRegistry(ComponentTypes.FILE_STORE)
+        ResourceIdentifier storeType = catalog.getRegistry(ComponentTypes.FILE_STORE)
                 .getId(fileStore.getStoreType(catalog))
                 .orElseThrow(() -> new ResourceNotFoundException("file store type for", fileStore.getId()));
 
-        return new SimpleFileStoreResponse(fileStore.getId(), middlewareType);
+        return new SimpleFileStoreResponse(fileStore.getId(), fileStore.getName(), storeType);
     }
 }

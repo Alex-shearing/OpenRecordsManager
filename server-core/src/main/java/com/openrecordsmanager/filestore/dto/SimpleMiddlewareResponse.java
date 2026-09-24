@@ -11,6 +11,7 @@ import java.util.UUID;
 
 public record SimpleMiddlewareResponse(
         @NotBlank UUID id,
+        @NotBlank String name,
         @NotBlank ResourceIdentifier type) {
 
     public static SimpleMiddlewareResponse of(ComponentCatalog catalog, Middleware middleware) {
@@ -18,6 +19,6 @@ public record SimpleMiddlewareResponse(
                 .getId(middleware.getMiddlewareType(catalog))
                 .orElseThrow(() -> new ResourceNotFoundException("middleware type for", middleware.getId()));
 
-        return new SimpleMiddlewareResponse(middleware.getId(), middlewareType);
+        return new SimpleMiddlewareResponse(middleware.getId(), middleware.getName(), middlewareType);
     }
 }

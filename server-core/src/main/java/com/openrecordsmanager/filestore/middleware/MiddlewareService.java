@@ -11,13 +11,13 @@ import com.openrecordsmanager.filestore.dto.MiddlewareResponse;
 import com.openrecordsmanager.filestore.dto.MiddlewareTypeResponse;
 import com.openrecordsmanager.filestore.dto.NewFileStoreMiddlewareRequest;
 import com.openrecordsmanager.filestore.dto.SimpleMiddlewareResponse;
+import com.openrecordsmanager.filestore.dto.UpdateFileStoreMiddlewareRequest;
 import com.openrecordsmanager.plugin.registry.ComponentCatalog;
 import com.openrecordsmanager.rest.errors.ResourceInUseException;
 import com.openrecordsmanager.rest.errors.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -58,7 +58,7 @@ public class MiddlewareService {
         FileStoreMiddlewareType<?> type = this.catalog.getRegistry(ComponentTypes.FILE_STORE_MIDDLEWARE).get(input.type())
                 .orElseThrow(() -> new ResourceNotFoundException(ComponentTypes.FILE_STORE_MIDDLEWARE, input.type()));
 
-        Middleware middleware = new Middleware(this.catalog, type, input.properties());
+        Middleware middleware = new Middleware(this.catalog, input.name(), type, input.properties());
 
         this.repository.fileStoreMiddlewareRepo.saveAndFlush(middleware);
 
@@ -69,11 +69,16 @@ public class MiddlewareService {
 
     @Transactional
     @RequiresAuditComment(operation = AuditOperation.UPDATE, targetType = AuditEntityType.FILE_STORE_MIDDLEWARE)
-    public SimpleMiddlewareResponse update(UUID id, Map<String, ?> properties) throws ResourceNotFoundException {
+    public SimpleMiddlewareResponse update(UUID id, UpdateFileStoreMiddlewareRequest input) throws ResourceNotFoundException {
         Middleware middleware = this.repository.fileStoreMiddlewareRepo.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("stream store middleware", id.toString()));
 
-        middleware.setProperties(this.catalog, properties);
+        if (input.name() != null) {
+            middleware.setName(input.name());
+        }
+        if (input.properties() != null) {
+            middleware.setProperties(this.catalog, input.properties());
+        }
 
         this.repository.fileStoreMiddlewareRepo.saveAndFlush(middleware);
 

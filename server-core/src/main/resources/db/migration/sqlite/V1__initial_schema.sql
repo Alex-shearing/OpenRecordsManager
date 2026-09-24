@@ -113,6 +113,7 @@ CREATE INDEX IF NOT EXISTS idx_upv_property_id ON user_property_value (property_
 
 CREATE TABLE file_store (
     id BLOB NOT NULL PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
     type VARCHAR(255) NOT NULL,
     properties CLOB NOT NULL,
     date_created TIMESTAMP NOT NULL,
@@ -121,6 +122,7 @@ CREATE TABLE file_store (
 
 CREATE TABLE file_store_middleware (
     id BLOB NOT NULL PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
     type VARCHAR(255) NOT NULL,
     properties CLOB NOT NULL,
     date_created TIMESTAMP NOT NULL,

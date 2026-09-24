@@ -14,6 +14,7 @@ import java.util.UUID;
 
 public record MiddlewareResponse(
         @NotBlank UUID id,
+        @NotBlank String name,
         @NotBlank ResourceIdentifier type,
         @NotNull Map<String, ?> properties,
         @NotNull Instant dateCreated,
@@ -26,6 +27,7 @@ public record MiddlewareResponse(
 
         return new MiddlewareResponse(
                 middleware.getId(),
+                middleware.getName(),
                 middlewareType,
                 middleware.getProperties(catalog),
                 middleware.getDateCreated(),
