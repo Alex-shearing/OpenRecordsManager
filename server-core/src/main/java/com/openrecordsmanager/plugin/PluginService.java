@@ -21,10 +21,7 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
+import java.util.*;
 
 @Service
 public class PluginService {
@@ -47,11 +44,26 @@ public class PluginService {
 
     @Transactional(readOnly = true)
     public Set<SimplePluginResponse> getAll(boolean includeDisabled) {
-        Set<SimplePluginResponse> response = this.repository.pluginRepo.findAll().stream()
-                .filter(plugin -> includeDisabled || plugin.isEnabled())
-                .map(plugin -> SimplePluginResponse.of(plugin, this.pluginManager))
-                .collect(Collectors.toSet());
+        Map<String, SimplePluginResponse> byId = new LinkedHashMap<>();
 
+        for (PersistedPlugin plugin : this.repository.pluginRepo.findAll()) {
+            if (!includeDisabled && !plugin.isEnabled()) {
+                continue;
+            }
+            byId.put(plugin.getName(), SimplePluginResponse.of(plugin, this.pluginManager));
+        }
+
+        for (DiscoveredPlugin discovered : this.pluginManager.discoverLocalPlugins()) {
+            if (byId.containsKey(discovered.id())) {
+                continue;
+            }
+            if (!includeDisabled && !discovered.isEnabled()) {
+                continue;
+            }
+            byId.put(discovered.id(), SimplePluginResponse.of(discovered, this.pluginManager));
+        }
+
+        Set<SimplePluginResponse> response = Set.copyOf(byId.values());
         this.auditService.recordCollectionRead(AuditEntityType.PLUGIN, response.size());
         return response;
     }
@@ -145,8 +157,14 @@ public class PluginService {
             throw new ResourceInUseException("the builtin plugin cannot be modified");
         }
 
-        PersistedPlugin plugin = this.repository.pluginRepo.findById(name)
-                .orElseThrow(() -> new ResourceNotFoundException("plugin", name));
+        PersistedPlugin plugin = this.repository.pluginRepo.findById(name).orElse(null);
+        if (plugin == null) {
+            DiscoveredPlugin discovered = this.pluginManager.discoverLocalPlugins().stream()
+                    .filter(p -> p.id().equals(name))
+                    .findFirst()
+                    .orElseThrow(() -> new ResourceNotFoundException("plugin", name));
+            plugin = new PersistedPlugin(discovered.id(), discovered.version().toString());
+        }
 
         List<AuditPropertyChange> changes = new ArrayList<>();
         if (input.enabled() != null && input.enabled() != plugin.isEnabled()) {
@@ -180,11 +198,18 @@ public class PluginService {
             throw new ResourceInUseException("the builtin plugin cannot be deleted");
         }
 
-        PersistedPlugin plugin = this.repository.pluginRepo.findById(name)
-                .orElseThrow(() -> new ResourceNotFoundException("plugin", name));
-
-        this.pluginManager.deleteLocalPlugin(plugin);
-        this.repository.pluginRepo.delete(plugin);
+        PersistedPlugin plugin = this.repository.pluginRepo.findById(name).orElse(null);
+        if (plugin != null) {
+            this.pluginManager.deleteLocalPlugin(plugin);
+            this.repository.pluginRepo.delete(plugin);
+        } else {
+            boolean foundLocal = this.pluginManager.discoverLocalPlugins().stream()
+                    .anyMatch(p -> p.id().equals(name));
+            if (!foundLocal) {
+                throw new ResourceNotFoundException("plugin", name);
+            }
+            this.pluginManager.deleteLocalPlugin(name);
+        }
 
         this.auditService.addEvent(AuditOperation.DELETE, AuditEntityType.PLUGIN, name);
 

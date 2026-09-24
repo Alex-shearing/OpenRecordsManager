@@ -76,6 +76,9 @@ class PluginServiceIntegrationTest {
     @Autowired
     private PluginManager pluginManager;
 
+    @Autowired
+    private PluginService pluginService;
+
     @BeforeEach
     void setUp() throws IOException {
         restorePluginJars();
@@ -146,6 +149,26 @@ class PluginServiceIntegrationTest {
 
     private String adminBearerToken() {
         return this.testAuthTokens.adminAccessToken();
+    }
+
+    @Test
+    void getAllIncludesBuiltinAndDiscoveredPluginsWhenDatabaseEmpty() {
+        assertTrue(this.repository.pluginRepo.findAll().isEmpty());
+
+        var plugins = this.pluginService.getAll(true);
+
+        assertTrue(
+                plugins.stream().anyMatch(plugin -> "builtin".equals(plugin.id()) && plugin.loaded()),
+                "expected builtin plugin in list"
+        );
+        assertTrue(
+                plugins.stream().anyMatch(plugin -> "filestore_local".equals(plugin.id()) && plugin.loaded()),
+                "expected discovered local plugin in list"
+        );
+        assertTrue(
+                plugins.stream().anyMatch(plugin -> "filestore_s3".equals(plugin.id()) && plugin.loaded()),
+                "expected discovered s3 plugin in list"
+        );
     }
 
     @Test

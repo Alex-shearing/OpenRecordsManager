@@ -25,7 +25,7 @@ CREATE TABLE list_type (
 CREATE TABLE object_property (
     id VARCHAR(255) NOT NULL PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
-    description VARCHAR(MAX) NOT NULL,
+    description TEXT NOT NULL,
     type VARCHAR(255) NOT NULL,
     list_type_id VARCHAR(255),
     validator VARCHAR(255),
@@ -43,7 +43,7 @@ CREATE TABLE list_element (
     id VARCHAR(255) NOT NULL PRIMARY KEY,
     parent_id VARCHAR(255) NOT NULL,
     name VARCHAR(255) NOT NULL,
-    description VARCHAR(MAX) NOT NULL,
+    description TEXT NOT NULL,
     element_index INTEGER NOT NULL,
     active_to TIMESTAMPTZ,
     date_created TIMESTAMPTZ NOT NULL,
@@ -64,7 +64,7 @@ CREATE INDEX IF NOT EXISTS idx_list_element_alias_element ON list_element_alias 
 CREATE TABLE record_type (
     id VARCHAR(255) NOT NULL PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
-    description VARCHAR(MAX) NOT NULL,
+    description TEXT NOT NULL,
     security_filter VARCHAR(255),
     security_filter_usage SMALLINT NOT NULL CHECK (security_filter_usage BETWEEN 0 AND 2),
     content_types JSON,
@@ -225,7 +225,7 @@ CREATE TABLE audit_policy (
     enabled BOOLEAN NOT NULL,
     requires_comment BOOLEAN NOT NULL,
     display_name VARCHAR(255) NOT NULL,
-    description VARCHAR(MAX),
+    description TEXT,
     date_modified TIMESTAMPTZ NOT NULL,
     PRIMARY KEY (entity_type, operation)
 );

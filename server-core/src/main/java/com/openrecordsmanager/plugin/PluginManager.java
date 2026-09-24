@@ -169,8 +169,12 @@ public class PluginManager {
     }
 
     void deleteLocalPlugin(PersistedPlugin plugin) throws IOException {
+        this.deleteLocalPlugin(plugin.getName());
+    }
+
+    void deleteLocalPlugin(String pluginId) throws IOException {
         Set<DiscoveredPlugin> localPlugins = this.discoverLocalPlugins().stream()
-                .filter(p -> Objects.equals(p.id(), plugin.getName()))
+                .filter(p -> Objects.equals(p.id(), pluginId))
                 .collect(Collectors.toSet());
 
         for (DiscoveredPlugin localPlugin : localPlugins) {
