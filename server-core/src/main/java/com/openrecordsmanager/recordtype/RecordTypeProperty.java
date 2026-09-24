@@ -1,6 +1,9 @@
 package com.openrecordsmanager.recordtype;
 
+import com.openrecordsmanager.plugin.ExpressionsService;
 import com.openrecordsmanager.property.ObjectProperty;
+import com.openrecordsmanager.record.Record;
+import com.openrecordsmanager.user.User;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 import jakarta.persistence.ManyToOne;
@@ -14,7 +17,7 @@ import tools.jackson.databind.JsonNode;
 public class RecordTypeProperty<T> {
 
     @ManyToOne(targetEntity = ObjectProperty.class, optional = false)
-    public ObjectProperty<T> property;
+    private ObjectProperty<T> property;
 
     @Column()
     @Nullable
@@ -30,6 +33,10 @@ public class RecordTypeProperty<T> {
         this.defaultValue = defaultValue;
     }
 
+    public ObjectProperty<T> getProperty() {
+        return this.property;
+    }
+
     /**
      * Get the default value for this property as wire/storage JSON.
      * Record-type override wins over the object-property default.
@@ -41,5 +48,27 @@ public class RecordTypeProperty<T> {
         }
 
         return this.property.getDefaultValue();
+    }
+
+    /**
+     * Apply this properties security filter to the provided record and actor
+     *
+     * @param expressions the expression service
+     * @param record      the target record
+     * @param actor       the target actor
+     * @return true if the user can access otherwise false
+     */
+    public boolean securityFilter(ExpressionsService expressions, Record record, User actor) {
+        if (this.property.getSecurityFilter() == null) {
+            return true;
+        }
+
+        return expressions.checkPropertyExpression(
+                record.getId(),
+                this.property.getSecurityFilter(),
+                record.getProperty(this.getProperty()),
+                actor,
+                record
+        );
     }
 }

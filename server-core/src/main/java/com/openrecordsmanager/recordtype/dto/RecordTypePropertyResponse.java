@@ -13,7 +13,7 @@ public record RecordTypePropertyResponse(
 ) {
     public static RecordTypePropertyResponse of(RecordTypeProperty<?> property) {
         return new RecordTypePropertyResponse(
-                ObjectPropertyResponse.of(property.property),
+                ObjectPropertyResponse.of(property.getProperty()),
                 property.getDefault()
         );
     }

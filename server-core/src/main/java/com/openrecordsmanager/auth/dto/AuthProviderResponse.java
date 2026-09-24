@@ -16,9 +16,8 @@ public record AuthProviderResponse(
         @NotBlank String name,
         @NotNull ComponentReferenceDto type,
         @NotBlank boolean enabled,
-        @Nullable
         @Schema(description = "Provider settings with write-only fields omitted", additionalProperties = Schema.AdditionalPropertiesValue.TRUE)
-        Map<String, ?> settings
+        @Nullable Map<String, ?> settings
 ) {
     public static AuthProviderResponse of(ComponentCatalog catalog, AuthProvider provider) {
         return new AuthProviderResponse(

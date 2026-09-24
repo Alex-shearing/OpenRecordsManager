@@ -3,7 +3,6 @@ package com.openrecordsmanager.plugin;
 import com.google.common.io.MoreFiles;
 import com.openrecordsmanager.api.schema.JsonSchemaValidator;
 import com.openrecordsmanager.filestore.store.FileStore;
-import com.openrecordsmanager.filestore.store.FileStoreService;
 import com.openrecordsmanager.plugin.registry.ComponentCatalog;
 import org.jspecify.annotations.Nullable;
 import org.semver4j.Semver;
@@ -201,16 +200,8 @@ public record DiscoveredPlugin(
             return PluginComparison.SAME_VERSION_NO_PERSISTED_FILE;
         }
 
-        try {
-            String localHash = MoreFiles.asByteSource(this.getPathOrThrow())
-                    .hash(FileStoreService.getHashFunction(this.persistedPlugin.getFile().hashAlgorithm))
-                    .toString();
-            if (!localHash.equals(this.persistedPlugin().getFile().hash)) {
-                return PluginComparison.SAME_VERSION_HASH_MISMATCH;
-            }
-
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+        if (!this.persistedPlugin.getFile().fileMatches(this.getPathOrThrow())) {
+            return PluginComparison.SAME_VERSION_HASH_MISMATCH;
         }
 
         return PluginComparison.EQUAL;

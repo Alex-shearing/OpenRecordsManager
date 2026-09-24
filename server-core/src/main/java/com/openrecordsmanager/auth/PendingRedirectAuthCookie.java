@@ -38,9 +38,9 @@ public class PendingRedirectAuthCookie {
     private static final String COOKIE_PATH = "/api/auth";
 
     private final SecretKey signingKey;
-    private final HttpOnlyCookies cookies;
+    private final CookieService cookies;
 
-    public PendingRedirectAuthCookie(ConfigService config, HttpOnlyCookies cookies) {
+    public PendingRedirectAuthCookie(ConfigService config, CookieService cookies) {
         String key = config.getOrThrow(BuiltinConfigs.JWT_SIGNING_KEY);
         this.signingKey = Keys.hmacShaKeyFor(key.getBytes(StandardCharsets.UTF_8));
         this.cookies = cookies;

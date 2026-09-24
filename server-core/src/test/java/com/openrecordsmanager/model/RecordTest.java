@@ -68,7 +68,7 @@ class RecordTest {
                 SecurityFilterUsage.HIDE_RECORD,
                 new HashSet<>()
         );
-        recordType.properties.add(new RecordTypeProperty<>(stringProperty, null));
+        recordType.getProperties().add(new RecordTypeProperty<>(stringProperty, null));
 
         Record record = new Record("Record", recordType);
         record.setProperty(stringProperty, "test value");

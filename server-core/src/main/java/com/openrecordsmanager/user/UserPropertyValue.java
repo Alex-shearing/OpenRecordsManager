@@ -2,42 +2,32 @@ package com.openrecordsmanager.user;
 
 import com.openrecordsmanager.property.ObjectProperty;
 import com.openrecordsmanager.property.ObjectPropertyHolder;
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Embeddable;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import org.hibernate.annotations.JdbcTypeCode;
-import org.hibernate.id.uuid.UuidVersion7Strategy;
 import org.hibernate.type.SqlTypes;
 import org.jspecify.annotations.Nullable;
 import tools.jackson.databind.JsonNode;
 
-import java.util.UUID;
-
-@Entity
-@Table(name = "user_property_value")
+@Embeddable
 @SuppressWarnings("NotNullFieldNotInitialized")
 public class UserPropertyValue implements ObjectPropertyHolder.ObjectPropertyValue {
-    @Id
-    public UUID id;
-
-    @ManyToOne(optional = false)
-    @JoinColumn(nullable = false)
-    public User user;
-
     @ManyToOne(targetEntity = ObjectProperty.class, optional = false)
-    @JoinColumn(nullable = false)
-    public ObjectProperty<?> property;
+    @JoinColumn(name = "property_id", insertable = false, updatable = false)
+    private ObjectProperty<?> property;
 
     @Column(name = "property_value")
     @JdbcTypeCode(SqlTypes.JSON)
     @Nullable
-    public JsonNode value;
+    private JsonNode value;
 
     @Deprecated
     protected UserPropertyValue() {
     }
 
-    public UserPropertyValue(User user, ObjectProperty<?> property, @Nullable JsonNode value) {
-        this.id = UuidVersion7Strategy.INSTANCE.generateUuid(null);
-        this.user = user;
+    public UserPropertyValue(ObjectProperty<?> property, @Nullable JsonNode value) {
         this.property = property;
         this.value = value;
     }

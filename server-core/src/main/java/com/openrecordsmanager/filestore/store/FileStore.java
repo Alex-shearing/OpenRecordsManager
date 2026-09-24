@@ -9,7 +9,6 @@ import com.openrecordsmanager.api.schema.JsonSchemaValidator;
 import com.openrecordsmanager.api.types.ComponentTypes;
 import com.openrecordsmanager.database.util.ResourceIdentifierJavaType;
 import com.openrecordsmanager.filestore.middleware.Middleware;
-import com.openrecordsmanager.filestore.middleware.MiddlewareUsage;
 import com.openrecordsmanager.plugin.registry.ComponentCatalog;
 import jakarta.persistence.*;
 import org.hibernate.annotations.JavaType;
@@ -44,9 +43,6 @@ public class FileStore {
     )
     @OrderBy("application_order ASC")
     private List<MiddlewareUsage> middlewares = new ArrayList<>();
-
-    @OneToMany(fetch = FetchType.LAZY, mappedBy = "store")
-    private Set<FileStoreEntry> files = new HashSet<>();
 
     @Deprecated
     protected FileStore() {
@@ -104,7 +100,7 @@ public class FileStore {
     }
 
     public InputStream getFile(ComponentCatalog catalog, FileStoreEntry entry) throws IOException {
-        InputStream stream = this.getStoreType(catalog).retrieveUntyped(this.properties, entry.path);
+        InputStream stream = this.getStoreType(catalog).retrieveUntyped(this.properties, entry.getPath());
 
         for (MiddlewareUsage middleware : this.middlewares) {
             stream = middleware.middleware.duringRetrieve(catalog, stream);
@@ -127,11 +123,28 @@ public class FileStore {
         type.initializeUntyped(this.properties);
     }
 
-    public List<MiddlewareUsage> getMiddlewares() {
-        return middlewares;
+    public List<Middleware> getMiddlewares() {
+        return this.middlewares.stream().map(middlewareUsage -> middlewareUsage.middleware).toList();
     }
 
-    public Set<FileStoreEntry> getFiles() {
-        return files;
+    @Embeddable
+    private static class MiddlewareUsage {
+
+        @ManyToOne(targetEntity = Middleware.class, optional = false)
+        @JoinColumn(name = "middleware_id")
+        private Middleware middleware;
+
+        @SuppressWarnings("FieldCanBeLocal") // persisted; ordered via @OrderBy
+        @Column(name = "application_order", nullable = false)
+        private int applicationOrder;
+
+        private MiddlewareUsage(Middleware middleware, int order) {
+            this.middleware = middleware;
+            this.applicationOrder = order;
+        }
+
+        @Deprecated
+        protected MiddlewareUsage() {
+        }
     }
 }

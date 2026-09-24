@@ -96,8 +96,12 @@ public class User extends ObjectPropertyHolder<User, UserPropertyValue> implemen
     @Column(name = "session_epoch", nullable = false)
     private int sessionEpoch = 0;
 
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "user", fetch = FetchType.EAGER)
-    @MapKey(name = "property")
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(
+            name = "user_property_value",
+            joinColumns = @JoinColumn(name = "user_id")
+    )
+    @MapKeyJoinColumn(name = "property_id")
     private Map<ObjectProperty<?>, UserPropertyValue> properties = new HashMap<>();
 
     @Deprecated
@@ -194,7 +198,7 @@ public class User extends ObjectPropertyHolder<User, UserPropertyValue> implemen
 
     @Override
     public UserPropertyValue createProperty(ObjectProperty<?> property, @Nullable JsonNode value) {
-        return new UserPropertyValue(this, property, value);
+        return new UserPropertyValue(property, value);
     }
 
     @Override

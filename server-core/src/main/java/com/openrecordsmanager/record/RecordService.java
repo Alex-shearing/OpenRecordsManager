@@ -107,11 +107,11 @@ public class RecordService {
 
         List<AuditPropertyChange> changes = new ArrayList<>();
 
-        if (input.type() != null && !input.type().equals(record.getType().id)) {
+        if (input.type() != null && !input.type().equals(record.getType().getId())) {
             RecordType newType = this.repository.recordTypeRepo.findById(input.type())
                     .orElseThrow(() -> new ResourceNotFoundException(ComponentTypes.RECORD_TYPE, input.type()));
 
-            ResourceIdentifier oldType = record.getType().id;
+            ResourceIdentifier oldType = record.getType().getId();
             record.setType(newType);
             changes.add(AuditPropertyChange.of("type", oldType, input.type()));
         }
@@ -150,7 +150,7 @@ public class RecordService {
         }
 
         if (!record.getType().supportsFile()) {
-            throw new IllegalArgumentException(MessageFormat.format("Record type {0} does not support attaching a file", record.getType().id));
+            throw new IllegalArgumentException(MessageFormat.format("Record type {0} does not support attaching a file", record.getType().getId()));
         }
 
         UUID defaultStoreId = this.config.getOptional(BuiltinConfigs.DEFAULT_FILE_STORE)

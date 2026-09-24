@@ -20,7 +20,7 @@ public record RecordResponse(
     public static RecordResponse of(Record record) {
         return new RecordResponse(
                 record.getId(),
-                record.getType().id,
+                record.getType().getId(),
                 record.toWireMap(),
                 record.getRevisionList()
         );

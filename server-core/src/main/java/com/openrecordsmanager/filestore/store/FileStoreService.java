@@ -107,7 +107,7 @@ public class FileStoreService {
         FileStore store = this.repository.fileStoreRepo.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("file store", id));
 
-        if (!store.getFiles().isEmpty()) {
+        if (this.repository.fileStoreRepo.countFilesByStoreId(id) > 0) {
             throw new ResourceInUseException("stream store has contents and cannot be deleted");
         }
 

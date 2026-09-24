@@ -25,10 +25,10 @@ public record RecordRevisionResponse(
                 file.getFile(catalog),
                 revision.getVersion(),
                 revision.getCreatedDate(),
-                file.extension,
-                file.sizeBytes,
-                file.hash,
-                file.hashAlgorithm
+                file.getExtension(),
+                file.getSizeBytes(),
+                file.getHash(),
+                file.getHashAlgorithm()
         );
     }
 

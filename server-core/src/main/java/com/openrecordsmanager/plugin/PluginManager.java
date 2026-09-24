@@ -148,7 +148,7 @@ public class PluginManager {
         LOGGER.info("Downloading {} to {}", persistedPlugin.getName(), destFile);
         Files.createDirectories(this.directory);
 
-        try (InputStream inputStream = persistedPlugin.getFile().store.getFile(catalog, persistedPlugin.getFile())) {
+        try (InputStream inputStream = persistedPlugin.getFile().getFile(catalog)) {
             Files.copy(inputStream, destFile, StandardCopyOption.REPLACE_EXISTING);
         }
 
@@ -162,10 +162,7 @@ public class PluginManager {
             );
         }
 
-        String extension = persistedPlugin.getFile().extension;
-        if (extension == null || extension.isBlank()) {
-            extension = "jar";
-        }
+        String extension = persistedPlugin.getFile().getExtension("jar");
         return this.directory.resolve(
                 String.format("%s-%s.%s", persistedPlugin.getName(), persistedPlugin.getVersion(), extension)
         );
@@ -247,8 +244,8 @@ public class PluginManager {
             return Map.of("version", plugin.getVersion());
         }
         return Map.of(
-                "fileHash", file.hash,
-                "hashAlgorithm", file.hashAlgorithm,
+                "fileHash", file.getHash(),
+                "hashAlgorithm", file.getHashAlgorithm(),
                 "version", plugin.getVersion()
         );
     }

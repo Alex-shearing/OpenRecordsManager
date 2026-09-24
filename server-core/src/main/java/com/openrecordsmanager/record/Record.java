@@ -97,8 +97,12 @@ public class Record extends ObjectPropertyHolder<Record, RecordPropertyValue> {
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "record", fetch = FetchType.LAZY)
     private List<RecordRevision> revisions = new ArrayList<>();
 
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "record", fetch = FetchType.EAGER)
-    @MapKey(name = "property")
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(
+            name = "record_property_value",
+            joinColumns = @JoinColumn(name = "record_id")
+    )
+    @MapKeyJoinColumn(name = "property_id")
     private Map<ObjectProperty<?>, RecordPropertyValue> properties = new HashMap<>();
 
     @Deprecated
@@ -108,7 +112,7 @@ public class Record extends ObjectPropertyHolder<Record, RecordPropertyValue> {
     public Record(String title, RecordType type) {
         this.id = UuidVersion7Strategy.INSTANCE.generateUuid(null);
         this.type = type;
-        type.properties.forEach(p -> this.setPropertyFromJson(p.property, p.getDefault()));
+        type.getProperties().forEach(p -> this.setPropertyFromJson(p.getProperty(), p.getDefault()));
         this.title = title;
         this.dateCreated = Instant.now();
         this.dateModified = Instant.now();
@@ -159,11 +163,12 @@ public class Record extends ObjectPropertyHolder<Record, RecordPropertyValue> {
         Map<ObjectProperty<?>, RecordPropertyValue> oldProperties = Map.copyOf(this.properties);
 
         this.properties.clear();
-        type.properties.forEach(p -> this.setPropertyFromJson(p.property, p.getDefault()));
+        type.getProperties()
+                .forEach(p -> this.setPropertyFromJson(p.getProperty(), p.getDefault()));
 
         oldProperties.forEach((property, holder) -> {
             if (this.canSetProperty(property)) {
-                this.setPropertyFromJson(property, holder.value);
+                this.setPropertyFromJson(property, holder.getStoredValue());
             }
         });
 
@@ -182,19 +187,19 @@ public class Record extends ObjectPropertyHolder<Record, RecordPropertyValue> {
 
     @Override
     public RecordPropertyValue createProperty(ObjectProperty<?> property, @Nullable JsonNode value) {
-        return new RecordPropertyValue(this, property, value);
+        return new RecordPropertyValue(property, value);
     }
 
     @Override
     public Set<ObjectProperty<?>> getPropertyKeys() {
-        return this.type.properties.stream()
-                .map(prop -> prop.property)
+        return this.type.getProperties().stream()
+                .map(RecordTypeProperty::getProperty)
                 .collect(Collectors.toSet());
     }
 
     @Override
     public boolean canSetProperty(ObjectProperty<?> property) {
-        return this.type.properties.stream().anyMatch(prop -> prop.property.equals(property));
+        return this.type.hasProperty(property);
     }
 
     @Override
@@ -213,29 +218,7 @@ public class Record extends ObjectPropertyHolder<Record, RecordPropertyValue> {
     }
 
     public SecurityFilterUsage securityFilter(ExpressionsService expressions, User actor) {
-        if (this.type.securityFilter != null && !expressions.checkPropertyExpression(
-                this.id,
-                this.type.securityFilter,
-                null,
-                actor,
-                this)
-        ) {
-            return this.type.securityFilterUsage;
-        }
-
-        for (RecordTypeProperty<?> recordTypeProperty : this.type.properties) {
-            ObjectProperty<?> property = recordTypeProperty.property;
-            if (property.getSecurityFilter() == null) {
-                continue;
-            }
-
-            Object value = this.getProperty(property);
-            if (!expressions.checkPropertyExpression(this.id, property.getSecurityFilter(), value, actor, this)) {
-                return this.type.securityFilterUsage;
-            }
-        }
-
-        return SecurityFilterUsage.SHOW_ALL;
+        return this.type.securityFilter(expressions, this, actor);
     }
 
     public RecordRevision addRevision(String version, FileStoreEntry file) {

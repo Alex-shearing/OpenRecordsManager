@@ -18,11 +18,11 @@ import java.time.Duration;
  * Shared helpers for HttpOnly auth cookies with SameSite tied to the Secure flag.
  */
 @Component
-public class HttpOnlyCookies {
+public class CookieService {
 
     private final boolean cookieSecure;
 
-    public HttpOnlyCookies(ConfigService config) {
+    public CookieService(ConfigService config) {
         this.cookieSecure = config.getOrThrow(BuiltinConfigs.COOKIE_SECURE);
     }
 

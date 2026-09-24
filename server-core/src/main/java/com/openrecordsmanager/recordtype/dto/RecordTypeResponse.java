@@ -21,13 +21,13 @@ public record RecordTypeResponse(
 ) {
     public static RecordTypeResponse of(RecordType recordType) {
         return new RecordTypeResponse(
-                recordType.id,
-                recordType.name,
-                recordType.description,
-                recordType.securityFilter,
-                recordType.securityFilterUsage,
-                recordType.contentTypes,
-                recordType.properties.stream()
+                recordType.getId(),
+                recordType.getName(),
+                recordType.getDescription(),
+                recordType.getSecurityFilter(),
+                recordType.getSecurityFilterUsage(),
+                recordType.getContentTypes(),
+                recordType.getProperties().stream()
                         .map(RecordTypePropertyResponse::of)
                         .collect(Collectors.toSet())
         );

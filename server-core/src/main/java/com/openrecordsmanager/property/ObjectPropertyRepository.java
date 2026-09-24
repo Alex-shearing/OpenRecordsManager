@@ -17,16 +17,16 @@ public interface ObjectPropertyRepository extends JpaRepository<ObjectProperty<?
     boolean isAssignedToRecordType(@Param("property") ObjectProperty<?> property);
 
     @Query("""
-            SELECT CASE WHEN COUNT(v) > 0 THEN true ELSE false END
-            FROM RecordPropertyValue v
-            WHERE v.property = :property
+            SELECT CASE WHEN COUNT(r) > 0 THEN true ELSE false END
+            FROM Record r JOIN r.properties v
+            WHERE KEY(v) = :property
             """)
     boolean isUsedByRecords(@Param("property") ObjectProperty<?> property);
 
     @Query("""
-            SELECT CASE WHEN COUNT(v) > 0 THEN true ELSE false END
-            FROM UserPropertyValue v
-            WHERE v.property = :property
+            SELECT CASE WHEN COUNT(u) > 0 THEN true ELSE false END
+            FROM User u JOIN u.properties v
+            WHERE KEY(v) = :property
             """)
     boolean isUsedByUsers(@Param("property") ObjectProperty<?> property);
 }

@@ -2,6 +2,7 @@ package com.openrecordsmanager.filestore.dto;
 
 import com.openrecordsmanager.api.ResourceIdentifier;
 import com.openrecordsmanager.api.types.ComponentTypes;
+import com.openrecordsmanager.filestore.middleware.Middleware;
 import com.openrecordsmanager.filestore.store.FileStore;
 import com.openrecordsmanager.plugin.registry.ComponentCatalog;
 import com.openrecordsmanager.rest.errors.ResourceNotFoundException;
@@ -29,7 +30,7 @@ public record FileStoreResponse(
                 storeTypeId,
                 store.getProperties(catalog),
                 store.getMiddlewares().stream()
-                        .map(usage -> usage.middleware.getId())
+                        .map(Middleware::getId)
                         .toList(),
                 fileCount
         );

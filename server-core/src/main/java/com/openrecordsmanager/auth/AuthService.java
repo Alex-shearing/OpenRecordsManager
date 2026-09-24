@@ -56,7 +56,7 @@ public class AuthService implements UserAuthContext {
     private final JwtSessionService jwtSessionService;
     private final DatabaseWritableProbe probe;
     private final PendingRedirectAuthCookie pendingRedirectAuthCookie;
-    private final HttpOnlyCookies cookies;
+    private final CookieService cookies;
     private final String cookieName;
     private final String refreshCookieName;
     private final String publicBaseUrl;
@@ -71,7 +71,7 @@ public class AuthService implements UserAuthContext {
             JwtSessionService jwtSessionService,
             DatabaseWritableProbe probe,
             PendingRedirectAuthCookie pendingRedirectAuthCookie,
-            HttpOnlyCookies cookies
+            CookieService cookies
     ) {
         this.repository = repository;
         this.catalog = catalog;

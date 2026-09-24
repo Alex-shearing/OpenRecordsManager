@@ -107,16 +107,13 @@ CREATE INDEX idx_user_details_auth_provider_id ON user_details (auth_provider_id
 GO
 
 CREATE TABLE user_property_value (
-    id UNIQUEIDENTIFIER NOT NULL PRIMARY KEY,
     user_id UNIQUEIDENTIFIER NOT NULL,
     property_id NVARCHAR(255) NOT NULL,
     property_value VARCHAR(MAX) NULL,
+    PRIMARY KEY (user_id, property_id),
     CONSTRAINT fk_upv_user FOREIGN KEY (user_id) REFERENCES user_details (id),
     CONSTRAINT fk_upv_property FOREIGN KEY (property_id) REFERENCES object_property (id)
 );
-GO
-
-CREATE UNIQUE INDEX uk_user_property_value_user_property ON user_property_value (user_id, property_id);
 GO
 
 CREATE INDEX idx_upv_property_id ON user_property_value (property_id);
@@ -196,16 +193,13 @@ CREATE INDEX idx_record_type_id ON record (type_id);
 GO
 
 CREATE TABLE record_property_value (
-    id UNIQUEIDENTIFIER NOT NULL PRIMARY KEY,
     record_id UNIQUEIDENTIFIER NOT NULL,
     property_id NVARCHAR(255) NOT NULL,
     property_value VARCHAR(MAX) NULL,
+    PRIMARY KEY (record_id, property_id),
     CONSTRAINT fk_rpv_record FOREIGN KEY (record_id) REFERENCES record (id),
     CONSTRAINT fk_rpv_property FOREIGN KEY (property_id) REFERENCES object_property (id)
 );
-GO
-
-CREATE UNIQUE INDEX uk_record_property_value_record_property ON record_property_value (record_id, property_id);
 GO
 
 CREATE INDEX idx_rpv_property_id ON record_property_value (property_id);

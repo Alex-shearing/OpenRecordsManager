@@ -162,7 +162,7 @@ class ExpressionsServiceTest {
                 SecurityFilterUsage.HIDE_RECORD,
                 new HashSet<>()
         );
-        recordType.properties.add(new RecordTypeProperty<>(recordProperty, JsonNodeFactory.instance.booleanNode(false)));
+        recordType.getProperties().add(new RecordTypeProperty<>(recordProperty, JsonNodeFactory.instance.booleanNode(false)));
 
         Record record = new Record("Record title", recordType);
         record.setProperty(recordProperty, false);

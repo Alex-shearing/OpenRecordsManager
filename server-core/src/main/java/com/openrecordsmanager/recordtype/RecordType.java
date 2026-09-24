@@ -1,9 +1,12 @@
 package com.openrecordsmanager.recordtype;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.openrecordsmanager.api.ResourceIdentifier;
 import com.openrecordsmanager.api.template.recordtype.SecurityFilterUsage;
 import com.openrecordsmanager.database.util.ResourceIdentifierJavaType;
+import com.openrecordsmanager.plugin.ExpressionsService;
+import com.openrecordsmanager.property.ObjectProperty;
+import com.openrecordsmanager.record.Record;
+import com.openrecordsmanager.user.User;
 import jakarta.persistence.*;
 import org.hibernate.annotations.JavaType;
 import org.hibernate.annotations.JdbcTypeCode;
@@ -11,6 +14,7 @@ import org.hibernate.type.SqlTypes;
 import org.jspecify.annotations.Nullable;
 
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 
 @Entity
@@ -18,39 +22,32 @@ import java.util.Set;
 @SuppressWarnings("NotNullFieldNotInitialized")
 public class RecordType {
     @Id
-    @JsonProperty
     @JavaType(ResourceIdentifierJavaType.class)
-    public ResourceIdentifier id;
+    private ResourceIdentifier id;
 
     @Column(nullable = false)
-    @JsonProperty
-    public String name;
+    private String name;
 
     @Column(nullable = false)
-    @JsonProperty
-    public String description;
+    private String description;
 
     @Column()
-    @JsonProperty
     @Nullable
-    public String securityFilter;
+    private String securityFilter;
 
     @Column(nullable = false)
-    @JsonProperty
-    public SecurityFilterUsage securityFilterUsage;
+    private SecurityFilterUsage securityFilterUsage;
 
     @Column()
-    @JsonProperty
     @JdbcTypeCode(SqlTypes.JSON)
-    public Set<String> contentTypes = new HashSet<>();
+    private Set<String> contentTypes = new HashSet<>();
 
-    @JsonProperty
     @ElementCollection
     @CollectionTable(
             name = "record_type_property",
             joinColumns = @JoinColumn(name = "record_type")
     )
-    public Set<RecordTypeProperty<?>> properties = new HashSet<>();
+    private Set<RecordTypeProperty<?>> properties = new HashSet<>();
 
     @Deprecated
     protected RecordType() {
@@ -74,7 +71,60 @@ public class RecordType {
         this.properties = properties;
     }
 
+    public ResourceIdentifier getId() {
+        return this.id;
+    }
+
+    public String getName() {
+        return this.name;
+    }
+
+    public String getDescription() {
+        return this.description;
+    }
+
+    public @Nullable String getSecurityFilter() {
+        return this.securityFilter;
+    }
+
+    public SecurityFilterUsage getSecurityFilterUsage() {
+        return this.securityFilterUsage;
+    }
+
+    public Set<RecordTypeProperty<?>> getProperties() {
+        return this.properties;
+    }
+
+    public Set<String> getContentTypes() {
+        return this.contentTypes;
+    }
+
     public boolean supportsFile() {
         return !this.contentTypes.isEmpty();
+    }
+
+    public boolean hasProperty(ObjectProperty<?> property) {
+        return this.properties.stream()
+                .anyMatch(prop -> Objects.equals(prop.getProperty(), property));
+    }
+
+    public SecurityFilterUsage securityFilter(ExpressionsService expressions, Record record, User actor) {
+        if (this.securityFilter != null && !expressions.checkPropertyExpression(
+                record.getId(),
+                this.securityFilter,
+                null,
+                actor,
+                record
+        )) {
+            return this.securityFilterUsage;
+        }
+
+        for (RecordTypeProperty<?> recordTypeProperty : this.properties) {
+            if (!recordTypeProperty.securityFilter(expressions, record, actor)) {
+                return this.securityFilterUsage;
+            }
+        }
+
+        return SecurityFilterUsage.SHOW_ALL;
     }
 }
