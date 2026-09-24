@@ -16,6 +16,7 @@ import org.hibernate.id.uuid.UuidVersion7Strategy;
 import org.hibernate.type.SqlTypes;
 
 import java.io.InputStream;
+import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -36,6 +37,12 @@ public class Middleware {
     @JdbcTypeCode(SqlTypes.JSON)
     private Map<String, ?> properties = new HashMap<>();
 
+    @Column(nullable = false)
+    private Instant dateCreated;
+
+    @Column(nullable = false)
+    private Instant dateModified;
+
     @Deprecated
     protected Middleware() {
     }
@@ -45,10 +52,24 @@ public class Middleware {
         this.type = catalog.getRegistry(ComponentTypes.FILE_STORE_MIDDLEWARE).getId(type).orElseThrow();
         this.properties = JsonSchemaValidator.serializeSettings(type.parseSettings(properties));
         type.initializeUntyped(this.properties);
+        this.dateCreated = Instant.now();
+        this.dateModified = Instant.now();
     }
 
     public UUID getId() {
         return this.id;
+    }
+
+    public Instant getDateCreated() {
+        return this.dateCreated;
+    }
+
+    public Instant getDateModified() {
+        return this.dateModified;
+    }
+
+    public void touchDateModified() {
+        this.dateModified = Instant.now();
     }
 
     public Map<String, ?> getProperties(ComponentCatalog catalog) {
@@ -79,6 +100,7 @@ public class Middleware {
         );
         this.properties = JsonSchemaValidator.serializeSettings(type.parseSettings(merged));
         type.initializeUntyped(this.properties);
+        this.touchDateModified();
     }
 
 }

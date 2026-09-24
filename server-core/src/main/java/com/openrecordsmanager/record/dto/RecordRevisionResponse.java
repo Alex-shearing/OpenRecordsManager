@@ -13,7 +13,7 @@ import java.util.Locale;
 public record RecordRevisionResponse(
         InputStream stream,
         String version,
-        Instant createdDate,
+        Instant dateCreated,
         String extension,
         long sizeBytes,
         String hash,
@@ -24,7 +24,7 @@ public record RecordRevisionResponse(
         return new RecordRevisionResponse(
                 file.getFile(catalog),
                 revision.getVersion(),
-                revision.getCreatedDate(),
+                revision.getDateCreated(),
                 file.getExtension(),
                 file.getSizeBytes(),
                 file.getHash(),

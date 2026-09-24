@@ -8,26 +8,31 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
 import org.jspecify.annotations.Nullable;
 
+import java.time.Instant;
+
 @Entity
 @Table(name = "audit_policy")
 @SuppressWarnings({"NotNullFieldNotInitialized", "CanBeFinal"})
 public class AuditPolicyEntity {
 
     @EmbeddedId
-    public AuditPolicyId id;
+    private AuditPolicyId id;
 
     @Column(nullable = false)
-    public boolean enabled;
+    private boolean enabled;
 
     @Column(name = "requires_comment", nullable = false)
-    public boolean requiresComment;
+    private boolean requiresComment;
 
     @Column(name = "display_name", nullable = false)
-    public String displayName;
+    private String displayName;
 
     @Column(length = 1000)
     @Nullable
-    public String description;
+    private String description;
+
+    @Column(nullable = false)
+    private Instant dateModified;
 
     @Deprecated
     protected AuditPolicyEntity() {
@@ -45,6 +50,55 @@ public class AuditPolicyEntity {
         this.requiresComment = requiresComment;
         this.displayName = displayName;
         this.description = description;
+        this.dateModified = Instant.now();
+    }
+
+    public AuditPolicyId getId() {
+        return this.id;
+    }
+
+    public boolean isEnabled() {
+        return this.enabled;
+    }
+
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
+        this.touchDateModified();
+    }
+
+    public boolean isRequiresComment() {
+        return this.requiresComment;
+    }
+
+    public void setRequiresComment(boolean requiresComment) {
+        this.requiresComment = requiresComment;
+        this.touchDateModified();
+    }
+
+    public String getDisplayName() {
+        return this.displayName;
+    }
+
+    public void setDisplayName(String displayName) {
+        this.displayName = displayName;
+        this.touchDateModified();
+    }
+
+    public @Nullable String getDescription() {
+        return this.description;
+    }
+
+    public void setDescription(@Nullable String description) {
+        this.description = description;
+        this.touchDateModified();
+    }
+
+    public Instant getDateModified() {
+        return this.dateModified;
+    }
+
+    public void touchDateModified() {
+        this.dateModified = Instant.now();
     }
 
     public AuditEntityType entityType() {

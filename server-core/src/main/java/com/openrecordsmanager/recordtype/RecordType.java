@@ -13,6 +13,7 @@ import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 import org.jspecify.annotations.Nullable;
 
+import java.time.Instant;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
@@ -42,6 +43,12 @@ public class RecordType {
     @JdbcTypeCode(SqlTypes.JSON)
     private Set<String> contentTypes = new HashSet<>();
 
+    @Column(nullable = false)
+    private Instant dateCreated;
+
+    @Column(nullable = false)
+    private Instant dateModified;
+
     @ElementCollection
     @CollectionTable(
             name = "record_type_property",
@@ -69,6 +76,8 @@ public class RecordType {
         this.securityFilter = securityFilter;
         this.securityFilterUsage = securityFilterUsage;
         this.properties = properties;
+        this.dateCreated = Instant.now();
+        this.dateModified = Instant.now();
     }
 
     public ResourceIdentifier getId() {
@@ -97,6 +106,18 @@ public class RecordType {
 
     public Set<String> getContentTypes() {
         return this.contentTypes;
+    }
+
+    public Instant getDateCreated() {
+        return this.dateCreated;
+    }
+
+    public Instant getDateModified() {
+        return this.dateModified;
+    }
+
+    public void touchDateModified() {
+        this.dateModified = Instant.now();
     }
 
     public boolean supportsFile() {

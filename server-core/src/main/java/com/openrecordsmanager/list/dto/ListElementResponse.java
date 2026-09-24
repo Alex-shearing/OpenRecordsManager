@@ -15,8 +15,9 @@ public record ListElementResponse(
         @NotBlank String description,
         @NotNull Set<String> aliases,
         @NotNull int index,
-        @Nullable Instant activeTo) {
-
+        @Nullable Instant activeTo,
+        @NotNull Instant dateCreated,
+        @NotNull Instant dateModified) {
 
     public static ListElementResponse of(ListElement element) {
         return new ListElementResponse(
@@ -25,7 +26,9 @@ public record ListElementResponse(
                 element.getDescription(),
                 element.getAliases(),
                 element.getElementIndex(),
-                element.getActiveTo()
+                element.getActiveTo(),
+                element.getDateCreated(),
+                element.getDateModified()
         );
     }
 }

@@ -10,6 +10,7 @@ import org.springframework.lang.Contract;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Path;
+import java.time.Instant;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -40,6 +41,9 @@ public class FileStoreEntry {
     @Nullable
     private String extension;
 
+    @Column(nullable = false)
+    private Instant dateCreated;
+
     @Deprecated
     protected FileStoreEntry() {
     }
@@ -52,6 +56,7 @@ public class FileStoreEntry {
         this.hash = hash;
         this.sizeBytes = sizeBytes;
         this.extension = normalizeExtension(extension);
+        this.dateCreated = Instant.now();
     }
 
     public UUID getId() {
@@ -72,6 +77,10 @@ public class FileStoreEntry {
 
     public long getSizeBytes() {
         return this.sizeBytes;
+    }
+
+    public Instant getDateCreated() {
+        return this.dateCreated;
     }
 
     public @Nullable String getExtension() {

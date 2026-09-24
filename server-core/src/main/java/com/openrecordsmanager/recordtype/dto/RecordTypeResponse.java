@@ -7,6 +7,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import org.jspecify.annotations.Nullable;
 
+import java.time.Instant;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -17,7 +18,9 @@ public record RecordTypeResponse(
         @Nullable String securityFilter,
         @NotNull SecurityFilterUsage securityFilterUsage,
         @Nullable Set<String> contentTypes,
-        @NotNull Set<RecordTypePropertyResponse> properties
+        @NotNull Set<RecordTypePropertyResponse> properties,
+        @NotNull Instant dateCreated,
+        @NotNull Instant dateModified
 ) {
     public static RecordTypeResponse of(RecordType recordType) {
         return new RecordTypeResponse(
@@ -29,7 +32,9 @@ public record RecordTypeResponse(
                 recordType.getContentTypes(),
                 recordType.getProperties().stream()
                         .map(RecordTypePropertyResponse::of)
-                        .collect(Collectors.toSet())
+                        .collect(Collectors.toSet()),
+                recordType.getDateCreated(),
+                recordType.getDateModified()
         );
     }
 }

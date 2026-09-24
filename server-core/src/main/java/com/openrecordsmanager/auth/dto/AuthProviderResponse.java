@@ -8,6 +8,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import org.jspecify.annotations.Nullable;
 
+import java.time.Instant;
 import java.util.Map;
 import java.util.UUID;
 
@@ -17,7 +18,9 @@ public record AuthProviderResponse(
         @NotNull ComponentReferenceDto type,
         @NotBlank boolean enabled,
         @Schema(description = "Provider settings with write-only fields omitted", additionalProperties = Schema.AdditionalPropertiesValue.TRUE)
-        @Nullable Map<String, ?> settings
+        @Nullable Map<String, ?> settings,
+        @NotNull Instant dateCreated,
+        @NotNull Instant dateModified
 ) {
     public static AuthProviderResponse of(ComponentCatalog catalog, AuthProvider provider) {
         return new AuthProviderResponse(
@@ -25,7 +28,9 @@ public record AuthProviderResponse(
                 provider.getName(),
                 ComponentReferenceDto.of(catalog, provider.getProviderType()),
                 provider.isEnabled(),
-                provider.getSettings(catalog)
+                provider.getSettings(catalog),
+                provider.getDateCreated(),
+                provider.getDateModified()
         );
     }
 }

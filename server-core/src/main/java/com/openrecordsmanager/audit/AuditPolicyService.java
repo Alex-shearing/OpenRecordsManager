@@ -53,7 +53,7 @@ public class AuditPolicyService {
             return false;
         }
         return this.repository.auditPolicyRepo.findById(new AuditPolicyId(entityType, operation))
-                .map(policy -> policy.enabled)
+                .map(AuditPolicyEntity::isEnabled)
                 .orElse(true);
     }
 
@@ -63,7 +63,7 @@ public class AuditPolicyService {
             return false;
         }
         return this.repository.auditPolicyRepo.findById(new AuditPolicyId(entityType, operation))
-                .map(policy -> policy.requiresComment)
+                .map(AuditPolicyEntity::isRequiresComment)
                 .orElse(false);
     }
 
@@ -150,8 +150,8 @@ public class AuditPolicyService {
                 .orElseThrow(() -> new IllegalArgumentException(
                         "Unknown audit policy: " + entityType.key() + " / " + operation
                 ));
-        policy.enabled = enabled;
-        policy.requiresComment = requiresComment;
+        policy.setEnabled(enabled);
+        policy.setRequiresComment(requiresComment);
         return this.repository.auditPolicyRepo.saveAndFlush(policy);
     }
 

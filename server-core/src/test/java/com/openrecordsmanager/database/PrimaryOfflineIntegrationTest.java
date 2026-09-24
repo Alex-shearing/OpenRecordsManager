@@ -66,24 +66,28 @@ class PrimaryOfflineIntegrationTest {
             Timestamp now = Timestamp.from(Instant.now());
 
             try (PreparedStatement property = connection.prepareStatement(
-                    "INSERT INTO object_property (id, name, description, type, user_hidden) VALUES (?, ?, ?, ?, ?)"
+                    "INSERT INTO object_property (id, name, description, type, user_hidden, date_created, date_modified) VALUES (?, ?, ?, ?, ?, ?, ?)"
             )) {
                 property.setString(1, "auth_local:password_hash");
                 property.setString(2, "Password Hash");
                 property.setString(3, "Hashed password for the user");
                 property.setString(4, "string");
                 property.setBoolean(5, true);
+                property.setTimestamp(6, now);
+                property.setTimestamp(7, now);
                 property.executeUpdate();
             }
 
             try (PreparedStatement provider = connection.prepareStatement(
-                    "INSERT INTO auth_provider (id, name, provider_type, settings, enabled) VALUES (?, ?, ?, ?, ?)"
+                    "INSERT INTO auth_provider (id, name, provider_type, settings, enabled, date_created, date_modified) VALUES (?, ?, ?, ?, ?, ?, ?)"
             )) {
                 provider.setBytes(1, uuidBytes(PROVIDER_ID));
                 provider.setString(2, "Local Authentication");
                 provider.setString(3, "input_auth_provider/auth_local:local_auth");
                 provider.setString(4, "{}");
                 provider.setBoolean(5, true);
+                provider.setTimestamp(6, now);
+                provider.setTimestamp(7, now);
                 provider.executeUpdate();
             }
 

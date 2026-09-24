@@ -3,7 +3,8 @@ IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'system_configurations')
 BEGIN
     CREATE TABLE system_configurations (
         config_key NVARCHAR(255) NOT NULL PRIMARY KEY,
-        config_value VARCHAR(MAX)
+        config_value VARCHAR(MAX),
+        date_modified DATETIMEOFFSET NOT NULL
     );
 END
 GO
@@ -13,13 +14,17 @@ CREATE TABLE auth_provider (
     name NVARCHAR(255) NOT NULL,
     provider_type NVARCHAR(255) NOT NULL,
     settings VARCHAR(MAX) NOT NULL,
-    enabled BIT NOT NULL CONSTRAINT df_auth_provider_enabled DEFAULT 1
+    enabled BIT NOT NULL CONSTRAINT df_auth_provider_enabled DEFAULT 1,
+    date_created DATETIMEOFFSET NOT NULL,
+    date_modified DATETIMEOFFSET NOT NULL
 );
 GO
 
 CREATE TABLE list_type (
     id NVARCHAR(255) NOT NULL PRIMARY KEY,
-    name NVARCHAR(255) NOT NULL
+    name NVARCHAR(255) NOT NULL,
+    date_created DATETIMEOFFSET NOT NULL,
+    date_modified DATETIMEOFFSET NOT NULL
 );
 GO
 
@@ -33,6 +38,8 @@ CREATE TABLE object_property (
     security_filter NVARCHAR(255) NULL,
     default_value VARCHAR(MAX) NULL,
     user_hidden BIT NOT NULL,
+    date_created DATETIMEOFFSET NOT NULL,
+    date_modified DATETIMEOFFSET NOT NULL,
     CONSTRAINT fk_object_property_list_type FOREIGN KEY (list_type_id) REFERENCES list_type (id)
 );
 GO
@@ -47,6 +54,8 @@ CREATE TABLE list_element (
     description NVARCHAR(MAX) NOT NULL,
     element_index INT NOT NULL,
     active_to DATETIMEOFFSET NULL,
+    date_created DATETIMEOFFSET NOT NULL,
+    date_modified DATETIMEOFFSET NOT NULL,
     CONSTRAINT fk_list_element_parent FOREIGN KEY (parent_id) REFERENCES list_type (id)
 );
 GO
@@ -70,7 +79,9 @@ CREATE TABLE record_type (
     description NVARCHAR(MAX) NOT NULL,
     security_filter NVARCHAR(255) NULL,
     security_filter_usage TINYINT NOT NULL CHECK (security_filter_usage BETWEEN 0 AND 2),
-    content_types VARCHAR(MAX) NULL
+    content_types VARCHAR(MAX) NULL,
+    date_created DATETIMEOFFSET NOT NULL,
+    date_modified DATETIMEOFFSET NOT NULL
 );
 GO
 
@@ -122,14 +133,18 @@ GO
 CREATE TABLE file_store (
     id UNIQUEIDENTIFIER NOT NULL PRIMARY KEY,
     type NVARCHAR(255) NOT NULL,
-    properties VARCHAR(MAX) NOT NULL
+    properties VARCHAR(MAX) NOT NULL,
+    date_created DATETIMEOFFSET NOT NULL,
+    date_modified DATETIMEOFFSET NOT NULL
 );
 GO
 
 CREATE TABLE file_store_middleware (
     id UNIQUEIDENTIFIER NOT NULL PRIMARY KEY,
     type NVARCHAR(255) NOT NULL,
-    properties VARCHAR(MAX) NOT NULL
+    properties VARCHAR(MAX) NOT NULL,
+    date_created DATETIMEOFFSET NOT NULL,
+    date_modified DATETIMEOFFSET NOT NULL
 );
 GO
 
@@ -153,6 +168,7 @@ CREATE TABLE file_store_entry (
     hash NVARCHAR(255) NOT NULL,
     size_bytes BIGINT NOT NULL,
     extension NVARCHAR(255) NULL,
+    date_created DATETIMEOFFSET NOT NULL,
     CONSTRAINT fk_fse_store FOREIGN KEY (store_id) REFERENCES file_store (id)
 );
 GO
@@ -208,7 +224,7 @@ GO
 CREATE TABLE record_revision (
     id UNIQUEIDENTIFIER NOT NULL PRIMARY KEY,
     version NVARCHAR(255) NOT NULL,
-    created_date DATETIMEOFFSET NOT NULL,
+    date_created DATETIMEOFFSET NOT NULL,
     record_id UNIQUEIDENTIFIER NOT NULL,
     file_id UNIQUEIDENTIFIER NOT NULL UNIQUE,
     CONSTRAINT uk_record_version UNIQUE (record_id, version),
@@ -247,6 +263,7 @@ CREATE TABLE audit_policy (
     requires_comment BIT NOT NULL,
     display_name NVARCHAR(255) NOT NULL,
     description NVARCHAR(MAX) NULL,
+    date_modified DATETIMEOFFSET NOT NULL,
     PRIMARY KEY (entity_type, operation)
 );
 GO

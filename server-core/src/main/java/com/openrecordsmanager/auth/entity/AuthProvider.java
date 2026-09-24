@@ -17,6 +17,7 @@ import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.InternalAuthenticationServiceException;
 
 import java.net.URI;
+import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -43,6 +44,12 @@ public class AuthProvider {
     @Column(nullable = false)
     private boolean enabled = true;
 
+    @Column(nullable = false)
+    private Instant dateCreated;
+
+    @Column(nullable = false)
+    private Instant dateModified;
+
     @Deprecated
     protected AuthProvider() {
     }
@@ -56,6 +63,8 @@ public class AuthProvider {
         this.id = UuidVersion7Strategy.INSTANCE.generateUuid(null);
         this.name = name;
         this.providerType = providerType;
+        this.dateCreated = Instant.now();
+        this.dateModified = Instant.now();
         this.setProperties(catalog, settings);
     }
 
@@ -69,6 +78,19 @@ public class AuthProvider {
 
     public void setName(String name) {
         this.name = name;
+        this.touchDateModified();
+    }
+
+    public Instant getDateCreated() {
+        return this.dateCreated;
+    }
+
+    public Instant getDateModified() {
+        return this.dateModified;
+    }
+
+    public void touchDateModified() {
+        this.dateModified = Instant.now();
     }
 
     public Map<String, ?> getSettings(ComponentCatalog catalog) {
@@ -83,6 +105,7 @@ public class AuthProvider {
                 this.settings
         );
         this.settings = JsonSchemaValidator.serializeSettings(type.parseSettings(merged));
+        this.touchDateModified();
     }
 
     public boolean isEnabled() {
@@ -91,6 +114,7 @@ public class AuthProvider {
 
     public void setEnabled(boolean enabled) {
         this.enabled = enabled;
+        this.touchDateModified();
     }
 
     public ComponentReference<? extends AuthProviderType<?>> getProviderType() {

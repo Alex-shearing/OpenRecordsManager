@@ -169,7 +169,7 @@ public class RecordService {
                 rev.getId().toString(),
                 List.of(
                         AuditPropertyChange.newProperty("version", rev.getVersion()),
-                        AuditPropertyChange.newProperty("createdDate", rev.getCreatedDate())
+                        AuditPropertyChange.newProperty("createdDate", rev.getDateCreated())
                 ),
                 AuditEventDescriptions.forRecordRevision(rev),
                 null

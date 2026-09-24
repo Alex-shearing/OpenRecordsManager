@@ -13,6 +13,7 @@ import org.hibernate.type.descriptor.java.ObjectJavaType;
 import org.jspecify.annotations.Nullable;
 import tools.jackson.databind.JsonNode;
 
+import java.time.Instant;
 import java.util.Objects;
 
 @Entity
@@ -55,6 +56,12 @@ public class ObjectProperty<T> {
     @Column(nullable = false)
     private boolean userHidden;
 
+    @Column(nullable = false)
+    private Instant dateCreated;
+
+    @Column(nullable = false)
+    private Instant dateModified;
+
     @Deprecated
     protected ObjectProperty() {
     }
@@ -79,6 +86,8 @@ public class ObjectProperty<T> {
         this.securityFilter = securityFilter;
         this.defaultValue = defaultValue;
         this.userHidden = userHidden;
+        this.dateCreated = Instant.now();
+        this.dateModified = Instant.now();
     }
 
     public ObjectProperty(ResourceIdentifier identifier, String name, String description, PropertyType<T> type) {
@@ -86,75 +95,93 @@ public class ObjectProperty<T> {
     }
 
     public ResourceIdentifier getId() {
-        return id;
+        return this.id;
     }
 
     public String getName() {
-        return name;
+        return this.name;
     }
 
     public void setName(String name) {
         this.name = name;
+        this.touchDateModified();
     }
 
     public String getDescription() {
-        return description;
+        return this.description;
     }
 
     public void setDescription(String description) {
         this.description = description;
+        this.touchDateModified();
     }
 
     public PropertyType<T> getType() {
-        return type;
+        return this.type;
     }
 
     public @Nullable ListType getListType() {
-        return listType;
+        return this.listType;
     }
 
     public @Nullable String getValidator() {
-        return validator;
+        return this.validator;
     }
 
     public void setValidator(@Nullable String validator) {
         this.validator = validator;
+        this.touchDateModified();
     }
 
     public @Nullable String getSecurityFilter() {
-        return securityFilter;
+        return this.securityFilter;
     }
 
     public void setSecurityFilter(@Nullable String securityFilter) {
         this.securityFilter = securityFilter;
+        this.touchDateModified();
     }
 
     public @Nullable JsonNode getDefaultValue() {
-        return defaultValue;
+        return this.defaultValue;
     }
 
     public void setDefaultValue(@Nullable JsonNode defaultValue) {
         this.defaultValue = defaultValue;
+        this.touchDateModified();
     }
 
     public boolean isUserHidden() {
-        return userHidden;
+        return this.userHidden;
     }
 
     public void setUserHidden(boolean userHidden) {
         this.userHidden = userHidden;
+        this.touchDateModified();
+    }
+
+    public Instant getDateCreated() {
+        return this.dateCreated;
+    }
+
+    public Instant getDateModified() {
+        return this.dateModified;
+    }
+
+    public void touchDateModified() {
+        this.dateModified = Instant.now();
     }
 
     @Override
     public boolean equals(@Nullable Object o) {
         if (o == null || getClass() != o.getClass()) return false;
         ObjectProperty<?> that = (ObjectProperty<?>) o;
-        return Objects.equals(id, that.id);
+        return Objects.equals(this.id, that.id);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hashCode(id);
+        return Objects.hashCode(this.id);
     }
 
 }

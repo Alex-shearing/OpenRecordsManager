@@ -14,6 +14,7 @@ import org.jspecify.annotations.Nullable;
 import tools.jackson.databind.JsonNode;
 
 import java.text.MessageFormat;
+import java.time.Instant;
 
 @Entity
 @Table(name = "system_configurations")
@@ -28,12 +29,16 @@ public class ConfigItem {
     @Nullable
     private JsonNode configValue;
 
+    @Column(nullable = false)
+    private Instant dateModified;
+
     @Deprecated
     protected ConfigItem() {
     }
 
     public ConfigItem(ComponentCatalog catalog, String configKey, @Nullable JsonNode configValue) {
         this.configKey = configKey;
+        this.dateModified = Instant.now();
         this.setValue(catalog, configValue);
     }
 
@@ -52,6 +57,14 @@ public class ConfigItem {
         return this.configValue;
     }
 
+    public Instant getDateModified() {
+        return this.dateModified;
+    }
+
+    public void touchDateModified() {
+        this.dateModified = Instant.now();
+    }
+
     public void setValue(ComponentCatalog catalog, @Nullable JsonNode value) {
         ConfigType<?> key = this.getConfigKey(catalog);
         Object parsed = key.type().parse(value);
@@ -62,5 +75,6 @@ public class ConfigItem {
             ));
         }
         this.configValue = value;
+        this.touchDateModified();
     }
 }

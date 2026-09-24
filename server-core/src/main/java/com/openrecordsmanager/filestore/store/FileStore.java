@@ -18,6 +18,7 @@ import org.hibernate.type.SqlTypes;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.time.Instant;
 import java.util.*;
 
 @Entity
@@ -36,6 +37,12 @@ public class FileStore {
     @JdbcTypeCode(SqlTypes.JSON)
     private Map<String, ?> properties = new HashMap<>();
 
+    @Column(nullable = false)
+    private Instant dateCreated;
+
+    @Column(nullable = false)
+    private Instant dateModified;
+
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(
             name = "file_store_middleware_usage",
@@ -53,15 +60,30 @@ public class FileStore {
         this.type = catalog.getRegistry(ComponentTypes.FILE_STORE).getId(type).orElseThrow();
         this.properties = JsonSchemaValidator.serializeSettings(type.parseSettings(properties));
         type.initializeUntyped(this.properties);
+        this.dateCreated = Instant.now();
+        this.dateModified = Instant.now();
     }
 
     public UUID getId() {
         return id;
     }
 
+    public Instant getDateCreated() {
+        return this.dateCreated;
+    }
+
+    public Instant getDateModified() {
+        return this.dateModified;
+    }
+
+    public void touchDateModified() {
+        this.dateModified = Instant.now();
+    }
+
     public void addMiddleware(Middleware middleware) {
         int index = this.middlewares.size();
         this.middlewares.add(new MiddlewareUsage(middleware, index));
+        this.touchDateModified();
     }
 
     public FileStoreEntry newFile(ComponentCatalog catalog, InputStream file, String extension) {
@@ -121,6 +143,7 @@ public class FileStore {
         );
         this.properties = JsonSchemaValidator.serializeSettings(type.parseSettings(merged));
         type.initializeUntyped(this.properties);
+        this.touchDateModified();
     }
 
     public List<Middleware> getMiddlewares() {

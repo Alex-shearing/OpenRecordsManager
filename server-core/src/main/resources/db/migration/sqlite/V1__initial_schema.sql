@@ -1,7 +1,8 @@
 -- Initial schema matching current JPA entities (SQLite)
 CREATE TABLE IF NOT EXISTS system_configurations (
     config_key VARCHAR(255) NOT NULL PRIMARY KEY,
-    config_value CLOB
+    config_value CLOB,
+    date_modified TIMESTAMP NOT NULL
 );
 
 CREATE TABLE auth_provider (
@@ -9,12 +10,16 @@ CREATE TABLE auth_provider (
     name VARCHAR(255) NOT NULL,
     provider_type VARCHAR(255) NOT NULL,
     settings CLOB NOT NULL,
-    enabled BOOLEAN NOT NULL DEFAULT TRUE
+    enabled BOOLEAN NOT NULL DEFAULT TRUE,
+    date_created TIMESTAMP NOT NULL,
+    date_modified TIMESTAMP NOT NULL
 );
 
 CREATE TABLE list_type (
     id VARCHAR(255) NOT NULL PRIMARY KEY,
-    name VARCHAR(255) NOT NULL
+    name VARCHAR(255) NOT NULL,
+    date_created TIMESTAMP NOT NULL,
+    date_modified TIMESTAMP NOT NULL
 );
 
 CREATE TABLE object_property (
@@ -27,6 +32,8 @@ CREATE TABLE object_property (
     security_filter VARCHAR(255),
     default_value CLOB,
     user_hidden BOOLEAN NOT NULL,
+    date_created TIMESTAMP NOT NULL,
+    date_modified TIMESTAMP NOT NULL,
     CONSTRAINT fk_object_property_list_type FOREIGN KEY (list_type_id) REFERENCES list_type (id)
 );
 
@@ -39,6 +46,8 @@ CREATE TABLE list_element (
     description TEXT NOT NULL,
     element_index INTEGER NOT NULL,
     active_to TIMESTAMP,
+    date_created TIMESTAMP NOT NULL,
+    date_modified TIMESTAMP NOT NULL,
     CONSTRAINT fk_list_element_parent FOREIGN KEY (parent_id) REFERENCES list_type (id)
 );
 
@@ -58,7 +67,9 @@ CREATE TABLE record_type (
     description TEXT NOT NULL,
     security_filter VARCHAR(255),
     security_filter_usage TINYINT NOT NULL CHECK (security_filter_usage BETWEEN 0 AND 2),
-    content_types CLOB
+    content_types CLOB,
+    date_created TIMESTAMP NOT NULL,
+    date_modified TIMESTAMP NOT NULL
 );
 
 CREATE TABLE record_type_property (
@@ -103,13 +114,17 @@ CREATE INDEX IF NOT EXISTS idx_upv_property_id ON user_property_value (property_
 CREATE TABLE file_store (
     id BLOB NOT NULL PRIMARY KEY,
     type VARCHAR(255) NOT NULL,
-    properties CLOB NOT NULL
+    properties CLOB NOT NULL,
+    date_created TIMESTAMP NOT NULL,
+    date_modified TIMESTAMP NOT NULL
 );
 
 CREATE TABLE file_store_middleware (
     id BLOB NOT NULL PRIMARY KEY,
     type VARCHAR(255) NOT NULL,
-    properties CLOB NOT NULL
+    properties CLOB NOT NULL,
+    date_created TIMESTAMP NOT NULL,
+    date_modified TIMESTAMP NOT NULL
 );
 
 CREATE TABLE file_store_middleware_usage (
@@ -130,6 +145,7 @@ CREATE TABLE file_store_entry (
     hash VARCHAR(255) NOT NULL,
     size_bytes BIGINT NOT NULL,
     extension VARCHAR(255),
+    date_created TIMESTAMP NOT NULL,
     CONSTRAINT fk_fse_store FOREIGN KEY (store_id) REFERENCES file_store (id)
 );
 
@@ -174,7 +190,7 @@ CREATE INDEX IF NOT EXISTS idx_rpv_property_id ON record_property_value (propert
 CREATE TABLE record_revision (
     id BLOB NOT NULL PRIMARY KEY,
     version VARCHAR(255) NOT NULL,
-    created_date TIMESTAMP NOT NULL,
+    date_created TIMESTAMP NOT NULL,
     record_id BLOB NOT NULL,
     file_id BLOB NOT NULL UNIQUE,
     CONSTRAINT uk_record_version UNIQUE (record_id, version),
@@ -208,5 +224,6 @@ CREATE TABLE audit_policy (
     requires_comment BOOLEAN NOT NULL,
     display_name VARCHAR(255) NOT NULL,
     description TEXT,
+    date_modified TIMESTAMP NOT NULL,
     PRIMARY KEY (entity_type, operation)
 );

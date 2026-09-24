@@ -1,6 +1,5 @@
 package com.openrecordsmanager.list;
 
-import com.fasterxml.jackson.annotation.JsonValue;
 import com.openrecordsmanager.api.ResourceIdentifier;
 import com.openrecordsmanager.api.template.list.IListElement;
 import com.openrecordsmanager.database.util.ResourceIdentifierJavaType;
@@ -34,9 +33,15 @@ public class ListElement implements IListElement {
     @Column(nullable = false)
     private int elementIndex;
 
-    @Column()
+    @Column
     @Nullable
     private Instant activeTo;
+
+    @Column(nullable = false)
+    private Instant dateCreated;
+
+    @Column(nullable = false)
+    private Instant dateModified;
 
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(
@@ -65,9 +70,10 @@ public class ListElement implements IListElement {
         this.elementIndex = elementIndex;
         this.activeTo = activeTo;
         this.aliases = aliases;
+        this.dateCreated = Instant.now();
+        this.dateModified = Instant.now();
     }
 
-    @JsonValue
     public ResourceIdentifier getId() {
         return this.id;
     }
@@ -82,6 +88,7 @@ public class ListElement implements IListElement {
 
     public void setName(String name) {
         this.name = name;
+        this.touchDateModified();
     }
 
     public String getDescription() {
@@ -90,6 +97,7 @@ public class ListElement implements IListElement {
 
     public void setDescription(String description) {
         this.description = description;
+        this.touchDateModified();
     }
 
     public int getElementIndex() {
@@ -98,6 +106,7 @@ public class ListElement implements IListElement {
 
     public void setElementIndex(int elementIndex) {
         this.elementIndex = elementIndex;
+        this.touchDateModified();
     }
 
     public @Nullable Instant getActiveTo() {
@@ -106,6 +115,19 @@ public class ListElement implements IListElement {
 
     public void setActiveTo(@Nullable Instant activeTo) {
         this.activeTo = activeTo;
+        this.touchDateModified();
+    }
+
+    public Instant getDateCreated() {
+        return this.dateCreated;
+    }
+
+    public Instant getDateModified() {
+        return this.dateModified;
+    }
+
+    public void touchDateModified() {
+        this.dateModified = Instant.now();
     }
 
     public Set<String> getAliases() {
@@ -114,6 +136,7 @@ public class ListElement implements IListElement {
 
     public void setAliases(Set<String> aliases) {
         this.aliases = aliases;
+        this.touchDateModified();
     }
 
     @Override

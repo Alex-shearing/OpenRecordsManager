@@ -9,6 +9,8 @@ import jakarta.validation.constraints.NotNull;
 import org.jspecify.annotations.Nullable;
 import tools.jackson.databind.JsonNode;
 
+import java.time.Instant;
+
 public record ObjectPropertyResponse(
         @NotBlank ResourceIdentifier id,
         @NotBlank String name,
@@ -18,7 +20,9 @@ public record ObjectPropertyResponse(
         @Nullable String validator,
         @Nullable String securityFilter,
         @Nullable JsonNode defaultValue,
-        boolean userHidden
+        @NotNull boolean userHidden,
+        @NotNull Instant dateCreated,
+        @NotNull Instant dateModified
 ) {
     public static ObjectPropertyResponse of(ObjectProperty<?> property) {
         ListType listType = property.getListType();
@@ -31,7 +35,9 @@ public record ObjectPropertyResponse(
                 property.getValidator(),
                 property.getSecurityFilter(),
                 property.getDefaultValue(),
-                property.isUserHidden()
+                property.isUserHidden(),
+                property.getDateCreated(),
+                property.getDateModified()
         );
     }
 }

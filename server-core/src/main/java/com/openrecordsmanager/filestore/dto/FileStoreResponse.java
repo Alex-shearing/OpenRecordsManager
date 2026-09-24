@@ -9,6 +9,7 @@ import com.openrecordsmanager.rest.errors.ResourceNotFoundException;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -18,7 +19,9 @@ public record FileStoreResponse(
         @NotBlank ResourceIdentifier type,
         @NotNull Map<String, ?> properties,
         @NotNull List<UUID> middlewares,
-        @NotNull long fileCount) {
+        @NotNull long fileCount,
+        @NotNull Instant dateCreated,
+        @NotNull Instant dateModified) {
 
     public static FileStoreResponse of(ComponentCatalog catalog, FileStore store, long fileCount) {
         ResourceIdentifier storeTypeId = catalog.getRegistry(ComponentTypes.FILE_STORE)
@@ -32,7 +35,9 @@ public record FileStoreResponse(
                 store.getMiddlewares().stream()
                         .map(Middleware::getId)
                         .toList(),
-                fileCount
+                fileCount,
+                store.getDateCreated(),
+                store.getDateModified()
         );
     }
 }

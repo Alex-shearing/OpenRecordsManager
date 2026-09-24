@@ -31,13 +31,13 @@ public class RecordRevision {
     private String version;
 
     @Column(nullable = false)
-    private Instant createdDate;
+    private Instant dateCreated;
 
     @ManyToOne
     @JoinColumn(nullable = false, name = "record_id")
     private Record record;
 
-    @OneToOne(cascade = CascadeType.ALL)
+    @OneToOne(cascade = CascadeType.ALL, optional = false)
     @JoinColumn(nullable = false)
     private FileStoreEntry file;
 
@@ -50,7 +50,7 @@ public class RecordRevision {
         this.version = version;
         this.record = record;
         this.file = file;
-        this.createdDate = Instant.now();
+        this.dateCreated = Instant.now();
     }
 
     public UUID getId() {
@@ -61,8 +61,8 @@ public class RecordRevision {
         return this.version;
     }
 
-    public Instant getCreatedDate() {
-        return this.createdDate;
+    public Instant getDateCreated() {
+        return this.dateCreated;
     }
 
     public Record getRecord() {
