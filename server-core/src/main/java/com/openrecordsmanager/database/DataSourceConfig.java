@@ -3,9 +3,12 @@ package com.openrecordsmanager.database;
 import com.zaxxer.hikari.HikariDataSource;
 import org.jspecify.annotations.Nullable;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.flyway.autoconfigure.FlywayDataSource;
 import org.springframework.boot.jdbc.autoconfigure.DataSourceProperties;
+import org.springframework.boot.logging.LogLevel;
+import org.springframework.boot.logging.LoggingSystem;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
@@ -18,6 +21,14 @@ import java.util.Map;
 
 @Configuration
 public class DataSourceConfig {
+
+    public DataSourceConfig(@Value("${app.debug.show-sql:false}") boolean showSql) {
+        LoggingSystem loggingSystem = LoggingSystem.get(DataSourceConfig.class.getClassLoader());
+        LogLevel sqlLevel = showSql ? LogLevel.DEBUG : LogLevel.INFO;
+        loggingSystem.setLogLevel("org.springframework.jdbc.core.JdbcTemplate", sqlLevel);
+        loggingSystem.setLogLevel("org.hibernate.SQL", sqlLevel);
+    }
+
     // PRIMARY / WRITE DATASOURCE CONFIGURATION
 
     @Bean
