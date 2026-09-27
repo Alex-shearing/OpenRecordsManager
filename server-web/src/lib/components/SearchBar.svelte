@@ -10,10 +10,7 @@
 
 	const items = [
 		{ label: 'Record', value: 'record', search: 'records' },
-		{ label: 'Container', value: 'container', search: 'containers' },
 		{ label: 'User', value: 'user', search: 'users' },
-		{ label: 'Record Type', value: 'record_type', search: 'record types' },
-		{ label: 'Object Property', value: 'object_property', search: 'object properties' },
 	];
 
 	let selected = $state('record');

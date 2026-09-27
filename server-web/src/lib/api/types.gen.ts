@@ -85,7 +85,9 @@ export type ObjectPropertyResponse = {
      * Arbitrary JSON value (string, number, boolean, object, array, or null)
      */
     defaultValue?: unknown;
-    userHidden?: boolean;
+    userHidden: boolean;
+    dateCreated: string;
+    dateModified: string;
 };
 
 export type SimpleListTypeResponse = {
@@ -104,11 +106,15 @@ export type ListElementResponse = {
     aliases: Array<string>;
     index: number;
     activeTo?: string;
+    dateCreated: string;
+    dateModified: string;
 };
 
 export type ListTypeResponse = {
     type?: string;
     name?: string;
+    dateCreated: string;
+    dateModified: string;
     elements: Array<ListElementResponse>;
 };
 
@@ -127,17 +133,17 @@ export type UpdateFileStoreRequest = {
     };
 };
 
+export type SimpleFileStoreResponse = {
+    id: string;
+    name: string;
+    type: string;
+};
+
 export type UpdateFileStoreMiddlewareRequest = {
     name?: string;
     properties?: {
         [key: string]: unknown;
     };
-};
-
-export type SimpleFileStoreResponse = {
-    id: string;
-    name: string;
-    type: string;
 };
 
 export type SimpleMiddlewareResponse = {
@@ -152,6 +158,7 @@ export type ConfigResponse = {
      * Arbitrary JSON value (string, number, boolean, object, array, or null)
      */
     value?: unknown;
+    dateModified: string;
 };
 
 export type ComponentReference = {
@@ -178,6 +185,8 @@ export type AuthProviderResponse = {
     settings?: {
         [key: string]: unknown;
     };
+    dateCreated: string;
+    dateModified: string;
 };
 
 export type UpdateAuthProviderRequest = {
@@ -210,6 +219,7 @@ export type AuditPolicyResponse = {
     requiresComment: boolean;
     displayName: string;
     description: string;
+    dateModified: string;
 };
 
 export type NewUserRequest = {
@@ -223,6 +233,28 @@ export type NewUserRequest = {
     };
 };
 
+export type SearchClause = {
+    field?: string;
+    op?: 'EQ' | 'NEQ' | 'GT' | 'GTE' | 'LT' | 'LTE' | 'LIKE' | 'IN' | 'NOT_IN' | 'IS_NULL' | 'IS_NOT_NULL' | 'BETWEEN';
+    /**
+     * Arbitrary JSON value (string, number, boolean, object, array, or null)
+     */
+    value?: unknown;
+};
+
+export type UserSearchRequest = {
+    q?: string;
+    filters?: Array<SearchClause>;
+    match?: 'ALL' | 'ANY';
+    limit?: number;
+    cursor?: string;
+};
+
+export type UserSearchResponse = {
+    items?: Array<UserResponse>;
+    nextCursor?: string;
+};
+
 export type NewRecordRequest = {
     type: string;
     /**
@@ -231,6 +263,20 @@ export type NewRecordRequest = {
     properties: {
         [key: string]: unknown;
     };
+};
+
+export type RecordSearchRequest = {
+    q?: string;
+    filters?: Array<SearchClause>;
+    match?: 'ALL' | 'ANY';
+    type?: string;
+    limit?: number;
+    cursor?: string;
+};
+
+export type RecordSearchResponse = {
+    items?: Array<RecordResponse>;
+    nextCursor?: string;
 };
 
 export type NewObjectPropertyRequest = {
@@ -374,6 +420,8 @@ export type RecordTypeResponse = {
     securityFilterUsage: 'HIDE_RECORD' | 'HIDE_FILES' | 'SHOW_ALL';
     contentTypes?: Array<string>;
     properties: Array<RecordTypePropertyResponse>;
+    dateCreated: string;
+    dateModified: string;
 };
 
 export type SimplePluginResponse = {
@@ -3342,6 +3390,75 @@ export type ExecuteActionResponses = {
 
 export type ExecuteActionResponse = ExecuteActionResponses[keyof ExecuteActionResponses];
 
+export type SearchData = {
+    body: UserSearchRequest;
+    path?: never;
+    query?: never;
+    url: '/api/user/search';
+};
+
+export type SearchErrors = {
+    /**
+     * Unauthorized
+     */
+    401: {
+        success: false;
+        timestamp: unknown;
+        error: string;
+        errorData?: {
+            [key: string]: unknown;
+        };
+    };
+    /**
+     * Forbidden
+     */
+    403: {
+        success: false;
+        timestamp: unknown;
+        error: string;
+        errorData?: {
+            [key: string]: unknown;
+        };
+    };
+    /**
+     * Audit comment required
+     */
+    422: {
+        success: false;
+        timestamp: unknown;
+        error: string;
+        errorData?: {
+            [key: string]: unknown;
+        };
+    };
+    /**
+     * Internal Server error
+     */
+    500: {
+        success: false;
+        timestamp: unknown;
+        error: string;
+        errorData?: {
+            [key: string]: unknown;
+        };
+    };
+};
+
+export type SearchError = SearchErrors[keyof SearchErrors];
+
+export type SearchResponses = {
+    /**
+     * OK
+     */
+    200: {
+        success: true;
+        timestamp: unknown;
+        data: UserSearchResponse;
+    };
+};
+
+export type SearchResponse = SearchResponses[keyof SearchResponses];
+
 export type RegisterTemplateData = {
     body?: never;
     path: {
@@ -3589,6 +3706,75 @@ export type ExecuteAction1Responses = {
 };
 
 export type ExecuteAction1Response = ExecuteAction1Responses[keyof ExecuteAction1Responses];
+
+export type Search1Data = {
+    body: RecordSearchRequest;
+    path?: never;
+    query?: never;
+    url: '/api/records/search';
+};
+
+export type Search1Errors = {
+    /**
+     * Unauthorized
+     */
+    401: {
+        success: false;
+        timestamp: unknown;
+        error: string;
+        errorData?: {
+            [key: string]: unknown;
+        };
+    };
+    /**
+     * Forbidden
+     */
+    403: {
+        success: false;
+        timestamp: unknown;
+        error: string;
+        errorData?: {
+            [key: string]: unknown;
+        };
+    };
+    /**
+     * Audit comment required
+     */
+    422: {
+        success: false;
+        timestamp: unknown;
+        error: string;
+        errorData?: {
+            [key: string]: unknown;
+        };
+    };
+    /**
+     * Internal Server error
+     */
+    500: {
+        success: false;
+        timestamp: unknown;
+        error: string;
+        errorData?: {
+            [key: string]: unknown;
+        };
+    };
+};
+
+export type Search1Error = Search1Errors[keyof Search1Errors];
+
+export type Search1Responses = {
+    /**
+     * OK
+     */
+    200: {
+        success: true;
+        timestamp: unknown;
+        data: RecordSearchResponse;
+    };
+};
+
+export type Search1Response = Search1Responses[keyof Search1Responses];
 
 export type ListPluginsData = {
     body?: never;
