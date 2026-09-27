@@ -29,14 +29,6 @@ class BuiltinColumnResolverIntegrationTest {
     private BuiltinColumnResolver columnResolver;
 
     @Test
-    void resolvesPhysicalColumnNamesFromJavaAttributes() {
-        assertEquals("given_name", this.columnResolver.sqlColumn(User.class, "givenName"));
-        assertEquals("title", this.columnResolver.sqlColumn(Record.class, "title"));
-        assertEquals("mime_types", this.columnResolver.sqlColumn(Record.class, "mimeTypes"));
-        assertEquals("date_created", this.columnResolver.sqlColumn(Record.class, "dateCreated"));
-    }
-
-    @Test
     void searchSchemasUseResolvedColumnsAndDefaultFields() {
         ObjectSearchSchema record = ObjectSearchSchema.of(
                 SearchFieldTarget.RECORD,

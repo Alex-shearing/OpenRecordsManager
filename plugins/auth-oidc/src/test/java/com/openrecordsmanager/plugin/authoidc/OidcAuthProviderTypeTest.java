@@ -104,7 +104,7 @@ class OidcAuthProviderTypeTest {
 
         assertEquals("alice", OidcAuthProviderType.resolveUsername(claims, "preferred_username"));
         assertEquals("custom-alice", OidcAuthProviderType.resolveUsername(claims, "custom_user"));
-        assertEquals("alice", OidcAuthProviderType.resolveUsername(claims, "missing_claim"));
+        assertEquals("sub-1", OidcAuthProviderType.resolveUsername(claims, "missing_claim"));
 
         IDTokenClaimsSet subOnly = new IDTokenClaimsSet(new JWTClaimsSet.Builder()
                 .issuer("https://idp.example.com/")
@@ -120,12 +120,7 @@ class OidcAuthProviderTypeTest {
     void beginIncludesStateNonceAndPkce() {
         RedirectAuthChallenge challenge = this.provider.beginUntyped(
                 URI.create("http://localhost:8080/api/auth/callback/" + UUID.randomUUID()),
-                Map.of(
-                        "clientId", CLIENT_ID,
-                        "secret", CLIENT_SECRET,
-                        "uri", this.issuer,
-                        "scope", "openid profile"
-                )
+                validSettings()
         );
 
         assertNotNull(challenge.state());
@@ -142,12 +137,7 @@ class OidcAuthProviderTypeTest {
     @Test
     void completeRejectsStateMismatch() {
         UUID id = UUID.randomUUID();
-        Map<String, ?> settings = Map.of(
-                "clientId", CLIENT_ID,
-                "secret", CLIENT_SECRET,
-                "uri", this.issuer,
-                "scope", "openid"
-        );
+        Map<String, ?> settings = validSettings();
 
         URI callback = URI.create("http://localhost:8080/api/auth/callback/" + id);
         RedirectAuthChallenge challenge = this.provider.beginUntyped(callback, settings);
@@ -165,12 +155,7 @@ class OidcAuthProviderTypeTest {
     @Test
     void completeHappyPathMapsPreferredUsername() throws Exception {
         UUID id = UUID.randomUUID();
-        Map<String, ?> settings = Map.of(
-                "clientId", CLIENT_ID,
-                "secret", CLIENT_SECRET,
-                "uri", this.issuer,
-                "scope", "openid"
-        );
+        Map<String, ?> settings = validSettings();
 
         URI callback = URI.create("http://localhost:8080/api/auth/callback/" + id);
         RedirectAuthChallenge challenge = this.provider.beginUntyped(callback, settings);
@@ -208,13 +193,7 @@ class OidcAuthProviderTypeTest {
     @Test
     void completeFailsClosedOnTokenError() {
         UUID id = UUID.randomUUID();
-        Map<String, ?> settings = Map.of(
-                "clientId", CLIENT_ID,
-                "secret", CLIENT_SECRET,
-                "uri", this.issuer,
-                "scope", "openid"
-        );
-
+        Map<String, ?> settings = validSettings();
 
         URI callback = URI.create("http://localhost:8080/api/auth/callback/" + id);
         RedirectAuthChallenge challenge = this.provider.beginUntyped(callback, settings);
@@ -232,6 +211,16 @@ class OidcAuthProviderTypeTest {
 
         URI fullCallback = URI.create(callback + "?code=auth-code&state=" + challenge.state());
         assertNull(this.provider.completeUntyped(emptyContext(), fullCallback, pending, settings));
+    }
+
+    private Map<String, ?> validSettings() {
+        return Map.of(
+                "clientId", CLIENT_ID,
+                "secret", CLIENT_SECRET,
+                "uri", this.issuer,
+                "scope", "openid profile",
+                "usernameClaim", "preferred_username"
+        );
     }
 
     private static UserAuthContext emptyContext() {

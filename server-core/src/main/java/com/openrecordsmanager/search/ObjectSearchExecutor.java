@@ -72,7 +72,7 @@ public class ObjectSearchExecutor {
     /**
      * Intersect (ALL) or union (ANY) SQL candidates with plugin id sets; preserve ascending order.
      */
-    static List<UUID> mergeWithPluginIds(
+    private static List<UUID> mergeWithPluginIds(
             SearchMatchMode mode,
             List<UUID> sqlIds,
             List<Set<UUID>> pluginIdSets,

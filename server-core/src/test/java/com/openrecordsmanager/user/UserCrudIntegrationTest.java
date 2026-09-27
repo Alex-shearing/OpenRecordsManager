@@ -1,37 +1,37 @@
 package com.openrecordsmanager.user;
 
-import com.jayway.jsonpath.JsonPath;
 import com.openrecordsmanager.api.ResourceIdentifier;
 import com.openrecordsmanager.api.builtin.BuiltinConfigs;
 import com.openrecordsmanager.api.template.list.IListElement;
 import com.openrecordsmanager.api.template.property.PropertyType;
-import com.openrecordsmanager.auth.TestAuthTokens;
+import com.openrecordsmanager.audit.AuditTestSupport;
 import com.openrecordsmanager.database.DataRepository;
 import com.openrecordsmanager.database.SqliteTestSupport;
 import com.openrecordsmanager.list.ListElement;
 import com.openrecordsmanager.list.ListType;
 import com.openrecordsmanager.property.ObjectProperty;
+import com.openrecordsmanager.rest.errors.ResourceInUseException;
+import com.openrecordsmanager.rest.errors.ResourceNotFoundException;
+import com.openrecordsmanager.user.dto.NewUserRequest;
+import com.openrecordsmanager.user.dto.UpdateUserRequest;
+import com.openrecordsmanager.user.dto.UserResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
-import org.springframework.http.MediaType;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MvcResult;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.JsonNodeFactory;
 
 import java.util.Collection;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
-@AutoConfigureMockMvc
 class UserCrudIntegrationTest {
 
     private static final ResourceIdentifier LIST_ID = ResourceIdentifier.valueOf("test:user_list_prop_list");
@@ -48,16 +48,17 @@ class UserCrudIntegrationTest {
     }
 
     @Autowired
-    private MockMvc mockMvc;
-
-    @Autowired
-    private TestAuthTokens testAuthTokens;
+    private UserService userService;
 
     @Autowired
     private DataRepository repository;
 
+    private User admin;
+
     @BeforeEach
     void setUpListProperties() {
+        this.admin = this.repository.userRepo.findByUsername("admin").orElseThrow();
+
         ListType listType = this.repository.listTypeRepo.findById(LIST_ID).orElseGet(() ->
                 this.repository.listTypeRepo.saveAndFlush(new ListType(LIST_ID, "User list prop list"))
         );
@@ -104,170 +105,82 @@ class UserCrudIntegrationTest {
         }
     }
 
-    private String adminBearerToken() {
-        return this.testAuthTokens.adminAccessToken();
-    }
-
     @Test
-    void createGetAndUpdateUser() throws Exception {
-        String token = this.adminBearerToken();
+    void createGetAndUpdateUser() {
         String username = "integration_user_" + UUID.randomUUID().toString().substring(0, 8);
 
-        MvcResult createResult = this.mockMvc.perform(
-                        post("/api/user")
-                                .header("Authorization", "Bearer " + token)
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content("""
-                                        {
-                                          "username": "%s",
-                                          "authProvider": null,
-                                          "properties": {}
-                                        }
-                                        """.formatted(username))
-                                .accept(MediaType.APPLICATION_JSON)
-                )
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.username").value(username))
-                .andExpect(jsonPath("$.data.id").exists())
-                .andReturn();
+        UserResponse created = AuditTestSupport.withAudit(this.admin, () -> this.userService.create(
+                new NewUserRequest(username, null, Map.of())
+        ));
 
-        String responseBody = createResult.getResponse().getContentAsString();
-        String userId = JsonPath.read(responseBody, "$.data.id");
+        assertEquals(username, created.username());
+        assertNotNull(created.id());
 
-        this.mockMvc.perform(
-                        get("/api/user/" + userId)
-                                .header("Authorization", "Bearer " + token)
-                                .accept(MediaType.APPLICATION_JSON)
-                )
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.username").value(username));
+        UserResponse loaded = this.userService.get(created.id());
+        assertEquals(username, loaded.username());
 
         String updatedUsername = username + "_updated";
-        this.mockMvc.perform(
-                        put("/api/user/" + userId)
-                                .header("Authorization", "Bearer " + token)
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content("""
-                                        {
-                                          "username": "%s"
-                                        }
-                                        """.formatted(updatedUsername))
-                                .accept(MediaType.APPLICATION_JSON)
-                )
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.username").value(updatedUsername));
+        UserResponse updated = AuditTestSupport.withAudit(this.admin, () -> this.userService.update(
+                this.admin,
+                created.id(),
+                new UpdateUserRequest(updatedUsername, null, null, null)
+        ));
+
+        assertEquals(updatedUsername, updated.username());
     }
 
     @Test
-    void setAndGetListItemProperties() throws Exception {
-        String token = this.adminBearerToken();
+    void setAndGetListItemProperties() {
         String username = "list_prop_user_" + UUID.randomUUID().toString().substring(0, 8);
 
-        MvcResult createResult = this.mockMvc.perform(
-                        post("/api/user")
-                                .header("Authorization", "Bearer " + token)
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content("""
-                                        {
-                                          "username": "%s",
-                                          "authProvider": null,
-                                          "properties": {
-                                            "%s": "%s",
-                                            "%s": ["%s"]
-                                          }
-                                        }
-                                        """.formatted(
-                                        username,
-                                        LIST_ITEM_PROP,
-                                        ELEMENT_SECRET,
-                                        LIST_MULTI_PROP,
-                                        ELEMENT_TOP_SECRET
-                                ))
-                                .accept(MediaType.APPLICATION_JSON)
-                )
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.properties['" + LIST_ITEM_PROP + "']").value(ELEMENT_SECRET.toString()))
-                .andExpect(jsonPath("$.data.properties['" + LIST_MULTI_PROP + "'][0]").value(ELEMENT_TOP_SECRET.toString()))
-                .andReturn();
+        Map<ResourceIdentifier, JsonNode> createProps = Map.of(
+                LIST_ITEM_PROP, JsonNodeFactory.instance.stringNode(ELEMENT_SECRET.toString()),
+                LIST_MULTI_PROP, JsonNodeFactory.instance.arrayNode().add(ELEMENT_TOP_SECRET.toString())
+        );
 
-        String userId = JsonPath.read(createResult.getResponse().getContentAsString(), "$.data.id");
+        UserResponse created = AuditTestSupport.withAudit(this.admin, () -> this.userService.create(
+                new NewUserRequest(username, null, createProps)
+        ));
 
-        this.mockMvc.perform(
-                        put("/api/user/" + userId)
-                                .header("Authorization", "Bearer " + token)
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content("""
-                                        {
-                                          "properties": {
-                                            "%s": "%s",
-                                            "%s": ["%s", "%s"]
-                                          }
-                                        }
-                                        """.formatted(
-                                        LIST_ITEM_PROP,
-                                        ELEMENT_TOP_SECRET,
-                                        LIST_MULTI_PROP,
-                                        ELEMENT_SECRET,
-                                        ELEMENT_TOP_SECRET
-                                ))
-                                .accept(MediaType.APPLICATION_JSON)
-                )
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.properties['" + LIST_ITEM_PROP + "']").value(ELEMENT_TOP_SECRET.toString()))
-                .andExpect(jsonPath("$.data.properties['" + LIST_MULTI_PROP + "'][0]").value(ELEMENT_SECRET.toString()))
-                .andExpect(jsonPath("$.data.properties['" + LIST_MULTI_PROP + "'][1]").value(ELEMENT_TOP_SECRET.toString()));
+        assertEquals(ELEMENT_SECRET.toString(), created.properties().get(LIST_ITEM_PROP.toString()).asString());
+        assertEquals(ELEMENT_TOP_SECRET.toString(), created.properties().get(LIST_MULTI_PROP.toString()).get(0).asString());
 
-        this.mockMvc.perform(
-                        get("/api/user/" + userId)
-                                .header("Authorization", "Bearer " + token)
-                                .accept(MediaType.APPLICATION_JSON)
-                )
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.properties['" + LIST_ITEM_PROP + "']").value(ELEMENT_TOP_SECRET.toString()))
-                .andExpect(jsonPath("$.data.properties['" + LIST_MULTI_PROP + "'][0]").value(ELEMENT_SECRET.toString()))
-                .andExpect(jsonPath("$.data.properties['" + LIST_MULTI_PROP + "'][1]").value(ELEMENT_TOP_SECRET.toString()));
+        Map<ResourceIdentifier, JsonNode> updateProps = Map.of(
+                LIST_ITEM_PROP, JsonNodeFactory.instance.stringNode(ELEMENT_TOP_SECRET.toString()),
+                LIST_MULTI_PROP, JsonNodeFactory.instance.arrayNode()
+                        .add(ELEMENT_SECRET.toString())
+                        .add(ELEMENT_TOP_SECRET.toString())
+        );
+
+        UserResponse updated = AuditTestSupport.withAudit(this.admin, () -> this.userService.update(
+                this.admin,
+                created.id(),
+                new UpdateUserRequest(null, null, null, updateProps)
+        ));
+
+        assertEquals(ELEMENT_TOP_SECRET.toString(), updated.properties().get(LIST_ITEM_PROP.toString()).asString());
+        assertEquals(ELEMENT_SECRET.toString(), updated.properties().get(LIST_MULTI_PROP.toString()).get(0).asString());
+        assertEquals(ELEMENT_TOP_SECRET.toString(), updated.properties().get(LIST_MULTI_PROP.toString()).get(1).asString());
+
+        UserResponse loaded = this.userService.get(created.id());
+        assertEquals(ELEMENT_TOP_SECRET.toString(), loaded.properties().get(LIST_ITEM_PROP.toString()).asString());
+        assertEquals(ELEMENT_SECRET.toString(), loaded.properties().get(LIST_MULTI_PROP.toString()).get(0).asString());
+        assertEquals(ELEMENT_TOP_SECRET.toString(), loaded.properties().get(LIST_MULTI_PROP.toString()).get(1).asString());
     }
 
     @Test
-    void createDuplicateUsernameReturnsConflict() throws Exception {
-        String token = this.adminBearerToken();
+    void createDuplicateUsernameThrowsConflict() {
         String username = "duplicate_user_" + UUID.randomUUID().toString().substring(0, 8);
-        String body = """
-                {
-                  "username": "%s",
-                  "authProvider": null,
-                  "properties": {}
-                }
-                """.formatted(username);
+        NewUserRequest request = new NewUserRequest(username, null, Map.of());
 
-        this.mockMvc.perform(
-                        post("/api/user")
-                                .header("Authorization", "Bearer " + token)
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content(body)
-                                .accept(MediaType.APPLICATION_JSON)
-                )
-                .andExpect(status().isOk());
+        AuditTestSupport.withAudit(this.admin, () -> this.userService.create(request));
 
-        this.mockMvc.perform(
-                        post("/api/user")
-                                .header("Authorization", "Bearer " + token)
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content(body)
-                                .accept(MediaType.APPLICATION_JSON)
-                )
-                .andExpect(status().isConflict());
+        assertThrows(ResourceInUseException.class, () -> AuditTestSupport.withAudit(this.admin, () -> this.userService.create(request)));
     }
 
     @Test
-    void getUnknownUserReturnsNotFound() throws Exception {
-        String token = this.adminBearerToken();
-
-        this.mockMvc.perform(
-                        get("/api/user/" + UUID.randomUUID())
-                                .header("Authorization", "Bearer " + token)
-                                .accept(MediaType.APPLICATION_JSON)
-                )
-                .andExpect(status().isNotFound());
+    void getUnknownUserThrowsNotFound() {
+        assertThrows(ResourceNotFoundException.class, () -> this.userService.get(UUID.randomUUID()));
     }
+
 }

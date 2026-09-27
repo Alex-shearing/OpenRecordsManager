@@ -1,4 +1,4 @@
-package com.openrecordsmanager.property.search;
+package com.openrecordsmanager.search;
 
 import com.openrecordsmanager.search.sql.SearchWildcard;
 import org.junit.jupiter.api.Test;

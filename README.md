@@ -1,6 +1,13 @@
 # Open Records Manager
 
+## Configuration
+
+You can configure the service in [`server-core/config.yml`](server-core/config.yml), environment variables or in the
+database.
+
 ## Contribution
+
+See [`CONTRIBUTING.md`](CONTRIBUTING.md) for domain vocabulary and how to write tests.
 
 ## Building
 
@@ -26,7 +33,3 @@ There are multiple tasks that can be used to assist in the development workflow:
 If you are editing primarily for the website, run `gradlew bootRun` on the parent project and
 `npm run dev` in the `server-web` project.
 
-### Configuration
-
-You can configure the service in [`server-core/config.yml`](server-core/config.yml), environment variables or in the
-database.

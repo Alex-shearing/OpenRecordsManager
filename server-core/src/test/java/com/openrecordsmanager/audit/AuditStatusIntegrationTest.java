@@ -1,27 +1,20 @@
 package com.openrecordsmanager.audit;
 
 import com.openrecordsmanager.api.builtin.BuiltinConfigs;
-import com.openrecordsmanager.auth.TestAuthTokens;
-import com.openrecordsmanager.database.DataRepository;
+import com.openrecordsmanager.audit.dto.AuditStatusResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
-import org.springframework.http.MediaType;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
-import org.springframework.test.web.servlet.MockMvc;
 
 import java.nio.file.Path;
 import java.util.UUID;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
-@AutoConfigureMockMvc
 class AuditStatusIntegrationTest {
 
     private static Path spoolDirectory;
@@ -37,13 +30,7 @@ class AuditStatusIntegrationTest {
     }
 
     @Autowired
-    private MockMvc mockMvc;
-
-    @Autowired
-    private TestAuthTokens testAuthTokens;
-
-    @Autowired
-    private DataRepository repository;
+    private AuditQueryService queryService;
 
     @BeforeEach
     void resetSpool() throws java.io.IOException {
@@ -52,25 +39,15 @@ class AuditStatusIntegrationTest {
     }
 
     @Test
-    void getAuditStatusReturnsEnrichedFieldsWhenEnabled() throws Exception {
-        String token = adminBearerToken();
+    void getAuditStatusReturnsEnrichedFieldsWhenEnabled() {
+        AuditStatusResponse status = this.queryService.getAuditStatus();
 
-        this.mockMvc.perform(
-                        get("/api/audit/status")
-                                .header("Authorization", "Bearer " + token)
-                                .accept(MediaType.APPLICATION_JSON)
-                )
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.auditEnabled").value(true))
-                .andExpect(jsonPath("$.data.auditDisabledReason").isEmpty())
-                .andExpect(jsonPath("$.data.primaryWritable").value(true))
-                .andExpect(jsonPath("$.data.pendingSpoolCount").value(0))
-                .andExpect(jsonPath("$.data.archiveEnabled").value(true))
-                .andExpect(jsonPath("$.data.drainIntervalSeconds").value(45))
-                .andExpect(jsonPath("$.data.lastProbeAt").exists());
-    }
-
-    private String adminBearerToken() {
-        return this.testAuthTokens.adminAccessToken();
+        assertTrue(status.auditEnabled());
+        assertNull(status.auditDisabledReason());
+        assertTrue(status.primaryWritable());
+        assertEquals(0, status.pendingSpoolCount());
+        assertTrue(status.archiveEnabled());
+        assertEquals(45, status.drainIntervalSeconds());
+        assertNotNull(status.lastProbeAt());
     }
 }

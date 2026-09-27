@@ -2,23 +2,24 @@ package com.openrecordsmanager.user;
 
 import com.openrecordsmanager.api.builtin.BuiltinConfigs;
 import com.openrecordsmanager.api.builtin.BuiltinPropertyIds;
-import com.openrecordsmanager.auth.TestAuthTokens;
+import com.openrecordsmanager.api.search.SearchClause;
+import com.openrecordsmanager.api.search.SearchOperator;
+import com.openrecordsmanager.database.DataRepository;
 import com.openrecordsmanager.database.SqliteTestSupport;
+import com.openrecordsmanager.user.dto.UserSearchRequest;
+import com.openrecordsmanager.user.dto.UserSearchResponse;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
-import org.springframework.http.MediaType;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
-import org.springframework.test.web.servlet.MockMvc;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @SpringBootTest
-@AutoConfigureMockMvc
 class UserSearchIntegrationTest {
 
     @DynamicPropertySource
@@ -29,48 +30,39 @@ class UserSearchIntegrationTest {
     }
 
     @Autowired
-    private MockMvc mockMvc;
+    private UserService userService;
 
     @Autowired
-    private TestAuthTokens testAuthTokens;
+    private DataRepository repository;
 
     @Test
-    void searchByUsernameDefaultQ() throws Exception {
-        String token = this.testAuthTokens.adminAccessToken();
+    void searchByUsernameDefaultQ() {
+        User admin = this.repository.userRepo.findByUsername("admin").orElseThrow();
 
-        this.mockMvc.perform(
-                        post("/api/user/search")
-                                .header("Authorization", "Bearer " + token)
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content("""
-                                        {
-                                          "q": "admin"
-                                        }
-                                        """)
-                )
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.items.length()").value(1))
-                .andExpect(jsonPath("$.data.items[0].username").value("admin"));
+        UserSearchResponse response = this.userService.search(
+                admin,
+                new UserSearchRequest("admin", null, null, null, null)
+        );
+
+        assertEquals(1, response.items().size());
+        assertEquals("admin", response.items().getFirst().username());
     }
 
     @Test
-    void searchByEmailFilter() throws Exception {
-        String token = this.testAuthTokens.adminAccessToken();
+    void searchByEmailFilter() {
+        User admin = this.repository.userRepo.findByUsername("admin").orElseThrow();
 
-        this.mockMvc.perform(
-                post("/api/user/search")
-                        .header("Authorization", "Bearer " + token)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("""
-                                {
-                                  "filters": [
-                                    {
-                                      "field": "%s",
-                                      "op": "IS_NULL"
-                                    }
-                                  ]
-                                }
-                                """.formatted(BuiltinPropertyIds.EMAIL))
-        ).andExpect(status().isOk());
+        UserSearchResponse response = this.userService.search(
+                admin,
+                new UserSearchRequest(
+                        null,
+                        List.of(new SearchClause(BuiltinPropertyIds.EMAIL, SearchOperator.IS_NULL, null)),
+                        null,
+                        null,
+                        null
+                )
+        );
+
+        assertTrue(response.items().stream().anyMatch(u -> u.username().equals("admin")));
     }
 }

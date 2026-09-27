@@ -1,28 +1,31 @@
 package com.openrecordsmanager.auth;
 
-import com.jayway.jsonpath.JsonPath;
+import com.openrecordsmanager.api.ComponentReference;
+import com.openrecordsmanager.api.ResourceIdentifier;
 import com.openrecordsmanager.api.builtin.BuiltinConfigs;
+import com.openrecordsmanager.api.errors.InputValidationException;
+import com.openrecordsmanager.api.types.ComponentTypes;
+import com.openrecordsmanager.audit.AuditTestSupport;
+import com.openrecordsmanager.auth.dto.AuthProviderResponse;
+import com.openrecordsmanager.auth.dto.AuthProviderTypeResponse;
+import com.openrecordsmanager.auth.dto.UpdateAuthProviderRequest;
+import com.openrecordsmanager.database.DataRepository;
 import com.openrecordsmanager.database.SqliteTestSupport;
+import com.openrecordsmanager.user.User;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
-import org.springframework.http.MediaType;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MvcResult;
 
-import static org.hamcrest.Matchers.hasItem;
-import static org.hamcrest.Matchers.nullValue;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import java.util.Arrays;
+import java.util.Map;
+import java.util.UUID;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
-@AutoConfigureMockMvc
 class AuthProviderSettingsIntegrationTest {
 
     @DynamicPropertySource
@@ -33,119 +36,99 @@ class AuthProviderSettingsIntegrationTest {
     }
 
     @Autowired
-    private MockMvc mockMvc;
+    private AuthService authService;
 
     @Autowired
-    private TestAuthTokens testAuthTokens;
+    private DataRepository repository;
 
-    @Test
-    void listProviderTypesIncludesLocalAndOidcWithSchemas() throws Exception {
-        String adminToken = this.testAuthTokens.adminAccessToken();
+    private User admin;
 
-        this.mockMvc.perform(
-                        get("/api/auth/providers/types")
-                                .header("Authorization", "Bearer " + adminToken)
-                                .accept(MediaType.APPLICATION_JSON)
-                )
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data[*].type.id", hasItem("auth_local:local_auth")))
-                .andExpect(jsonPath("$.data[*].type.id", hasItem("auth_oidc:oidc_auth")))
-                .andExpect(jsonPath("$.data[?(@.type.id == 'auth_local:local_auth')].settingsSchema.properties").value(hasItem(nullValue())))
-                .andExpect(jsonPath("$.data[?(@.type.id == 'auth_oidc:oidc_auth')].settingsSchema.properties.secret.writeOnly")
-                        .value(hasItem(true)));
+    @BeforeEach
+    void setUp() {
+        this.admin = this.repository.userRepo.findByUsername("admin").orElseThrow();
     }
 
     @Test
-    void createOidcProviderRejectsInvalidSettings() throws Exception {
-        String adminToken = this.testAuthTokens.adminAccessToken();
+    void listProviderTypesIncludesLocalAndOidcWithSchemas() {
+        AuthProviderTypeResponse[] types = this.authService.listProviderTypes();
 
-        this.mockMvc.perform(
-                        put("/api/auth/providers")
-                                .header("Authorization", "Bearer " + adminToken)
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content("""
-                                        {
-                                          "name": "Broken OIDC",
-                                          "type": {
-                                            "id": "auth_oidc:oidc_auth",
-                                            "type": "redirect_auth_provider"
-                                          },
-                                          "settings": {
-                                            "clientId": "x"
-                                          }
-                                        }
-                                        """)
-                                .accept(MediaType.APPLICATION_JSON)
-                )
-                .andExpect(status().isBadRequest());
+        assertTrue(Arrays.stream(types).anyMatch(t -> "auth_local:local_auth".equals(t.type().id().toString())));
+        assertTrue(Arrays.stream(types).anyMatch(t -> "auth_oidc:oidc_auth".equals(t.type().id().toString())));
+
+        AuthProviderTypeResponse local = Arrays.stream(types)
+                .filter(t -> "auth_local:local_auth".equals(t.type().id().toString()))
+                .findFirst()
+                .orElseThrow();
+        assertNull(local.settingsSchema().properties());
+
+        AuthProviderTypeResponse oidc = Arrays.stream(types)
+                .filter(t -> "auth_oidc:oidc_auth".equals(t.type().id().toString()))
+                .findFirst()
+                .orElseThrow();
+        assertEquals(Boolean.TRUE, oidc.settingsSchema().properties().get("secret").writeOnly());
     }
 
     @Test
-    void createAndUpdateOidcProviderRedactsSecretAndPreservesOnBlankUpdate() throws Exception {
-        String adminToken = this.testAuthTokens.adminAccessToken();
-
-        MvcResult created = this.mockMvc.perform(
-                        put("/api/auth/providers")
-                                .header("Authorization", "Bearer " + adminToken)
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content("""
-                                        {
-                                          "name": "Test OIDC",
-                                          "type": {
-                                            "id": "auth_oidc:oidc_auth",
-                                            "type": "redirect_auth_provider"
-                                          },
-                                          "settings": {
-                                            "clientId": "orm-client",
-                                            "secret": "super-secret-value",
-                                            "uri": "http://localhost:9000/application/o/orm/",
-                                            "scope": "openid profile",
-                                            "usernameClaim": "preferred_username"
-                                          }
-                                        }
-                                        """)
-                                .accept(MediaType.APPLICATION_JSON)
-                )
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.enabled").value(true))
-                .andExpect(jsonPath("$.data.settings.clientId").value("orm-client"))
-                .andExpect(jsonPath("$.data.settings.secret").doesNotExist())
-                .andExpect(jsonPath("$.data.settings.uri").value("http://localhost:9000/application/o/orm/"))
-                .andReturn();
-
-        String body = created.getResponse().getContentAsString();
-        assertFalse(body.contains("super-secret-value"));
-
-        String id = JsonPath.read(body, "$.data.id");
-
-        this.mockMvc.perform(
-                        put("/api/auth/providers/" + id)
-                                .header("Authorization", "Bearer " + adminToken)
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content("""
-                                        {
-                                          "settings": {
-                                            "clientId": "orm-client-updated",
-                                            "secret": "",
-                                            "uri": "http://localhost:9000/application/o/orm/",
-                                            "scope": "openid profile email",
-                                            "usernameClaim": "preferred_username"
-                                          }
-                                        }
-                                        """)
-                                .accept(MediaType.APPLICATION_JSON)
-                )
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.settings.clientId").value("orm-client-updated"))
-                .andExpect(jsonPath("$.data.settings.secret").doesNotExist());
-
-        this.mockMvc.perform(
-                        get("/api/auth/providers/" + id)
-                                .header("Authorization", "Bearer " + adminToken)
-                                .accept(MediaType.APPLICATION_JSON)
-                )
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.settings.clientId").value("orm-client-updated"))
-                .andExpect(jsonPath("$.data.settings.secret").doesNotExist());
+    void createOidcProviderRejectsInvalidSettings() {
+        assertThrows(
+                InputValidationException.class,
+                () -> AuditTestSupport.withAudit(this.admin, () -> this.authService.createProvider(
+                        "Broken OIDC",
+                        ComponentReference.of(
+                                ComponentTypes.REDIRECT_AUTH_PROVIDER,
+                                ResourceIdentifier.valueOf("auth_oidc:oidc_auth")
+                        ),
+                        Map.of("clientId", "x")
+                ))
+        );
     }
+
+    @Test
+    void createAndUpdateOidcProviderRedactsSecretAndPreservesOnBlankUpdate() {
+        AuthProviderResponse created = AuditTestSupport.withAudit(this.admin, () -> this.authService.createProvider(
+                "Test OIDC",
+                ComponentReference.of(
+                        ComponentTypes.REDIRECT_AUTH_PROVIDER,
+                        ResourceIdentifier.valueOf("auth_oidc:oidc_auth")
+                ),
+                Map.of(
+                        "clientId", "orm-client",
+                        "secret", "super-secret-value",
+                        "uri", "http://localhost:9000/application/o/orm/",
+                        "scope", "openid profile",
+                        "usernameClaim", "preferred_username"
+                )
+        ));
+
+        assertTrue(created.enabled());
+        assertEquals("orm-client", created.settings().get("clientId"));
+        assertFalse(created.settings().containsKey("secret"));
+        assertEquals("http://localhost:9000/application/o/orm/", created.settings().get("uri"));
+        assertFalse(created.toString().contains("super-secret-value"));
+
+        UUID id = created.id();
+
+        AuthProviderResponse updated = AuditTestSupport.withAudit(this.admin, () -> this.authService.updateProvider(
+                id,
+                new UpdateAuthProviderRequest(
+                        null,
+                        null,
+                        Map.of(
+                                "clientId", "orm-client-updated",
+                                "secret", "",
+                                "uri", "http://localhost:9000/application/o/orm/",
+                                "scope", "openid profile email",
+                                "usernameClaim", "preferred_username"
+                        )
+                )
+        ));
+
+        assertEquals("orm-client-updated", updated.settings().get("clientId"));
+        assertFalse(updated.settings().containsKey("secret"));
+
+        AuthProviderResponse loaded = this.authService.getProvider(id);
+        assertEquals("orm-client-updated", loaded.settings().get("clientId"));
+        assertFalse(loaded.settings().containsKey("secret"));
+    }
+
 }

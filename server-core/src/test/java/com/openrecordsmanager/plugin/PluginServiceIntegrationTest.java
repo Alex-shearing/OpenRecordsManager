@@ -6,25 +6,26 @@ import com.openrecordsmanager.api.audit.AuditOperation;
 import com.openrecordsmanager.api.builtin.BuiltinConfigs;
 import com.openrecordsmanager.api.filestore.FileStoreType;
 import com.openrecordsmanager.api.types.ComponentTypes;
+import com.openrecordsmanager.audit.AuditTestSupport;
 import com.openrecordsmanager.audit.persistence.AuditEventEntity;
 import com.openrecordsmanager.audit.persistence.AuditPolicyEntity;
 import com.openrecordsmanager.audit.persistence.AuditPolicyId;
-import com.openrecordsmanager.auth.TestAuthTokens;
 import com.openrecordsmanager.database.DataRepository;
 import com.openrecordsmanager.filestore.store.FileStore;
+import com.openrecordsmanager.plugin.dto.PluginResponse;
+import com.openrecordsmanager.plugin.dto.PluginTypeRequest;
+import com.openrecordsmanager.plugin.dto.UpdatePluginRequest;
 import com.openrecordsmanager.plugin.registry.ComponentCatalog;
+import com.openrecordsmanager.user.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.MediaType;
-import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
-import org.springframework.test.web.servlet.MockMvc;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -33,12 +34,8 @@ import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
-@AutoConfigureMockMvc
 class PluginServiceIntegrationTest {
 
     private static final Path PLUGINS_DIR = Path.of("build/test-plugin-service-" + UUID.randomUUID());
@@ -59,13 +56,7 @@ class PluginServiceIntegrationTest {
     }
 
     @Autowired
-    private MockMvc mockMvc;
-
-    @Autowired
     private DataRepository repository;
-
-    @Autowired
-    private TestAuthTokens testAuthTokens;
 
     @Autowired
     private ComponentCatalog catalog;
@@ -79,8 +70,11 @@ class PluginServiceIntegrationTest {
     @Autowired
     private PluginService pluginService;
 
+    private User admin;
+
     @BeforeEach
     void setUp() throws IOException {
+        this.admin = this.repository.userRepo.findByUsername("admin").orElseThrow();
         restorePluginJars();
         this.repository.pluginRepo.deleteAll();
         this.pluginManager.reload(this.catalog);
@@ -147,20 +141,13 @@ class PluginServiceIntegrationTest {
         }
     }
 
-    private String adminBearerToken() {
-        return this.testAuthTokens.adminAccessToken();
-    }
-
     @Test
-    void getAllIncludesBuiltinAndDiscoveredPluginsWhenDatabaseEmpty() {
+    void getAllIncludesDiscoveredPluginsWhenDatabaseEmpty() {
         assertTrue(this.repository.pluginRepo.findAll().isEmpty());
+        assertTrue(this.pluginManager.isLoaded("builtin"));
 
         var plugins = this.pluginService.getAll(true);
 
-        assertTrue(
-                plugins.stream().anyMatch(plugin -> "builtin".equals(plugin.id()) && plugin.loaded()),
-                "expected builtin plugin in list"
-        );
         assertTrue(
                 plugins.stream().anyMatch(plugin -> "filestore_local".equals(plugin.id()) && plugin.loaded()),
                 "expected discovered local plugin in list"
@@ -174,26 +161,21 @@ class PluginServiceIntegrationTest {
     @Test
     void uploadCreatesPluginAndAuditMetadataContainsFileHash() throws Exception {
         byte[] jarBytes = Files.readAllBytes(PLUGINS_DIR.resolve("filestore-local-0.1.0.jar"));
-        String token = this.adminBearerToken();
 
-        this.mockMvc.perform(
-                        multipart("/api/plugins")
-                                .file(new MockMultipartFile("file", "filestore-local-0.1.0.jar", "application/java-archive", jarBytes))
-                                .param("type", "JAR")
-                                .header("Authorization", "Bearer " + token)
-                                .header("X-ORM-Audit-Comment", "install plugin")
-                                .accept(MediaType.APPLICATION_JSON)
-                )
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.id").value("filestore_local"))
-                .andExpect(jsonPath("$.data.displayName").value("File System Store Type"))
-                .andExpect(jsonPath("$.data.description").value(
-                        "Store files on a standard filesystem under a configured root directory."
-                ))
-                .andExpect(jsonPath("$.data.version").value("0.1.0"))
-                .andExpect(jsonPath("$.data.enabled").value(true))
-                .andExpect(jsonPath("$.data.loaded").value(true));
+        PluginResponse uploaded = AuditTestSupport.withAudit(this.admin, () -> this.pluginService.upload(
+                new ByteArrayInputStream(jarBytes),
+                PluginTypeRequest.JAR
+        ));
 
+        assertEquals("filestore_local", uploaded.id());
+        assertEquals("File System Store Type", uploaded.displayName());
+        assertEquals(
+                "Store files on a standard filesystem under a configured root directory.",
+                uploaded.description()
+        );
+        assertEquals("0.1.0", uploaded.version());
+        assertTrue(uploaded.enabled());
+        assertTrue(uploaded.loaded());
         assertTrue(this.repository.pluginRepo.findById("filestore_local").isPresent());
 
         AuditEventEntity event = this.repository.auditEventRepo
@@ -214,27 +196,16 @@ class PluginServiceIntegrationTest {
     }
 
     @Test
-    void disablePluginExcludesItFromLoadedSet() throws Exception {
+    void disablePluginExcludesItFromLoadedSet() {
         this.pluginSyncService.syncAndReload(true);
 
-        String token = this.adminBearerToken();
+        PluginResponse updated = AuditTestSupport.withAudit(this.admin, () -> this.pluginService.update(
+                "filestore_local",
+                new UpdatePluginRequest(false)
+        ));
 
-        this.mockMvc.perform(
-                        put("/api/plugins/filestore_local")
-                                .header("Authorization", "Bearer " + token)
-                                .header("X-ORM-Audit-Comment", "disable plugin")
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content("""
-                                        {
-                                          "enabled": false
-                                        }
-                                        """)
-                                .accept(MediaType.APPLICATION_JSON)
-                )
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.enabled").value(false))
-                .andExpect(jsonPath("$.data.loaded").value(false));
-
+        assertFalse(updated.enabled());
+        assertFalse(updated.loaded());
         assertFalse(this.repository.pluginRepo.findById("filestore_local").orElseThrow().isEnabled());
     }
 
@@ -243,16 +214,12 @@ class PluginServiceIntegrationTest {
         this.pluginSyncService.syncAndReload(true);
         assertTrue(this.repository.pluginRepo.existsById("filestore_s3"));
 
-        String token = this.adminBearerToken();
-
-        this.mockMvc.perform(
-                        delete("/api/plugins/filestore_s3")
-                                .header("Authorization", "Bearer " + token)
-                                .header("X-ORM-Audit-Comment", "remove plugin")
-                                .accept(MediaType.APPLICATION_JSON)
-                )
-                .andExpect(status().isOk());
+        AuditTestSupport.withAudit(this.admin, () -> {
+            this.pluginService.delete("filestore_s3");
+            return null;
+        });
 
         assertFalse(this.repository.pluginRepo.existsById("filestore_s3"));
     }
+
 }

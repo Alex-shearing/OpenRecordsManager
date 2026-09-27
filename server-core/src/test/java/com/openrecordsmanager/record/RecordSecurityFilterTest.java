@@ -1,11 +1,10 @@
-package com.openrecordsmanager.model;
+package com.openrecordsmanager.record;
 
 import com.openrecordsmanager.api.ResourceIdentifier;
 import com.openrecordsmanager.api.template.property.PropertyType;
 import com.openrecordsmanager.api.template.recordtype.SecurityFilterUsage;
 import com.openrecordsmanager.plugin.ExpressionsService;
 import com.openrecordsmanager.property.ObjectProperty;
-import com.openrecordsmanager.record.Record;
 import com.openrecordsmanager.recordtype.RecordType;
 import com.openrecordsmanager.recordtype.RecordTypeProperty;
 import com.openrecordsmanager.user.User;
@@ -18,7 +17,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import java.util.HashSet;
 
 @SpringBootTest
-class RecordTest {
+class RecordSecurityFilterTest {
 
     // Construct test user
     private User testUser;

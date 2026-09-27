@@ -1,10 +1,9 @@
-package com.openrecordsmanager.property.search;
+package com.openrecordsmanager.search;
 
 import com.openrecordsmanager.api.ResourceIdentifier;
 import com.openrecordsmanager.api.errors.InputValidationException;
 import com.openrecordsmanager.api.search.SearchOperator;
 import com.openrecordsmanager.api.template.property.PropertyType;
-import com.openrecordsmanager.search.SearchOperatorSupport;
 import org.junit.jupiter.api.Test;
 import tools.jackson.databind.node.JsonNodeFactory;
 
