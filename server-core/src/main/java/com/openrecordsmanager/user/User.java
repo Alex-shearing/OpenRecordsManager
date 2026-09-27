@@ -1,11 +1,9 @@
 package com.openrecordsmanager.user;
 
 import com.openrecordsmanager.api.ResourceIdentifier;
-import com.openrecordsmanager.api.builtin.BuiltinProperties;
+import com.openrecordsmanager.api.builtin.BuiltinPropertyIds;
 import com.openrecordsmanager.auth.entity.AuthProvider;
-import com.openrecordsmanager.property.BuiltinPropertyMapper;
-import com.openrecordsmanager.property.ObjectProperty;
-import com.openrecordsmanager.property.ObjectPropertyHolder;
+import com.openrecordsmanager.property.*;
 import jakarta.persistence.*;
 import org.hibernate.id.uuid.UuidVersion7Strategy;
 import org.jspecify.annotations.Nullable;
@@ -20,42 +18,13 @@ import java.util.*;
 @Table(name = "user_details")
 @SuppressWarnings({"NotNullFieldNotInitialized", "CanBeFinal"})
 public class User extends ObjectPropertyHolder<User, UserPropertyValue> implements UserDetails {
-    private static final Map<ResourceIdentifier, BuiltinPropertyMapper<User, ?>> BUILTIN_PROPERTY_MAPPERS = Map.of(
-            BuiltinProperties.DATE_CREATED_ID, BuiltinPropertyMapper.of(
-                    User::getDateCreated,
-                    (u, v) -> u.dateCreated = Objects.requireNonNull(v)
-            ),
-            BuiltinProperties.DATE_MODIFIED_ID, BuiltinPropertyMapper.of(
-                    User::getDateModified,
-                    (_, _) -> {
-                        throw new IllegalArgumentException("date modified cannot be set explicitly");
-                    }
-            ),
-            BuiltinProperties.GIVEN_NAME_ID, BuiltinPropertyMapper.of(
-                    User::getGivenName,
-                    (u, v) -> u.givenName = v
-            ),
-            BuiltinProperties.SURNAME_ID, BuiltinPropertyMapper.of(
-                    User::getSurname,
-                    (u, v) -> u.surname = v
-            ),
-            BuiltinProperties.HONORIFIC_ID, BuiltinPropertyMapper.of(
-                    User::getHonorific,
-                    (u, v) -> u.honorific = v
-            ),
-            BuiltinProperties.EMAIL_ID, BuiltinPropertyMapper.of(
-                    User::getEmail,
-                    (u, v) -> u.email = v
-            ),
-            BuiltinProperties.NOTES_ID, BuiltinPropertyMapper.of(
-                    User::getNotes,
-                    (u, v) -> u.notes = v
-            )
-    );
+    public static final Map<ResourceIdentifier, BuiltinPropertyBinding<User, ?>> BUILTIN_PROPERTY_BINDINGS =
+            BuiltinPropertyBinding.scan(User.class);
 
     @Id
     private UUID id;
 
+    @BuiltinProperty(value = BuiltinPropertyIds.USERNAME_ID, defaultSearch = true)
     @Column(unique = true, nullable = false)
     private String username;
 
@@ -64,28 +33,35 @@ public class User extends ObjectPropertyHolder<User, UserPropertyValue> implemen
     @Nullable
     private AuthProvider authProvider;
 
+    @BuiltinProperty(BuiltinPropertyIds.DATE_CREATED_ID)
     @Column(nullable = false)
     private Instant dateCreated;
 
+    @BuiltinProperty(value = BuiltinPropertyIds.DATE_MODIFIED_ID, readOnly = true)
     @Column(nullable = false)
     private Instant dateModified;
 
+    @BuiltinProperty(value = BuiltinPropertyIds.GIVEN_NAME_ID, defaultSearch = true)
     @Column
     @Nullable
     private String givenName;
 
+    @BuiltinProperty(value = BuiltinPropertyIds.SURNAME_ID, defaultSearch = true)
     @Column
     @Nullable
     private String surname;
 
+    @BuiltinProperty(BuiltinPropertyIds.HONORIFIC_ID)
     @Column
     @Nullable
     private String honorific;
 
+    @BuiltinProperty(value = BuiltinPropertyIds.EMAIL_ID, defaultSearch = true)
     @Column
     @Nullable
     private String email;
 
+    @BuiltinProperty(BuiltinPropertyIds.NOTES_ID)
     @Column
     @Nullable
     private String notes;
@@ -191,7 +167,11 @@ public class User extends ObjectPropertyHolder<User, UserPropertyValue> implemen
 
     @Override
     public Set<ObjectProperty<?>> getPropertyKeys() {
-        Set<ObjectProperty<?>> keys = new LinkedHashSet<>(UserBuiltinColumnPropertyRegistry.userColumnPropertyKeys());
+        ObjectPropertyLookup lookup = ObjectPropertyLookup.requireInstalled();
+        Set<ObjectProperty<?>> keys = new LinkedHashSet<>();
+        for (ResourceIdentifier id : BUILTIN_PROPERTY_BINDINGS.keySet()) {
+            keys.add(lookup.require(id));
+        }
         keys.addAll(this.properties.keySet());
         return keys;
     }
@@ -207,8 +187,8 @@ public class User extends ObjectPropertyHolder<User, UserPropertyValue> implemen
     }
 
     @Override
-    protected Map<ResourceIdentifier, BuiltinPropertyMapper<User, ?>> getBuiltinPropertyMappers() {
-        return BUILTIN_PROPERTY_MAPPERS;
+    protected Map<ResourceIdentifier, BuiltinPropertyBinding<User, ?>> getBuiltinPropertyBindings() {
+        return BUILTIN_PROPERTY_BINDINGS;
     }
 
     @Override

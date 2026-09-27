@@ -5,7 +5,7 @@ import com.openrecordsmanager.api.ResourceIdentifier;
 import com.openrecordsmanager.api.audit.AuditEntityType;
 import com.openrecordsmanager.api.audit.AuditOperation;
 import com.openrecordsmanager.api.builtin.BuiltinConfigs;
-import com.openrecordsmanager.api.builtin.BuiltinProperties;
+import com.openrecordsmanager.api.builtin.BuiltinPropertyIds;
 import com.openrecordsmanager.api.template.list.IListElement;
 import com.openrecordsmanager.api.template.property.PropertyType;
 import com.openrecordsmanager.api.template.recordtype.SecurityFilterUsage;
@@ -74,7 +74,7 @@ class RecordUpdateIntegrationTest {
 
         if (this.repository.recordTypeRepo.findById(TEST_RECORD_TYPE).isEmpty()) {
             ObjectProperty<String> titleProperty = new ObjectProperty<>(
-                    BuiltinProperties.TITLE_ID,
+                    BuiltinPropertyIds.TITLE,
                     "Title",
                     "Title",
                     PropertyType.STRING
@@ -135,10 +135,10 @@ class RecordUpdateIntegrationTest {
                 )));
 
         if (this.repository.recordTypeRepo.findById(LIST_RECORD_TYPE).isEmpty()) {
-            ObjectProperty<String> titleProperty = this.repository.objectPropertyRepo.findById(BuiltinProperties.TITLE_ID)
+            ObjectProperty<String> titleProperty = this.repository.objectPropertyRepo.findById(BuiltinPropertyIds.TITLE)
                     .map(p -> (ObjectProperty<String>) p)
                     .orElseGet(() -> this.repository.objectPropertyRepo.saveAndFlush(new ObjectProperty<>(
-                            BuiltinProperties.TITLE_ID,
+                            BuiltinPropertyIds.TITLE,
                             "Title",
                             "Title",
                             PropertyType.STRING

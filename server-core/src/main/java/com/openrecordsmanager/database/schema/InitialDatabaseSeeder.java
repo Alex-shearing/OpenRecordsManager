@@ -16,7 +16,6 @@ import com.openrecordsmanager.plugin.registry.ComponentCatalog;
 import com.openrecordsmanager.plugin.registry.TemplateComponentRegistry;
 import com.openrecordsmanager.property.ObjectProperty;
 import com.openrecordsmanager.user.User;
-import com.openrecordsmanager.user.UserBuiltinColumnPropertyRegistry;
 import com.openrecordsmanager.user.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,14 +47,16 @@ public class InitialDatabaseSeeder {
     private final ExpressionsService expressions;
     private final AuditService auditService;
     private final DatabaseWritableProbe probe;
-    private final UserBuiltinColumnPropertyRegistry builtinPropertyRegistry;
 
     public InitialDatabaseSeeder(
             SchemaMigrationState state,
             AuthService authService,
             UserService userService,
             DataRepository repository,
-            ComponentCatalog catalog, ExpressionsService expressions, AuditService auditService, DatabaseWritableProbe probe, UserBuiltinColumnPropertyRegistry builtinPopertyRegistry
+            ComponentCatalog catalog,
+            ExpressionsService expressions,
+            AuditService auditService,
+            DatabaseWritableProbe probe
     ) {
         this.state = state;
         this.authService = authService;
@@ -65,7 +66,6 @@ public class InitialDatabaseSeeder {
         this.expressions = expressions;
         this.auditService = auditService;
         this.probe = probe;
-        this.builtinPropertyRegistry = builtinPopertyRegistry;
     }
 
     @EventListener({ApplicationReadyEvent.class, SchemaMigrationReadyEvent.class})
@@ -141,7 +141,5 @@ public class InitialDatabaseSeeder {
                     true
             );
         }
-
-        this.builtinPropertyRegistry.load(this.repository);
     }
 }

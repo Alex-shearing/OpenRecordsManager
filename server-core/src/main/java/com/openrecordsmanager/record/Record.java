@@ -1,11 +1,12 @@
 package com.openrecordsmanager.record;
 
 import com.openrecordsmanager.api.ResourceIdentifier;
-import com.openrecordsmanager.api.builtin.BuiltinProperties;
+import com.openrecordsmanager.api.builtin.BuiltinPropertyIds;
 import com.openrecordsmanager.api.template.recordtype.SecurityFilterUsage;
 import com.openrecordsmanager.filestore.store.FileStoreEntry;
 import com.openrecordsmanager.plugin.ExpressionsService;
-import com.openrecordsmanager.property.BuiltinPropertyMapper;
+import com.openrecordsmanager.property.BuiltinProperty;
+import com.openrecordsmanager.property.BuiltinPropertyBinding;
 import com.openrecordsmanager.property.ObjectProperty;
 import com.openrecordsmanager.property.ObjectPropertyHolder;
 import com.openrecordsmanager.recordtype.RecordType;
@@ -26,42 +27,13 @@ import java.util.stream.Collectors;
 @Table(name = "record")
 @SuppressWarnings({"NotNullFieldNotInitialized", "CanBeFinal"})
 public class Record extends ObjectPropertyHolder<Record, RecordPropertyValue> {
-    private static final Map<ResourceIdentifier, BuiltinPropertyMapper<Record, ?>> BUILTIN_PROPERTY_MAPPERS = Map.of(
-            BuiltinProperties.TITLE_ID, BuiltinPropertyMapper.of(
-                    Record::getTitle,
-                    (r, v) -> r.title = Objects.requireNonNull(v)
-            ),
-            BuiltinProperties.NOTES_ID, BuiltinPropertyMapper.of(
-                    Record::getNotes,
-                    (r, v) -> r.notes = v
-            ),
-            BuiltinProperties.DATE_CREATED_ID, BuiltinPropertyMapper.of(
-                    Record::getDateCreated,
-                    (r, v) -> r.dateCreated = Objects.requireNonNull(v)
-            ),
-            BuiltinProperties.DATE_REGISTERED_ID, BuiltinPropertyMapper.of(
-                    Record::getDateRegistered,
-                    (r, v) -> r.dateRegistered = v
-            ),
-            BuiltinProperties.DATE_MODIFIED_ID, BuiltinPropertyMapper.of(
-                    Record::getDateModified,
-                    (_, _) -> {
-                        throw new IllegalArgumentException("date modified cannot be set explicitly");
-                    }
-            ),
-            BuiltinProperties.KEYWORDS_ID, BuiltinPropertyMapper.of(
-                    Record::getKeywords,
-                    (r, v) -> r.keywords = v
-            ),
-            BuiltinProperties.MIME_TYPES_ID, BuiltinPropertyMapper.of(
-                    Record::getMimeTypes,
-                    (r, v) -> r.mimeTypes = v
-            )
-    );
+    public static final Map<ResourceIdentifier, BuiltinPropertyBinding<Record, ?>> BUILTIN_PROPERTY_BINDINGS =
+            BuiltinPropertyBinding.scan(Record.class);
 
     @Id
     private UUID id;
 
+    @BuiltinProperty(value = BuiltinPropertyIds.TITLE_ID, defaultSearch = true)
     @Column(nullable = false)
     private String title;
 
@@ -69,26 +41,32 @@ public class Record extends ObjectPropertyHolder<Record, RecordPropertyValue> {
     @JoinColumn(nullable = false)
     private RecordType type;
 
-    @Column
-    @JdbcTypeCode(SqlTypes.LONG32VARCHAR)
-    @Nullable
-    private String notes;
-
-    @Column(nullable = false)
-    private Instant dateCreated;
-
-    @Column
-    @Nullable
-    private Instant dateRegistered;
-
-    @Column(nullable = false)
-    private Instant dateModified;
-
+    @BuiltinProperty(value = BuiltinPropertyIds.KEYWORDS_ID, defaultSearch = true)
     @Column
     @JdbcTypeCode(SqlTypes.LONG32VARCHAR)
     @Nullable
     private String keywords;
 
+    @BuiltinProperty(value = BuiltinPropertyIds.NOTES_ID, defaultSearch = true)
+    @Column
+    @JdbcTypeCode(SqlTypes.LONG32VARCHAR)
+    @Nullable
+    private String notes;
+
+    @BuiltinProperty(BuiltinPropertyIds.DATE_CREATED_ID)
+    @Column(nullable = false)
+    private Instant dateCreated;
+
+    @BuiltinProperty(BuiltinPropertyIds.DATE_REGISTERED_ID)
+    @Column
+    @Nullable
+    private Instant dateRegistered;
+
+    @BuiltinProperty(value = BuiltinPropertyIds.DATE_MODIFIED_ID, readOnly = true)
+    @Column(nullable = false)
+    private Instant dateModified;
+
+    @BuiltinProperty(BuiltinPropertyIds.MIME_TYPES_ID)
     @Column
     @JdbcTypeCode(SqlTypes.JSON)
     @Nullable
@@ -208,8 +186,8 @@ public class Record extends ObjectPropertyHolder<Record, RecordPropertyValue> {
     }
 
     @Override
-    protected Map<ResourceIdentifier, BuiltinPropertyMapper<Record, ?>> getBuiltinPropertyMappers() {
-        return BUILTIN_PROPERTY_MAPPERS;
+    protected Map<ResourceIdentifier, BuiltinPropertyBinding<Record, ?>> getBuiltinPropertyBindings() {
+        return BUILTIN_PROPERTY_BINDINGS;
     }
 
     @Override

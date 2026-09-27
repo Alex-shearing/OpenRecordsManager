@@ -7,6 +7,7 @@ import com.openrecordsmanager.api.config.ConfigType;
 import com.openrecordsmanager.api.filestore.FileStoreMiddlewareType;
 import com.openrecordsmanager.api.filestore.FileStoreType;
 import com.openrecordsmanager.api.record.RecordActionType;
+import com.openrecordsmanager.api.search.SearchFieldProvider;
 import com.openrecordsmanager.api.template.list.ListElementTemplate;
 import com.openrecordsmanager.api.template.list.ListTemplate;
 import com.openrecordsmanager.api.template.property.ObjectPropertyTemplate;
@@ -25,6 +26,7 @@ public class ComponentTypes {
     public static final ComponentType<FileStoreMiddlewareType<?>> FILE_STORE_MIDDLEWARE = ComponentType.of("file_store_middleware", FileStoreMiddlewareType.class);
     public static final ComponentType<UserActionType<?>> USER_ACTION = ComponentType.of("user_action", UserActionType.class);
     public static final ComponentType<RecordActionType<?>> RECORD_ACTION = ComponentType.of("record_action", RecordActionType.class);
+    public static final ComponentType<SearchFieldProvider> SEARCH_FIELD_PROVIDER = ComponentType.of("search_field_provider", SearchFieldProvider.class);
 
     // Registerable components
     public static final ComponentType<ListTemplate> LIST = ComponentType.of("list", ListTemplate.class);
@@ -43,7 +45,8 @@ public class ComponentTypes {
             FILE_STORE,
             FILE_STORE_MIDDLEWARE,
             USER_ACTION,
-            RECORD_ACTION
+            RECORD_ACTION,
+            SEARCH_FIELD_PROVIDER
     );
 
     public static @Nullable ComponentType<?> fromName(String name) {

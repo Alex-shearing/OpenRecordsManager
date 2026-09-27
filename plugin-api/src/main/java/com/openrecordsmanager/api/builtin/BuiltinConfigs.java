@@ -98,7 +98,7 @@ public class BuiltinConfigs {
 
     public static final ConfigType<Boolean> DEBUG_SHOW_SQL = ConfigType.builder("app.debug.show-sql", PropertyType.BOOLEAN)
             .name("Print All SQL to the Log")
-            .description("If enabled, the API will log all SQL queries to the local log file")
+            .description("If enabled, the API will log executed SQL to the local log file")
             .defaultValue(false)
             .build();
 

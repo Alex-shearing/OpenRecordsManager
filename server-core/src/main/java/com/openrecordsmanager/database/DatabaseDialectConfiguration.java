@@ -1,10 +1,10 @@
 package com.openrecordsmanager.database;
 
+import com.openrecordsmanager.search.sql.dialect.JsonSearchDialect;
 import org.springframework.boot.hibernate.autoconfigure.HibernatePropertiesCustomizer;
 import org.springframework.boot.jdbc.autoconfigure.DataSourceProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.util.StringUtils;
 
 /**
  * Resolves the Hibernate dialect from the JDBC URL without contacting the database.
@@ -19,14 +19,26 @@ import org.springframework.util.StringUtils;
 public class DatabaseDialectConfiguration {
 
     @Bean
-    public HibernatePropertiesCustomizer ormHibernateProperties(
+    public DatabaseVendor databaseVendor(
             DataSourceProperties primaryDataSourceProperties,
             DataSourceProperties readOnlyDataSourceProperties
     ) {
-        String jdbcUrl = jdbcUrl(primaryDataSourceProperties, readOnlyDataSourceProperties);
+        return DatabaseVendor.fromDataSourceProperties(
+                primaryDataSourceProperties,
+                readOnlyDataSourceProperties
+        );
+    }
+
+    @Bean
+    public JsonSearchDialect jsonSearchDialect(DatabaseVendor vendor) {
+        return JsonSearchDialect.of(vendor);
+    }
+
+    @Bean
+    public HibernatePropertiesCustomizer ormHibernateProperties(DatabaseVendor vendor) {
         return properties -> {
             properties.put("hibernate.boot.allow_jdbc_metadata_access", false);
-            properties.put("hibernate.dialect", dialectClassName(jdbcUrl));
+            properties.put("hibernate.dialect", vendor.hibernateDialectClassName());
             properties.put(
                     "hibernate.connection.handling_mode",
                     "DELAYED_ACQUISITION_AND_RELEASE_AFTER_TRANSACTION"
@@ -35,35 +47,5 @@ public class DatabaseDialectConfiguration {
             // property values typed as tools.jackson.databind.JsonNode need Jackson 3.
             properties.put("hibernate.type.json_format_mapper", new ToolsJacksonJsonFormatMapper());
         };
-    }
-
-    private static String jdbcUrl(
-            DataSourceProperties primaryProperties,
-            DataSourceProperties readOnlyProperties
-    ) {
-        if (StringUtils.hasText(primaryProperties.getUrl())) {
-            return primaryProperties.getUrl();
-        }
-        if (StringUtils.hasText(readOnlyProperties.getUrl())) {
-            return readOnlyProperties.getUrl();
-        }
-        throw new IllegalStateException("No JDBC URL configured for Hibernate dialect resolution");
-    }
-
-    private static String dialectClassName(String jdbcUrl) {
-        String url = jdbcUrl.toLowerCase();
-        if (url.contains("sqlite")) {
-            return "org.hibernate.community.dialect.SQLiteDialect";
-        }
-        if (url.contains("sqlserver")) {
-            return "org.hibernate.dialect.SQLServerDialect";
-        }
-        if (url.contains("postgresql") || url.contains("postgres")) {
-            return "org.hibernate.dialect.PostgreSQLDialect";
-        }
-        if (url.contains("mariadb") || url.contains("mysql")) {
-            return "org.hibernate.dialect.MariaDBDialect";
-        }
-        throw new IllegalStateException("Unsupported database URL for Hibernate dialect: " + jdbcUrl);
     }
 }

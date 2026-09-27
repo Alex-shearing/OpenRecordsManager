@@ -4,6 +4,8 @@ import com.openrecordsmanager.api.ResourceIdentifier;
 import com.openrecordsmanager.record.dto.NewRecordRequest;
 import com.openrecordsmanager.record.dto.RecordResponse;
 import com.openrecordsmanager.record.dto.RecordRevisionResponse;
+import com.openrecordsmanager.record.dto.RecordSearchRequest;
+import com.openrecordsmanager.record.dto.RecordSearchResponse;
 import com.openrecordsmanager.record.dto.UpdateRecordRequest;
 import com.openrecordsmanager.rest.dto.ActionResponse;
 import com.openrecordsmanager.rest.swagger.DefaultApiResponses;
@@ -39,6 +41,12 @@ public class RecordController {
 
     public RecordController(RecordService service) {
         this.service = service;
+    }
+
+    @PostMapping(value = "/search", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(summary = "Search records by property criteria")
+    public RecordSearchResponse search(@AuthenticationPrincipal User user, @RequestBody RecordSearchRequest input) {
+        return this.service.search(user, input);
     }
 
     @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)

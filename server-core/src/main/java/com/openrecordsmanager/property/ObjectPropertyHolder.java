@@ -47,10 +47,10 @@ public abstract class ObjectPropertyHolder<SELF extends ObjectPropertyHolder<SEL
     }
 
     public <K> @Nullable K getProperty(ObjectProperty<K> property) {
-        BuiltinPropertyMapper<SELF, ?> builtinMapper = this.getBuiltinPropertyMappers().get(property.getId());
+        BuiltinPropertyBinding<SELF, ?> binding = this.getBuiltinPropertyBindings().get(property.getId());
 
-        if (builtinMapper != null) {
-            return property.getType().parseValue(builtinMapper.get(this.self()));
+        if (binding != null) {
+            return property.getType().parseValue(binding.get(this.self()));
         }
 
         V stored = this.getDynamicProperties().get(property);
@@ -72,7 +72,7 @@ public abstract class ObjectPropertyHolder<SELF extends ObjectPropertyHolder<SEL
 
     public abstract V createProperty(ObjectProperty<?> property, @Nullable JsonNode storedValue);
 
-    protected abstract Map<ResourceIdentifier, BuiltinPropertyMapper<SELF, ?>> getBuiltinPropertyMappers();
+    protected abstract Map<ResourceIdentifier, BuiltinPropertyBinding<SELF, ?>> getBuiltinPropertyBindings();
 
     protected abstract SELF self();
 
@@ -84,11 +84,11 @@ public abstract class ObjectPropertyHolder<SELF extends ObjectPropertyHolder<SEL
             throw new IllegalArgumentException("Property " + property + " does not exist on object");
         }
 
-        BuiltinPropertyMapper<SELF, ?> mapper = this.getBuiltinPropertyMappers().get(property.getId());
-        if (mapper != null) {
+        BuiltinPropertyBinding<SELF, ?> binding = this.getBuiltinPropertyBindings().get(property.getId());
+        if (binding != null) {
             K oldValue = this.getProperty(property);
             if (!Objects.equals(oldValue, value)) {
-                mapper.set(this.self(), value);
+                binding.set(this.self(), value);
                 this.touchDateModified();
             }
             return;

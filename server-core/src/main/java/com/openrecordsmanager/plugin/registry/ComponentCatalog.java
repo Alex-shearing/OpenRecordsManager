@@ -56,7 +56,8 @@ public class ComponentCatalog implements ComponentAccess {
             ComponentTypes.FILE_STORE, new ComponentRegistry<>(),
             ComponentTypes.FILE_STORE_MIDDLEWARE, new ComponentRegistry<>(),
             ComponentTypes.USER_ACTION, new ComponentRegistry<>(),
-            ComponentTypes.RECORD_ACTION, new ComponentRegistry<>()
+            ComponentTypes.RECORD_ACTION, new ComponentRegistry<>(),
+            ComponentTypes.SEARCH_FIELD_PROVIDER, new ComponentRegistry<>()
     );
 
     // Combined

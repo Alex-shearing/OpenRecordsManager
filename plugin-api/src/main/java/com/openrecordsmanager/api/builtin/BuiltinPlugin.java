@@ -2,8 +2,6 @@ package com.openrecordsmanager.api.builtin;
 
 import com.openrecordsmanager.api.Plugin;
 import com.openrecordsmanager.api.RegistrationContext;
-import com.openrecordsmanager.api.ResourceIdentifier;
-import com.openrecordsmanager.api.template.property.ObjectPropertyTemplate;
 
 public class BuiltinPlugin implements Plugin {
     public static final String BUILTIN_PLUGIN_NAME = "builtin";
@@ -45,24 +43,8 @@ public class BuiltinPlugin implements Plugin {
                 BuiltinConfigs.AUDIT_FILE_ARCHIVE_ENABLED
         );
 
-        registerProperty(registry, BuiltinProperties.NOTES_ID, BuiltinProperties.NOTES);
-        registerProperty(registry, BuiltinProperties.DATE_REGISTERED_ID, BuiltinProperties.DATE_REGISTERED);
-        registerProperty(registry, BuiltinProperties.DATE_CREATED_ID, BuiltinProperties.DATE_CREATED);
-        registerProperty(registry, BuiltinProperties.KEYWORDS_ID, BuiltinProperties.KEYWORDS);
-        registerProperty(registry, BuiltinProperties.MIME_TYPES_ID, BuiltinProperties.MIME_TYPES);
-        registerProperty(registry, BuiltinProperties.TITLE_ID, BuiltinProperties.TITLE);
-        registerProperty(registry, BuiltinProperties.DATE_MODIFIED_ID, BuiltinProperties.DATE_MODIFIED);
-        registerProperty(registry, BuiltinProperties.GIVEN_NAME_ID, BuiltinProperties.GIVEN_NAME);
-        registerProperty(registry, BuiltinProperties.SURNAME_ID, BuiltinProperties.SURNAME);
-        registerProperty(registry, BuiltinProperties.HONORIFIC_ID, BuiltinProperties.HONORIFIC);
-        registerProperty(registry, BuiltinProperties.EMAIL_ID, BuiltinProperties.EMAIL);
-    }
-
-    private static void registerProperty(
-            RegistrationContext registry,
-            ResourceIdentifier id,
-            ObjectPropertyTemplate<?> template
-    ) {
-        registry.registerComponent(id.item(), template);
+        BuiltinProperties.BUILTIN_PROPERTIES.forEach((i, template) ->
+                registry.registerComponent(i.item(), template)
+        );
     }
 }

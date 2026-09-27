@@ -8,6 +8,8 @@ import com.openrecordsmanager.rest.swagger.NotFoundApiResponse;
 import com.openrecordsmanager.user.dto.NewUserRequest;
 import com.openrecordsmanager.user.dto.UpdateUserRequest;
 import com.openrecordsmanager.user.dto.UserResponse;
+import com.openrecordsmanager.user.dto.UserSearchRequest;
+import com.openrecordsmanager.user.dto.UserSearchResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -28,6 +30,12 @@ public class UserController {
 
     public UserController(UserService service) {
         this.service = service;
+    }
+
+    @PostMapping(value = "/search", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(summary = "Search users by property criteria")
+    public UserSearchResponse search(@AuthenticationPrincipal User user, @RequestBody UserSearchRequest input) {
+        return this.service.search(user, input);
     }
 
     @GetMapping(value = "/me", produces = MediaType.APPLICATION_JSON_VALUE)

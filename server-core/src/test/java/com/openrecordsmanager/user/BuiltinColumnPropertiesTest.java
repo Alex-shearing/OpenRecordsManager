@@ -1,15 +1,21 @@
 package com.openrecordsmanager.user;
 
 import com.openrecordsmanager.api.ResourceIdentifier;
-import com.openrecordsmanager.api.builtin.BuiltinProperties;
+import com.openrecordsmanager.api.builtin.BuiltinConfigs;
+import com.openrecordsmanager.api.builtin.BuiltinPropertyIds;
 import com.openrecordsmanager.api.template.property.PropertyType;
 import com.openrecordsmanager.api.template.recordtype.SecurityFilterUsage;
+import com.openrecordsmanager.database.DataRepository;
+import com.openrecordsmanager.database.SqliteTestSupport;
 import com.openrecordsmanager.property.ObjectProperty;
 import com.openrecordsmanager.record.Record;
 import com.openrecordsmanager.recordtype.RecordType;
 import com.openrecordsmanager.recordtype.RecordTypeProperty;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
 import tools.jackson.databind.node.JsonNodeFactory;
 
 import java.time.Instant;
@@ -17,34 +23,23 @@ import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+@SpringBootTest
 class BuiltinColumnPropertiesTest {
 
-    @BeforeEach
-    void setUpUserColumnRegistry() {
-        UserBuiltinColumnPropertyRegistry.initForTest(Set.of(
-                new ObjectProperty<>(BuiltinProperties.DATE_CREATED_ID, "Date Created", "Date Created", PropertyType.DATE),
-                new ObjectProperty<>(BuiltinProperties.DATE_MODIFIED_ID, "Date Modified", "Date Modified", PropertyType.DATE),
-                new ObjectProperty<>(BuiltinProperties.GIVEN_NAME_ID, "Given Name", "Given Name", PropertyType.STRING),
-                new ObjectProperty<>(BuiltinProperties.SURNAME_ID, "Surname", "Surname", PropertyType.STRING),
-                new ObjectProperty<>(BuiltinProperties.HONORIFIC_ID, "Honorific", "Honorific", PropertyType.STRING),
-                new ObjectProperty<>(BuiltinProperties.EMAIL_ID, "Email", "Email", PropertyType.STRING)
-        ));
+    @DynamicPropertySource
+    static void properties(DynamicPropertyRegistry registry) {
+        SqliteTestSupport.registerPrimaryMemoryDatabase(registry, BuiltinColumnPropertiesTest.class);
+        registry.add(BuiltinConfigs.PLUGINS_SKIP_SYNC.key(), () -> "true");
+        registry.add(BuiltinConfigs.COOKIE_SECURE.key(), () -> "false");
     }
+
+    @Autowired
+    private DataRepository repository;
 
     @Test
     void recordStoresBuiltinPropertiesInColumnsNotEavMap() {
-        ObjectProperty<String> titleProperty = new ObjectProperty<>(
-                BuiltinProperties.TITLE_ID,
-                "Title",
-                "Title",
-                PropertyType.STRING
-        );
-        ObjectProperty<String> notesProperty = new ObjectProperty<>(
-                BuiltinProperties.NOTES_ID,
-                "Notes",
-                "Notes",
-                PropertyType.STRING
-        );
+        ObjectProperty<String> titleProperty = requireProperty(BuiltinPropertyIds.TITLE);
+        ObjectProperty<String> notesProperty = requireProperty(BuiltinPropertyIds.NOTES);
         RecordType recordType = new RecordType(
                 ResourceIdentifier.valueOf("test:record_type"),
                 "Record type",
@@ -63,36 +58,26 @@ class BuiltinColumnPropertiesTest {
         assertEquals("tba", record.getTitle());
         assertEquals("default notes", record.getNotes());
         assertEquals("default notes", record.getProperty(notesProperty));
-        assertEquals("default notes", record.toWireMap().get(BuiltinProperties.NOTES_ID.toString()).asString());
-        assertEquals("tba", record.toWireMap().get(BuiltinProperties.TITLE_ID.toString()).asString());
+        assertEquals("default notes", record.toWireMap().get(BuiltinPropertyIds.NOTES.toString()).asString());
+        assertEquals("tba", record.toWireMap().get(BuiltinPropertyIds.TITLE.toString()).asString());
     }
 
     @Test
     void userStoresBuiltinPropertiesInColumnsNotEavMap() {
-        ObjectProperty<String> givenNameProperty = new ObjectProperty<>(
-                BuiltinProperties.GIVEN_NAME_ID,
-                "Given Name",
-                "Given Name",
-                PropertyType.STRING
-        );
+        ObjectProperty<String> givenNameProperty = requireProperty(BuiltinPropertyIds.GIVEN_NAME);
 
         User user = new User("test_user", null);
         user.setProperty(givenNameProperty, "Ada");
 
         assertEquals("Ada", user.getGivenName());
         assertEquals("Ada", user.getProperty(givenNameProperty));
-        assertEquals("Ada", user.toWireMap().get(BuiltinProperties.GIVEN_NAME_ID.toString()).asString());
-        assertNotNull(user.toWireMap().get(BuiltinProperties.DATE_CREATED_ID.toString()));
+        assertEquals("Ada", user.toWireMap().get(BuiltinPropertyIds.GIVEN_NAME.toString()).asString());
+        assertNotNull(user.toWireMap().get(BuiltinPropertyIds.DATE_CREATED.toString()));
     }
 
     @Test
     void setPropertyUpdatesDateModifiedForBuiltinAndDynamicProperties() {
-        ObjectProperty<String> givenNameProperty = new ObjectProperty<>(
-                BuiltinProperties.GIVEN_NAME_ID,
-                "Given Name",
-                "Given Name",
-                PropertyType.STRING
-        );
+        ObjectProperty<String> givenNameProperty = requireProperty(BuiltinPropertyIds.GIVEN_NAME);
         ObjectProperty<String> customProperty = new ObjectProperty<>(
                 ResourceIdentifier.valueOf("test:custom_property"),
                 "Custom",
@@ -117,12 +102,7 @@ class BuiltinColumnPropertiesTest {
 
     @Test
     void recordSetPropertyUpdatesDateModifiedForBuiltinProperties() {
-        ObjectProperty<String> notesProperty = new ObjectProperty<>(
-                BuiltinProperties.NOTES_ID,
-                "Notes",
-                "Notes",
-                PropertyType.STRING
-        );
+        ObjectProperty<String> notesProperty = requireProperty(BuiltinPropertyIds.NOTES);
         RecordType recordType = new RecordType(
                 ResourceIdentifier.valueOf("test:record_type"),
                 "Record type",
@@ -140,5 +120,11 @@ class BuiltinColumnPropertiesTest {
 
         assertEquals("updated notes", record.getNotes());
         assertTrue(record.getDateModified().isAfter(beforeChange));
+    }
+
+    @SuppressWarnings("unchecked")
+    private <T> ObjectProperty<T> requireProperty(ResourceIdentifier id) {
+        return (ObjectProperty<T>) this.repository.objectPropertyRepo.findById(id)
+                .orElseThrow(() -> new IllegalStateException("Missing seeded property: " + id));
     }
 }

@@ -3,6 +3,7 @@ package com.openrecordsmanager.user;
 import com.openrecordsmanager.api.ResourceIdentifier;
 import com.openrecordsmanager.api.audit.AuditEntityType;
 import com.openrecordsmanager.api.audit.AuditOperation;
+import com.openrecordsmanager.api.search.SearchFieldTarget;
 import com.openrecordsmanager.api.types.ComponentTypes;
 import com.openrecordsmanager.api.user.UserActionType;
 import com.openrecordsmanager.audit.AuditPolicyService;
@@ -17,9 +18,10 @@ import com.openrecordsmanager.property.ObjectPropertyApplier;
 import com.openrecordsmanager.rest.dto.ActionResponse;
 import com.openrecordsmanager.rest.errors.ResourceInUseException;
 import com.openrecordsmanager.rest.errors.ResourceNotFoundException;
-import com.openrecordsmanager.user.dto.NewUserRequest;
-import com.openrecordsmanager.user.dto.UpdateUserRequest;
-import com.openrecordsmanager.user.dto.UserResponse;
+import com.openrecordsmanager.search.ObjectSearchExecutor;
+import com.openrecordsmanager.search.sql.BuiltinColumnResolver;
+import com.openrecordsmanager.search.sql.ObjectSearchSchema;
+import com.openrecordsmanager.user.dto.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -35,6 +37,8 @@ public class UserService {
     private final AuditService auditService;
     private final AuditPolicyService auditPolicyService;
     private final ObjectPropertyApplier propertyApplier;
+    private final ObjectSearchExecutor searchExecutor;
+    private final ObjectSearchSchema searchSchema;
 
     public UserService(
             DataRepository repository,
@@ -42,7 +46,9 @@ public class UserService {
             ComponentCatalog catalog,
             AuditService auditService,
             AuditPolicyService auditPolicyService,
-            ObjectPropertyApplier propertyApplier
+            ObjectPropertyApplier propertyApplier,
+            ObjectSearchExecutor searchExecutor,
+            BuiltinColumnResolver columnResolver
     ) {
         this.repository = repository;
         this.config = config;
@@ -50,6 +56,55 @@ public class UserService {
         this.auditService = auditService;
         this.auditPolicyService = auditPolicyService;
         this.propertyApplier = propertyApplier;
+        this.searchExecutor = searchExecutor;
+        this.searchSchema = ObjectSearchSchema.of(
+                SearchFieldTarget.USER,
+                User.class,
+                User.BUILTIN_PROPERTY_BINDINGS,
+                columnResolver
+        );
+    }
+
+    @Transactional(readOnly = true)
+    public UserSearchResponse search(User actor, UserSearchRequest request) {
+        int pageLimit = request.limitOrDefault();
+        List<UUID> ids = this.searchExecutor.searchIds(
+                this.searchSchema,
+                actor,
+                request.q(),
+                request.filters(),
+                request.matchOrDefault(),
+                null,
+                request.cursor(),
+                pageLimit + 1
+        );
+
+        boolean hasMore = ids.size() > pageLimit;
+        if (hasMore) {
+            ids = ids.subList(0, pageLimit);
+        }
+
+        Map<UUID, User> loaded = this.repository.userRepo.findAllById(ids).stream()
+                .collect(Collectors.toMap(User::getId, u -> u));
+
+        List<UserResponse> items = new ArrayList<>(ids.size());
+        for (UUID id : ids) {
+            User user = loaded.get(id);
+            if (user != null) {
+                items.add(UserResponse.of(user));
+            }
+        }
+
+        UUID nextCursor = hasMore && !items.isEmpty() ? items.getLast().id() : null;
+
+        this.auditService.recordSearchRead(
+                AuditEntityType.USER,
+                AuditService.COLLECTION_TARGET_ID,
+                this.searchExecutor.summarize(request.q(), request.filters()),
+                items.size()
+        );
+
+        return new UserSearchResponse(List.copyOf(items), nextCursor);
     }
 
     @Transactional(readOnly = true)

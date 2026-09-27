@@ -5,6 +5,7 @@ import com.openrecordsmanager.api.audit.AuditEntityType;
 import com.openrecordsmanager.api.audit.AuditOperation;
 import com.openrecordsmanager.api.builtin.BuiltinConfigs;
 import com.openrecordsmanager.api.record.RecordActionType;
+import com.openrecordsmanager.api.search.SearchFieldTarget;
 import com.openrecordsmanager.api.template.recordtype.SecurityFilterUsage;
 import com.openrecordsmanager.api.types.ComponentTypes;
 import com.openrecordsmanager.audit.*;
@@ -14,13 +15,13 @@ import com.openrecordsmanager.filestore.store.FileStore;
 import com.openrecordsmanager.plugin.ExpressionsService;
 import com.openrecordsmanager.plugin.registry.ComponentCatalog;
 import com.openrecordsmanager.property.ObjectPropertyApplier;
-import com.openrecordsmanager.record.dto.NewRecordRequest;
-import com.openrecordsmanager.record.dto.RecordResponse;
-import com.openrecordsmanager.record.dto.RecordRevisionResponse;
-import com.openrecordsmanager.record.dto.UpdateRecordRequest;
+import com.openrecordsmanager.record.dto.*;
 import com.openrecordsmanager.recordtype.RecordType;
 import com.openrecordsmanager.rest.dto.ActionResponse;
 import com.openrecordsmanager.rest.errors.ResourceNotFoundException;
+import com.openrecordsmanager.search.ObjectSearchExecutor;
+import com.openrecordsmanager.search.sql.BuiltinColumnResolver;
+import com.openrecordsmanager.search.sql.ObjectSearchSchema;
 import com.openrecordsmanager.user.User;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -33,6 +34,8 @@ import java.util.stream.Collectors;
 @Service
 public class RecordService {
 
+    private static final int SECURITY_OVERFETCH_FACTOR = 3;
+
     private final DataRepository repository;
     private final ConfigService config;
     private final ComponentCatalog catalog;
@@ -40,6 +43,8 @@ public class RecordService {
     private final AuditService auditService;
     private final AuditPolicyService auditPolicyService;
     private final ObjectPropertyApplier propertyApplier;
+    private final ObjectSearchExecutor searchExecutor;
+    private final ObjectSearchSchema searchSchema;
 
     public RecordService(
             DataRepository repository,
@@ -48,7 +53,9 @@ public class RecordService {
             ExpressionsService expressions,
             AuditService auditService,
             AuditPolicyService auditPolicyService,
-            ObjectPropertyApplier propertyApplier
+            ObjectPropertyApplier propertyApplier,
+            ObjectSearchExecutor searchExecutor,
+            BuiltinColumnResolver columnResolver
     ) {
         this.repository = repository;
         this.config = config;
@@ -57,6 +64,72 @@ public class RecordService {
         this.auditService = auditService;
         this.auditPolicyService = auditPolicyService;
         this.propertyApplier = propertyApplier;
+        this.searchExecutor = searchExecutor;
+        this.searchSchema = ObjectSearchSchema.of(
+                SearchFieldTarget.RECORD,
+                Record.class,
+                Record.BUILTIN_PROPERTY_BINDINGS,
+                columnResolver
+        );
+    }
+
+    @Transactional(readOnly = true)
+    public RecordSearchResponse search(User actor, RecordSearchRequest request) {
+        int pageLimit = request.limitOrDefault();
+        int fetchLimit = pageLimit * SECURITY_OVERFETCH_FACTOR;
+        UUID cursor = request.cursor();
+
+        List<RecordResponse> items = new ArrayList<>(pageLimit);
+
+        while (items.size() < pageLimit) {
+            List<UUID> candidateIds = this.searchExecutor.searchIds(
+                    this.searchSchema,
+                    actor,
+                    request.q(),
+                    request.filters(),
+                    request.matchOrDefault(),
+                    request.type(),
+                    cursor,
+                    fetchLimit
+            );
+            if (candidateIds.isEmpty()) {
+                break;
+            }
+
+            Map<UUID, Record> loaded = this.repository.recordRepo.findAllById(candidateIds).stream()
+                    .collect(Collectors.toMap(Record::getId, r -> r));
+
+            for (UUID id : candidateIds) {
+                Record record = loaded.get(id);
+                if (record == null) {
+                    continue;
+                }
+                if (!record.securityFilter(this.expressions, actor).canSeeMetadata()) {
+                    continue;
+                }
+                items.add(RecordResponse.of(record));
+                if (items.size() >= pageLimit) {
+                    break;
+                }
+            }
+
+            cursor = candidateIds.getLast();
+            if (candidateIds.size() < fetchLimit || items.size() >= pageLimit) {
+                break;
+            }
+        }
+
+        UUID nextCursor = items.size() == pageLimit ? items.getLast().id() : null;
+
+        String scope = request.type() != null ? request.type().toString() : AuditService.COLLECTION_TARGET_ID;
+        this.auditService.recordSearchRead(
+                AuditEntityType.RECORD,
+                scope,
+                this.searchExecutor.summarize(request.q(), request.filters()),
+                items.size()
+        );
+
+        return new RecordSearchResponse(List.copyOf(items), nextCursor);
     }
 
     @Transactional(readOnly = true)
