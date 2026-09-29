@@ -6,7 +6,7 @@ import com.openrecordsmanager.audit.AuditService;
 import com.openrecordsmanager.audit.RequiresAuditComment;
 import com.openrecordsmanager.i18n.dto.TranslationOverrideRequest;
 import com.openrecordsmanager.i18n.dto.TranslationOverrideResponse;
-import com.openrecordsmanager.rest.errors.ResourceNotFoundException;
+import com.openrecordsmanager.rest.exception.ResourceNotFoundException;
 import jakarta.annotation.PostConstruct;
 import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Service;

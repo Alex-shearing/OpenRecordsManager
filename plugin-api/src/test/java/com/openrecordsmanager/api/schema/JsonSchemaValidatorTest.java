@@ -1,6 +1,6 @@
 package com.openrecordsmanager.api.schema;
 
-import com.openrecordsmanager.api.errors.InputValidationException;
+import com.openrecordsmanager.api.errors.ApiException;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import org.junit.jupiter.api.Test;
@@ -100,14 +100,14 @@ class JsonSchemaValidatorTest {
 
     @Test
     void missingRequiredFieldsReturnFieldErrors() {
-        assertThrows(InputValidationException.class, () ->
+        assertThrows(ApiException.class, () ->
                 JsonSchemaValidator.validateAndSerialize(LoginInputs.class, Map.of("username", "alice"))
         );
     }
 
     @Test
     void extraPropertiesRejected() {
-        assertThrows(InputValidationException.class, () ->
+        assertThrows(ApiException.class, () ->
                 JsonSchemaValidator.validateAndSerialize(LoginInputs.class, Map.of(
                         "username", "alice",
                         "password", "secret",

@@ -7,7 +7,7 @@ import com.openrecordsmanager.auth.dto.SessionMode;
 import com.openrecordsmanager.auth.dto.TokenPair;
 import com.openrecordsmanager.database.DataRepository;
 import com.openrecordsmanager.database.SqliteTestSupport;
-import com.openrecordsmanager.rest.errors.ResourceInUseException;
+import com.openrecordsmanager.rest.exception.ResourceInUseException;
 import com.openrecordsmanager.user.dto.NewUserRequest;
 import com.openrecordsmanager.user.dto.UpdateUserRequest;
 import com.openrecordsmanager.user.dto.UserResponse;

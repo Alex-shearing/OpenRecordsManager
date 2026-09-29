@@ -10,6 +10,6 @@ public record SetupStatusResponse(
         @NotBlank SchemaMigrationState.Status state,
         @Nullable String currentVersion,
         @NotBlank List<String> pendingMigrations,
-        @Nullable String message
+        @NotBlank int migrationsApplied
 ) {
 }

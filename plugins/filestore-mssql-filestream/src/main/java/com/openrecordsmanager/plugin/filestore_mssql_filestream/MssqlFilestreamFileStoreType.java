@@ -1,6 +1,6 @@
 package com.openrecordsmanager.plugin.filestore_mssql_filestream;
 
-import com.openrecordsmanager.api.errors.InputValidationException;
+import com.openrecordsmanager.api.errors.ApiException;
 import com.openrecordsmanager.api.filestore.FileStoreType;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
@@ -12,7 +12,6 @@ import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.sql.*;
-import java.util.Map;
 import java.util.UUID;
 
 /**
@@ -55,10 +54,11 @@ public class MssqlFilestreamFileStoreType
             statement.execute(ENSURE_TABLE_SQL);
             LOGGER.info("Ensured FILESTREAM table {} exists in database", TABLE);
         } catch (SQLException e) {
-            throw new InputValidationException(Map.of(
-                    "jdbcUrl",
-                    "Failed to connect or create " + TABLE + ": " + e.getMessage()
-            ));
+            throw new ApiException(
+                    "mssql_filestream_datasource_required",
+                    TABLE,
+                    e.getMessage()
+            );
         }
     }
 

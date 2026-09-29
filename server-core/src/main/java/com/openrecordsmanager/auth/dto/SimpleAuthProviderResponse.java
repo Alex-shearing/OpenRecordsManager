@@ -6,7 +6,7 @@ import com.openrecordsmanager.auth.entity.AuthProvider;
 import com.openrecordsmanager.plugin.registry.ComponentCatalog;
 import com.openrecordsmanager.rest.dto.ComponentReferenceDto;
 import com.openrecordsmanager.rest.dto.InputFormSchema;
-import com.openrecordsmanager.rest.errors.ResourceNotFoundException;
+import com.openrecordsmanager.rest.exception.ResourceNotFoundException;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import org.jspecify.annotations.Nullable;

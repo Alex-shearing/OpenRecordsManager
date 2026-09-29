@@ -1,7 +1,7 @@
 package com.openrecordsmanager.search;
 
 import com.openrecordsmanager.api.ResourceIdentifier;
-import com.openrecordsmanager.api.errors.InputValidationException;
+import com.openrecordsmanager.api.errors.ApiException;
 import com.openrecordsmanager.api.search.SearchClause;
 import com.openrecordsmanager.api.search.SearchFieldProvider;
 import com.openrecordsmanager.api.search.SearchOperator;
@@ -19,7 +19,6 @@ import tools.jackson.databind.node.JsonNodeFactory;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -63,10 +62,7 @@ public class SearchCriteriaExpander {
                 if (provider.isPresent()) {
                     SearchFieldProvider fieldProvider = provider.get();
                     if (!fieldProvider.getSupportedOperators().contains(clause.op())) {
-                        throw new InputValidationException(Map.of(
-                                clause.field().toString(),
-                                "Operator " + clause.op() + " is not supported by search field provider"
-                        ));
+                        throw ApiException.validationFailed(clause.field().toString(), SearchOperatorSupport.OPERATOR_UNSUPPORTED, clause.op().name());
                     }
                     SearchOperatorSupport.validateValueShape(clause.field(), clause.op(), clause.value());
                     pluginClauses.add(new ResolvedPluginClause(clause, fieldProvider));
@@ -96,10 +92,10 @@ public class SearchCriteriaExpander {
         }
 
         ObjectProperty<?> property = this.repository.objectPropertyRepo.findById(clause.field())
-                .orElseThrow(() -> new InputValidationException(Map.of(
+                .orElseThrow(() -> ApiException.validationFailed(
                         clause.field().toString(),
-                        "Unknown search field"
-                )));
+                        SearchOperatorSupport.FIELD_UNSUPPORTED
+                ));
         SearchOperatorSupport.validate(clause.field(), property.getType(), clause.op(), clause.value());
         return new ResolvedSQLClause.ResolvedExternalPropertySQLClause(clause, property);
     }

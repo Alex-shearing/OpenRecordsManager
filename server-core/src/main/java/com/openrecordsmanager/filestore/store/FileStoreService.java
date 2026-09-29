@@ -9,15 +9,11 @@ import com.openrecordsmanager.api.types.ComponentTypes;
 import com.openrecordsmanager.audit.AuditService;
 import com.openrecordsmanager.audit.RequiresAuditComment;
 import com.openrecordsmanager.database.DataRepository;
-import com.openrecordsmanager.filestore.dto.FileStoreResponse;
-import com.openrecordsmanager.filestore.dto.FileStoreTypeResponse;
-import com.openrecordsmanager.filestore.dto.NewFileStoreRequest;
-import com.openrecordsmanager.filestore.dto.SimpleFileStoreResponse;
-import com.openrecordsmanager.filestore.dto.UpdateFileStoreRequest;
+import com.openrecordsmanager.filestore.dto.*;
 import com.openrecordsmanager.filestore.middleware.Middleware;
 import com.openrecordsmanager.plugin.registry.ComponentCatalog;
-import com.openrecordsmanager.rest.errors.ResourceInUseException;
-import com.openrecordsmanager.rest.errors.ResourceNotFoundException;
+import com.openrecordsmanager.rest.exception.ResourceInUseException;
+import com.openrecordsmanager.rest.exception.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -114,7 +110,7 @@ public class FileStoreService {
                 .orElseThrow(() -> new ResourceNotFoundException("file store", id));
 
         if (this.repository.fileStoreRepo.countFilesByStoreId(id) > 0) {
-            throw new ResourceInUseException("stream store has contents and cannot be deleted");
+            throw new ResourceInUseException(ComponentTypes.FILE_STORE);
         }
 
         this.repository.fileStoreRepo.delete(store);

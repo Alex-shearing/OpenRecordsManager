@@ -11,7 +11,7 @@ import com.openrecordsmanager.audit.AuditService;
 import com.openrecordsmanager.database.DataRepository;
 import com.openrecordsmanager.plugin.registry.ComponentCatalog;
 import com.openrecordsmanager.property.ObjectProperty;
-import com.openrecordsmanager.rest.errors.ResourceNotFoundException;
+import com.openrecordsmanager.rest.exception.ResourceNotFoundException;
 import org.jspecify.annotations.Nullable;
 
 import java.util.Optional;

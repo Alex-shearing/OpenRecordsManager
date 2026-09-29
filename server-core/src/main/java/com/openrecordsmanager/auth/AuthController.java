@@ -110,7 +110,7 @@ public class AuthController {
                             value = """
                                     {
                                       "success": false,
-                                      "errorCode": "Username or password is incorrect",
+                                      "error": "authentication_failed",
                                       "timestamp": "2026-06-29T23:05:00Z"
                                     }
                                     """
@@ -148,7 +148,7 @@ public class AuthController {
                             value = """
                                     {
                                       "success": false,
-                                      "errorCode": "Invalid or expired token",
+                                      "error": "authentication_failed",
                                       "timestamp": "2026-06-29T23:05:00Z"
                                     }
                                     """

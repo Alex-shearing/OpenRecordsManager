@@ -1,6 +1,6 @@
 package com.openrecordsmanager.plugin.filestoremiddleware_encrypting;
 
-import com.openrecordsmanager.api.errors.InputValidationException;
+import com.openrecordsmanager.api.errors.ApiException;
 import com.openrecordsmanager.api.filestore.FileStoreMiddlewareType;
 import io.swagger.v3.oas.annotations.media.Schema;
 
@@ -20,7 +20,6 @@ import java.security.SecureRandom;
 import java.security.spec.AlgorithmParameterSpec;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 public class FilestoreMiddlewareEncryptingType extends FileStoreMiddlewareType<FilestoreMiddlewareEncryptingType.EncryptingMiddlewareSettings> {
     public FilestoreMiddlewareEncryptingType() {
@@ -36,20 +35,9 @@ public class FilestoreMiddlewareEncryptingType extends FileStoreMiddlewareType<F
             SecureRandom.getInstanceStrong().nextBytes(iv);
             cipher.init(Cipher.ENCRYPT_MODE, secretKey, settings.algorithm().createParameterSpec(iv));
         } catch (InvalidKeyException e) {
-            throw new InputValidationException(Map.of(
-                    "secretKey",
-                    "Invalid secret key for " + settings.algorithm().name() + ": " + e.getMessage()
-            ));
-        } catch (NoSuchAlgorithmException | NoSuchPaddingException e) {
-            throw new InputValidationException(Map.of(
-                    "algorithm",
-                    "Unsupported algorithm " + settings.algorithm().name() + ": " + e.getMessage()
-            ));
-        } catch (InvalidAlgorithmParameterException e) {
-            throw new InputValidationException(Map.of(
-                    "algorithm",
-                    "Invalid algorithm parameters for " + settings.algorithm().name() + ": " + e.getMessage()
-            ));
+            throw ApiException.validationFailed("secretKey", "encrypting_middleware_key_invalid", e.getMessage());
+        } catch (NoSuchAlgorithmException | NoSuchPaddingException | InvalidAlgorithmParameterException e) {
+            throw ApiException.validationFailed("algorithm", "encrypting_middleware_algorithm_required", e.getMessage());
         }
     }
 

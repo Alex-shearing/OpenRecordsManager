@@ -21,10 +21,10 @@ import java.lang.annotation.*;
                         value = """
                                 {
                                   "success": false,
-                                  "error": "Validation failed",
-                                  "error_data": {
-                                    "field_1": "error details",
-                                    "field_2": "error details"
+                                  "error": "validation_failed",
+                                  "fieldErrors": {
+                                    "field_1": { "error": "input_schema_validation_failed" },
+                                    "field_2": { "error": "input_schema_validation_failed" }
                                   },
                                   "timestamp": "2026-06-29T23:05:00Z"
                                 }

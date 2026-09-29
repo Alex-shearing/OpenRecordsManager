@@ -4,7 +4,7 @@ import com.openrecordsmanager.api.ResourceIdentifier;
 import com.openrecordsmanager.api.types.ComponentTypes;
 import com.openrecordsmanager.audit.AuditPropertyChange;
 import com.openrecordsmanager.database.DataRepository;
-import com.openrecordsmanager.rest.errors.ResourceNotFoundException;
+import com.openrecordsmanager.rest.exception.ResourceNotFoundException;
 import org.springframework.stereotype.Component;
 import tools.jackson.databind.JsonNode;
 

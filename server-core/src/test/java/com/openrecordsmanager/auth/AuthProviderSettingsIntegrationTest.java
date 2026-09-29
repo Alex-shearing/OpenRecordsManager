@@ -3,7 +3,7 @@ package com.openrecordsmanager.auth;
 import com.openrecordsmanager.api.ComponentReference;
 import com.openrecordsmanager.api.ResourceIdentifier;
 import com.openrecordsmanager.api.builtin.BuiltinConfigs;
-import com.openrecordsmanager.api.errors.InputValidationException;
+import com.openrecordsmanager.api.errors.ApiException;
 import com.openrecordsmanager.api.types.ComponentTypes;
 import com.openrecordsmanager.audit.AuditTestSupport;
 import com.openrecordsmanager.auth.dto.AuthProviderResponse;
@@ -71,7 +71,7 @@ class AuthProviderSettingsIntegrationTest {
     @Test
     void createOidcProviderRejectsInvalidSettings() {
         assertThrows(
-                InputValidationException.class,
+                ApiException.class,
                 () -> AuditTestSupport.withAudit(this.admin, () -> this.authService.createProvider(
                         "Broken OIDC",
                         ComponentReference.of(

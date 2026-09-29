@@ -22,7 +22,6 @@ import java.lang.annotation.*;
                                 {
                                   "success": false,
                                   "error": "audit_comment_required",
-                                  "error_data": "An audit comment is required for this action (provide the X-ORM-Audit-Comment header)",
                                   "timestamp": "2026-06-29T23:05:00Z"
                                 }
                                 """

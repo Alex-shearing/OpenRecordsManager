@@ -7,14 +7,10 @@ import com.openrecordsmanager.api.types.ComponentTypes;
 import com.openrecordsmanager.audit.AuditService;
 import com.openrecordsmanager.audit.RequiresAuditComment;
 import com.openrecordsmanager.database.DataRepository;
-import com.openrecordsmanager.filestore.dto.MiddlewareResponse;
-import com.openrecordsmanager.filestore.dto.MiddlewareTypeResponse;
-import com.openrecordsmanager.filestore.dto.NewFileStoreMiddlewareRequest;
-import com.openrecordsmanager.filestore.dto.SimpleMiddlewareResponse;
-import com.openrecordsmanager.filestore.dto.UpdateFileStoreMiddlewareRequest;
+import com.openrecordsmanager.filestore.dto.*;
 import com.openrecordsmanager.plugin.registry.ComponentCatalog;
-import com.openrecordsmanager.rest.errors.ResourceInUseException;
-import com.openrecordsmanager.rest.errors.ResourceNotFoundException;
+import com.openrecordsmanager.rest.exception.ResourceInUseException;
+import com.openrecordsmanager.rest.exception.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -94,7 +90,7 @@ public class MiddlewareService {
                 .orElseThrow(() -> new ResourceNotFoundException("stream store middleware", id.toString()));
 
         if (this.repository.fileStoreRepo.existsByMiddlewares(middleware.getId())) {
-            throw new ResourceInUseException("middleware is in use by one or more stream stores");
+            throw new ResourceInUseException(ComponentTypes.FILE_STORE_MIDDLEWARE);
         }
 
         this.repository.fileStoreMiddlewareRepo.delete(middleware);

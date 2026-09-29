@@ -8,7 +8,7 @@ import com.openrecordsmanager.audit.persistence.AuditPolicyId;
 import com.openrecordsmanager.config.ConfigService;
 import com.openrecordsmanager.database.DataRepository;
 import com.openrecordsmanager.database.schema.SchemaMigrationState;
-import com.openrecordsmanager.rest.errors.AuditCommentRequiredException;
+import com.openrecordsmanager.rest.exception.AuditCommentRequiredException;
 import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

@@ -14,7 +14,7 @@ import com.openrecordsmanager.audit.spool.AuditSpoolWriter;
 import com.openrecordsmanager.config.ConfigService;
 import com.openrecordsmanager.database.DataRepository;
 import com.openrecordsmanager.database.DatabaseWritableProbe;
-import com.openrecordsmanager.rest.errors.ResourceNotFoundException;
+import com.openrecordsmanager.rest.exception.ResourceNotFoundException;
 import com.openrecordsmanager.user.User;
 import org.jspecify.annotations.Nullable;
 import org.springframework.data.domain.PageRequest;

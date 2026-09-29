@@ -10,7 +10,7 @@ import com.openrecordsmanager.audit.spool.AuditSpoolWriter;
 import com.openrecordsmanager.database.DataRepository;
 import com.openrecordsmanager.database.DatabaseWritableProbe;
 import com.openrecordsmanager.list.ListService;
-import com.openrecordsmanager.rest.errors.AuditCommentRequiredException;
+import com.openrecordsmanager.rest.exception.AuditCommentRequiredException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

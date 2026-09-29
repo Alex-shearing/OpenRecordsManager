@@ -13,9 +13,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -33,7 +31,7 @@ class SchemaMigrationIntegrationTest {
     @Test
     void pendingMigrationRequiresUpgradeAndBlocksBusinessApis() throws Exception {
         // Simulate an older schema: mark state as upgrade required without applying a real pending file
-        this.schemaMigrationState.markUpgradeRequired("1", List.of("2 - pending"), "upgrade required");
+        this.schemaMigrationState.markUpgradeRequired("1", List.of("2 - pending"));
 
         this.mockMvc.perform(get("/api/database/status").accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())

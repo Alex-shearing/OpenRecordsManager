@@ -1,19 +1,20 @@
-package com.openrecordsmanager.rest.errors;
+package com.openrecordsmanager.rest.exception;
 
 import com.openrecordsmanager.api.Component;
 import com.openrecordsmanager.api.ResourceIdentifier;
+import com.openrecordsmanager.api.errors.ApiException;
 import com.openrecordsmanager.api.types.ComponentType;
 
-import java.text.MessageFormat;
 import java.util.UUID;
 
-public class ResourceNotFoundException extends RuntimeException {
+public class ResourceNotFoundException extends ApiException {
+
     public ResourceNotFoundException(String type, String resource) {
-        super(MessageFormat.format("object {0} of type {1} not found", resource, type));
+        super("resource_not_found", resource, type);
     }
 
     public ResourceNotFoundException(String type, UUID resource) {
-        super(MessageFormat.format("object {0} of type {1} not found", resource, type));
+        this(type, resource.toString());
     }
 
     public ResourceNotFoundException(ComponentType<?> type, ResourceIdentifier resource) {

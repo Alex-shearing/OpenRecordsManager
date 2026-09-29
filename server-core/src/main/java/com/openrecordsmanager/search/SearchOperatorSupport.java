@@ -1,7 +1,7 @@
 package com.openrecordsmanager.search;
 
 import com.openrecordsmanager.api.ResourceIdentifier;
-import com.openrecordsmanager.api.errors.InputValidationException;
+import com.openrecordsmanager.api.errors.ApiException;
 import com.openrecordsmanager.api.search.SearchClause;
 import com.openrecordsmanager.api.search.SearchOperator;
 import com.openrecordsmanager.api.template.property.PropertyType;
@@ -14,6 +14,13 @@ import java.util.*;
  * Validates search operators against property / field types.
  */
 public final class SearchOperatorSupport {
+    public static final String OPERATOR_UNSUPPORTED = "search_operator_unsupported";
+    public static final String OPERATOR_REQUIRES_VALUE = "search_operator_requires_value";
+    public static final String OPERATOR_REQUIRES_ARRAY = "search_operator_requires_array";
+    public static final String OPERATOR_REQUIRES_TWO_VALUES = "search_operator_requires_two_values";
+    public static final String FIELD_UNSUPPORTED = "search_field_unsupported";
+    public static final String TYPE_SCOPE_UNSUPPORTED = "search_type_scope_unsupported";
+
     private static final Set<SearchOperator> STRING_OPS = EnumSet.of(
             SearchOperator.EQ, SearchOperator.NEQ,
             SearchOperator.LIKE,
@@ -39,10 +46,7 @@ public final class SearchOperatorSupport {
     public static void validate(ResourceIdentifier field, PropertyType<?> type, SearchOperator op, @Nullable JsonNode value) {
         Set<SearchOperator> allowed = allowedOps(type);
         if (!allowed.contains(op)) {
-            throw new InputValidationException(Map.of(
-                    field.toString(),
-                    "Operator " + op + " is not supported for property type " + type.getName()
-            ));
+            throw ApiException.validationFailed(field.toString(), OPERATOR_UNSUPPORTED, op.name());
         }
         validateValueShape(field, op, value);
     }
@@ -51,34 +55,22 @@ public final class SearchOperatorSupport {
         switch (op) {
             case IS_NULL, IS_NOT_NULL -> {
                 if (value != null && !value.isNull()) {
-                    throw new InputValidationException(Map.of(
-                            field.toString(),
-                            "Operator " + op + " must not include a value"
-                    ));
+                    throw ApiException.validationFailed(field.toString(), OPERATOR_UNSUPPORTED, op.name());
                 }
             }
             case IN, NOT_IN -> {
                 if (value == null || !value.isArray() || value.isEmpty()) {
-                    throw new InputValidationException(Map.of(
-                            field.toString(),
-                            "Operator " + op + " requires a non-empty JSON array value"
-                    ));
+                    throw ApiException.validationFailed(field.toString(), OPERATOR_REQUIRES_ARRAY, op.name());
                 }
             }
             case BETWEEN -> {
                 if (value == null || !value.isArray() || value.size() != 2) {
-                    throw new InputValidationException(Map.of(
-                            field.toString(),
-                            "Operator BETWEEN requires a JSON array of exactly two values"
-                    ));
+                    throw ApiException.validationFailed(field.toString(), OPERATOR_REQUIRES_TWO_VALUES, op.name());
                 }
             }
             default -> {
                 if (value == null || value.isNull()) {
-                    throw new InputValidationException(Map.of(
-                            field.toString(),
-                            "Operator " + op + " requires a value"
-                    ));
+                    throw ApiException.validationFailed(field.toString(), OPERATOR_REQUIRES_VALUE, op.name());
                 }
             }
         }

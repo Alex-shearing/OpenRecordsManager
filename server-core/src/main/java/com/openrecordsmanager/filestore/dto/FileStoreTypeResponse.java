@@ -5,7 +5,7 @@ import com.openrecordsmanager.api.filestore.FileStoreType;
 import com.openrecordsmanager.api.types.ComponentTypes;
 import com.openrecordsmanager.plugin.registry.ComponentCatalog;
 import com.openrecordsmanager.rest.dto.InputFormSchema;
-import com.openrecordsmanager.rest.errors.ResourceNotFoundException;
+import com.openrecordsmanager.rest.exception.ResourceNotFoundException;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 

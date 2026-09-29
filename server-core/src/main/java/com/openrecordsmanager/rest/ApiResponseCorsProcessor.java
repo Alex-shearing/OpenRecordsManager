@@ -25,7 +25,7 @@ public class ApiResponseCorsProcessor extends DefaultCorsProcessor {
     protected void rejectRequest(ServerHttpResponse response) throws IOException {
         response.setStatusCode(HttpStatus.FORBIDDEN);
         response.getHeaders().setContentType(MediaType.APPLICATION_JSON);
-        this.jsonMapper.writeValue(response.getBody(), ApiResponseV1.error("Invalid CORS request"));
+        this.jsonMapper.writeValue(response.getBody(), ApiResponseV1.error("invalid_cors_request"));
         response.flush();
     }
 }

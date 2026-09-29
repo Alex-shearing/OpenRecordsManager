@@ -30,7 +30,7 @@ public class DatabaseController {
     @GetMapping(value = "/status", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Get database schema migration status")
     public SetupStatusResponse status() {
-        return this.schemaMigrationService.toStatusResponse(null);
+        return this.schemaMigrationService.toStatusResponse(-1);
     }
 
     @PostMapping(value = "/upgrade", produces = MediaType.APPLICATION_JSON_VALUE)

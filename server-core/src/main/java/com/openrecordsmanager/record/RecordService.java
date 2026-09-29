@@ -16,9 +16,13 @@ import com.openrecordsmanager.plugin.ExpressionsService;
 import com.openrecordsmanager.plugin.registry.ComponentCatalog;
 import com.openrecordsmanager.property.ObjectPropertyApplier;
 import com.openrecordsmanager.record.dto.*;
+import com.openrecordsmanager.record.exception.DefaultFileStoreNotSetException;
+import com.openrecordsmanager.record.exception.RecordTypeNoFileSupportException;
 import com.openrecordsmanager.recordtype.RecordType;
 import com.openrecordsmanager.rest.dto.ActionResponse;
-import com.openrecordsmanager.rest.errors.ResourceNotFoundException;
+import com.openrecordsmanager.rest.exception.ActionNotAvailableException;
+import com.openrecordsmanager.rest.exception.ForbiddenException;
+import com.openrecordsmanager.rest.exception.ResourceNotFoundException;
 import com.openrecordsmanager.search.ObjectSearchExecutor;
 import com.openrecordsmanager.search.sql.BuiltinColumnResolver;
 import com.openrecordsmanager.search.sql.ObjectSearchSchema;
@@ -27,7 +31,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.InputStream;
-import java.text.MessageFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -219,15 +222,15 @@ public class RecordService {
             throw new ResourceNotFoundException("record", id);
         }
         if (!filter.canSeeFiles()) {
-            throw new IllegalArgumentException("you don't have the right to upload new revisions of this record");
+            throw new ForbiddenException("record_upload");
         }
 
         if (!record.getType().supportsFile()) {
-            throw new IllegalArgumentException(MessageFormat.format("Record type {0} does not support attaching a file", record.getType().getId()));
+            throw new RecordTypeNoFileSupportException(record.getType().getId());
         }
 
         UUID defaultStoreId = this.config.getOptional(BuiltinConfigs.DEFAULT_FILE_STORE)
-                .orElseThrow(() -> new IllegalStateException("There is no default file store set"));
+                .orElseThrow(DefaultFileStoreNotSetException::new);
 
         FileStore fileStore = this.repository.fileStoreRepo.findById(defaultStoreId)
                 .orElseThrow(() -> new ResourceNotFoundException("file store", defaultStoreId));
@@ -317,7 +320,7 @@ public class RecordService {
         );
 
         if (!action.isAvailable(context)) {
-            throw new IllegalArgumentException("Action " + actionId + " is not available for record " + recordId);
+            throw new ActionNotAvailableException(actionId, "record", recordId);
         }
 
         this.auditPolicyService.validateCommentRequired(AuditEntityType.RECORD, AuditOperation.ACTION);

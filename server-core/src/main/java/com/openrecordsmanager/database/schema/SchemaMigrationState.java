@@ -17,7 +17,6 @@ public final class SchemaMigrationState {
     private Status status = Status.READY;
     private @Nullable String currentVersion;
     private List<String> pendingMigrations = List.of();
-    private @Nullable String message;
     private boolean initialSeedPending;
 
     public Status getStatus() {
@@ -36,22 +35,16 @@ public final class SchemaMigrationState {
         return this.pendingMigrations;
     }
 
-    public @Nullable String getMessage() {
-        return this.message;
-    }
-
     public void markReady(@Nullable String currentVersion) {
         this.status = Status.READY;
         this.currentVersion = currentVersion;
         this.pendingMigrations = List.of();
-        this.message = null;
     }
 
-    public void markUpgradeRequired(@Nullable String currentVersion, List<String> pending, String message) {
+    public void markUpgradeRequired(@Nullable String currentVersion, List<String> pending) {
         this.status = Status.UPGRADE_REQUIRED;
         this.currentVersion = currentVersion;
         this.pendingMigrations = List.copyOf(pending);
-        this.message = message;
     }
 
     /**

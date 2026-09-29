@@ -11,7 +11,8 @@ import com.networknt.schema.Schema;
 import com.networknt.schema.SchemaRegistry;
 import com.networknt.schema.SpecificationVersion;
 import com.openrecordsmanager.api.ComponentReference;
-import com.openrecordsmanager.api.errors.InputValidationException;
+import com.openrecordsmanager.api.errors.ApiError;
+import com.openrecordsmanager.api.errors.ApiException;
 import org.jspecify.annotations.Nullable;
 import tools.jackson.databind.DeserializationFeature;
 import tools.jackson.databind.JsonNode;
@@ -103,20 +104,20 @@ public final class JsonSchemaValidator {
         return GENERATED_SCHEMAS.computeIfAbsent(recordClass, SCHEMA_GENERATOR::generateSchema);
     }
 
-    public static Map<String, Object> validateAndSerialize(Class<? extends Record> recordClass, Object inputs) throws InputValidationException {
+    public static Map<String, Object> validateAndSerialize(Class<? extends Record> recordClass, Object inputs) throws ApiException {
         Schema compiledSchema = getSchema(recordClass);
         JsonNode inputNode = MAPPER.valueToTree(inputs);
 
         List<Error> errors = compiledSchema.validate(inputNode, executionContext ->
                 executionContext.executionConfig(config -> config.formatAssertionsEnabled(true)));
         if (!errors.isEmpty()) {
-            Map<String, String> fieldErrors = new HashMap<>();
+            Map<String, ApiError> fieldErrors = new HashMap<>();
             for (Error error : errors) {
                 String field = fieldName(error);
-                fieldErrors.putIfAbsent(field, error.getMessage());
+                fieldErrors.putIfAbsent(field, ApiError.of("input_schema_validation_failed", error.getMessage()));
             }
 
-            throw new InputValidationException(fieldErrors);
+            throw ApiException.validationFailed(fieldErrors);
         }
 
         Map<String, Object> normalized = new HashMap<>();
@@ -167,7 +168,7 @@ public final class JsonSchemaValidator {
      * @param values      the input data
      * @return the record
      */
-    public static <I extends Record> I toRecord(Class<I> recordClass, Map<String, ?> values) throws InputValidationException {
+    public static <I extends Record> I toRecord(Class<I> recordClass, Map<String, ?> values) throws ApiException {
         if (recordClass == Record.class) {
             @SuppressWarnings("unchecked")
             I rec = (I) EMPTY_RECORD;
@@ -178,14 +179,14 @@ public final class JsonSchemaValidator {
         return MAPPER.convertValue(validated, recordClass);
     }
 
-    public static Map<String, ?> serializeSettings(Record record) throws InputValidationException {
+    public static Map<String, ?> serializeSettings(Record record) throws ApiException {
         return validateAndSerialize(record.getClass(), record);
     }
 
     /**
      * Like {@link #serializeSettings} but omits write-only fields so secrets are absent from API responses.
      */
-    public static Map<String, ?> serializeSettingsForClient(Record record) throws InputValidationException {
+    public static Map<String, ?> serializeSettingsForClient(Record record) throws ApiException {
         Map<String, Object> serialized = new LinkedHashMap<>(serializeSettings(record));
         for (String name : writeOnlyPropertyNames(record.getClass())) {
             serialized.remove(name);

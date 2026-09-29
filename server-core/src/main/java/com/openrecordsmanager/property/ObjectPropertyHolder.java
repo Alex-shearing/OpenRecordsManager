@@ -1,7 +1,6 @@
 package com.openrecordsmanager.property;
 
 import com.openrecordsmanager.api.ResourceIdentifier;
-import com.openrecordsmanager.api.errors.InputValidationException;
 import com.openrecordsmanager.api.template.property.PropertyType;
 import org.jspecify.annotations.Nullable;
 import tools.jackson.databind.JsonNode;
@@ -126,12 +125,6 @@ public abstract class ObjectPropertyHolder<SELF extends ObjectPropertyHolder<SEL
             newValue = activeCodec.parse(property, value);
         } else {
             newValue = property.getType().parse(value);
-            if (newValue == null && value != null && !value.isNull()) {
-                throw new InputValidationException(Map.of(
-                        property.getId().toString(),
-                        "unable to parse value as " + property.getType().getName()
-                ));
-            }
         }
 
         this.setProperty(property, newValue);

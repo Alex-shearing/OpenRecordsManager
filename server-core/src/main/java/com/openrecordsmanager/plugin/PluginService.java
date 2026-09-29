@@ -11,8 +11,9 @@ import com.openrecordsmanager.plugin.dto.PluginResponse;
 import com.openrecordsmanager.plugin.dto.PluginTypeRequest;
 import com.openrecordsmanager.plugin.dto.SimplePluginResponse;
 import com.openrecordsmanager.plugin.dto.UpdatePluginRequest;
-import com.openrecordsmanager.rest.errors.ResourceInUseException;
-import com.openrecordsmanager.rest.errors.ResourceNotFoundException;
+import com.openrecordsmanager.plugin.exception.BuiltinResourceImmutableException;
+import com.openrecordsmanager.plugin.exception.CannotDowngradePluginException;
+import com.openrecordsmanager.rest.exception.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -93,14 +94,12 @@ public class PluginService {
             DiscoveredPlugin uploadedMeta = DiscoveredPlugin.read(tempDest, this.repository.pluginRepo);
 
             if (BuiltinPlugin.BUILTIN_PLUGIN_NAME.equals(uploadedMeta.id())) {
-                throw new ResourceInUseException("the builtin plugin cannot be modified");
+                throw new BuiltinResourceImmutableException();
             }
 
             DiscoveredPlugin.PluginComparison comparison = uploadedMeta.compareLocalToPersisted();
             switch (comparison) {
-                case PERSISTED_NEWER, EQUAL -> throw new ResourceInUseException(
-                        "plugin already exists with same or newer version, uploaded version must be greater"
-                );
+                case PERSISTED_NEWER, EQUAL -> throw new CannotDowngradePluginException(uploadedMeta);
                 case SAME_VERSION_HASH_MISMATCH -> PluginManager.LOGGER.info(
                         "Uploading a new plugin file for {} with the same version but different hash",
                         uploadedMeta.id()
@@ -154,7 +153,7 @@ public class PluginService {
     @RequiresAuditComment(operation = AuditOperation.UPDATE, targetType = AuditEntityType.PLUGIN)
     public PluginResponse update(String name, UpdatePluginRequest input) {
         if (BuiltinPlugin.BUILTIN_PLUGIN_NAME.equals(name)) {
-            throw new ResourceInUseException("the builtin plugin cannot be modified");
+            throw new BuiltinResourceImmutableException();
         }
 
         PersistedPlugin plugin = this.repository.pluginRepo.findById(name).orElse(null);
@@ -195,7 +194,7 @@ public class PluginService {
     @RequiresAuditComment(operation = AuditOperation.DELETE, targetType = AuditEntityType.PLUGIN)
     public void delete(String name) throws IOException {
         if (BuiltinPlugin.BUILTIN_PLUGIN_NAME.equals(name)) {
-            throw new ResourceInUseException("the builtin plugin cannot be deleted");
+            throw new BuiltinResourceImmutableException();
         }
 
         PersistedPlugin plugin = this.repository.pluginRepo.findById(name).orElse(null);

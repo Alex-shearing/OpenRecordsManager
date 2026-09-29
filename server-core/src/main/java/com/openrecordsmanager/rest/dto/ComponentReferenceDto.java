@@ -4,14 +4,13 @@ import com.openrecordsmanager.api.Component;
 import com.openrecordsmanager.api.ComponentAccess;
 import com.openrecordsmanager.api.ComponentReference;
 import com.openrecordsmanager.api.ResourceIdentifier;
-import com.openrecordsmanager.api.errors.InputValidationException;
 import com.openrecordsmanager.api.types.ComponentType;
 import com.openrecordsmanager.api.types.ComponentTypes;
+import com.openrecordsmanager.rest.exception.ResourceNotFoundException;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
-import java.util.Map;
 
 @Schema(name = "ComponentReference")
 public record ComponentReferenceDto(
@@ -30,10 +29,7 @@ public record ComponentReferenceDto(
         ComponentType<T> componentType = (ComponentType<T>) ComponentTypes.fromName(this.type);
 
         if (componentType == null) {
-            throw new InputValidationException(Map.of(
-                    "type",
-                    String.format("Unknown component type '%s'", this.type)
-            ));
+            throw new ResourceNotFoundException("component type", this.type);
         }
         return ComponentReference.of(componentType, this.id);
     }

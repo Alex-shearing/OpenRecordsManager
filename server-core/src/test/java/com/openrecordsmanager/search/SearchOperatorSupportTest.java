@@ -1,21 +1,24 @@
 package com.openrecordsmanager.search;
 
 import com.openrecordsmanager.api.ResourceIdentifier;
-import com.openrecordsmanager.api.errors.InputValidationException;
+import com.openrecordsmanager.api.errors.ApiError;
+import com.openrecordsmanager.api.errors.ApiException;
 import com.openrecordsmanager.api.search.SearchOperator;
 import com.openrecordsmanager.api.template.property.PropertyType;
 import org.junit.jupiter.api.Test;
 import tools.jackson.databind.node.JsonNodeFactory;
 
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class SearchOperatorSupportTest {
 
     @Test
     void rejectsGtOnString() {
-        InputValidationException ex = assertThrows(
-                InputValidationException.class,
+        ApiException ex = assertThrows(
+                ApiException.class,
                 () -> SearchOperatorSupport.validate(
                         ResourceIdentifier.valueOf("builtin:title"),
                         PropertyType.STRING,
@@ -23,7 +26,9 @@ class SearchOperatorSupportTest {
                         JsonNodeFactory.instance.stringNode("x")
                 )
         );
-        assertTrue(ex.getFieldErrors().containsKey("builtin:title"));
+        ApiError fieldError = ex.getFieldErrors().get("builtin:title");
+        assertEquals(SearchOperatorSupport.OPERATOR_UNSUPPORTED, fieldError.code());
+        assertEquals(List.of("GT"), fieldError.args());
     }
 
     @Test

@@ -39,7 +39,7 @@ class InputFormSchemaTest {
 
         InputFormSchemaField mode = schema.properties().get("mode");
         assertEquals("test.settings.schema.mode.title", mode.title());
-        assertEquals("", mode.description());
+        assertEquals(null, mode.description());
 
         InputFormSchemaField name = schema.properties().get("name");
         assertEquals("test.settings.schema.name.title", name.title());

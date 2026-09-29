@@ -1,11 +1,12 @@
 package com.openrecordsmanager.search.sql;
 
 import com.openrecordsmanager.api.ResourceIdentifier;
-import com.openrecordsmanager.api.errors.InputValidationException;
+import com.openrecordsmanager.api.errors.ApiException;
 import com.openrecordsmanager.api.search.SearchMatchMode;
 import com.openrecordsmanager.api.search.SearchOperator;
 import com.openrecordsmanager.api.template.property.PropertyType;
 import com.openrecordsmanager.search.SearchCriteriaExpander;
+import com.openrecordsmanager.search.SearchOperatorSupport;
 import com.openrecordsmanager.search.sql.dialect.JsonSearchDialect;
 import org.jspecify.annotations.Nullable;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -17,7 +18,9 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.sql.Types;
 import java.time.Instant;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 /**
@@ -57,7 +60,7 @@ public class SqlSearchSupport {
 
         if (typeScope != null) {
             if (schema.typeColumn() == null) {
-                throw new InputValidationException(Map.of("type", "Type scope is not supported for this search target"));
+                throw ApiException.validationFailed("type", SearchOperatorSupport.TYPE_SCOPE_UNSUPPORTED);
             }
             where.add(schema.typeColumn() + " = ?");
             params.add(typeScope.toString());
@@ -169,16 +172,16 @@ public class SqlSearchSupport {
             }
             case LIKE -> {
                 if (value == null || value.isNull()) {
-                    throw new InputValidationException(Map.of("value", "LIKE requires a string value"));
+                    throw ApiException.validationFailed("value", SearchOperatorSupport.OPERATOR_REQUIRES_VALUE, op.name());
                 }
                 params.add(SearchWildcard.toLikePattern(value.asString()));
                 yield this.dialect.like(expr, "?") + " ESCAPE '\\'";
             }
-            case IN -> inList(expr, type, value, params, false);
-            case NOT_IN -> inList(expr, type, value, params, true);
+            case IN -> inList(expr, type, value, params, SearchOperator.IN);
+            case NOT_IN -> inList(expr, type, value, params, SearchOperator.NOT_IN);
             case BETWEEN -> {
                 if (value == null || !value.isArray() || value.size() != 2) {
-                    throw new InputValidationException(Map.of("value", "BETWEEN requires two values"));
+                    throw ApiException.validationFailed("value", SearchOperatorSupport.OPERATOR_REQUIRES_TWO_VALUES, op.name());
                 }
                 params.add(bindScalar(type, value.get(0)));
                 params.add(bindScalar(type, value.get(1)));
@@ -192,17 +195,17 @@ public class SqlSearchSupport {
             PropertyType<?> type,
             @Nullable JsonNode value,
             List<@Nullable Object> params,
-            boolean negate
+            SearchOperator op
     ) {
         if (value == null || !value.isArray() || value.isEmpty()) {
-            throw new InputValidationException(Map.of("value", "IN requires a non-empty array"));
+            throw ApiException.validationFailed("value", SearchOperatorSupport.OPERATOR_REQUIRES_ARRAY, op.name());
         }
         List<String> placeholders = new ArrayList<>(value.size());
         for (JsonNode element : value) {
             params.add(bindScalar(type, element));
             placeholders.add("?");
         }
-        return expr + (negate ? " NOT IN (" : " IN (") + String.join(", ", placeholders) + ")";
+        return expr + (op == SearchOperator.NOT_IN ? " NOT IN (" : " IN (") + String.join(", ", placeholders) + ")";
     }
 
     private static @Nullable Object bindScalar(PropertyType<?> type, @Nullable JsonNode value) {

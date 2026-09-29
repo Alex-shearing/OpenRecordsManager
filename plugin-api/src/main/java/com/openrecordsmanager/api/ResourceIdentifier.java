@@ -3,10 +3,9 @@ package com.openrecordsmanager.api;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.openrecordsmanager.api.builtin.BuiltinPlugin;
-import com.openrecordsmanager.api.errors.InputValidationException;
+import com.openrecordsmanager.api.errors.ApiException;
 
 import java.io.Serializable;
-import java.util.Map;
 import java.util.regex.Pattern;
 
 public record ResourceIdentifier(String source, String item) implements Serializable {
@@ -25,10 +24,7 @@ public record ResourceIdentifier(String source, String item) implements Serializ
     public static ResourceIdentifier valueOf(String identifier) {
         String[] parts = identifier.split(":");
         if (parts.length != 2) {
-            throw new InputValidationException(Map.of(
-                    "value",
-                    String.format("Resource identifier '%s' is invalid. Could not split correctly", identifier)
-            ));
+            throw new InvalidIdentifierException(identifier);
         }
 
         return new ResourceIdentifier(parts[0], parts[1]);
@@ -42,11 +38,11 @@ public record ResourceIdentifier(String source, String item) implements Serializ
 
     private static String validateIdentifier(String input) {
         if (input.isEmpty()) {
-            throw new IllegalArgumentException(String.format("Invalid identifier '%s' must have length", input));
+            throw new InvalidIdentifierException(input);
         }
 
         if (!VALID_IDENTIFIER.matcher(input).matches()) {
-            throw new IllegalArgumentException(String.format("Invalid identifier '%s', contains invalid characters", input));
+            throw new InvalidIdentifierException(input);
         }
 
         return input;
@@ -60,4 +56,9 @@ public record ResourceIdentifier(String source, String item) implements Serializ
         return this.source.equals(BuiltinPlugin.BUILTIN_PLUGIN_NAME);
     }
 
+    protected static class InvalidIdentifierException extends ApiException {
+        public InvalidIdentifierException(String id) {
+            super("invalid_resource_identifier", id);
+        }
+    }
 }

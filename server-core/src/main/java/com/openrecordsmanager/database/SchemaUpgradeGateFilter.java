@@ -59,12 +59,9 @@ public class SchemaUpgradeGateFilter extends OncePerRequestFilter {
         response.setHeader(UPGRADE_REQUIRED_HEADER, "true");
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
 
-        String message = this.state.getMessage();
         this.jsonMapper.writeValue(
                 response.getOutputStream(),
-                ApiResponseV1.error(
-                        message != null ? message : "Database schema upgrade required"
-                )
+                ApiResponseV1.error("schema_upgrade_required")
         );
     }
 }

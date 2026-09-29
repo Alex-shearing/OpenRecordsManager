@@ -7,7 +7,7 @@ import com.openrecordsmanager.auth.AuthService;
 import com.openrecordsmanager.auth.PluginAuthenticationProvider;
 import com.openrecordsmanager.database.util.ComponentReferenceConverter;
 import com.openrecordsmanager.plugin.registry.ComponentCatalog;
-import com.openrecordsmanager.rest.errors.ResourceNotFoundException;
+import com.openrecordsmanager.rest.exception.ResourceNotFoundException;
 import jakarta.persistence.*;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.id.uuid.UuidVersion7Strategy;

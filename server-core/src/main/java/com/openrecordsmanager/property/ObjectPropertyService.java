@@ -5,21 +5,24 @@ import com.openrecordsmanager.api.ResourceIdentifier;
 import com.openrecordsmanager.api.TranslationField;
 import com.openrecordsmanager.api.audit.AuditEntityType;
 import com.openrecordsmanager.api.audit.AuditOperation;
-import com.openrecordsmanager.api.errors.InputValidationException;
+import com.openrecordsmanager.api.errors.ApiException;
 import com.openrecordsmanager.api.template.property.PropertyType;
 import com.openrecordsmanager.api.types.ComponentTypes;
 import com.openrecordsmanager.audit.AuditEventDescriptions;
 import com.openrecordsmanager.audit.AuditService;
 import com.openrecordsmanager.audit.RequiresAuditComment;
+import com.openrecordsmanager.config.ConfigValueParseFailedException;
 import com.openrecordsmanager.database.DataRepository;
 import com.openrecordsmanager.i18n.TranslationOverrideService;
 import com.openrecordsmanager.list.ListType;
+import com.openrecordsmanager.plugin.exception.BuiltinResourceImmutableException;
 import com.openrecordsmanager.property.dto.NewObjectPropertyRequest;
 import com.openrecordsmanager.property.dto.ObjectPropertyResponse;
 import com.openrecordsmanager.property.dto.SimpleObjectPropertyResponse;
 import com.openrecordsmanager.property.dto.UpdateObjectPropertyRequest;
-import com.openrecordsmanager.rest.errors.ResourceInUseException;
-import com.openrecordsmanager.rest.errors.ResourceNotFoundException;
+import com.openrecordsmanager.rest.exception.ResourceAlreadyExistsException;
+import com.openrecordsmanager.rest.exception.ResourceInUseException;
+import com.openrecordsmanager.rest.exception.ResourceNotFoundException;
 import org.jspecify.annotations.Nullable;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Service;
@@ -27,12 +30,13 @@ import org.springframework.transaction.annotation.Transactional;
 import tools.jackson.databind.JsonNode;
 
 import java.util.Locale;
-import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
 public class ObjectPropertyService {
+    private static final String LIST_TYPE_ONLY_FOR_LIST_PROPERTY = "list_type_only_for_list_property";
+    private static final String LIST_TYPE_REQUIRED_FOR_LIST_PROPERTY = "list_type_required_for_list_property";
 
     private final DataRepository repository;
     private final AuditService auditService;
@@ -70,11 +74,11 @@ public class ObjectPropertyService {
     @RequiresAuditComment(operation = AuditOperation.CREATE, targetType = AuditEntityType.OBJECT_PROPERTY)
     public ObjectPropertyResponse create(NewObjectPropertyRequest input) throws ResourceNotFoundException {
         if (this.repository.objectPropertyRepo.existsById(input.id())) {
-            throw new ResourceInUseException("object property already exists: " + input.id());
+            throw new ResourceAlreadyExistsException(ComponentTypes.OBJECT_PROPERTY, input.id());
         }
 
         if (input.id().isBuiltin()) {
-            throw new IllegalArgumentException("builtin object properties cannot be modified");
+            throw new BuiltinResourceImmutableException();
         }
 
         ObjectProperty<?> property = buildProperty(
@@ -107,7 +111,7 @@ public class ObjectPropertyService {
                 .orElseThrow(() -> new ResourceNotFoundException(ComponentTypes.OBJECT_PROPERTY, id));
 
         if (id.isBuiltin()) {
-            throw new IllegalArgumentException("builtin object properties cannot be modified");
+            throw new BuiltinResourceImmutableException();
         }
 
         ComponentReference.Reference<?> ref = property.getReference();
@@ -138,13 +142,13 @@ public class ObjectPropertyService {
                 .orElseThrow(() -> new ResourceNotFoundException(ComponentTypes.OBJECT_PROPERTY, id));
 
         if (id.isBuiltin()) {
-            throw new IllegalArgumentException("builtin object properties cannot be modified");
+            throw new BuiltinResourceImmutableException();
         }
 
         if (this.repository.objectPropertyRepo.isAssignedToRecordType(property)
                 || this.repository.objectPropertyRepo.isUsedByRecords(property)
                 || this.repository.objectPropertyRepo.isUsedByUsers(property)) {
-            throw new ResourceInUseException("object property is in use and cannot be deleted");
+            throw new ResourceInUseException(ComponentTypes.OBJECT_PROPERTY);
         }
 
         this.repository.objectPropertyRepo.delete(property);
@@ -168,13 +172,13 @@ public class ObjectPropertyService {
     private @Nullable ListType resolveListType(PropertyType<?> type, @Nullable ResourceIdentifier listTypeId) {
         if (!type.allowsList()) {
             if (listTypeId != null) {
-                throw new InputValidationException(Map.of("listType", "listType can only be set for list property types"));
+                throw ApiException.validationFailed("listType", LIST_TYPE_ONLY_FOR_LIST_PROPERTY);
             }
             return null;
         }
 
         if (listTypeId == null) {
-            throw new InputValidationException(Map.of("listType", "listType is required for list property types"));
+            throw ApiException.validationFailed("listType", LIST_TYPE_REQUIRED_FOR_LIST_PROPERTY);
         }
 
         return this.repository.listTypeRepo.findById(listTypeId)
@@ -191,10 +195,12 @@ public class ObjectPropertyService {
             boolean userHidden
     ) {
         if (defaultValue != null && !defaultValue.isNull() && type.parse(defaultValue) == null) {
-            throw new InputValidationException(Map.of(
+            throw ApiException.validationFailed(
                     "defaultValue",
-                    "unable to parse defaultValue as " + type.getName()
-            ));
+                    ConfigValueParseFailedException.CODE,
+                    type.getName(),
+                    defaultValue.toString()
+            );
         }
         return new ObjectProperty<>(
                 id,
@@ -212,10 +218,12 @@ public class ObjectPropertyService {
         property.setSecurityFilter(input.securityFilter());
         JsonNode defaultValue = input.defaultValue();
         if (defaultValue != null && !defaultValue.isNull() && property.getType().parse(defaultValue) == null) {
-            throw new InputValidationException(Map.of(
+            throw ApiException.validationFailed(
                     "defaultValue",
-                    "unable to parse defaultValue as " + property.getType().getName()
-            ));
+                    ConfigValueParseFailedException.CODE,
+                    property.getType().getName(),
+                    defaultValue.toString()
+            );
         }
         property.setDefaultValue(defaultValue);
         property.setUserHidden(input.userHidden());

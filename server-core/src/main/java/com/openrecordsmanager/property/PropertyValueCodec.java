@@ -1,14 +1,14 @@
 package com.openrecordsmanager.property;
 
 import com.openrecordsmanager.api.ResourceIdentifier;
-import com.openrecordsmanager.api.errors.InputValidationException;
+import com.openrecordsmanager.api.errors.ApiException;
 import com.openrecordsmanager.api.template.list.IListElement;
 import com.openrecordsmanager.api.template.property.PropertyType;
 import com.openrecordsmanager.api.types.ComponentTypes;
 import com.openrecordsmanager.list.ListElement;
 import com.openrecordsmanager.list.ListElementRepository;
 import com.openrecordsmanager.list.ListType;
-import com.openrecordsmanager.rest.errors.ResourceNotFoundException;
+import com.openrecordsmanager.rest.exception.ResourceNotFoundException;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
 import org.jspecify.annotations.Nullable;
@@ -21,13 +21,14 @@ import tools.jackson.databind.node.NullNode;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Bridges wire/storage {@link JsonNode} and domain {@code T} for object properties.
  */
 @Component
 public class PropertyValueCodec {
+    private static final String VALUE_INVALID = "property_value_invalid";
+    private static final String LIST_ELEMENT_ID_REQUIRED = "list_element_id_required";
 
     private static final JsonNodeFactory NODES = JsonNodeFactory.instance;
 
@@ -63,17 +64,18 @@ public class PropertyValueCodec {
         ListType listType = requireListType(property);
         Object domain;
         if (type == PropertyType.LIST_ITEM) {
-            domain = resolveElement(listType, wire);
+            domain = resolveElement(listType, wire, type);
         } else if (type == PropertyType.LIST_MULTIPLE) {
             if (!wire.isArray()) {
-                throw new InputValidationException(Map.of(
+                throw ApiException.validationFailed(
                         property.getId().toString(),
-                        "list_multiple values must be a JSON array of list element ids"
-                ));
+                        VALUE_INVALID,
+                        type.getName()
+                );
             }
             List<ListElement> resolved = new ArrayList<>(wire.size());
             for (JsonNode item : wire) {
-                resolved.add(resolveElement(listType, item));
+                resolved.add(resolveElement(listType, item, type));
             }
             domain = resolved;
         } else {
@@ -82,10 +84,11 @@ public class PropertyValueCodec {
 
         T parsed = type.parseValue(domain);
         if (parsed == null) {
-            throw new InputValidationException(Map.of(
+            throw ApiException.validationFailed(
                     property.getId().toString(),
-                    "unable to parse value as " + type.getName()
-            ));
+                    VALUE_INVALID,
+                    type.getName()
+            );
         }
         return parsed;
     }
@@ -119,7 +122,7 @@ public class PropertyValueCodec {
         ListType listType = requireListType(property);
 
         if (property.getType() == PropertyType.LIST_ITEM) {
-            return resolveElement(listType, stored);
+            return resolveElement(listType, stored, property.getType());
         }
 
         if (property.getType() == PropertyType.LIST_MULTIPLE) {
@@ -131,7 +134,7 @@ public class PropertyValueCodec {
             }
             List<ListElement> hydrated = new ArrayList<>(stored.size());
             for (JsonNode item : stored) {
-                hydrated.add(resolveElement(listType, item));
+                hydrated.add(resolveElement(listType, item, property.getType()));
             }
             return hydrated;
         }
@@ -170,15 +173,12 @@ public class PropertyValueCodec {
         return NODES.stringNode(domainValue.toString());
     }
 
-    private ListElement resolveElement(ListType listType, JsonNode raw) {
+    private ListElement resolveElement(ListType listType, JsonNode raw, PropertyType<?> type) {
         if (raw.isNull()) {
-            throw new InputValidationException(Map.of("value", "list element id is required"));
+            throw ApiException.validationFailed("value", LIST_ELEMENT_ID_REQUIRED);
         }
         if (raw.isObject()) {
-            throw new InputValidationException(Map.of(
-                    "value",
-                    "list element values must be resource id strings, not objects"
-            ));
+            throw ApiException.validationFailed("value", VALUE_INVALID, type.getName());
         }
         ResourceIdentifier elementId = ResourceIdentifier.valueOf(raw.asString().trim());
         return this.listElementRepository.getElement(listType.getId(), elementId)
@@ -188,10 +188,11 @@ public class PropertyValueCodec {
     private static ListType requireListType(ObjectProperty<?> property) {
         ListType listType = property.getListType();
         if (listType == null) {
-            throw new InputValidationException(Map.of(
+            throw ApiException.validationFailed(
                     property.getId().toString(),
-                    "list property is missing listType"
-            ));
+                    VALUE_INVALID,
+                    property.getType().getName()
+            );
         }
         return listType;
     }

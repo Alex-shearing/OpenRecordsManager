@@ -116,7 +116,7 @@ Add extra keys only when the scenario needs them (audit spool dir, custom plugin
   helpers exposed for tests.
 - Drive schemas through `ObjectSearchSchema.of` — not direct package-private column resolvers unless you are testing
   that type in its own package.
-- Prefer exceptions from the service (`ResourceNotFoundException`, `ResourceInUseException`, `InputValidationException`)
+- Prefer exceptions from the service (`ResourceNotFoundException`, `ResourceInUseException`, `ApiException`)
   over HTTP status codes when the test is service-level.
 - Do not add `installForTest`, package-visible hooks, or wider visibility solely so a test can reach internals.
 

@@ -40,7 +40,7 @@ public class SchemaMigrationService {
             throw new IllegalStateException("Schema upgrade completed but pending migrations remain");
         }
         this.events.publishEvent(new SchemaMigrationReadyEvent());
-        return this.toStatusResponse("Applied " + result.migrationsExecuted + " migration(s)");
+        return this.toStatusResponse(result.migrationsExecuted);
     }
 
     public void evaluate() {
@@ -54,11 +54,7 @@ public class SchemaMigrationService {
             this.state.markInitialSeedPending();
             this.evaluate();
         } else if (pending.length > 0) {
-            this.state.markUpgradeRequired(
-                    currentVersion(applied),
-                    pendingVersions(pending),
-                    "Database schema is behind the application and must be upgraded"
-            );
+            this.state.markUpgradeRequired(currentVersion(applied), pendingVersions(pending));
         } else {
             this.state.markReady(currentVersion(applied));
         }
@@ -71,12 +67,12 @@ public class SchemaMigrationService {
                 .load();
     }
 
-    public SetupStatusResponse toStatusResponse(@Nullable String messageOverride) {
+    public SetupStatusResponse toStatusResponse(int migrationsApplied) {
         return new SetupStatusResponse(
                 this.state.getStatus(),
                 this.state.getCurrentVersion(),
                 this.state.getPendingMigrations(),
-                messageOverride == null ? this.state.getMessage() : messageOverride
+                migrationsApplied
         );
     }
 

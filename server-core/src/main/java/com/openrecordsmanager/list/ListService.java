@@ -13,8 +13,9 @@ import com.openrecordsmanager.database.DataRepository;
 import com.openrecordsmanager.i18n.I18nService;
 import com.openrecordsmanager.i18n.TranslationOverrideService;
 import com.openrecordsmanager.list.dto.*;
-import com.openrecordsmanager.rest.errors.ResourceInUseException;
-import com.openrecordsmanager.rest.errors.ResourceNotFoundException;
+import com.openrecordsmanager.rest.exception.ResourceAlreadyExistsException;
+import com.openrecordsmanager.rest.exception.ResourceInUseException;
+import com.openrecordsmanager.rest.exception.ResourceNotFoundException;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -66,7 +67,7 @@ public class ListService {
     @RequiresAuditComment(operation = AuditOperation.CREATE, targetType = AuditEntityType.LIST)
     public ListTypeResponse create(NewListTypeRequest input) {
         if (this.repository.listTypeRepo.existsById(input.id())) {
-            throw new ResourceInUseException("list type already exists: " + input.id());
+            throw new ResourceAlreadyExistsException(ComponentTypes.LIST, input.id());
         }
 
         ListType listType = new ListType(input.id());
@@ -108,11 +109,11 @@ public class ListService {
                 .orElseThrow(() -> new ResourceNotFoundException(ComponentTypes.LIST, id));
 
         if (!listType.getChildren().isEmpty()) {
-            throw new ResourceInUseException("list type has elements and cannot be deleted");
+            throw new ResourceInUseException(ComponentTypes.LIST);
         }
 
         if (this.repository.listTypeRepo.isUsedByObjectProperties(listType)) {
-            throw new ResourceInUseException("list type is in use by one or more object properties");
+            throw new ResourceInUseException(ComponentTypes.LIST);
         }
 
         this.repository.listTypeRepo.delete(listType);
@@ -174,7 +175,7 @@ public class ListService {
                 .orElseThrow(() -> new ResourceNotFoundException(ComponentTypes.LIST, parentId));
 
         if (this.repository.listElementRepo.existsById(input.id())) {
-            throw new ResourceInUseException("list element already exists: " + input.id());
+            throw new ResourceAlreadyExistsException(ComponentTypes.LIST_ELEMENT, input.id());
         }
 
         ListElement element = new ListElement(

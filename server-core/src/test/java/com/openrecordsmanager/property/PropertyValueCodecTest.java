@@ -2,14 +2,14 @@ package com.openrecordsmanager.property;
 
 import com.openrecordsmanager.api.ResourceIdentifier;
 import com.openrecordsmanager.api.builtin.BuiltinConfigs;
-import com.openrecordsmanager.api.errors.InputValidationException;
+import com.openrecordsmanager.api.errors.ApiException;
 import com.openrecordsmanager.api.template.list.IListElement;
 import com.openrecordsmanager.api.template.property.PropertyType;
 import com.openrecordsmanager.database.DataRepository;
 import com.openrecordsmanager.database.SqliteTestSupport;
 import com.openrecordsmanager.list.ListElement;
 import com.openrecordsmanager.list.ListType;
-import com.openrecordsmanager.rest.errors.ResourceNotFoundException;
+import com.openrecordsmanager.rest.exception.ResourceNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -136,7 +136,7 @@ class PropertyValueCodecTest {
     @Test
     void parseInvalidCollectionThrows() {
         assertThrows(
-                InputValidationException.class,
+                ApiException.class,
                 () -> this.codec.parse(this.listMultipleProperty, NODES.textNode(ELEMENT_A.toString()))
         );
     }

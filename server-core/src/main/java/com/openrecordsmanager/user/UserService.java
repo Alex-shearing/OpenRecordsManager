@@ -16,8 +16,10 @@ import com.openrecordsmanager.database.DataRepository;
 import com.openrecordsmanager.plugin.registry.ComponentCatalog;
 import com.openrecordsmanager.property.ObjectPropertyApplier;
 import com.openrecordsmanager.rest.dto.ActionResponse;
-import com.openrecordsmanager.rest.errors.ResourceInUseException;
-import com.openrecordsmanager.rest.errors.ResourceNotFoundException;
+import com.openrecordsmanager.rest.exception.ActionNotAvailableException;
+import com.openrecordsmanager.rest.exception.ResourceAlreadyExistsException;
+import com.openrecordsmanager.rest.exception.ResourceInUseException;
+import com.openrecordsmanager.rest.exception.ResourceNotFoundException;
 import com.openrecordsmanager.search.ObjectSearchExecutor;
 import com.openrecordsmanager.search.sql.BuiltinColumnResolver;
 import com.openrecordsmanager.search.sql.ObjectSearchSchema;
@@ -120,7 +122,7 @@ public class UserService {
     @RequiresAuditComment(operation = AuditOperation.CREATE, targetType = AuditEntityType.USER)
     public UserResponse create(NewUserRequest input) {
         if (this.repository.userRepo.findByUsername(input.username()).isPresent()) {
-            throw new ResourceInUseException("user already exists: " + input.username());
+            throw new ResourceAlreadyExistsException("user", input.username());
         }
 
         AuthProvider authProvider = null;
@@ -160,7 +162,7 @@ public class UserService {
 
         if (input.username() != null && !input.username().equals(user.getUsername())) {
             if (this.repository.userRepo.findByUsername(input.username()).isPresent()) {
-                throw new ResourceInUseException("user already exists: " + input.username());
+                throw new ResourceAlreadyExistsException("user", input.username());
             }
 
             String oldUsername = user.getUsername();
@@ -179,7 +181,7 @@ public class UserService {
 
         if (input.enabled() != null && input.enabled() != user.isEnabled()) {
             if (!input.enabled() && actor.getId().equals(user.getId())) {
-                throw new ResourceInUseException("cannot disable your own account");
+                throw new ResourceInUseException("current user");
             }
 
             boolean oldEnabled = user.isEnabled();
@@ -250,7 +252,7 @@ public class UserService {
         );
 
         if (!action.isAvailable(context)) {
-            throw new IllegalArgumentException("Action " + actionId + " is not available for user " + targetUserId);
+            throw new ActionNotAvailableException(actionId, "user", targetUserId);
         }
 
         this.auditPolicyService.validateCommentRequired(AuditEntityType.USER, AuditOperation.ACTION);

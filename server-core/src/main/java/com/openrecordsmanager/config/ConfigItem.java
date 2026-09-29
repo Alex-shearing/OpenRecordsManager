@@ -3,7 +3,7 @@ package com.openrecordsmanager.config;
 import com.openrecordsmanager.api.config.ConfigType;
 import com.openrecordsmanager.api.types.ComponentTypes;
 import com.openrecordsmanager.plugin.registry.ComponentCatalog;
-import com.openrecordsmanager.rest.errors.ResourceNotFoundException;
+import com.openrecordsmanager.rest.exception.ResourceNotFoundException;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
@@ -13,7 +13,6 @@ import org.hibernate.type.SqlTypes;
 import org.jspecify.annotations.Nullable;
 import tools.jackson.databind.JsonNode;
 
-import java.text.MessageFormat;
 import java.time.Instant;
 
 @Entity
@@ -69,10 +68,7 @@ public class ConfigItem {
         ConfigType<?> key = this.getConfigKey(catalog);
         Object parsed = key.type().parse(value);
         if (parsed == null && value != null && !value.isNull()) {
-            throw new IllegalArgumentException(MessageFormat.format(
-                    "Unable to parse configuration value as {0}",
-                    key.type().getName()
-            ));
+            throw new ConfigValueParseFailedException(key.type().getName(), value.toString());
         }
         this.configValue = value;
         this.touchDateModified();
