@@ -134,8 +134,6 @@ app:
   # Web branding #
   ################
   web:
-    # Product name shown in the web client.
-    product-name: Open Records Manager
     # Optional logo image URL for the web client.
     logo-url:
     # Optional favicon URL for the web client.

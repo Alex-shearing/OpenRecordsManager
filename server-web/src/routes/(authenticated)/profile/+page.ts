@@ -1,5 +1,6 @@
 import { UserController } from '$lib/api';
 import { getApiClient } from '$lib/api-client';
+import { t } from '$lib/i18n/catalog';
 
 export async function load({ parent }) {
 	const data = await parent();
@@ -11,6 +12,6 @@ export async function load({ parent }) {
 
 	return {
 		actions: actionsData?.success ? actionsData.data : [],
-		error: actionsError ? 'Failed to load available actions.' : null,
+		error: actionsError ? t('web.profile.actions_load_failed') : null,
 	};
 }

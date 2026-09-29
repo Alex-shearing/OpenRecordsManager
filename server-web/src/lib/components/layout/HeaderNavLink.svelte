@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
 	import type { RouteId } from '$app/types';
+	import { t } from '$lib/i18n/catalog';
 	import type { Component, Snippet } from 'svelte';
 	import type { IconComponentProps } from 'phosphor-svelte';
 
@@ -34,7 +35,7 @@
 		{#if children}
 			{@render children()}
 		{:else if label}
-			{label}
+			{t(label)}
 		{/if}
 	</a>
 {/if}

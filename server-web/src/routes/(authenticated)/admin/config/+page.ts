@@ -1,5 +1,6 @@
 import { ConfigController } from '$lib/api';
 import { getApiClient } from '$lib/api-client';
+import { t } from '$lib/i18n/catalog';
 
 export async function load({ parent }) {
 	const [parentData, configResult] = await Promise.all([
@@ -15,6 +16,6 @@ export async function load({ parent }) {
 	return {
 		configs,
 		requiresAuditComment,
-		error: configResult.error ? 'Failed to load configuration settings.' : null,
+		error: configResult.error ? t('web.config.load_failed') : null,
 	};
 }

@@ -5,6 +5,7 @@
 	import SubNavLink from '$lib/components/layout/SubNavLink.svelte';
 	import SubNavMenu from '$lib/components/layout/SubNavMenu.svelte';
 	import SubNavMenuLink from '$lib/components/layout/SubNavMenuLink.svelte';
+	import { t } from '$lib/i18n/catalog';
 
 	let { children } = $props();
 </script>
@@ -13,18 +14,20 @@
 	{#snippet subnav()}
 		<NavigationMenu.Root class="relative">
 			<SubNavList>
-				<SubNavLink href="/admin/config" match="exact">Configuration</SubNavLink>
-				<SubNavLink href="/admin/audit" match="exact">Audit</SubNavLink>
-				<SubNavLink href="/admin/auth-providers" match="exact">Login providers</SubNavLink>
+				<SubNavLink href="/admin/config" match="exact">{t('web.admin.configuration')}</SubNavLink>
+				<SubNavLink href="/admin/audit" match="exact">{t('web.admin.audit')}</SubNavLink>
+				<SubNavLink href="/admin/auth-providers" match="exact">{t('web.admin.login_providers')}</SubNavLink>
 
-				<SubNavMenu label="Manage Plugins" hrefPrefix="/admin/plugins">
-					<SubNavMenuLink route="/(authenticated)/admin/plugins">Plugins</SubNavMenuLink>
-					<SubNavMenuLink route="/(authenticated)/admin/plugins/templates">Templates</SubNavMenuLink>
+				<SubNavMenu label={t('web.admin.manage_plugins')} hrefPrefix="/admin/plugins">
+					<SubNavMenuLink route="/(authenticated)/admin/plugins">{t('web.admin.plugins')}</SubNavMenuLink>
+					<SubNavMenuLink route="/(authenticated)/admin/plugins/templates">{t('web.admin.templates')}</SubNavMenuLink>
 				</SubNavMenu>
 
-				<SubNavMenu label="File Stores" hrefPrefix="/admin/file-stores">
-					<SubNavMenuLink route="/(authenticated)/admin/file-stores">Stores</SubNavMenuLink>
-					<SubNavMenuLink route="/(authenticated)/admin/file-stores/middlewares">Middlewares</SubNavMenuLink>
+				<SubNavMenu label={t('web.admin.file_stores')} hrefPrefix="/admin/file-stores">
+					<SubNavMenuLink route="/(authenticated)/admin/file-stores">{t('web.admin.stores')}</SubNavMenuLink>
+					<SubNavMenuLink route="/(authenticated)/admin/file-stores/middlewares">
+						{t('web.admin.middlewares')}
+					</SubNavMenuLink>
 				</SubNavMenu>
 			</SubNavList>
 		</NavigationMenu.Root>

@@ -2,6 +2,7 @@
 	import { afterNavigate } from '$app/navigation';
 	import BrandingHeader from '$lib/components/BrandingHeader.svelte';
 	import PageContent from '$lib/components/layout/PageContent.svelte';
+	import { t } from '$lib/i18n/catalog';
 
 	let { children, data } = $props();
 
@@ -23,7 +24,7 @@
 
 			{#if data.branding.supportUrl}
 				<p class="mt-4 text-center text-hint">
-					<a href={data.branding.supportUrl} class="text-link">Need help?</a>
+					<a href={data.branding.supportUrl} class="text-link">{t('web.layout.need_help')}</a>
 				</p>
 			{/if}
 		</PageContent>

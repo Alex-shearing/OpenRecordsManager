@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { WebBrandingResponse } from '$lib/api/types.gen';
+	import { t } from '$lib/i18n/catalog';
 	import type { Snippet } from 'svelte';
 
 	let {
@@ -24,9 +25,9 @@
 	<div class="items-center {showLogoOnMobile ? 'flex' : 'hidden sm:flex'}">
 		<a href="/" class="flex items-center gap-2 text-xl font-bold">
 			{#if branding.logoUrl}
-				<img src={branding.logoUrl} alt={branding.productName} class="h-8" />
+				<img src={branding.logoUrl} alt={t('web.layout.product_name')} class="h-8" />
 			{:else}
-				{branding.productName}
+				{t('web.layout.product_name')}
 			{/if}
 		</a>
 	</div>

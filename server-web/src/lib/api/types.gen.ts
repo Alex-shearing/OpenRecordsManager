@@ -30,6 +30,19 @@ export type UserResponse = {
     };
 };
 
+export type TranslationOverrideRequest = {
+    messageKey: string;
+    locale: string;
+    value: string;
+};
+
+export type TranslationOverrideResponse = {
+    messageKey: string;
+    locale: string;
+    value: string;
+    updatedAt: string;
+};
+
 export type UpdateRecordRequest = {
     type?: string;
     properties?: {
@@ -52,8 +65,6 @@ export type UpdatePluginRequest = {
 
 export type PluginResponse = {
     id: string;
-    displayName: string;
-    description: string;
     version: string;
     enabled: boolean;
     dateCreated: string;
@@ -75,10 +86,8 @@ export type UpdateObjectPropertyRequest = {
 
 export type ObjectPropertyResponse = {
     id: string;
-    name: string;
-    description: string;
     type: string;
-    listType?: SimpleListTypeResponse;
+    listType?: string;
     validator?: string;
     securityFilter?: string;
     /**
@@ -90,19 +99,12 @@ export type ObjectPropertyResponse = {
     dateModified: string;
 };
 
-export type SimpleListTypeResponse = {
-    id: string;
-    name: string;
-};
-
 export type UpdateListTypeRequest = {
     name: string;
 };
 
 export type ListElementResponse = {
     type: string;
-    name: string;
-    description: string;
     aliases: Array<string>;
     index: number;
     activeTo?: string;
@@ -112,7 +114,6 @@ export type ListElementResponse = {
 
 export type ListTypeResponse = {
     type?: string;
-    name?: string;
     dateCreated: string;
     dateModified: string;
     elements: Array<ListElementResponse>;
@@ -217,8 +218,6 @@ export type AuditPolicyResponse = {
     operation: AuditOperation;
     enabled: boolean;
     requiresComment: boolean;
-    displayName: string;
-    description: string;
     dateModified: string;
 };
 
@@ -350,7 +349,6 @@ export type LoginResponse = {
 };
 
 export type WebBrandingResponse = {
-    productName: string;
     logoUrl: string;
     faviconUrl: string;
     primaryColor: string;
@@ -359,8 +357,6 @@ export type WebBrandingResponse = {
 
 export type ActionResponse = {
     id: string;
-    name: string;
-    description: string;
     inputSchema: InputFormSchema;
     requiresAuditComment?: boolean;
 };
@@ -387,9 +383,11 @@ export type InputFormSchemaField = {
     enum?: Array<string>;
 };
 
-export type TemplateResponse = {
-    id: string;
-    name: string;
+export type TranslationCatalogResponse = {
+    locale: string;
+    messages: {
+        [key: string]: string;
+    };
 };
 
 export type ComponentReferenceTemplateComponent = {
@@ -414,8 +412,6 @@ export type RecordTypePropertyResponse = {
 
 export type RecordTypeResponse = {
     id: string;
-    name: string;
-    description: string;
     securityFilter?: string;
     securityFilterUsage: 'HIDE_RECORD' | 'HIDE_FILES' | 'SHOW_ALL';
     contentTypes?: Array<string>;
@@ -426,8 +422,6 @@ export type RecordTypeResponse = {
 
 export type SimplePluginResponse = {
     id: string;
-    displayName: string;
-    description: string;
     version: string;
     enabled: boolean;
     dateModified: string;
@@ -436,7 +430,6 @@ export type SimplePluginResponse = {
 
 export type SimpleObjectPropertyResponse = {
     id: string;
-    name: string;
     type: string;
 };
 
@@ -479,8 +472,6 @@ export type MiddlewareTypeResponse = {
  */
 export type ConfigTypeBooleanResponse = {
     key: string;
-    name: string;
-    description: string;
     type: 'boolean';
     currentValue?: boolean;
     defaultValue?: boolean;
@@ -491,8 +482,6 @@ export type ConfigTypeBooleanResponse = {
  */
 export type ConfigTypeDecimalResponse = {
     key: string;
-    name: string;
-    description: string;
     type: 'decimal';
     currentValue?: number;
     defaultValue?: number;
@@ -503,8 +492,6 @@ export type ConfigTypeDecimalResponse = {
  */
 export type ConfigTypeIntListResponse = {
     key: string;
-    name: string;
-    description: string;
     type: 'int_list';
     currentValue?: Array<number>;
     defaultValue?: Array<number>;
@@ -515,8 +502,6 @@ export type ConfigTypeIntListResponse = {
  */
 export type ConfigTypeNumberResponse = {
     key: string;
-    name: string;
-    description: string;
     type: 'number';
     currentValue?: number;
     defaultValue?: number;
@@ -527,8 +512,6 @@ export type ConfigTypeNumberResponse = {
  */
 export type ConfigTypeObjectResponse = {
     key: string;
-    name: string;
-    description: string;
     type: 'object';
     /**
      * Arbitrary JSON value (string, number, boolean, object, array, or null)
@@ -563,8 +546,6 @@ export type ConfigTypeResponse = ({
  */
 export type ConfigTypeStringListResponse = {
     key: string;
-    name: string;
-    description: string;
     type: 'string_list';
     currentValue?: Array<string>;
     defaultValue?: Array<string>;
@@ -575,8 +556,6 @@ export type ConfigTypeStringListResponse = {
  */
 export type ConfigTypeStringResponse = {
     key: string;
-    name: string;
-    description: string;
     type: 'string';
     currentValue?: string;
     defaultValue?: string;
@@ -587,8 +566,6 @@ export type ConfigTypeStringResponse = {
  */
 export type ConfigTypeUuidResponse = {
     key: string;
-    name: string;
-    description: string;
     type: 'uuid';
     currentValue?: string;
     defaultValue?: string;
@@ -829,6 +806,136 @@ export type UpdateResponses = {
 };
 
 export type UpdateResponse = UpdateResponses[keyof UpdateResponses];
+
+export type ListTranslationOverridesData = {
+    body?: never;
+    path?: never;
+    query?: {
+        prefix?: string;
+        locale?: string;
+    };
+    url: '/api/translations/overrides';
+};
+
+export type ListTranslationOverridesErrors = {
+    /**
+     * Unauthorized
+     */
+    401: {
+        success: false;
+        timestamp: unknown;
+        error: string;
+        errorData?: {
+            [key: string]: unknown;
+        };
+    };
+    /**
+     * Forbidden
+     */
+    403: {
+        success: false;
+        timestamp: unknown;
+        error: string;
+        errorData?: {
+            [key: string]: unknown;
+        };
+    };
+    /**
+     * Internal Server error
+     */
+    500: {
+        success: false;
+        timestamp: unknown;
+        error: string;
+        errorData?: {
+            [key: string]: unknown;
+        };
+    };
+};
+
+export type ListTranslationOverridesError = ListTranslationOverridesErrors[keyof ListTranslationOverridesErrors];
+
+export type ListTranslationOverridesResponses = {
+    /**
+     * OK
+     */
+    200: {
+        success: true;
+        timestamp: unknown;
+        data: Array<TranslationOverrideResponse>;
+    };
+};
+
+export type ListTranslationOverridesResponse = ListTranslationOverridesResponses[keyof ListTranslationOverridesResponses];
+
+export type UpsertTranslationOverrideData = {
+    body: TranslationOverrideRequest;
+    path?: never;
+    query?: never;
+    url: '/api/translations/overrides';
+};
+
+export type UpsertTranslationOverrideErrors = {
+    /**
+     * Unauthorized
+     */
+    401: {
+        success: false;
+        timestamp: unknown;
+        error: string;
+        errorData?: {
+            [key: string]: unknown;
+        };
+    };
+    /**
+     * Forbidden
+     */
+    403: {
+        success: false;
+        timestamp: unknown;
+        error: string;
+        errorData?: {
+            [key: string]: unknown;
+        };
+    };
+    /**
+     * Audit comment required
+     */
+    422: {
+        success: false;
+        timestamp: unknown;
+        error: string;
+        errorData?: {
+            [key: string]: unknown;
+        };
+    };
+    /**
+     * Internal Server error
+     */
+    500: {
+        success: false;
+        timestamp: unknown;
+        error: string;
+        errorData?: {
+            [key: string]: unknown;
+        };
+    };
+};
+
+export type UpsertTranslationOverrideError = UpsertTranslationOverrideErrors[keyof UpsertTranslationOverrideErrors];
+
+export type UpsertTranslationOverrideResponses = {
+    /**
+     * OK
+     */
+    200: {
+        success: true;
+        timestamp: unknown;
+        data: TranslationOverrideResponse;
+    };
+};
+
+export type UpsertTranslationOverrideResponse = UpsertTranslationOverrideResponses[keyof UpsertTranslationOverrideResponses];
 
 export type Get1Data = {
     body?: never;
@@ -4154,7 +4261,7 @@ export type GetListsResponses = {
     200: {
         success: true;
         timestamp: unknown;
-        data: Array<SimpleListTypeResponse>;
+        data: Array<string>;
     };
 };
 
@@ -5001,6 +5108,196 @@ export type MeResponses = {
 
 export type MeResponse = MeResponses[keyof MeResponses];
 
+export type DeleteTranslationOverrideData = {
+    body?: never;
+    path: {
+        messageKey: string;
+        locale: string;
+    };
+    query?: never;
+    url: '/api/translations/overrides/{messageKey}/{locale}';
+};
+
+export type DeleteTranslationOverrideErrors = {
+    /**
+     * Unauthorized
+     */
+    401: {
+        success: false;
+        timestamp: unknown;
+        error: string;
+        errorData?: {
+            [key: string]: unknown;
+        };
+    };
+    /**
+     * Forbidden
+     */
+    403: {
+        success: false;
+        timestamp: unknown;
+        error: string;
+        errorData?: {
+            [key: string]: unknown;
+        };
+    };
+    /**
+     * Not Found
+     */
+    404: {
+        success: false;
+        timestamp: unknown;
+        error: string;
+        errorData?: {
+            [key: string]: unknown;
+        };
+    };
+    /**
+     * Audit comment required
+     */
+    422: {
+        success: false;
+        timestamp: unknown;
+        error: string;
+        errorData?: {
+            [key: string]: unknown;
+        };
+    };
+    /**
+     * Internal Server error
+     */
+    500: {
+        success: false;
+        timestamp: unknown;
+        error: string;
+        errorData?: {
+            [key: string]: unknown;
+        };
+    };
+};
+
+export type DeleteTranslationOverrideError = DeleteTranslationOverrideErrors[keyof DeleteTranslationOverrideErrors];
+
+export type DeleteTranslationOverrideResponses = {
+    /**
+     * OK
+     */
+    200: {
+        success: true;
+        timestamp: unknown;
+    };
+};
+
+export type DeleteTranslationOverrideResponse = DeleteTranslationOverrideResponses[keyof DeleteTranslationOverrideResponses];
+
+export type GetTranslationOverrideData = {
+    body?: never;
+    path: {
+        messageKey: string;
+        locale: string;
+    };
+    query?: never;
+    url: '/api/translations/overrides/{messageKey}/{locale}';
+};
+
+export type GetTranslationOverrideErrors = {
+    /**
+     * Unauthorized
+     */
+    401: {
+        success: false;
+        timestamp: unknown;
+        error: string;
+        errorData?: {
+            [key: string]: unknown;
+        };
+    };
+    /**
+     * Forbidden
+     */
+    403: {
+        success: false;
+        timestamp: unknown;
+        error: string;
+        errorData?: {
+            [key: string]: unknown;
+        };
+    };
+    /**
+     * Not Found
+     */
+    404: {
+        success: false;
+        timestamp: unknown;
+        error: string;
+        errorData?: {
+            [key: string]: unknown;
+        };
+    };
+    /**
+     * Internal Server error
+     */
+    500: {
+        success: false;
+        timestamp: unknown;
+        error: string;
+        errorData?: {
+            [key: string]: unknown;
+        };
+    };
+};
+
+export type GetTranslationOverrideError = GetTranslationOverrideErrors[keyof GetTranslationOverrideErrors];
+
+export type GetTranslationOverrideResponses = {
+    /**
+     * OK
+     */
+    200: {
+        success: true;
+        timestamp: unknown;
+        data: TranslationOverrideResponse;
+    };
+};
+
+export type GetTranslationOverrideResponse = GetTranslationOverrideResponses[keyof GetTranslationOverrideResponses];
+
+export type GetTranslationCatalogData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/translations/catalog';
+};
+
+export type GetTranslationCatalogErrors = {
+    /**
+     * Internal Server error
+     */
+    500: {
+        success: false;
+        timestamp: unknown;
+        error: string;
+        errorData?: {
+            [key: string]: unknown;
+        };
+    };
+};
+
+export type GetTranslationCatalogError = GetTranslationCatalogErrors[keyof GetTranslationCatalogErrors];
+
+export type GetTranslationCatalogResponses = {
+    /**
+     * OK
+     */
+    200: {
+        success: true;
+        timestamp: unknown;
+        data: TranslationCatalogResponse;
+    };
+};
+
+export type GetTranslationCatalogResponse = GetTranslationCatalogResponses[keyof GetTranslationCatalogResponses];
+
 export type GetTemplateTypesData = {
     body?: never;
     path?: never;
@@ -5146,7 +5443,7 @@ export type GetTemplatesForTypeResponses = {
     200: {
         success: true;
         timestamp: unknown;
-        data: Array<TemplateResponse>;
+        data: Array<string>;
     };
 };
 

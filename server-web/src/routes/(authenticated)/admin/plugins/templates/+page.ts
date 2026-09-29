@@ -1,5 +1,7 @@
 import { TemplateController } from '$lib/api';
 import { getApiClient } from '$lib/api-client';
+import { t } from '$lib/i18n/catalog';
+import { templateName } from '$lib/i18n/labels';
 
 export async function load() {
 	const client = getApiClient();
@@ -8,7 +10,7 @@ export async function load() {
 	if (!typesResult.data?.success) {
 		return {
 			sections: [],
-			error: typesResult.error?.error ?? 'Failed to load template types.',
+			error: typesResult.error?.error ?? t('web.templates.load_types_failed'),
 		};
 	}
 
@@ -23,7 +25,9 @@ export async function load() {
 			return {
 				type,
 				templates: templatesResult.data?.success
-					? [...(templatesResult.data.data ?? [])].sort((a, b) => a.name.localeCompare(b.name))
+					? [...(templatesResult.data.data ?? [])].sort((a, b) =>
+							templateName(type, a).localeCompare(templateName(type, b))
+						)
 					: [],
 				error: templatesResult.error?.error ?? null,
 			};

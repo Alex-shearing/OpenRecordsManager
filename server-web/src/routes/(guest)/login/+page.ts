@@ -1,5 +1,6 @@
 import { AuthController } from '$lib/api';
 import { getApiClient } from '$lib/api-client';
+import { t } from '$lib/i18n/catalog';
 
 export async function load() {
 	const { data, error } = await AuthController.retrieveAvailableAuthProviders({ client: getApiClient() });
@@ -8,7 +9,7 @@ export async function load() {
 		return {
 			inputProviders: [],
 			redirectProviders: [],
-			providersError: 'Failed to load login options.',
+			providersError: t('web.login.load_failed'),
 		};
 	}
 

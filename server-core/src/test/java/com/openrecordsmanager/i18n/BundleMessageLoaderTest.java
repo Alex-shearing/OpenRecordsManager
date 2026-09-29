@@ -54,4 +54,13 @@ class BundleMessageLoaderTest {
         loader.reloadClasspathBundles();
         assertNull(loader.findMessage(Locale.ENGLISH, "plugin.ephemeral.name"));
     }
+
+    @Test
+    void reloadClasspathBundlesIncludesWebUiMessages() {
+        BundleMessageLoader loader = new BundleMessageLoader(null);
+        loader.reloadClasspathBundles();
+
+        assertEquals("Admin", loader.findMessage(Locale.ENGLISH, "web.nav.admin"));
+        assertEquals("Audit comment", loader.findMessage(Locale.ENGLISH, "web.common.audit_comment"));
+    }
 }

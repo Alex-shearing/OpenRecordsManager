@@ -3,6 +3,7 @@
 	import faviconAsset from '$lib/assets/favicon.ico';
 	import { afterNavigate } from '$app/navigation';
 	import { Toaster } from 'svelte-hot-french-toast';
+	import { t } from '$lib/i18n/catalog';
 
 	let { children, data } = $props();
 
@@ -32,13 +33,13 @@
 </script>
 
 <svelte:head>
-	<title>{data.branding.productName}</title>
-	<meta name="description" content="{data.branding.productName} helps organizations manage records and information." />
+	<title>{t('web.layout.product_name')}</title>
+	<meta name="description" content={t('web.layout.meta_description')} />
 	<link rel="icon" href={data.branding.faviconUrl || faviconAsset} />
 	<link rel="manifest" href="/manifest.webmanifest" />
 	<meta name="theme-color" content={data.branding.primaryColor} />
 	<meta name="apple-mobile-web-app-capable" content="yes" />
-	<meta name="apple-mobile-web-app-title" content={data.branding.productName} />
+	<meta name="apple-mobile-web-app-title" content={t('web.layout.product_name')} />
 	<link rel="apple-touch-icon" href="/icons/icon-192.png" />
 </svelte:head>
 

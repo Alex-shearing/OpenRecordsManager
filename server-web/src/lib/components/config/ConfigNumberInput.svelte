@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { t } from '$lib/i18n/catalog';
+
 	let {
 		id,
 		value = $bindable<number>(),
@@ -12,4 +14,14 @@
 	} = $props();
 </script>
 
-<input {id} type="number" {step} bind:value {disabled} class="input w-full" inputmode="numeric" pattern="[0-9.-]*" />
+<input
+	{id}
+	type="number"
+	{step}
+	bind:value
+	{disabled}
+	placeholder={t('web.config.value_placeholder')}
+	class="input w-full"
+	inputmode="numeric"
+	pattern="[0-9.-]*"
+/>

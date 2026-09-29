@@ -1,14 +1,10 @@
 <script lang="ts">
-	import {
-		RecordController,
-		UserController,
-		type RecordResponse,
-		type UserResponse,
-	} from '$lib/api';
+	import { RecordController, UserController, type RecordResponse, type UserResponse } from '$lib/api';
 	import { getApiClient } from '$lib/api-client';
 	import MonoId from '$lib/components/MonoId.svelte';
 	import TableCard from '$lib/components/TableCard.svelte';
 	import PageContent from '$lib/components/layout/PageContent.svelte';
+	import { t } from '$lib/i18n/catalog';
 
 	let { data } = $props();
 
@@ -24,20 +20,18 @@
 
 	const searchKey = $derived(`${data.type ?? ''}:${data.q ?? ''}`);
 	const items = $derived(appended?.key === searchKey ? appended.items : data.items);
-	const nextCursor = $derived(
-		appended?.key === searchKey ? appended.nextCursor : data.nextCursor
-	);
+	const nextCursor = $derived(appended?.key === searchKey ? appended.nextCursor : data.nextCursor);
 	const loadMoreError = $derived(appended?.key === searchKey ? appended.error : '');
 
-	const typeLabel = $derived(data.type === 'user' ? 'users' : 'records');
-	const summary = $derived(data.q ? `Searching ${typeLabel} for “${data.q}”` : 'Search');
+	const typeLabel = $derived(data.type === 'user' ? t('web.search.users_label') : t('web.search.records_label'));
+	const summary = $derived(data.q ? t('web.search.summary_query', typeLabel, data.q) : t('web.search.summary'));
 
 	const recordItems = $derived(data.type === 'record' ? (items as RecordResponse[]) : []);
 	const userItems = $derived(data.type === 'user' ? (items as UserResponse[]) : []);
 
 	function recordTitle(record: RecordResponse): string {
 		const title = record.properties?.['builtin:title'];
-		return typeof title === 'string' && title.length > 0 ? title : '—';
+		return typeof title === 'string' && title.length > 0 ? title : t('web.common.em_dash');
 	}
 
 	async function loadMore() {
@@ -66,10 +60,7 @@
 					key: searchKey,
 					items: [...items],
 					nextCursor,
-					error:
-						typeof result.error?.error === 'string'
-							? result.error.error
-							: 'Failed to load more results.',
+					error: typeof result.error?.error === 'string' ? result.error.error : t('web.search.load_more_failed'),
 				};
 				return;
 			}
@@ -86,8 +77,9 @@
 	}
 </script>
 
+<!-- TODO: rework this to be a dynamic table that allows the user to modify the visible columns -->
 <PageContent>
-	<h1 class="mb-2 text-2xl font-semibold">Search</h1>
+	<h1 class="mb-2 text-2xl font-semibold">{t('web.search.title')}</h1>
 	<p class="mb-6 text-hint">{summary}</p>
 
 	{#if data.error}
@@ -96,15 +88,15 @@
 		<section class="card p-5 text-hint">{data.message}</section>
 	{:else if data.type === 'record'}
 		<TableCard
-			title="Records"
+			title={t('web.search.records_title')}
 			items={recordItems}
-			empty="No records matched your search."
+			empty={t('web.search.empty_records')}
 			getKey={item => item.id}
 		>
 			{#snippet header()}
-				<th class="px-5 py-3 font-medium">Title</th>
-				<th class="px-5 py-3 font-medium">Type</th>
-				<th class="px-5 py-3 font-medium">Id</th>
+				<th class="px-5 py-3 font-medium">{t('web.search.col_title')}</th>
+				<th class="px-5 py-3 font-medium">{t('web.search.col_type')}</th>
+				<th class="px-5 py-3 font-medium">{t('web.search.col_id')}</th>
 			{/snippet}
 			{#snippet row(record)}
 				<td class="px-5 py-4 font-medium">{recordTitle(record)}</td>
@@ -114,19 +106,19 @@
 		</TableCard>
 	{:else if data.type === 'user'}
 		<TableCard
-			title="Users"
+			title={t('web.search.users_title')}
 			items={userItems}
-			empty="No users matched your search."
+			empty={t('web.search.empty_users')}
 			getKey={item => item.id}
 		>
 			{#snippet header()}
-				<th class="px-5 py-3 font-medium">Username</th>
-				<th class="px-5 py-3 font-medium">Enabled</th>
-				<th class="px-5 py-3 font-medium">Id</th>
+				<th class="px-5 py-3 font-medium">{t('web.search.col_username')}</th>
+				<th class="px-5 py-3 font-medium">{t('web.search.col_enabled')}</th>
+				<th class="px-5 py-3 font-medium">{t('web.search.col_id')}</th>
 			{/snippet}
 			{#snippet row(user)}
 				<td class="px-5 py-4 font-medium">{user.username}</td>
-				<td class="px-5 py-4">{user.enabled ? 'Yes' : 'No'}</td>
+				<td class="px-5 py-4">{user.enabled ? t('web.common.yes') : t('web.common.no')}</td>
 				<td class="px-5 py-4"><MonoId value={user.id} muted /></td>
 			{/snippet}
 		</TableCard>
@@ -138,7 +130,7 @@
 				<p class="text-sm text-destructive">{loadMoreError}</p>
 			{/if}
 			<button type="button" class="btn-secondary" disabled={loadingMore} onclick={loadMore}>
-				{loadingMore ? 'Loading…' : 'Load more'}
+				{loadingMore ? t('web.common.loading') : t('web.search.load_more')}
 			</button>
 		</div>
 	{/if}

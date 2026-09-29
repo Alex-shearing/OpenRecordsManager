@@ -6,6 +6,7 @@
 	import HeaderNavLink from '$lib/components/layout/HeaderNavLink.svelte';
 	import SearchBar from '$lib/components/SearchBar.svelte';
 	import UserIcon from 'phosphor-svelte/lib/UserIcon';
+	import { t } from '$lib/i18n/catalog';
 
 	let { children, data } = $props();
 
@@ -29,7 +30,7 @@
 			</div>
 		{/snippet}
 		{#snippet end()}
-			<nav aria-label="Account" class="flex shrink-0 items-center gap-1">
+			<nav aria-label={t('web.nav.account')} class="flex shrink-0 items-center gap-1">
 				<HeaderNavLink
 					route="/(authenticated)/profile"
 					icon={UserIcon}

@@ -2,11 +2,13 @@ import { env } from '$env/dynamic/public';
 import { goto } from '$app/navigation';
 import { page } from '$app/state';
 import { createClient, createConfig, type Client } from '$lib/api/client';
+import { preferredLocale } from '$lib/i18n/locale';
 
 const SCHEMA_UPGRADE_HEADER = 'X-ORM-Schema-Upgrade-Required';
-export const CSRF_HEADER = 'X-CSRF-TOKEN';
-export const AUDIT_COMMENT_HEADER = 'X-ORM-Audit-Comment';
+const CSRF_HEADER = 'X-CSRF-TOKEN';
+const AUDIT_COMMENT_HEADER = 'X-ORM-Audit-Comment';
 
+// Load the API url from: Environment Var (only when running in DEV mode) > window.__ORM_UI__ (set in index.html) > use relative /api
 const baseUrl = (
 	env.PUBLIC_API_URL || (typeof window !== 'undefined' ? (window.__ORM_UI__?.apiBaseUrl ?? '') : '')
 ).replace(/\/$/, '');
@@ -36,6 +38,7 @@ export function createApiClient(fetchImpl: typeof globalThis.fetch): Client {
 		if (csrfTokenFromHeader) {
 			request.headers.set(CSRF_HEADER, csrfTokenFromHeader);
 		}
+		request.headers.set('Accept-Language', preferredLocale());
 
 		return request;
 	});

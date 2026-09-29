@@ -1,4 +1,5 @@
 import type { ConfigTypeResponse } from '$lib/api/types.gen';
+import { t } from '$lib/i18n/catalog';
 import type { DistributivePick } from '$lib/util-types';
 
 export type EnsureCurrentValue<T> = T extends any
@@ -11,14 +12,14 @@ export type ConfigDraftValueType = ConfigDraftValue['currentValue'];
 export type ConfigValueType = ConfigDraftValue['type'];
 
 export const CONFIG_GROUPS = [
-	{ id: 'workgroup', title: 'Workgroup', prefix: 'workgroup.' },
-	{ id: 'web', title: 'Web branding', prefix: 'app.web.' },
-	{ id: 'database', title: 'Database', prefix: 'app.database.' },
-	{ id: 'security', title: 'Security', prefix: 'app.security.' },
-	{ id: 'audit', title: 'Audit', prefix: 'app.audit.' },
-	{ id: 'plugins', title: 'Plugins', prefix: 'app.plugins.' },
-	{ id: 'debug', title: 'Debugging', prefix: 'app.debug.' },
-	{ id: 'other', title: 'Other', prefix: '' },
+	{ id: 'workgroup', titleKey: 'web.config.group.workgroup', prefix: 'workgroup.' },
+	{ id: 'web', titleKey: 'web.config.group.web', prefix: 'app.web.' },
+	{ id: 'database', titleKey: 'web.config.group.database', prefix: 'app.database.' },
+	{ id: 'security', titleKey: 'web.config.group.security', prefix: 'app.security.' },
+	{ id: 'audit', titleKey: 'web.config.group.audit', prefix: 'app.audit.' },
+	{ id: 'plugins', titleKey: 'web.config.group.plugins', prefix: 'app.plugins.' },
+	{ id: 'debug', titleKey: 'web.config.group.debug', prefix: 'app.debug.' },
+	{ id: 'other', titleKey: 'web.config.group.other', prefix: '' },
 ];
 
 export type ConfigGroup = (typeof CONFIG_GROUPS)[0];
@@ -67,7 +68,7 @@ export function parseConfigDraftValue(config: ConfigTypeResponse): ConfigDraftVa
 
 export function formatDefaultValueForDisplay(cfg: ConfigTypeResponse) {
 	if (cfg.defaultValue == null || cfg.defaultValue === '') {
-		return '—';
+		return t('web.common.em_dash');
 	}
 
 	if (cfg.type === 'string_list' || cfg.type === 'int_list') {

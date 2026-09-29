@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { t } from '$lib/i18n/catalog';
+
 	let {
 		id,
 		value = $bindable<boolean>(),
@@ -12,5 +14,5 @@
 
 <label class="flex items-center gap-2">
 	<input {id} type="checkbox" class="size-4 rounded border-border-input" bind:checked={value} {disabled} />
-	<span class="text-sm text-foreground">{value ? 'Enabled' : 'Disabled'}</span>
+	<span class="text-sm text-foreground">{value ? t('web.common.enabled') : t('web.common.disabled')}</span>
 </label>

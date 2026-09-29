@@ -7,16 +7,17 @@
 	import MagnifyingGlassIcon from 'phosphor-svelte/lib/MagnifyingGlassIcon';
 	import NotePencilIcon from 'phosphor-svelte/lib/NotePencilIcon';
 	import AppDialog from '$lib/components/AppDialog.svelte';
+	import { t } from '$lib/i18n/catalog';
 
-	const items = [
-		{ label: 'Record', value: 'record', search: 'records' },
-		{ label: 'User', value: 'user', search: 'users' },
-	];
+	const items = $derived([
+		{ label: t('web.search.record'), value: 'record', search: 'web.search.records_label' },
+		{ label: t('web.search.user'), value: 'user', search: 'web.search.users_label' },
+	]);
 
 	let selected = $state('record');
 	let searchInput = $state<HTMLInputElement | null>(null);
 	let advancedSearchOpen = $state(false);
-	let searchText = $derived(items.find(item => item.value === selected)?.search || 'records');
+	let searchText = $derived(items.find(item => item.value === selected)?.search ?? 'web.search.records_label');
 
 	function handleWindowKeydown(event: KeyboardEvent) {
 		if (event.key.toLowerCase() !== '/') {
@@ -47,18 +48,18 @@
 <form action="/search" method="GET" class="card flex items-stretch overflow-hidden p-0 w-full sm:w-1/2">
 	<Select.Root type="single" {items} bind:value={selected} name="type">
 		<Select.Trigger
-			aria-label="Select a search type"
+			aria-label={t('web.search.select_type')}
 			class="inline-flex w-36 min-w-0 shrink-0 items-center gap-1 border-r border-border px-3 py-2 text-sm font-medium text-foreground outline-hidden hover:bg-surface-hover focus-visible:bg-surface-hover focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary"
 		>
 			<span class="min-w-0 flex-1 truncate text-left">
-				<Select.Value placeholder="Type" />
+				<Select.Value />
 			</span>
 			<CaretUpDownIcon class="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
 		</Select.Trigger>
 		<Select.Portal>
 			<Select.Content class="z-50 min-w-56 rounded-lg border border-border bg-surface p-1 shadow-lg" sideOffset={4}>
 				<Select.ScrollUpButton class="flex w-full items-center justify-center py-1 text-muted-foreground">
-					<CaretUpIcon class="size-3" aria-label="Select search target" />
+					<CaretUpIcon class="size-3" aria-label={t('web.search.select_type')} />
 				</Select.ScrollUpButton>
 				<Select.Viewport>
 					{#each items as item (item.value)}
@@ -70,7 +71,7 @@
 							{#snippet children({ selected })}
 								{item.label}
 								{#if selected}
-									<CheckIcon class="size-4 text-primary" aria-label="Selected" />
+									<CheckIcon class="size-4 text-primary" aria-label={t('web.search.selected')} />
 								{/if}
 							{/snippet}
 						</Select.Item>
@@ -92,7 +93,7 @@
 			type="search"
 			name="q"
 			aria-keyshortcuts="/"
-			placeholder="Search {searchText}..."
+			placeholder={t('web.search.placeholder', t(searchText))}
 			class={`
 				min-w-0 flex-1 border-0 bg-transparent py-2 text-sm text-foreground 
 				placeholder:text-muted-foreground appearance-none shadow-none! ring-0! outline-hidden focus:border-0
@@ -104,7 +105,7 @@
 
 	<button
 		type="button"
-		aria-label="Advanced search"
+		aria-label={t('web.search.advanced')}
 		aria-keyshortcuts="Control+/, Meta+/"
 		class="inline-flex size-10 shrink-0 items-center justify-center border-l border-border text-muted-foreground outline-hidden hover:bg-surface-hover focus-visible:bg-surface-hover focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary"
 		onclick={() => (advancedSearchOpen = true)}
@@ -112,17 +113,19 @@
 		<NotePencilIcon class="size-4" aria-hidden="true" />
 	</button>
 
-	<button type="submit" class="btn-primary shrink-0 rounded-none border-l border-border">Search</button>
+	<button type="submit" class="btn-primary shrink-0 rounded-none border-l border-border"
+		>{t('web.search.button')}</button
+	>
 </form>
 
-<AppDialog bind:open={advancedSearchOpen} title="Advanced search">
+<AppDialog bind:open={advancedSearchOpen} title="web.search.advanced">
 	{#snippet body()}
-		<p class="text-sm text-muted-foreground">Advanced search options will be available here later.</p>
+		<p class="text-sm text-muted-foreground">{t('web.search.advanced_stub')}</p>
 	{/snippet}
 	{#snippet footer()}
 		<div class="flex justify-end">
 			<form method="dialog">
-				<button type="submit" class="btn-secondary">Close</button>
+				<button type="submit" class="btn-secondary">{t('web.common.close')}</button>
 			</form>
 		</div>
 	{/snippet}

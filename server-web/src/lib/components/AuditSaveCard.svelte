@@ -1,13 +1,12 @@
 <script lang="ts">
 	import { fly } from 'svelte/transition';
 	import CircleNotchIcon from 'phosphor-svelte/lib/CircleNotchIcon';
+	import { t } from '$lib/i18n/catalog';
 
 	let {
 		form,
 		auditComment = $bindable(''),
 		required = false,
-		requiredHint,
-		optionalHint = 'Optional; recorded with each change.',
 		formError = '',
 		submitting = false,
 		dirty = false,
@@ -16,8 +15,6 @@
 		form: string;
 		auditComment?: string;
 		required?: boolean;
-		requiredHint: string;
-		optionalHint?: string;
 		formError?: string;
 		submitting?: boolean;
 		dirty?: boolean;
@@ -37,6 +34,8 @@
 	});
 </script>
 
+<!-- TODO: make formError a translatable string -->
+
 <div
 	class="transition-[min-height] duration-300 ease-out"
 	style:min-height={visible ? '6.5rem' : '0'}
@@ -47,7 +46,7 @@
 	<div
 		class="fixed inset-x-0 bottom-0 z-50 border-t border-border bg-surface shadow-[0_-8px_24px_-4px_rgb(0_0_0/0.12)]"
 		role="region"
-		aria-label="Unsaved changes"
+		aria-label={t('web.common.unsaved_changes')}
 		aria-busy={submitting}
 		transition:fly={{ y: 96, duration: 280 }}
 	>
@@ -57,9 +56,9 @@
 			class:pointer-events-none={submitting}
 		>
 			<div class="audit-comment-field min-w-0 flex-1">
-				<label for="{form}-audit-comment" class="text-label">Audit comment</label>
+				<label for="{form}-audit-comment" class="text-label">{t('web.common.audit_comment')}</label>
 				<p id="{form}-audit-comment-hint" class="audit-comment-hint mb-1 text-xs text-hint">
-					{required ? requiredHint : optionalHint}
+					{required ? t('web.common.audit_comment_required') : t('web.common.audit_comment_optional')}
 				</p>
 				<textarea
 					id="{form}-audit-comment"
@@ -81,13 +80,13 @@
 				<button type="submit" {form} class="btn-primary gap-2" disabled={submitting || !dirty}>
 					{#if submitting}
 						<CircleNotchIcon class="size-4 animate-spin" aria-hidden="true" />
-						Saving…
+						{t('web.common.saving')}
 					{:else}
-						Save changes
+						{t('web.common.save_changes')}
 					{/if}
 				</button>
 				<button type="button" class="btn-secondary" disabled={submitting || !dirty} onclick={() => onreset?.()}>
-					Cancel
+					{t('web.common.cancel')}
 				</button>
 			</div>
 		</div>

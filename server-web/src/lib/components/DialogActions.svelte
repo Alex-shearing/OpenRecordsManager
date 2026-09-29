@@ -1,8 +1,9 @@
 <script lang="ts">
+	import { t } from '$lib/i18n/catalog';
+
 	let {
 		confirmLabel,
-		confirmingLabel = 'Working…',
-		cancelLabel = 'Cancel',
+		confirmingLabel = 'web.common.working',
 		submitting = false,
 		disabled = false,
 		variant = 'primary',
@@ -11,7 +12,6 @@
 	}: {
 		confirmLabel: string;
 		confirmingLabel?: string;
-		cancelLabel?: string;
 		submitting?: boolean;
 		disabled?: boolean;
 		variant?: 'primary' | 'destructive';
@@ -24,15 +24,15 @@
 
 <div class="flex flex-wrap justify-end gap-2">
 	<form method="dialog">
-		<button type="submit" class="btn-secondary" disabled={submitting}>{cancelLabel}</button>
+		<button type="submit" class="btn-secondary" disabled={submitting}>{t('web.common.cancel')}</button>
 	</form>
 	{#if formId}
 		<button type="submit" form={formId} class={confirmClass} disabled={submitting || disabled}>
-			{submitting ? confirmingLabel : confirmLabel}
+			{submitting ? t(confirmingLabel) : t(confirmLabel)}
 		</button>
 	{:else}
 		<button type="button" class={confirmClass} disabled={submitting || disabled} onclick={onconfirm}>
-			{submitting ? confirmingLabel : confirmLabel}
+			{submitting ? t(confirmingLabel) : t(confirmLabel)}
 		</button>
 	{/if}
 </div>

@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
+	import { t } from '$lib/i18n/catalog';
 
 	let {
 		open = $bindable(false),
@@ -56,7 +57,7 @@
 		<div class="card-header flex items-start justify-between gap-4">
 			<div>
 				{#if title}
-					<h2 class="text-lg font-medium">{title}</h2>
+					<h2 class="text-lg font-medium">{t(title)}</h2>
 				{/if}
 				{#if description}
 					<div class="mt-1 text-hint">
@@ -65,7 +66,7 @@
 				{/if}
 			</div>
 			<form method="dialog">
-				<button type="submit" aria-label="Close" class="btn-ghost px-2 py-0.5 text-muted-foreground">
+				<button type="submit" aria-label={t('web.common.close')} class="btn-ghost px-2 py-0.5 text-muted-foreground">
 					×
 				</button>
 			</form>

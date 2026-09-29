@@ -5,6 +5,8 @@
 	import MonoId from '$lib/components/MonoId.svelte';
 	import PageContent from '$lib/components/layout/PageContent.svelte';
 	import UserActionDialog from '$lib/components/UserActionDialog.svelte';
+	import { objectPropertyName, userActionDescription, userActionName } from '$lib/i18n/labels';
+	import { t } from '$lib/i18n/catalog';
 	import { goto } from '$app/navigation';
 
 	let { data } = $props();
@@ -28,30 +30,39 @@
 		await AuthController.logout({ client: getApiClient() });
 		await goto('/login');
 	}
+
+	const propertyOrder = ['builtin:username', 'builtin:surname', 'builtin:given_name'];
+
+	const sortedProperties = $derived(
+		Object.entries(data.me.properties ?? {}).toSorted(([a], [b]) => {
+			const ai = propertyOrder.indexOf(a);
+			const bi = propertyOrder.indexOf(b);
+			if (ai !== -1 || bi !== -1) {
+				if (ai === -1) return 1;
+				if (bi === -1) return -1;
+				return ai - bi;
+			}
+			return a.localeCompare(b);
+		})
+	);
 </script>
 
 <PageContent>
-	<h1 class="mb-6 text-2xl font-semibold">Profile</h1>
+	<h1 class="mb-6 text-2xl font-semibold">{t('web.profile.title')}</h1>
 
 	{#if data.error}
 		<p class="text-destructive">{data.error}</p>
 	{:else if data.me}
 		<section class="card mb-8 p-4">
-			<h2 class="text-lg font-medium">Account</h2>
+			<h2 class="text-lg font-medium">{t('web.profile.account')}</h2>
 			<dl class="mt-4 grid gap-3 sm:grid-cols-2">
 				<div>
-					<dt class="text-hint">Username</dt>
-					<dd class="font-medium">{data.me.username}</dd>
-				</div>
-				<div>
-					<dt class="text-hint">User ID</dt>
+					<dt class="text-hint">{t('web.profile.user_id')}</dt>
 					<dd><MonoId value={data.me.id} /></dd>
 				</div>
-				{#each Object.entries(data.me.properties) as [key, value] (key)}
+				{#each sortedProperties as [key, value] (key)}
 					<div>
-						<dt class="text-hint">
-							{data.properties.find(property => property.id === key)?.name || key}
-						</dt>
+						<dt class="text-hint">{objectPropertyName(key)}</dt>
 						<dd>{String(value)}</dd>
 					</div>
 				{/each}
@@ -60,7 +71,7 @@
 
 		{#if data.actions.length > 0}
 			<section class="mb-8">
-				<h2 class="mb-4 text-lg font-medium">Actions</h2>
+				<h2 class="mb-4 text-lg font-medium">{t('web.profile.actions')}</h2>
 				<ul class="list-panel">
 					{#each data.actions as action (action.id)}
 						<li>
@@ -69,10 +80,8 @@
 								class="list-panel-item flex w-full flex-col gap-1 text-left"
 								onclick={() => openAction(action)}
 							>
-								<span class="font-medium">{action.name}</span>
-								{#if action.description}
-									<span class="text-hint">{action.description}</span>
-								{/if}
+								<span class="font-medium">{userActionName(action.id)}</span>
+								<span class="text-hint">{userActionDescription(action.id)}</span>
 							</button>
 						</li>
 					{/each}
@@ -81,10 +90,10 @@
 		{/if}
 
 		<section class="card p-4">
-			<h2 class="text-lg font-medium">Sign out</h2>
-			<p class="mt-1 text-hint">End your current session on this device.</p>
+			<h2 class="text-lg font-medium">{t('web.profile.sign_out')}</h2>
+			<p class="mt-1 text-hint">{t('web.profile.sign_out_hint')}</p>
 			<button type="button" class="btn-secondary mt-4" disabled={loggingOut} onclick={handleLogout}>
-				{loggingOut ? 'Signing out...' : 'Sign out'}
+				{loggingOut ? t('web.profile.signing_out') : t('web.profile.sign_out')}
 			</button>
 		</section>
 

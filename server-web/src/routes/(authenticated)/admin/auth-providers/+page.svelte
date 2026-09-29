@@ -7,6 +7,7 @@
 	import SchemaForm from '$lib/components/SchemaForm.svelte';
 	import TableCard from '$lib/components/TableCard.svelte';
 	import TargetDialog from '$lib/components/TargetDialog.svelte';
+	import { t } from '$lib/i18n/catalog';
 	import { invalidateAll } from '$app/navigation';
 	import toast from 'svelte-hot-french-toast';
 
@@ -51,7 +52,7 @@
 	async function handleCreate(event: SubmitEvent) {
 		event.preventDefault();
 		if (!createType) {
-			createFormError = 'Select a provider type.';
+			createFormError = t('web.auth_providers.select_type');
 			return;
 		}
 
@@ -73,15 +74,15 @@
 
 		if (error) {
 			createFieldErrors = (error.errorData ?? {}) as Record<string, string>;
-			createFormError = 'Failed to create login provider: ' + error.error;
+			createFormError = error.error ?? t('web.auth_providers.create_failed', '');
 			return;
 		}
 
-		toast.success('Created login provider.');
+		toast.success(t('web.auth_providers.created'));
 
 		const created = result?.data;
 		if (createType.type.type === 'redirect_auth_provider' && created?.id) {
-			toast.success(`Callback URL: ${window.location.origin}/api/auth/callback/${created.id}`, {
+			toast.success(t('web.auth_providers.callback_url', `${window.location.origin}/api/auth/callback/${created.id}`), {
 				duration: 10000,
 			});
 		}
@@ -110,7 +111,7 @@
 		editLoading = false;
 
 		if (error) {
-			toast.error('Failed to load login provider: ' + error.error);
+			toast.error(error.error ?? t('web.auth_providers.load_failed', provider.id));
 			return;
 		}
 
@@ -143,64 +144,64 @@
 
 		if (error) {
 			editFieldErrors = (error.errorData ?? {}) as Record<string, string>;
-			editFormError = error.error ?? 'Failed to update login provider.';
+			editFormError = error.error ?? t('web.auth_providers.update_failed');
 			return;
 		}
 
-		toast.success('Updated login provider.');
+		toast.success(t('web.auth_providers.updated'));
 		editTarget = undefined;
 		await invalidateAll();
 	}
 </script>
 
-<h1 class="mb-2 text-2xl font-semibold">Login providers</h1>
-<p class="mb-6 text-hint">Create and manage authentication providers for this workgroup.</p>
+<h1 class="mb-2 text-2xl font-semibold">{t('web.auth_providers.title')}</h1>
+<p class="mb-6 text-hint">{t('web.auth_providers.intro')}</p>
 
 {#if data.error}
 	<p class="text-destructive">{data.error}</p>
 {:else}
 	<TableCard
-		title="Login providers"
+		title={t('web.auth_providers.table_title')}
 		items={sortedProviders}
-		empty="No login providers are registered."
+		empty={t('web.auth_providers.empty')}
 		getKey={p => p.id}
 	>
 		{#snippet header()}
-			<th class="px-5 py-3 font-medium">Name</th>
-			<th class="px-5 py-3 font-medium">Type</th>
-			<th class="px-5 py-3 font-medium">Enabled</th>
-			<th class="px-5 py-3 font-medium">ID</th>
-			<th class="px-5 py-3 font-medium"><span class="sr-only">Actions</span></th>
+			<th class="px-5 py-3 font-medium">{t('web.common.name')}</th>
+			<th class="px-5 py-3 font-medium">{t('web.common.type')}</th>
+			<th class="px-5 py-3 font-medium">{t('web.common.enabled')}</th>
+			<th class="px-5 py-3 font-medium">{t('web.common.id')}</th>
+			<th class="px-5 py-3 font-medium"><span class="sr-only">{t('web.common.actions')}</span></th>
 		{/snippet}
 		{#snippet row(provider)}
 			<td class="px-5 py-4 font-medium">{provider.name}</td>
 			<td class="px-5 py-4">{provider.type.id}</td>
-			<td class="px-5 py-4">{provider.enabled ? 'Yes' : 'No'}</td>
+			<td class="px-5 py-4">{provider.enabled ? t('web.common.yes') : t('web.common.no')}</td>
 			<td class="px-5 py-4">
 				<MonoId value={provider.id} />
 			</td>
 			<td class="px-5 py-4 text-right">
 				<button type="button" class="btn-ghost" disabled={submitting || editLoading} onclick={() => openEdit(provider)}>
-					Edit
+					{t('web.common.edit')}
 				</button>
 			</td>
 		{/snippet}
 	</TableCard>
 
 	<form class="mt-6 card p-5" onsubmit={handleCreate}>
-		<h2 class="mb-1 text-lg font-medium">Create login provider</h2>
-		<p class="mb-4 text-hint">Choose a type, configure its settings, and give it a name.</p>
+		<h2 class="mb-1 text-lg font-medium">{t('web.auth_providers.create_title')}</h2>
+		<p class="mb-4 text-hint">{t('web.auth_providers.create_hint')}</p>
 
 		{#if sortedTypes.length === 0}
-			<p class="text-hint">No login provider types are available.</p>
+			<p class="text-hint">{t('web.auth_providers.no_types')}</p>
 		{:else}
 			<label class="mb-4 flex flex-col gap-1">
-				<span class="text-label">Name</span>
+				<span class="text-label">{t('web.common.name')}</span>
 				<input class="input w-full" bind:value={createName} required disabled={submitting} />
 			</label>
 
 			<label class="mb-4 flex flex-col gap-1">
-				<span class="text-label">Type</span>
+				<span class="text-label">{t('web.common.type')}</span>
 				<select
 					class="input w-full"
 					bind:value={createTypeId}
@@ -230,7 +231,7 @@
 						>
 							{#snippet after()}
 								<label class="flex flex-col gap-1">
-									<span class="text-label">Audit comment</span>
+									<span class="text-label">{t('web.common.audit_comment')}</span>
 									<textarea
 										bind:value={createAuditComment}
 										required={data.auditCommentRequired.create}
@@ -242,12 +243,12 @@
 						</SchemaForm>
 					{/key}
 				{:else}
-					<p class="mb-4 text-hint">This provider type has no settings.</p>
+					<p class="mb-4 text-hint">{t('web.auth_providers.no_settings')}</p>
 					{#if createFormError}
 						<p class="mb-4 text-sm text-destructive" role="alert">{createFormError}</p>
 					{/if}
 					<label class="mb-4 flex flex-col gap-1">
-						<span class="text-label">Audit comment</span>
+						<span class="text-label">{t('web.common.audit_comment')}</span>
 						<textarea
 							bind:value={createAuditComment}
 							required={data.auditCommentRequired.create}
@@ -260,31 +261,31 @@
 
 			<div class="mt-4">
 				<button type="submit" class="btn-primary" disabled={submitting || !createTypeId || !createName}>
-					{submitting ? 'Creating…' : 'Create'}
+					{submitting ? t('web.common.creating') : t('web.common.create')}
 				</button>
 			</div>
 		{/if}
 	</form>
 {/if}
 
-<TargetDialog bind:target={editTarget} title="Edit login provider" size="wide">
+<TargetDialog bind:target={editTarget} title="web.auth_providers.edit_title" size="wide">
 	{#snippet description(target)}
-		Update settings for <MonoId value={target.id} />.
+		{t('web.auth_providers.edit_description', target.id)}
 	{/snippet}
 	{#snippet body(target)}
 		<form id="auth-provider-edit-form" class="flex flex-col gap-4" onsubmit={handleEdit}>
 			<label class="flex flex-col gap-1">
-				<span class="text-label">Name</span>
+				<span class="text-label">{t('web.common.name')}</span>
 				<input class="input w-full" bind:value={editName} required disabled={submitting} />
 			</label>
 
 			<label class="flex items-center gap-2">
 				<input type="checkbox" bind:checked={editEnabled} disabled={submitting} />
-				<span class="text-label">Enabled</span>
+				<span class="text-label">{t('web.common.enabled')}</span>
 			</label>
 
 			<label class="flex flex-col gap-1">
-				<span class="text-label">Type</span>
+				<span class="text-label">{t('web.common.type')}</span>
 				<input class="input w-full" value={target.type.id} readonly disabled />
 			</label>
 
@@ -300,14 +301,14 @@
 					></SchemaForm>
 				{/key}
 			{:else}
-				<p class="text-hint">This provider type has no settings.</p>
+				<p class="text-hint">{t('web.auth_providers.no_settings')}</p>
 				{#if editFormError}
 					<p class="text-sm text-destructive" role="alert">{editFormError}</p>
 				{/if}
 			{/if}
 
 			<label class="flex flex-col gap-1">
-				<span class="text-label">Audit comment</span>
+				<span class="text-label">{t('web.common.audit_comment')}</span>
 				<textarea
 					bind:value={editAuditComment}
 					required={data.auditCommentRequired.update}
@@ -318,6 +319,11 @@
 		</form>
 	{/snippet}
 	{#snippet footer()}
-		<DialogActions formId="auth-provider-edit-form" confirmLabel="Save" confirmingLabel="Saving…" {submitting} />
+		<DialogActions
+			formId="auth-provider-edit-form"
+			confirmLabel="web.common.save"
+			confirmingLabel="web.common.saving"
+			{submitting}
+		/>
 	{/snippet}
 </TargetDialog>

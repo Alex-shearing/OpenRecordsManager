@@ -2,6 +2,8 @@
 	import { TemplateController } from '$lib/api';
 	import { getApiClient } from '$lib/api-client';
 	import MonoId from '$lib/components/MonoId.svelte';
+	import { t } from '$lib/i18n/catalog';
+	import { templateName } from '$lib/i18n/labels';
 
 	let { data } = $props();
 
@@ -12,8 +14,8 @@
 					? []
 					: section.templates.map(template => ({
 							type: section.type,
-							id: template.id,
-							name: template.name,
+							id: template,
+							name: templateName(section.type, template),
 						}))
 			)
 			.sort((a, b) => a.type.localeCompare(b.type) || a.name.localeCompare(b.name))
@@ -54,7 +56,7 @@
 		event.preventDefault();
 
 		if (selectedRows.length === 0) {
-			formError = 'Select at least one template to register.';
+			formError = t('web.templates.select_at_least_one');
 			return;
 		}
 
@@ -75,9 +77,9 @@
 			if (error) {
 				registering = false;
 				selected = new Set([...selected].filter(k => !registeredKeys.has(k)));
-				formError = error.error ?? `Failed to register ${row.name}.`;
+				formError = error.error ?? t('web.templates.register_failed', row.name);
 				if (registeredKeys.size > 0) {
-					successMessage = `Registered ${registeredKeys.size} template(s) before the error.`;
+					successMessage = t('web.templates.registered_partial', registeredKeys.size);
 				}
 				return;
 			}
@@ -87,26 +89,26 @@
 
 		selected = new Set([...selected].filter(key => !registeredKeys.has(key)));
 		registering = false;
-		successMessage = `Registered ${registeredKeys.size} template(s).`;
+		successMessage = t('web.templates.registered_count', registeredKeys.size);
 	}
 </script>
 
-<h1 class="mb-2 text-2xl font-semibold">Templates</h1>
-<p class="mb-6 text-hint">
-	Register plugin-provided templates into the database. Dependencies are included automatically when registering.
-</p>
+<h1 class="mb-2 text-2xl font-semibold">{t('web.templates.title')}</h1>
+<p class="mb-6 text-hint">{t('web.templates.intro')}</p>
 
 {#if data.error}
 	<p class="text-destructive">{data.error}</p>
 {:else if data.sections.length === 0}
-	<p class="text-hint">No template types are available.</p>
+	<p class="text-hint">{t('web.templates.no_types')}</p>
 {:else}
 	{#each sectionErrors as section (section.type)}
-		<p class="mb-4 text-sm text-destructive">Failed to load {section.type}: {section.error}</p>
+		<p class="mb-4 text-sm text-destructive">
+			{t('web.templates.load_section_failed', section.type, section.error ?? '')}
+		</p>
 	{/each}
 
 	{#if templateRows.length === 0}
-		<p class="text-hint">No templates are available.</p>
+		<p class="text-hint">{t('web.templates.empty')}</p>
 	{:else}
 		<form onsubmit={handleRegister}>
 			<section class="card">
@@ -120,12 +122,12 @@
 										class="size-4 rounded border-border-input"
 										checked={allSelected}
 										disabled={registering}
-										aria-label="Select all templates"
+										aria-label={t('web.templates.select_all')}
 										onchange={event => setAllSelected(event.currentTarget.checked)}
 									/>
 								</th>
-								<th class="px-5 py-3 font-medium">Type</th>
-								<th class="px-5 py-3 font-medium">Template</th>
+								<th class="px-5 py-3 font-medium">{t('web.templates.col_type')}</th>
+								<th class="px-5 py-3 font-medium">{t('web.templates.col_template')}</th>
 							</tr>
 						</thead>
 						<tbody class="divide-y divide-border">
@@ -138,7 +140,7 @@
 											class="size-4 rounded border-border-input"
 											checked={selected.has(key)}
 											disabled={registering}
-											aria-label="Select {template.name}"
+											aria-label={t('web.templates.select_one', template.name)}
 											onchange={event => setSelected(key, event.currentTarget.checked)}
 										/>
 									</td>
@@ -155,7 +157,7 @@
 
 				<div class="border-t border-border p-5">
 					<button type="submit" class="btn-primary" disabled={registering || selectedRows.length === 0}>
-						{registering ? 'Registering…' : 'Register selected'}
+						{registering ? t('web.templates.registering') : t('web.templates.register')}
 					</button>
 				</div>
 			</section>

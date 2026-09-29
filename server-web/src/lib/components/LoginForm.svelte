@@ -5,6 +5,7 @@
 	import { page } from '$app/state';
 	import SchemaForm from './SchemaForm.svelte';
 	import { getApiClient } from '$lib/api-client';
+	import { t } from '$lib/i18n/catalog';
 
 	let {
 		inputProviders,
@@ -62,7 +63,7 @@
 
 		if (error) {
 			fieldErrors = (error.errorData ?? {}) as Record<string, string>;
-			formError = 'Authentication failed';
+			formError = t('web.login.auth_failed');
 			return;
 		}
 
@@ -84,7 +85,7 @@
 				{#snippet before()}
 					{#if inputProviders.length > 1}
 						<label class="flex flex-col gap-1">
-							<span class="text-label">Sign in with</span>
+							<span class="text-label">{t('web.login.sign_in_with')}</span>
 							<select bind:value={selectedProviderId} class="input" disabled={submitting}>
 								{#each inputProviders as provider (provider.id)}
 									<option value={provider.id}>{providerLabel(provider)}</option>
@@ -93,7 +94,8 @@
 						</label>
 					{:else}
 						<p class="text-hint">
-							Sign in with <span class="font-medium text-foreground">
+							{t('web.login.sign_in_with')}
+							<span class="font-medium text-foreground">
 								{providerLabel(selectedProvider)}
 							</span>
 						</p>
@@ -102,7 +104,7 @@
 			</SchemaForm>
 
 			<button type="submit" class="btn-primary" disabled={submitting || !selectedProvider}>
-				{submitting ? 'Signing in...' : 'Sign in'}
+				{submitting ? t('web.login.signing_in') : t('web.login.title')}
 			</button>
 		</form>
 	{/if}
@@ -111,7 +113,7 @@
 {#if redirectProviders.length > 0}
 	<div class="mt-6 flex flex-col gap-3">
 		{#if inputProviders.length > 0}
-			<p class="text-hint">Or continue with</p>
+			<p class="text-hint">{t('web.login.or_continue_with')}</p>
 		{/if}
 
 		<ul class="list-panel">
@@ -123,7 +125,7 @@
 						: base}
 				<li>
 					<a {href} class="list-panel-item text-center font-medium">
-						Continue with {providerLabel(provider)}
+						{t('web.login.continue_with', providerLabel(provider))}
 					</a>
 				</li>
 			{/each}

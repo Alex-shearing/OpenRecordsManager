@@ -1,5 +1,6 @@
 import { RecordController, UserController, type RecordResponse, type UserResponse } from '$lib/api';
 import { getApiClient } from '$lib/api-client';
+import { t } from '$lib/i18n/catalog';
 
 export type SearchType = 'record' | 'user';
 
@@ -12,7 +13,7 @@ function searchError(error: { error?: unknown } | undefined): string | null {
 		return error.error;
 	}
 	if (error) {
-		return 'Search failed.';
+		return t('web.search.failed');
 	}
 	return null;
 }
@@ -33,10 +34,10 @@ export async function load({ parent, url }: { parent: () => Promise<unknown>; ur
 			error: null as string | null,
 			message:
 				!type && !q
-					? 'Enter a search query to begin.'
+					? t('web.search.begin')
 					: !q
-						? 'Enter a search query.'
-						: 'Unsupported search type.',
+						? t('web.search.enter_query')
+						: t('web.search.unsupported_type'),
 		};
 	}
 

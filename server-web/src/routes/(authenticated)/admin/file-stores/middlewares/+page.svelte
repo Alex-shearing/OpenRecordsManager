@@ -7,6 +7,7 @@
 	import SchemaForm from '$lib/components/SchemaForm.svelte';
 	import TableCard from '$lib/components/TableCard.svelte';
 	import TargetDialog from '$lib/components/TargetDialog.svelte';
+	import { t } from '$lib/i18n/catalog';
 	import { invalidateAll } from '$app/navigation';
 	import toast from 'svelte-hot-french-toast';
 
@@ -60,7 +61,7 @@
 	async function handleCreate(event: SubmitEvent) {
 		event.preventDefault();
 		if (!createTypeId) {
-			createFormError = 'Select a middleware type.';
+			createFormError = t('web.middlewares.select_type');
 			return;
 		}
 
@@ -82,11 +83,11 @@
 
 		if (error) {
 			createFieldErrors = (error.errorData ?? {}) as Record<string, string>;
-			createFormError = error.error ?? 'Failed to create middleware.';
+			createFormError = error.error ?? t('web.middlewares.create_failed');
 			return;
 		}
 
-		toast.success('Created middleware.');
+		toast.success(t('web.middlewares.created'));
 		resetCreateForm();
 		await invalidateAll();
 	}
@@ -106,7 +107,7 @@
 		editLoading = false;
 
 		if (error) {
-			toast.error('Failed to load middleware: ' + error.error);
+			toast.error(error.error ?? t('web.middlewares.load_failed', middleware.id));
 			return;
 		}
 
@@ -137,11 +138,11 @@
 
 		if (error) {
 			editFieldErrors = (error.errorData ?? {}) as Record<string, string>;
-			editFormError = error.error ?? 'Failed to update middleware.';
+			editFormError = error.error ?? t('web.middlewares.update_failed');
 			return;
 		}
 
-		toast.success('Updated middleware.');
+		toast.success(t('web.middlewares.updated'));
 		editTarget = undefined;
 		await invalidateAll();
 	}
@@ -164,34 +165,34 @@
 		if (error) {
 			deleteFormError =
 				response?.status === 409
-					? (error.error ?? 'This middleware is in use by one or more file stores and cannot be deleted.')
-					: (error.error ?? 'Failed to delete middleware.');
+					? (error.error ?? t('web.middlewares.delete_in_use'))
+					: (error.error ?? t('web.middlewares.delete_failed'));
 			return;
 		}
 
-		toast.success('Deleted middleware.');
+		toast.success(t('web.middlewares.deleted'));
 		deleteTarget = undefined;
 		await invalidateAll();
 	}
 </script>
 
-<h1 class="mb-2 text-2xl font-semibold">File store middlewares</h1>
-<p class="mb-6 text-hint">Create reusable middleware configurations that can be attached when creating a file store.</p>
+<h1 class="mb-2 text-2xl font-semibold">{t('web.middlewares.title')}</h1>
+<p class="mb-6 text-hint">{t('web.middlewares.intro')}</p>
 
 {#if data.error}
 	<p class="text-destructive">{data.error}</p>
 {:else}
 	<TableCard
-		title="File store middlewares"
+		title={t('web.middlewares.table_title')}
 		items={sortedMiddlewares}
-		empty="No middlewares are registered."
+		empty={t('web.middlewares.empty')}
 		getKey={m => m.id}
 	>
 		{#snippet header()}
-			<th class="px-5 py-3 font-medium">Name</th>
-			<th class="px-5 py-3 font-medium">Type</th>
-			<th class="px-5 py-3 font-medium">ID</th>
-			<th class="px-5 py-3 font-medium"><span class="sr-only">Actions</span></th>
+			<th class="px-5 py-3 font-medium">{t('web.common.name')}</th>
+			<th class="px-5 py-3 font-medium">{t('web.common.type')}</th>
+			<th class="px-5 py-3 font-medium">{t('web.common.id')}</th>
+			<th class="px-5 py-3 font-medium"><span class="sr-only">{t('web.common.actions')}</span></th>
 		{/snippet}
 		{#snippet row(middleware)}
 			<td class="px-5 py-4 font-medium">{middleware.name}</td>
@@ -206,7 +207,7 @@
 					disabled={submitting || editLoading}
 					onclick={() => openEdit(middleware)}
 				>
-					Edit
+					{t('web.common.edit')}
 				</button>
 				<button
 					type="button"
@@ -218,26 +219,26 @@
 						deleteFormError = '';
 					}}
 				>
-					Delete
+					{t('web.common.delete')}
 				</button>
 			</td>
 		{/snippet}
 	</TableCard>
 
 	<form class="mt-6 card p-5" onsubmit={handleCreate}>
-		<h2 class="mb-1 text-lg font-medium">Create middleware</h2>
-		<p class="mb-4 text-hint">Choose a type and configure its properties.</p>
+		<h2 class="mb-1 text-lg font-medium">{t('web.middlewares.create_title')}</h2>
+		<p class="mb-4 text-hint">{t('web.middlewares.create_hint')}</p>
 
 		{#if sortedTypes.length === 0}
-			<p class="text-hint">No middleware types are available.</p>
+			<p class="text-hint">{t('web.middlewares.no_types')}</p>
 		{:else}
 			<label class="mb-4 flex flex-col gap-1">
-				<span class="text-label">Name</span>
+				<span class="text-label">{t('web.common.name')}</span>
 				<input class="input w-full" bind:value={createName} required disabled={submitting} />
 			</label>
 
 			<label class="mb-4 flex flex-col gap-1">
-				<span class="text-label">Type</span>
+				<span class="text-label">{t('web.common.type')}</span>
 				<select
 					class="input w-full"
 					bind:value={createTypeId}
@@ -266,7 +267,7 @@
 					>
 						{#snippet after()}
 							<label class="flex flex-col gap-1">
-								<span class="text-label">Audit comment</span>
+								<span class="text-label">{t('web.common.audit_comment')}</span>
 								<textarea
 									bind:value={createAuditComment}
 									required={data.auditCommentRequired.create}
@@ -281,27 +282,27 @@
 
 			<div class="mt-4">
 				<button type="submit" class="btn-primary" disabled={submitting || !createTypeId || !createName}>
-					{submitting ? 'Creating…' : 'Create'}
+					{submitting ? t('web.common.creating') : t('web.common.create')}
 				</button>
 			</div>
 		{/if}
 	</form>
 {/if}
 
-<TargetDialog bind:target={editTarget} title="Edit file store middleware">
+<TargetDialog bind:target={editTarget} title="web.middlewares.edit_title">
 	{#snippet description(target)}
-		Update properties for <MonoId value={target.id} />.
+		{t('web.middlewares.edit_description', target.id)}
 	{/snippet}
 	{#snippet body(target)}
 		{@const targetType = sortedTypes.find(type => type.id === target.type)}
 		<form id="middleware-edit-form" class="flex flex-col gap-4" onsubmit={handleEdit}>
 			<label class="flex flex-col gap-1">
-				<span class="text-label">Name</span>
+				<span class="text-label">{t('web.common.name')}</span>
 				<input class="input w-full" bind:value={editName} required disabled={submitting} />
 			</label>
 
 			<label class="flex flex-col gap-1">
-				<span class="text-label">Type</span>
+				<span class="text-label">{t('web.common.type')}</span>
 				<input class="input w-full" value={target.type} readonly disabled />
 			</label>
 
@@ -317,11 +318,11 @@
 					></SchemaForm>
 				{/key}
 			{:else}
-				<p class="text-sm text-destructive" role="alert">Unknown middleware type.</p>
+				<p class="text-sm text-destructive" role="alert">{t('web.middlewares.unknown_type')}</p>
 			{/if}
 
 			<label class="flex flex-col gap-1">
-				<span class="text-label">Audit comment</span>
+				<span class="text-label">{t('web.common.audit_comment')}</span>
 				<textarea
 					bind:value={editAuditComment}
 					required={data.auditCommentRequired.update}
@@ -332,26 +333,30 @@
 		</form>
 	{/snippet}
 	{#snippet footer()}
-		<DialogActions formId="middleware-edit-form" confirmLabel="Save" confirmingLabel="Saving…" {submitting} />
+		<DialogActions
+			formId="middleware-edit-form"
+			confirmLabel="web.common.save"
+			confirmingLabel="web.common.saving"
+			{submitting}
+		/>
 	{/snippet}
 </TargetDialog>
 
 <TargetDialog
 	bind:target={deleteTarget}
-	title="Delete file store middleware"
+	title="web.middlewares.delete_title"
 	onclose={() => {
 		deleteFormError = '';
 		deleteAuditComment = '';
 	}}
 >
 	{#snippet description(target)}
-		Remove <span class="font-medium">{target.name}</span> (<MonoId value={target.id} />)? This fails if it is attached
-		to a file store.
+		{t('web.middlewares.delete_confirm', target.name ?? '', target.id)}
 	{/snippet}
 	{#snippet body()}
 		<form id="middleware-delete-form" class="flex flex-col gap-4" onsubmit={handleDelete}>
 			<label class="flex flex-col gap-1">
-				<span class="text-label">Audit comment</span>
+				<span class="text-label">{t('web.common.audit_comment')}</span>
 				<textarea
 					bind:value={deleteAuditComment}
 					required={data.auditCommentRequired.delete}
@@ -368,8 +373,8 @@
 		<DialogActions
 			formId="middleware-delete-form"
 			variant="destructive"
-			confirmLabel="Delete"
-			confirmingLabel="Deleting…"
+			confirmLabel="web.common.delete"
+			confirmingLabel="web.common.deleting"
 			{submitting}
 		/>
 	{/snippet}

@@ -3,8 +3,9 @@
 	import { getApiClient } from '$lib/api-client';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
+	import { t } from '$lib/i18n/catalog';
 
-	let view = $state<'checking' | 'waiting' | 'unavailable' | 'ready'>('checking');
+	let view = $state<'checking' | 'upgrade' | 'unavailable' | 'ready'>('checking');
 
 	const pollIntervalMs = 3000;
 
@@ -18,7 +19,7 @@
 				await goto(page.url.searchParams.get('redirect') || '');
 				return 'ready';
 			}
-			return 'waiting';
+			return 'upgrade';
 		} catch {
 			return 'unavailable';
 		}
@@ -43,20 +44,13 @@
 
 <div class="card text-center">
 	<div class="card-body">
-		{#if view === 'checking'}
-			<h1 class="mb-3 text-2xl font-semibold">Just a moment</h1>
-			<p class="text-hint">Checking system status…</p>
-		{:else if view === 'waiting'}
-			<h1 class="mb-3 text-2xl font-semibold">Temporarily unavailable</h1>
-			<p class="mb-2 text-muted-foreground">The application is being updated and will be back shortly.</p>
-			<p class="text-hint">
-				This page will bring you back automatically when the update is finished. You don't need to do anything.
-			</p>
-		{:else if view === 'unavailable'}
-			<h1 class="mb-3 text-2xl font-semibold">Temporarily unavailable</h1>
-			<p class="text-muted-foreground">
-				We couldn't confirm the system status right now. We'll keep trying automatically.
-			</p>
+		{#if view === 'ready'}
+			<h1 class="mb-3 text-2xl font-semibold">{t('web.maintenance.ready')}</h1>
+
+			<a href="/login" class="text-link text-sm">{t('web.maintenance.continue_sign_in')}</a>
+		{:else}
+			<h1 class="mb-3 text-2xl font-semibold">{t(`web.maintenance.${view}`)}</h1>
+			<p class="mb-2 text-muted-foreground">{t(`web.maintenance.${view}_hint`)}</p>
 		{/if}
 	</div>
 </div>

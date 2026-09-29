@@ -2,6 +2,8 @@
 	import type { ActionResponse } from '$lib/api/types.gen';
 	import { UserController } from '$lib/api';
 	import { auditHeaders, getApiClient } from '$lib/api-client';
+	import { t } from '$lib/i18n/catalog';
+	import { userActionDescription } from '$lib/i18n/labels';
 	import AppDialog from './AppDialog.svelte';
 	import DialogActions from './DialogActions.svelte';
 	import SchemaForm from './SchemaForm.svelte';
@@ -39,7 +41,7 @@
 		}
 
 		if (action.requiresAuditComment && !auditComment.trim()) {
-			formError = 'An audit comment is required for this action.';
+			formError = t('web.common.audit_comment_required');
 			return;
 		}
 
@@ -58,7 +60,7 @@
 
 		if (error) {
 			fieldErrors = (error.errorData ?? {}) as Record<string, string>;
-			formError = error.error ?? 'Action failed';
+			formError = error.error ?? t('web.user_action.failed');
 			return;
 		}
 
@@ -68,11 +70,9 @@
 
 {#if action}
 	{#key action.id}
-		<AppDialog bind:open={open} title={action.name} onclose={handleClose}>
+		<AppDialog bind:open={open} title={`user_action.${action.id.replaceAll(':', '.')}.name`} onclose={handleClose}>
 			{#snippet description()}
-				{#if action.description}
-					{action.description}
-				{/if}
+				{userActionDescription(action.id)}
 			{/snippet}
 			{#snippet body()}
 				<form id={formId} class="flex flex-col gap-4" onsubmit={handleSubmit} novalidate>
@@ -86,7 +86,7 @@
 					>
 						{#snippet after()}
 							<label class="flex flex-col gap-1">
-								<span class="text-label">Audit comment</span>
+								<span class="text-label">{t('web.common.audit_comment')}</span>
 								<textarea
 									bind:value={auditComment}
 									required={action.requiresAuditComment}
@@ -102,8 +102,7 @@
 			{#snippet footer()}
 				<DialogActions
 					{formId}
-					confirmLabel={action.name}
-					confirmingLabel="Working…"
+					confirmLabel={`user_action.${action.id.replaceAll(':', '.')}.name`}
 					{submitting}
 				/>
 			{/snippet}

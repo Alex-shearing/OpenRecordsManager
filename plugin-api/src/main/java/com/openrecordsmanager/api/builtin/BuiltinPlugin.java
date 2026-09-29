@@ -32,7 +32,6 @@ public class BuiltinPlugin implements Plugin {
                 BuiltinConfigs.WEB_DIRECTORY,
                 BuiltinConfigs.MULTIPART_MAX_FILE_SIZE,
                 BuiltinConfigs.MULTIPART_MAX_REQUEST_SIZE,
-                BuiltinConfigs.WEB_PRODUCT_NAME,
                 BuiltinConfigs.WEB_LOGO_URL,
                 BuiltinConfigs.WEB_FAVICON_URL,
                 BuiltinConfigs.WEB_PRIMARY_COLOR,

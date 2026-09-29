@@ -7,6 +7,8 @@
 	import MonoId from '$lib/components/MonoId.svelte';
 	import TableCard from '$lib/components/TableCard.svelte';
 	import TargetDialog from '$lib/components/TargetDialog.svelte';
+	import { t } from '$lib/i18n/catalog';
+	import { pluginDescription, pluginName } from '$lib/i18n/labels';
 	import { invalidateAll } from '$app/navigation';
 	import toast from 'svelte-hot-french-toast';
 
@@ -14,20 +16,16 @@
 
 	const sortedPlugins = $derived(
 		[...data.plugins].sort((a, b) => {
-			const byDisplay = (a.displayName ?? a.id ?? '').localeCompare(b.displayName ?? b.id ?? '');
+			const byDisplay = pluginName(a.id).localeCompare(pluginName(b.id));
 			if (byDisplay !== 0) {
 				return byDisplay;
 			}
-			return (a.id ?? '').localeCompare(b.id ?? '');
+			return a.id.localeCompare(b.id);
 		})
 	);
 
 	function enabledDraft(plugins: SimplePluginResponse[]) {
-		return Object.fromEntries(
-			plugins
-				.filter(plugin => plugin.id && plugin.id !== 'builtin')
-				.map(plugin => [plugin.id!, plugin.enabled ?? false])
-		);
+		return Object.fromEntries(plugins.filter(plugin => plugin.id).map(plugin => [plugin.id!, plugin.enabled ?? false]));
 	}
 
 	// svelte-ignore state_referenced_locally
@@ -40,15 +38,13 @@
 
 	const dirtyIds = $derived(
 		sortedPlugins
-			.filter(
-				plugin => plugin.id && plugin.id !== 'builtin' && draftEnabled[plugin.id] !== (plugin.enabled ?? false)
-			)
+			.filter(plugin => plugin.id && draftEnabled[plugin.id] !== (plugin.enabled ?? false))
 			.map(plugin => plugin.id!)
 	);
 
 	$effect(() => {
 		for (const plugin of data.plugins) {
-			if (!plugin.id || plugin.id === 'builtin' || plugin.id in draftEnabled) {
+			if (!plugin.id || plugin.id in draftEnabled) {
 				continue;
 			}
 			draftEnabled[plugin.id] = plugin.enabled ?? false;
@@ -65,12 +61,12 @@
 
 		const file = uploadFiles?.[0];
 		if (!file) {
-			formError = 'Select a plugin JAR or ZIP file to upload.';
+			formError = t('web.plugins.select_file');
 			return;
 		}
 
 		if (data.auditCommentRequired.create && !auditComment.trim()) {
-			formError = 'An audit comment is required for this action.';
+			formError = t('web.common.audit_comment_required');
 			return;
 		}
 
@@ -88,11 +84,11 @@
 		submitting = false;
 
 		if (error) {
-			formError = error.error ?? 'Failed to upload plugin.';
+			formError = error.error ?? t('web.plugins.upload_failed');
 			return;
 		}
 
-		toast.success(`Uploaded ${file.name}.`);
+		toast.success(t('web.plugins.uploaded', file.name));
 		uploadFiles = undefined;
 		auditComment = '';
 		await invalidateAll();
@@ -121,12 +117,12 @@
 				});
 
 				if (error) {
-					formError = `Failed to update plugin ${id}: ${error.error}`;
+					formError = error.error ?? t('web.plugins.update_failed', id, '');
 					return;
 				}
 			}
 
-			toast.success(dirtyIds.length === 1 ? 'Saved plugin changes.' : `Saved changes to ${dirtyIds.length} plugins.`);
+			toast.success(dirtyIds.length === 1 ? t('web.plugins.saved_one') : t('web.plugins.saved_many', dirtyIds.length));
 			await invalidateAll();
 		} finally {
 			submitting = false;
@@ -134,12 +130,12 @@
 	}
 
 	async function confirmDelete() {
-		if (!deleteTarget?.id || deleteTarget.id === 'builtin') {
+		if (!deleteTarget?.id) {
 			return;
 		}
 
 		if (data.auditCommentRequired.delete && !auditComment.trim()) {
-			formError = 'An audit comment is required for this action.';
+			formError = t('web.common.audit_comment_required');
 			return;
 		}
 
@@ -157,56 +153,53 @@
 		deleteTarget = undefined;
 
 		if (error) {
-			formError = 'Failed to delete plugin: ' + error.error;
+			formError = error.error ?? t('web.plugins.delete_failed', id);
 			return;
 		}
 
-		toast.success(`Deleted plugin ${id}.`);
+		toast.success(t('web.plugins.deleted', id));
 		auditComment = '';
 		await invalidateAll();
 	}
 </script>
 
-<h1 class="mb-2 text-2xl font-semibold">Plugins</h1>
-<p class="mb-6 text-hint">
-	Upload plugin JARs or template ZIPs, enable or disable plugins, and remove plugins from the workgroup.
-</p>
+<h1 class="mb-2 text-2xl font-semibold">{t('web.plugins.title')}</h1>
+<p class="mb-6 text-hint">{t('web.plugins.intro')}</p>
 
 {#if data.error}
 	<p class="text-destructive">{data.error}</p>
 {:else}
 	<form id="plugins-save-form" onsubmit={handleSave}>
-		<TableCard title="Installed plugins" items={sortedPlugins} empty="No plugins are registered." getKey={p => p.id}>
+		<TableCard
+			title={t('web.plugins.installed')}
+			items={sortedPlugins}
+			empty={t('web.plugins.empty')}
+			getKey={p => p.id}
+		>
 			{#snippet header()}
-				<th class="px-5 py-3 font-medium">Plugin</th>
-				<th class="px-5 py-3 font-medium">Enabled</th>
-				<th class="px-5 py-3 font-medium">Modified</th>
-				<th class="px-5 py-3 font-medium"><span class="sr-only">Actions</span></th>
+				<th class="px-5 py-3 font-medium">{t('web.plugins.col_plugin')}</th>
+				<th class="px-5 py-3 font-medium">{t('web.plugins.col_enabled')}</th>
+				<th class="px-5 py-3 font-medium">{t('web.plugins.col_modified')}</th>
+				<th class="px-5 py-3 font-medium"><span class="sr-only">{t('web.common.actions')}</span></th>
 			{/snippet}
 			{#snippet row(plugin)}
 				<td class="px-5 py-4">
-					<p class="font-medium">{plugin.displayName ?? plugin.id}</p>
-					<p class="text-hint"><MonoId value={plugin.id!} /></p>
-					{#if plugin.description}
-						<p class="text-hint">{plugin.description}</p>
-					{/if}
-					<p class="text-hint">Version {plugin.version ?? '—'}</p>
+					<p class="font-medium">{pluginName(plugin.id)}</p>
+					<p class="text-hint"><MonoId value={plugin.id} /></p>
+					<p class="text-hint">{pluginDescription(plugin.id)}</p>
+					<p class="text-hint">{t('web.common.version', plugin.version ?? t('web.common.em_dash'))}</p>
 					{#if !plugin.loaded}
-						<p class="text-hint">Not loaded</p>
+						<p class="text-hint">{t('web.plugins.not_loaded')}</p>
 					{/if}
 				</td>
 				<td class="px-5 py-4">
-					{#if plugin.id !== 'builtin'}
-						<input
-							type="checkbox"
-							class="size-4 rounded border-border-input"
-							disabled={submitting}
-							aria-label="Enable {plugin.displayName ?? plugin.id}"
-							bind:checked={draftEnabled[plugin.id!]}
-						/>
-					{:else}
-						<span class="text-hint">Always on</span>
-					{/if}
+					<input
+						type="checkbox"
+						class="size-4 rounded border-border-input"
+						disabled={submitting}
+						aria-label={t('web.plugins.enable_aria', pluginName(plugin.id))}
+						bind:checked={draftEnabled[plugin.id]}
+					/>
 				</td>
 				<td class="px-5 py-4 text-foreground">
 					<time datetime={plugin.dateModified}>
@@ -214,30 +207,25 @@
 					</time>
 				</td>
 				<td class="px-5 py-4 text-right">
-					{#if plugin.id !== 'builtin'}
-						<button
-							type="button"
-							class="btn-ghost text-destructive"
-							disabled={submitting}
-							onclick={() => (deleteTarget = plugin)}
-						>
-							Delete
-						</button>
-					{/if}
+					<button
+						type="button"
+						class="btn-ghost text-destructive"
+						disabled={submitting}
+						onclick={() => (deleteTarget = plugin)}
+					>
+						{t('web.common.delete')}
+					</button>
 				</td>
 			{/snippet}
 		</TableCard>
 	</form>
 
 	<form class="mt-6 card p-5" onsubmit={handleUpload}>
-		<h2 class="mb-1 text-lg font-medium">Upload plugin</h2>
-		<p class="mb-4 text-hint">
-			Select a JAR or ZIP with a root plugin.json (id, version, displayName, and description). ZIPs are
-			templates-only.
-		</p>
+		<h2 class="mb-1 text-lg font-medium">{t('web.plugins.upload_title')}</h2>
+		<p class="mb-4 text-hint">{t('web.plugins.upload_hint')}</p>
 
 		<label class="flex flex-col gap-1">
-			<span class="text-label">Plugin archive</span>
+			<span class="text-label">{t('web.plugins.archive_label')}</span>
 			<input
 				type="file"
 				name="file"
@@ -250,7 +238,7 @@
 
 		<div class="mt-4">
 			<button type="submit" class="btn-primary" disabled={submitting || !uploadFiles?.length}>
-				{submitting ? 'Uploading…' : 'Upload'}
+				{submitting ? t('web.plugins.uploading') : t('web.plugins.upload')}
 			</button>
 		</div>
 	</form>
@@ -259,7 +247,6 @@
 		form="plugins-save-form"
 		bind:auditComment
 		required={data.auditCommentRequired.update}
-		requiredHint="Required when saving plugin changes."
 		{formError}
 		{submitting}
 		dirty={dirtyIds.length > 0}
@@ -267,15 +254,15 @@
 	/>
 {/if}
 
-<TargetDialog bind:target={deleteTarget} title="Delete plugin">
+<TargetDialog bind:target={deleteTarget} title="web.plugins.delete_title">
 	{#snippet description(target)}
-		Remove <MonoId value={target.id} /> from the database and this server?
+		{t('web.plugins.remove_confirm', target.id ?? '')}
 	{/snippet}
 	{#snippet footer()}
 		<DialogActions
 			variant="destructive"
-			confirmLabel="Delete"
-			confirmingLabel="Deleting…"
+			confirmLabel="web.common.delete"
+			confirmingLabel="web.common.deleting"
 			{submitting}
 			onconfirm={confirmDelete}
 		/>

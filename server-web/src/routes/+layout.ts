@@ -1,12 +1,12 @@
-import { WebController } from '$lib/api';
+import { TranslationController, WebController } from '$lib/api';
 import { createApiClient } from '$lib/api-client';
 import faviconAsset from '$lib/assets/favicon.ico';
+import { setCatalog } from '$lib/i18n/catalog';
 
 export const ssr = false;
 export const prerender = false;
 
 const DEFAULT_BRANDING = {
-	productName: 'Open Records Manager',
 	logoUrl: '',
 	faviconUrl: faviconAsset,
 	primaryColor: '#1d4ed8',
@@ -15,9 +15,22 @@ const DEFAULT_BRANDING = {
 
 export async function load({ fetch }) {
 	const client = createApiClient(fetch);
-	const { data, response } = await WebController.branding({ client });
+	const [branding, catalogResult] = await Promise.all([
+		WebController.branding({ client }),
+		TranslationController.getTranslationCatalog({ client }),
+	]);
+
+	const catalog = catalogResult.data?.data;
+	if (catalog) {
+		setCatalog({
+			locale: catalog.locale ?? 'en',
+			messages: catalog.messages ?? {},
+		});
+	}
+
 	return {
-		branding: data?.data || DEFAULT_BRANDING,
-		online: !!response,
+		branding: branding.data?.data || DEFAULT_BRANDING,
+		online: !!branding.response,
+		catalogLocale: catalog?.locale ?? 'en',
 	};
 }

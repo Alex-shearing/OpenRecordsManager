@@ -4,6 +4,7 @@
 	import ConfigSettingRow from '$lib/components/ConfigSettingRow.svelte';
 	import AuditSaveCard from '$lib/components/AuditSaveCard.svelte';
 	import { buildSavedValues, findChangedConfigs, groupConfigs } from '$lib/config/config-utils';
+	import { t } from '$lib/i18n/catalog';
 	import { invalidateAll } from '$app/navigation';
 	import toast from 'svelte-hot-french-toast';
 
@@ -41,11 +42,13 @@
 			});
 
 			if (error) {
-				formError = error.error ?? 'Failed to save.';
+				formError = error.error ?? t('web.config.save_failed');
 				return;
 			}
 
-			toast.success(changedConfigs.length === 1 ? 'Saved 1 setting.' : `Saved ${changedConfigs.length} settings.`);
+			toast.success(
+				changedConfigs.length === 1 ? t('web.config.saved_one') : t('web.config.saved_many', changedConfigs.length)
+			);
 			await invalidateAll();
 		} finally {
 			submitting = false;
@@ -58,22 +61,19 @@
 	}
 </script>
 
-<h1 class="mb-2 text-2xl font-semibold">Configuration</h1>
-<p class="mb-6 text-hint">
-	Adjust configuration settings saved in the database below. Please note that other configuration locations may take
-	precedence over these.
-</p>
+<h1 class="mb-2 text-2xl font-semibold">{t('web.config.title')}</h1>
+<p class="mb-6 text-hint">{t('web.config.intro')}</p>
 
 {#if data.error}
 	<p class="text-destructive">{data.error}</p>
 {:else if data.configs.length === 0}
-	<p class="text-hint">No configuration settings are available.</p>
+	<p class="text-hint">{t('web.config.empty')}</p>
 {:else}
 	<form id="config-save-form" class="flex flex-col gap-6" onsubmit={handleSave}>
 		{#each sections as section (section.group.id)}
 			<section class="card scroll-mt-28" id={section.group.id}>
 				<div class="card-header">
-					<h2 class="text-lg font-medium">{section.group.title}</h2>
+					<h2 class="text-lg font-medium">{t(section.group.titleKey)}</h2>
 				</div>
 				<div class="divide-y divide-border">
 					{#each section.items as config (config.key)}
@@ -87,7 +87,6 @@
 			form="config-save-form"
 			bind:auditComment
 			required={data.requiresAuditComment}
-			requiredHint="Required when saving configuration changes."
 			{formError}
 			{submitting}
 			dirty={isDirty}

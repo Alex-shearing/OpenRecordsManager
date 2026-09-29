@@ -2,6 +2,7 @@
 	import type { SimpleMiddlewareResponse } from '$lib/api/types.gen';
 	import MonoId from '$lib/components/MonoId.svelte';
 	import TransferList from '$lib/components/TransferList.svelte';
+	import { t } from '$lib/i18n/catalog';
 
 	let {
 		middlewares,
@@ -28,25 +29,20 @@
 {#if middlewares.length === 0}
 	{#if showEmpty}
 		<div role="group" aria-labelledby={labelId}>
-			<p id={labelId} class="text-label">Middlewares</p>
-			<p class="text-hint">None available</p>
+			<p id={labelId} class="text-label">{t('web.middlewares.label')}</p>
+			<p class="text-hint">{t('web.middlewares.none_available')}</p>
 		</div>
 	{/if}
 {:else}
 	<div class="flex flex-col gap-2">
-		<p id={labelId} class="text-label">Middlewares</p>
+		<p id={labelId} class="text-label">{t('web.middlewares.label')}</p>
 		<TransferList
 			items={middlewares}
 			bind:selected
 			getKey={middleware => middleware.id}
 			{disabled}
 			labelledBy={labelId}
-			selectedTitle="Enabled"
-			availableTitle="Available"
-			selectedEmpty="No middlewares enabled"
-			availableEmpty="No middlewares left"
-			selectedHint="Drag to reorder, or use the arrows."
-			availableHint="Drag or use + to enable."
+			selectedTitle="web.common.enabled"
 			{compareAvailable}
 		>
 			{#snippet item(middleware)}

@@ -133,10 +133,6 @@ public class BuiltinConfigs {
 
     // Web UI branding
 
-    public static final ConfigType<String> WEB_PRODUCT_NAME = ConfigType.builder("app.web.product-name", PropertyType.STRING)
-            .defaultValue("Open Records Manager")
-            .build();
-
     public static final ConfigType<String> WEB_LOGO_URL = ConfigType.builder("app.web.logo-url", PropertyType.STRING)
             .defaultValue("")
             .build();

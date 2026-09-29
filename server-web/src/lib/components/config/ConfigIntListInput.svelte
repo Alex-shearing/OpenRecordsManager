@@ -1,5 +1,6 @@
 <script lang="ts">
 	import TrashIcon from 'phosphor-svelte/lib/TrashIcon';
+	import { t } from '$lib/i18n/catalog';
 
 	let {
 		id,
@@ -45,7 +46,7 @@
 </script>
 
 <div class="flex flex-col gap-2" role="group" aria-labelledby={id}>
-	<span {id} class="sr-only">Integer list values</span>
+	<span {id} class="sr-only">{t('web.config.list_values')}</span>
 	{#each items as item, index (index)}
 		<div class="flex items-center gap-2">
 			<input
@@ -55,22 +56,28 @@
 				class="input min-w-0 flex-1 font-mono text-sm"
 				{disabled}
 				value={displayValue(item)}
-				placeholder="Integer value"
-				aria-label="List item {index + 1}"
+				placeholder={t('web.config.value_placeholder')}
+				aria-label="{t('web.config.value_placeholder')} {index + 1}"
 				oninput={event => updateItem(index, event.currentTarget.value)}
 			/>
 			<button
 				type="button"
 				class="btn-ghost size-10 shrink-0 p-0!"
 				{disabled}
-				aria-label="Remove item {index + 1}"
+				aria-label={t('web.config.remove_value')}
 				onclick={() => removeItem(index)}
 			>
 				<TrashIcon class="size-4" aria-hidden="true" />
 			</button>
 		</div>
 	{/each}
-	<button type="button" class="btn-secondary self-start px-3" {disabled} aria-label="Add item" onclick={addItem}>
+	<button
+		type="button"
+		class="btn-secondary self-start px-3"
+		{disabled}
+		aria-label={t('web.config.add_value')}
+		onclick={addItem}
+	>
 		+
 	</button>
 </div>

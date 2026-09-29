@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { InputFormSchema, InputFormSchemaField } from '$lib/api/types.gen';
+	import { t } from '$lib/i18n/catalog';
 	import type { Snippet } from 'svelte';
 
 	let {
@@ -42,9 +43,9 @@
 		{@const required = schema.required?.includes(key) && !field.writeOnly && field.format !== 'password'}
 
 		<label class="flex flex-col gap-1">
-			<span>{field.title}</span>
+			<span>{t(field.title)}</span>
 			{#if field.description}
-				<span class="text-hint">{field.description}</span>
+				<span class="text-hint">{t(field.description)}</span>
 			{/if}
 			{#if field.enum && field.enum.length > 0}
 				<select
@@ -57,7 +58,7 @@
 					aria-invalid={fieldErrors[key] ? 'true' : undefined}
 					aria-describedby={fieldErrors[key] ? `${idPrefix}-${key}-error` : undefined}
 				>
-					<option value="" disabled={required}>Select…</option>
+					<option value="" disabled={required}>{t('web.common.select')}</option>
 					{#each field.enum as v (v)}
 						<option value={v}>{v}</option>
 					{/each}

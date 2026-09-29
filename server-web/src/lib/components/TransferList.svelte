@@ -8,6 +8,7 @@
 	import DotsSixVerticalIcon from 'phosphor-svelte/lib/DotsSixVerticalIcon';
 	import MinusIcon from 'phosphor-svelte/lib/MinusIcon';
 	import PlusIcon from 'phosphor-svelte/lib/PlusIcon';
+	import { t } from '$lib/i18n/catalog';
 
 	type ListSide = 'selected' | 'available';
 
@@ -17,12 +18,12 @@
 		getKey,
 		disabled = false,
 		labelledBy,
-		selectedTitle = 'Selected',
-		availableTitle = 'Available',
-		selectedEmpty = 'None selected',
-		availableEmpty = 'None available',
-		selectedHint = 'Drag to reorder, or use the arrows.',
-		availableHint = 'Drag or use + to include.',
+		selectedTitle = 'web.transfer.selected',
+		availableTitle = 'web.transfer.available',
+		selectedEmpty = 'web.transfer.none_selected',
+		availableEmpty = 'web.transfer.none_available',
+		selectedHint = 'web.transfer.drag_selected_hint',
+		availableHint = 'web.transfer.drag_available_hint',
 		compareAvailable,
 		item,
 	}: {
@@ -195,12 +196,12 @@
 		}}
 	>
 		<header class="border-b border-border px-3 py-2">
-			<h3 id={selectedHeadingId} class="text-label">{selectedTitle}</h3>
-			<p class="text-hint text-xs">{selectedHint}</p>
+			<h3 id={selectedHeadingId} class="text-label">{t(selectedTitle)}</h3>
+			<p class="text-hint text-xs">{t(selectedHint)}</p>
 		</header>
 
 		{#if selectedItems.length === 0}
-			<p class="p-3 text-sm text-hint">{selectedEmpty}</p>
+			<p class="p-3 text-sm text-hint">{t(selectedEmpty)}</p>
 		{:else}
 			<ul class="flex flex-1 flex-col gap-1 p-2">
 				{#each selectedItems as entry, index (getKey(entry))}
@@ -228,7 +229,7 @@
 								type="button"
 								class="btn-ghost px-1.5 py-1"
 								disabled={disabled || index === 0}
-								aria-label="Move up"
+								aria-label={t('web.transfer.move_up')}
 								onclick={() => move(index, index - 1)}
 							>
 								<CaretUpIcon class="size-4" aria-hidden="true" />
@@ -237,7 +238,7 @@
 								type="button"
 								class="btn-ghost px-1.5 py-1"
 								disabled={disabled || index === selectedItems.length - 1}
-								aria-label="Move down"
+								aria-label={t('web.transfer.move_down')}
 								onclick={() => move(index, index + 1)}
 							>
 								<CaretDownIcon class="size-4" aria-hidden="true" />
@@ -246,7 +247,7 @@
 								type="button"
 								class="btn-ghost px-1.5 py-1"
 								{disabled}
-								aria-label="Remove"
+								aria-label={t('web.transfer.remove')}
 								onclick={() => remove(getKey(entry))}
 							>
 								<MinusIcon class="size-4" aria-hidden="true" />
@@ -274,12 +275,12 @@
 		}}
 	>
 		<header class="border-b border-border px-3 py-2">
-			<h3 id={availableHeadingId} class="text-label">{availableTitle}</h3>
-			<p class="text-hint text-xs">{availableHint}</p>
+			<h3 id={availableHeadingId} class="text-label">{t(availableTitle)}</h3>
+			<p class="text-hint text-xs">{t(availableHint)}</p>
 		</header>
 
 		{#if availableItems.length === 0}
-			<p class="p-3 text-sm text-hint">{availableEmpty}</p>
+			<p class="p-3 text-sm text-hint">{t(availableEmpty)}</p>
 		{:else}
 			<ul class="flex flex-1 flex-col gap-1 p-2">
 				{#each availableItems as entry (getKey(entry))}
@@ -300,7 +301,7 @@
 							type="button"
 							class="btn-ghost shrink-0 px-1.5 py-1"
 							{disabled}
-							aria-label="Add"
+							aria-label={t('web.transfer.add')}
 							onclick={() => add(getKey(entry))}
 						>
 							<PlusIcon class="size-4" aria-hidden="true" />

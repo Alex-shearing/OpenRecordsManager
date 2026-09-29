@@ -1,4 +1,5 @@
 import type { AuditPolicyResponse } from '$lib/api';
+import { t } from '$lib/i18n/catalog';
 
 export function formatEntityType(key: string) {
 	return key
@@ -62,19 +63,8 @@ export function findChangedPolicies(
 
 export function formatInstant(value: string | undefined) {
 	if (!value) {
-		return '—';
+		return t('web.common.em_dash');
 	}
 	const date = new Date(value);
 	return Number.isNaN(date.getTime()) ? value : date.toLocaleString();
-}
-
-export function formatDisabledReason(reason: string | undefined) {
-	switch (reason) {
-		case 'schema_migration_required':
-			return 'Database schema migration is required.';
-		case 'disabled_by_config':
-			return 'Audit is disabled in configuration.';
-		default:
-			return reason ?? '';
-	}
 }

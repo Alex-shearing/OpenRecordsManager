@@ -8,6 +8,7 @@
 	import SchemaForm from '$lib/components/SchemaForm.svelte';
 	import TableCard from '$lib/components/TableCard.svelte';
 	import TargetDialog from '$lib/components/TargetDialog.svelte';
+	import { t } from '$lib/i18n/catalog';
 	import { invalidateAll } from '$app/navigation';
 	import toast from 'svelte-hot-french-toast';
 
@@ -54,7 +55,7 @@
 	async function handleCreate(event: SubmitEvent) {
 		event.preventDefault();
 		if (!createTypeId) {
-			createFormError = 'Select a file store type.';
+			createFormError = t('web.file_stores.select_type');
 			return;
 		}
 
@@ -77,11 +78,11 @@
 
 		if (error) {
 			createFieldErrors = (error.errorData ?? {}) as Record<string, string>;
-			createFormError = 'Failed to create file store' + error.error;
+			createFormError = error.error ?? t('web.file_stores.create_failed');
 			return;
 		}
 
-		toast.success('Created file store.');
+		toast.success(t('web.file_stores.created'));
 
 		createName = '';
 		createValues = {};
@@ -108,7 +109,7 @@
 		editLoading = false;
 
 		if (error) {
-			toast.error('Failed to load file store: ' + error.error);
+			toast.error(error.error ?? t('web.file_stores.load_failed', store.id));
 			return;
 		}
 
@@ -139,11 +140,11 @@
 
 		if (error) {
 			editFieldErrors = (error.errorData ?? {}) as Record<string, string>;
-			editFormError = error.error ?? 'Failed to update file store.';
+			editFormError = error.error ?? t('web.file_stores.update_failed');
 			return;
 		}
 
-		toast.success('Updated file store.');
+		toast.success(t('web.file_stores.updated'));
 		editTarget = undefined;
 		await invalidateAll();
 	}
@@ -164,28 +165,33 @@
 		submitting = false;
 
 		if (error) {
-			deleteFormError = 'Failed to delete file store: ' + error.error;
+			deleteFormError = error.error ?? t('web.file_stores.delete_failed', deleteTarget.id);
 			return;
 		}
 
-		toast.success('Deleted file store.');
+		toast.success(t('web.file_stores.deleted'));
 		deleteTarget = undefined;
 		await invalidateAll();
 	}
 </script>
 
-<h1 class="mb-2 text-2xl font-semibold">File stores</h1>
-<p class="mb-6 text-hint">Create and manage file stores for this workgroup.</p>
+<h1 class="mb-2 text-2xl font-semibold">{t('web.file_stores.title')}</h1>
+<p class="mb-6 text-hint">{t('web.file_stores.intro')}</p>
 
 {#if data.error}
 	<p class="text-destructive">{data.error}</p>
 {:else}
-	<TableCard title="File stores" items={sortedStores} empty="No file stores are registered." getKey={s => s.id}>
+	<TableCard
+		title={t('web.file_stores.table_title')}
+		items={sortedStores}
+		empty={t('web.file_stores.empty')}
+		getKey={s => s.id}
+	>
 		{#snippet header()}
-			<th class="px-5 py-3 font-medium">Name</th>
-			<th class="px-5 py-3 font-medium">Type</th>
-			<th class="px-5 py-3 font-medium">ID</th>
-			<th class="px-5 py-3 font-medium"><span class="sr-only">Actions</span></th>
+			<th class="px-5 py-3 font-medium">{t('web.common.name')}</th>
+			<th class="px-5 py-3 font-medium">{t('web.common.type')}</th>
+			<th class="px-5 py-3 font-medium">{t('web.common.id')}</th>
+			<th class="px-5 py-3 font-medium"><span class="sr-only">{t('web.common.actions')}</span></th>
 		{/snippet}
 		{#snippet row(store)}
 			<td class="px-5 py-4 font-medium">{store.name}</td>
@@ -195,7 +201,7 @@
 			</td>
 			<td class="px-5 py-4 text-right">
 				<button type="button" class="btn-ghost" disabled={submitting || editLoading} onclick={() => openEdit(store)}>
-					Edit
+					{t('web.common.edit')}
 				</button>
 				<button
 					type="button"
@@ -207,26 +213,26 @@
 						deleteFormError = '';
 					}}
 				>
-					Delete
+					{t('web.common.delete')}
 				</button>
 			</td>
 		{/snippet}
 	</TableCard>
 
 	<form class="mt-6 card p-5" onsubmit={handleCreate}>
-		<h2 class="mb-1 text-lg font-medium">Create file store</h2>
-		<p class="mb-4 text-hint">Choose a type, configure its settings, and optionally attach middlewares in order.</p>
+		<h2 class="mb-1 text-lg font-medium">{t('web.file_stores.create_title')}</h2>
+		<p class="mb-4 text-hint">{t('web.file_stores.create_hint')}</p>
 
 		{#if sortedTypes.length === 0}
-			<p class="text-hint">No file store types are available.</p>
+			<p class="text-hint">{t('web.file_stores.no_types')}</p>
 		{:else}
 			<label class="mb-4 flex flex-col gap-1">
-				<span class="text-label">Name</span>
+				<span class="text-label">{t('web.common.name')}</span>
 				<input class="input w-full" bind:value={createName} required disabled={submitting} />
 			</label>
 
 			<label class="mb-4 flex flex-col gap-1">
-				<span class="text-label">Type</span>
+				<span class="text-label">{t('web.common.type')}</span>
 				<select
 					class="input w-full"
 					bind:value={createTypeId}
@@ -261,7 +267,7 @@
 							/>
 
 							<label class="flex flex-col gap-1">
-								<span class="text-label">Audit comment</span>
+								<span class="text-label">{t('web.common.audit_comment')}</span>
 								<textarea
 									bind:value={createAuditComment}
 									required={data.auditCommentRequired.create}
@@ -276,29 +282,29 @@
 
 			<div class="mt-4">
 				<button type="submit" class="btn-primary" disabled={submitting || !createTypeId || !createName}>
-					{submitting ? 'Creating…' : 'Create'}
+					{submitting ? t('web.common.creating') : t('web.common.create')}
 				</button>
 			</div>
 		{/if}
 	</form>
 {/if}
 
-<TargetDialog bind:target={editTarget} title="Edit file store" size="wide">
+<TargetDialog bind:target={editTarget} title="web.file_stores.edit_title" size="wide">
 	{#snippet description(target)}
-		Update settings for <MonoId value={target.id} />.
+		{t('web.file_stores.edit_description', target.id)}
 	{/snippet}
 	{#snippet body(target)}
 		{@const targetType = sortedTypes.find(type => type.id === editTarget?.type)}
 		<form id="file-store-edit-form" class="flex flex-col gap-4" onsubmit={handleEdit}>
-			<span class="flex flex-col gap-1">There are currently {target.fileCount} files in this store.</span>
+			<span class="flex flex-col gap-1">{t('web.file_stores.files_in_store', target.fileCount)}</span>
 
 			<label class="flex flex-col gap-1">
-				<span class="text-label">Name</span>
+				<span class="text-label">{t('web.common.name')}</span>
 				<input class="input w-full" bind:value={editName} required disabled={submitting} />
 			</label>
 
 			<label class="flex flex-col gap-1">
-				<span class="text-label">Type</span>
+				<span class="text-label">{t('web.common.type')}</span>
 				<input class="input w-full" value={target.type} readonly disabled />
 			</label>
 
@@ -314,19 +320,19 @@
 					></SchemaForm>
 				{/key}
 			{:else}
-				<p class="text-sm text-destructive" role="alert">Unknown file store type.</p>
+				<p class="text-sm text-destructive" role="alert">{t('web.file_stores.unknown_type')}</p>
 			{/if}
 
 			<div class="flex flex-col gap-1">
-				<span class="text-label">Middlewares</span>
+				<span class="text-label">{t('web.file_stores.middlewares')}</span>
 				{#if target.middlewares.length === 0}
-					<p class="text-hint">None</p>
+					<p class="text-hint">{t('web.common.none')}</p>
 				{:else}
 					<ul class="flex flex-col gap-2">
 						{#each target.middlewares as id (id)}
 							{@const middleware = data.middlewares.find(m => m.id === id)}
 							<li>
-								<span class="font-medium">{middleware?.name ?? 'Unknown'}</span>
+								<span class="font-medium">{middleware?.name ?? t('web.common.unknown')}</span>
 								<span class="block"><MonoId value={id} muted /></span>
 							</li>
 						{/each}
@@ -335,7 +341,7 @@
 			</div>
 
 			<label class="flex flex-col gap-1">
-				<span class="text-label">Audit comment</span>
+				<span class="text-label">{t('web.common.audit_comment')}</span>
 				<textarea
 					bind:value={editAuditComment}
 					required={data.auditCommentRequired.update}
@@ -346,26 +352,30 @@
 		</form>
 	{/snippet}
 	{#snippet footer()}
-		<DialogActions formId="file-store-edit-form" confirmLabel="Save" confirmingLabel="Saving…" {submitting} />
+		<DialogActions
+			formId="file-store-edit-form"
+			confirmLabel="web.common.save"
+			confirmingLabel="web.common.saving"
+			{submitting}
+		/>
 	{/snippet}
 </TargetDialog>
 
 <TargetDialog
 	bind:target={deleteTarget}
-	title="Delete file store"
+	title="web.file_stores.delete_title"
 	onclose={() => {
 		deleteFormError = '';
 		deleteAuditComment = '';
 	}}
 >
 	{#snippet description(target)}
-		Remove store <span class="font-medium">{target.name}</span> (<MonoId value={target.id} />)? This fails if the store
-		still has files.
+		{t('web.file_stores.delete_confirm', target.name ?? '', target.id)}
 	{/snippet}
 	{#snippet body()}
 		<form id="file-store-delete-form" class="flex flex-col gap-4" onsubmit={handleDelete}>
 			<label class="flex flex-col gap-1">
-				<span class="text-label">Audit comment</span>
+				<span class="text-label">{t('web.common.audit_comment')}</span>
 				<textarea
 					bind:value={deleteAuditComment}
 					required={data.auditCommentRequired.delete}
@@ -382,8 +392,8 @@
 		<DialogActions
 			formId="file-store-delete-form"
 			variant="destructive"
-			confirmLabel="Delete"
-			confirmingLabel="Deleting…"
+			confirmLabel="web.common.delete"
+			confirmingLabel="web.common.deleting"
 			{submitting}
 		/>
 	{/snippet}

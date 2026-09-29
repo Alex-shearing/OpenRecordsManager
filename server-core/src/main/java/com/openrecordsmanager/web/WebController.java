@@ -30,7 +30,6 @@ public class WebController {
     @Operation(summary = "Get centralised web UI branding")
     public WebBrandingResponse branding() {
         return new WebBrandingResponse(
-                this.config.getOrThrow(BuiltinConfigs.WEB_PRODUCT_NAME),
                 this.config.getOrThrow(BuiltinConfigs.WEB_LOGO_URL),
                 this.config.getOrThrow(BuiltinConfigs.WEB_FAVICON_URL),
                 this.config.getOrThrow(BuiltinConfigs.WEB_PRIMARY_COLOR),
