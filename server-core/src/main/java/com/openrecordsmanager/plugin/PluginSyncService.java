@@ -5,9 +5,11 @@ import com.openrecordsmanager.config.ConfigService;
 import com.openrecordsmanager.database.DatabaseWritableProbe;
 import com.openrecordsmanager.filestore.store.FileStore;
 import com.openrecordsmanager.filestore.store.FileStoreRepository;
+import com.openrecordsmanager.i18n.BundleMessageLoader;
 import com.openrecordsmanager.plugin.registry.ComponentCatalog;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -27,6 +29,7 @@ public class PluginSyncService {
     private final FileStoreRepository fileStoreRepository;
     private final ConfigService configService;
     private final DatabaseWritableProbe databaseWritableProbe;
+    private final BundleMessageLoader bundleMessageLoader;
 
     private Instant lastSeenMaxDateModified = Instant.EPOCH;
 
@@ -36,7 +39,8 @@ public class PluginSyncService {
             PluginRepository pluginRepository,
             FileStoreRepository fileStoreRepository,
             ConfigService configService,
-            DatabaseWritableProbe databaseWritableProbe
+            DatabaseWritableProbe databaseWritableProbe,
+            @Lazy BundleMessageLoader bundleMessageLoader
     ) {
         this.pluginManager = pluginManager;
         this.componentCatalog = componentCatalog;
@@ -44,11 +48,13 @@ public class PluginSyncService {
         this.fileStoreRepository = fileStoreRepository;
         this.configService = configService;
         this.databaseWritableProbe = databaseWritableProbe;
+        this.bundleMessageLoader = bundleMessageLoader;
     }
 
     public void syncAndReloadOnStartup() {
         if (this.isSyncSkipped()) {
             LOGGER.info("Plugin sync is disabled, skipping startup re-sync");
+            this.bundleMessageLoader.refresh();
             return;
         }
 
@@ -80,6 +86,9 @@ public class PluginSyncService {
             this.pluginRepository.flush();
             this.pluginManager.reload(this.componentCatalog);
         }
+
+        this.bundleMessageLoader.refresh();
+
         this.refreshLastSeenMaxDateModified();
     }
 

@@ -2,10 +2,13 @@ package com.openrecordsmanager.recordtype;
 
 import com.openrecordsmanager.api.ResourceIdentifier;
 import com.openrecordsmanager.api.template.recordtype.SecurityFilterUsage;
+import com.openrecordsmanager.api.types.ComponentType;
+import com.openrecordsmanager.api.types.ComponentTypes;
 import com.openrecordsmanager.database.util.ResourceIdentifierJavaType;
 import com.openrecordsmanager.plugin.ExpressionsService;
 import com.openrecordsmanager.property.ObjectProperty;
 import com.openrecordsmanager.record.Record;
+import com.openrecordsmanager.template.RegisteredComponent;
 import com.openrecordsmanager.user.User;
 import jakarta.persistence.*;
 import org.hibernate.annotations.JavaType;
@@ -21,16 +24,10 @@ import java.util.Set;
 @Entity
 @Table(name = "record_type")
 @SuppressWarnings("NotNullFieldNotInitialized")
-public class RecordType {
+public class RecordType implements RegisteredComponent {
     @Id
     @JavaType(ResourceIdentifierJavaType.class)
     private ResourceIdentifier id;
-
-    @Column(nullable = false)
-    private String name;
-
-    @Column(nullable = false)
-    private String description;
 
     @Column()
     @Nullable
@@ -62,16 +59,12 @@ public class RecordType {
 
     public RecordType(
             ResourceIdentifier id,
-            String name,
-            String description,
             @Nullable Set<String> contentTypes,
             @Nullable String securityFilter,
             SecurityFilterUsage securityFilterUsage,
             Set<RecordTypeProperty<?>> properties
     ) {
         this.id = id;
-        this.description = description;
-        this.name = name;
         this.contentTypes = contentTypes != null ? contentTypes : new HashSet<>();
         this.securityFilter = securityFilter;
         this.securityFilterUsage = securityFilterUsage;
@@ -82,14 +75,6 @@ public class RecordType {
 
     public ResourceIdentifier getId() {
         return this.id;
-    }
-
-    public String getName() {
-        return this.name;
-    }
-
-    public String getDescription() {
-        return this.description;
     }
 
     public @Nullable String getSecurityFilter() {
@@ -147,5 +132,10 @@ public class RecordType {
         }
 
         return SecurityFilterUsage.SHOW_ALL;
+    }
+
+    @Override
+    public ComponentType<?> getComponentType() {
+        return ComponentTypes.RECORD_TYPE;
     }
 }

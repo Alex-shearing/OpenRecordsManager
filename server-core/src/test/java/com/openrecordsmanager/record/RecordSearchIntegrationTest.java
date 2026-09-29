@@ -111,17 +111,11 @@ class RecordSearchIntegrationTest {
                     .map(p -> (ObjectProperty<String>) p)
                     .orElseGet(() -> this.repository.objectPropertyRepo.saveAndFlush(new ObjectProperty<>(
                             BuiltinPropertyIds.TITLE,
-                            "Title",
-                            "Title",
                             PropertyType.STRING
                     )));
 
             RecordType type = this.repository.recordTypeRepo.findById(SEARCH_RECORD_TYPE).orElseGet(() ->
-                    this.repository.recordTypeRepo.saveAndFlush(new RecordType(
-                            SEARCH_RECORD_TYPE,
-                            "Search record type",
-                            "Record type for search tests",
-                            null,
+                    this.repository.recordTypeRepo.saveAndFlush(new RecordType(SEARCH_RECORD_TYPE, null,
                             null,
                             SecurityFilterUsage.SHOW_ALL,
                             Set.of(new RecordTypeProperty<>(titleProperty, null))

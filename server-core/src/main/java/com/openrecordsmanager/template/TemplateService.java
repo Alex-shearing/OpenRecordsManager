@@ -15,7 +15,6 @@ import com.openrecordsmanager.plugin.registry.ComponentCatalog;
 import com.openrecordsmanager.plugin.registry.TemplateComponentRegistry;
 import com.openrecordsmanager.plugin.registry.mapper.TemplateRegistrationMapper;
 import com.openrecordsmanager.rest.errors.ResourceNotFoundException;
-import com.openrecordsmanager.template.dto.TemplateResponse;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -53,16 +52,12 @@ public class TemplateService {
     }
 
     @Transactional(readOnly = true)
-    public Set<TemplateResponse> listTemplates(String typeName) {
+    public Set<ResourceIdentifier> listTemplates(String typeName) {
         TemplateRegistrationMapper<?, ?> mapper = resolveMapper(typeName);
         TemplateComponentRegistry<?, ?> registry = this.catalog.getTemplateRegistry(mapper);
-        Set<TemplateResponse> results = registry.getIds().stream()
-                .map(id -> registry.get(id)
-                        .map(template -> TemplateResponse.of(id, template))
-                        .orElseThrow())
-                .collect(Collectors.toSet());
-        this.auditService.recordCollectionRead(AuditEntityType.TEMPLATE, results.size());
-        return results;
+
+        this.auditService.recordCollectionRead(AuditEntityType.TEMPLATE, registry.getIds().size());
+        return registry.getIds();
     }
 
     @Transactional(readOnly = true)

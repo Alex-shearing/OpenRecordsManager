@@ -34,9 +34,7 @@ import tools.jackson.databind.JsonNode;
 )
 public record ConfigTypeResponse(
         @NotBlank String key,
-        @NotBlank String name,
         @Nullable JsonNode currentValue,
-        @NotBlank String description,
         @Nullable JsonNode defaultValue,
         @NotBlank @Schema(description = "PropertyType name (config-supported subset)") String type
 ) {
@@ -44,9 +42,7 @@ public record ConfigTypeResponse(
     public static <T> ConfigTypeResponse from(ConfigType<T> ob, @Nullable JsonNode currentValue) {
         return new ConfigTypeResponse(
                 ob.key(),
-                ob.name(),
                 currentValue,
-                ob.description(),
                 ob.defaultValue() == null ? null : PropertyType.toTree(ob.defaultValue()),
                 ob.type().getName()
         );

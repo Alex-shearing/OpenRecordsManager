@@ -8,8 +8,8 @@ import com.openrecordsmanager.api.builtin.BuiltinPropertyIds;
 import com.openrecordsmanager.api.template.list.IListElement;
 import com.openrecordsmanager.api.template.property.PropertyType;
 import com.openrecordsmanager.api.template.recordtype.SecurityFilterUsage;
-import com.openrecordsmanager.audit.AuditTestSupport;
 import com.openrecordsmanager.audit.AuditPolicyService;
+import com.openrecordsmanager.audit.AuditTestSupport;
 import com.openrecordsmanager.database.DataRepository;
 import com.openrecordsmanager.list.ListElement;
 import com.openrecordsmanager.list.ListType;
@@ -82,15 +82,9 @@ class RecordUpdateIntegrationTest {
                         .map(p -> (ObjectProperty<String>) p)
                         .orElseGet(() -> this.repository.objectPropertyRepo.saveAndFlush(new ObjectProperty<>(
                                 BuiltinPropertyIds.TITLE,
-                                "Title",
-                                "Title",
                                 PropertyType.STRING
                         )));
-                RecordType recordType = new RecordType(
-                        TEST_RECORD_TYPE,
-                        "Test record type",
-                        "Test record type for update integration test",
-                        null,
+                RecordType recordType = new RecordType(TEST_RECORD_TYPE, null,
                         null,
                         SecurityFilterUsage.SHOW_ALL,
                         Set.of(new RecordTypeProperty<>(titleProperty, null))
@@ -99,17 +93,17 @@ class RecordUpdateIntegrationTest {
             }
 
             ListType listType = this.repository.listTypeRepo.findById(LIST_ID).orElseGet(() ->
-                    this.repository.listTypeRepo.saveAndFlush(new ListType(LIST_ID, "Record list prop list"))
+                    this.repository.listTypeRepo.saveAndFlush(new ListType(LIST_ID))
             );
 
             this.repository.listElementRepo.findById(ELEMENT_A).orElseGet(() ->
                     this.repository.listElementRepo.saveAndFlush(
-                            new ListElement(ELEMENT_A, listType, "A", "", 1, null, Set.of())
+                            new ListElement(ELEMENT_A, listType, 1, null, Set.of())
                     )
             );
             this.repository.listElementRepo.findById(ELEMENT_B).orElseGet(() ->
                     this.repository.listElementRepo.saveAndFlush(
-                            new ListElement(ELEMENT_B, listType, "B", "", 2, null, Set.of())
+                            new ListElement(ELEMENT_B, listType, 2, null, Set.of())
                     )
             );
 
@@ -117,8 +111,6 @@ class RecordUpdateIntegrationTest {
                     .map(p -> (ObjectProperty<IListElement>) p)
                     .orElseGet(() -> this.repository.objectPropertyRepo.saveAndFlush(new ObjectProperty<>(
                             LIST_ITEM_PROP,
-                            "Record list item",
-                            "Record list item",
                             PropertyType.LIST_ITEM,
                             listType,
                             null,
@@ -131,8 +123,6 @@ class RecordUpdateIntegrationTest {
                     .map(p -> (ObjectProperty<Collection<IListElement>>) p)
                     .orElseGet(() -> this.repository.objectPropertyRepo.saveAndFlush(new ObjectProperty<>(
                             LIST_MULTI_PROP,
-                            "Record list multiple",
-                            "Record list multiple",
                             PropertyType.LIST_MULTIPLE,
                             listType,
                             null,
@@ -153,8 +143,6 @@ class RecordUpdateIntegrationTest {
 
                 RecordType recordType = new RecordType(
                         LIST_RECORD_TYPE,
-                        "List prop record type",
-                        "Record type with list properties",
                         null,
                         null,
                         SecurityFilterUsage.SHOW_ALL,

@@ -88,27 +88,9 @@ class PluginServiceIntegrationTest {
             DEFAULT_FILE_STORE.set(store.getId().toString());
         }
 
-        this.repository.auditPolicyRepo.saveAndFlush(new AuditPolicyEntity(
-                new AuditPolicyId(AuditEntityType.PLUGIN, AuditOperation.CREATE),
-                true,
-                false,
-                "Plugin created",
-                "test"
-        ));
-        this.repository.auditPolicyRepo.saveAndFlush(new AuditPolicyEntity(
-                new AuditPolicyId(AuditEntityType.PLUGIN, AuditOperation.UPDATE),
-                true,
-                false,
-                "Plugin updated",
-                "test"
-        ));
-        this.repository.auditPolicyRepo.saveAndFlush(new AuditPolicyEntity(
-                new AuditPolicyId(AuditEntityType.PLUGIN, AuditOperation.DELETE),
-                true,
-                false,
-                "Plugin deleted",
-                "test"
-        ));
+        this.repository.auditPolicyRepo.saveAndFlush(new AuditPolicyEntity(new AuditPolicyId(AuditEntityType.PLUGIN, AuditOperation.CREATE), true, false));
+        this.repository.auditPolicyRepo.saveAndFlush(new AuditPolicyEntity(new AuditPolicyId(AuditEntityType.PLUGIN, AuditOperation.UPDATE), true, false));
+        this.repository.auditPolicyRepo.saveAndFlush(new AuditPolicyEntity(new AuditPolicyId(AuditEntityType.PLUGIN, AuditOperation.DELETE), true, false));
 
         this.repository.pluginRepo.deleteAll();
     }
@@ -168,11 +150,6 @@ class PluginServiceIntegrationTest {
         ));
 
         assertEquals("filestore_local", uploaded.id());
-        assertEquals("File System Store Type", uploaded.displayName());
-        assertEquals(
-                "Store files on a standard filesystem under a configured root directory.",
-                uploaded.description()
-        );
         assertEquals("0.1.0", uploaded.version());
         assertTrue(uploaded.enabled());
         assertTrue(uploaded.loaded());

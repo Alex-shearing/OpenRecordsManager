@@ -32,14 +32,7 @@ import java.util.stream.Stream;
 public class PluginManager {
     public static final Logger LOGGER = LoggerFactory.getLogger(PluginManager.class);
     private static final LoadedPlugin BUILTIN_PLUGIN = new LoadedPlugin(
-            new DiscoveredPlugin(
-                    BuiltinPlugin.BUILTIN_PLUGIN_NAME,
-                    Semver.ZERO,
-                    "Builtin Components",
-                    "These are the builtin components, they cannot be modified.",
-                    null,
-                    null
-            ),
+            new DiscoveredPlugin(BuiltinPlugin.BUILTIN_PLUGIN_NAME, Semver.ZERO, null, null),
             new BuiltinPlugin()
     );
 

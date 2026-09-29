@@ -1,6 +1,4 @@
 {
-  "name": "Test record type",
-  "description": "Test record description",
   "allowedContentTypes": [
     "application/json"
   ],

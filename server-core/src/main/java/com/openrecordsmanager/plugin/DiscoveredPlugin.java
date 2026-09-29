@@ -17,14 +17,12 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
 /**
- * Plugin identity and display metadata from {@code plugin.json}, optionally bound to an on-disk
- * jar/zip when loaded from the plugins' directory.
+ * Plugin identity from {@code plugin.json}, optionally bound to an on-disk jar/zip when loaded
+ * from the plugins' directory.
  */
 public record DiscoveredPlugin(
         String id,
         Semver version,
-        String displayName,
-        String description,
         @Nullable Path path,
         @Nullable PersistedPlugin persistedPlugin
 ) {
@@ -54,14 +52,10 @@ public record DiscoveredPlugin(
 
         String id = requireNonBlank(node, "id");
         String version = requireNonBlank(node, "version");
-        String displayName = requireNonBlank(node, "displayName");
-        String description = requireNonBlank(node, "description");
 
         return new DiscoveredPlugin(
                 id,
                 new Semver(version),
-                displayName,
-                description,
                 file,
                 repo != null ? repo.findById(id).orElse(null) : null
         );

@@ -69,7 +69,7 @@ class PrimaryOfflineIntegrationTest {
             // /api/user/me serializes User wire properties via ObjectPropertyLookup; primary seeding
             // is skipped when the primary DB is offline, so builtins must exist on the read replica.
             try (PreparedStatement property = connection.prepareStatement(
-                    "INSERT INTO object_property (id, name, description, type, user_hidden, date_created, date_modified) VALUES (?, ?, ?, ?, ?, ?, ?)"
+                    "INSERT INTO object_property (id, type, user_hidden, date_created, date_modified) VALUES (?, ?, ?, ?, ?)"
             )) {
                 BuiltinProperties.BUILTIN_PROPERTIES.forEach((id, template) -> {
                     try {
@@ -77,8 +77,6 @@ class PrimaryOfflineIntegrationTest {
                                 property,
                                 now,
                                 id.toString(),
-                                template.name(),
-                                template.description(),
                                 template.type().getName(),
                                 template.userHidden()
                         );
@@ -86,8 +84,7 @@ class PrimaryOfflineIntegrationTest {
                         throw new RuntimeException("Failed to seed builtin property " + id, e);
                     }
                 });
-                seedObjectProperty(property, now, "auth_local:password_hash", "Password Hash",
-                        "Hashed password for the user", "string", true);
+                seedObjectProperty(property, now, "auth_local:password_hash", "string", true);
             }
 
             try (PreparedStatement provider = connection.prepareStatement(
@@ -137,18 +134,14 @@ class PrimaryOfflineIntegrationTest {
             PreparedStatement property,
             Timestamp now,
             String id,
-            String name,
-            String description,
             String type,
             boolean userHidden
     ) throws Exception {
         property.setString(1, id);
-        property.setString(2, name);
-        property.setString(3, description);
-        property.setString(4, type);
-        property.setBoolean(5, userHidden);
-        property.setTimestamp(6, now);
-        property.setTimestamp(7, now);
+        property.setString(2, type);
+        property.setBoolean(3, userHidden);
+        property.setTimestamp(4, now);
+        property.setTimestamp(5, now);
         property.executeUpdate();
     }
 

@@ -47,7 +47,8 @@ public class RestConfiguration {
             "/api/web/**",
             "/api/database/**",
             "/api/health",
-            "/api/health/**"
+            "/api/health/**",
+            "/api/translations/catalog"
     };
 
     private static final HttpMethod[] CORS_METHODS = {

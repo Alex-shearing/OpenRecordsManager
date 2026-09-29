@@ -17,15 +17,12 @@ CREATE TABLE auth_provider (
 
 CREATE TABLE list_type (
     id VARCHAR(255) NOT NULL PRIMARY KEY,
-    name VARCHAR(255) NOT NULL,
     date_created TIMESTAMP NOT NULL,
     date_modified TIMESTAMP NOT NULL
 );
 
 CREATE TABLE object_property (
     id VARCHAR(255) NOT NULL PRIMARY KEY,
-    name VARCHAR(255) NOT NULL,
-    description TEXT NOT NULL,
     type VARCHAR(255) NOT NULL,
     list_type_id VARCHAR(255),
     validator VARCHAR(255),
@@ -42,8 +39,6 @@ CREATE INDEX IF NOT EXISTS idx_object_property_list_type_id ON object_property (
 CREATE TABLE list_element (
     id VARCHAR(255) NOT NULL PRIMARY KEY,
     parent_id VARCHAR(255) NOT NULL,
-    name VARCHAR(255) NOT NULL,
-    description TEXT NOT NULL,
     element_index INTEGER NOT NULL,
     active_to TIMESTAMP,
     date_created TIMESTAMP NOT NULL,
@@ -63,8 +58,6 @@ CREATE INDEX IF NOT EXISTS idx_list_element_alias_element ON list_element_alias 
 
 CREATE TABLE record_type (
     id VARCHAR(255) NOT NULL PRIMARY KEY,
-    name VARCHAR(255) NOT NULL,
-    description TEXT NOT NULL,
     security_filter VARCHAR(255),
     security_filter_usage TINYINT NOT NULL CHECK (security_filter_usage BETWEEN 0 AND 2),
     content_types CLOB,
@@ -224,8 +217,16 @@ CREATE TABLE audit_policy (
     operation VARCHAR(50) NOT NULL,
     enabled BOOLEAN NOT NULL,
     requires_comment BOOLEAN NOT NULL,
-    display_name VARCHAR(255) NOT NULL,
-    description TEXT,
     date_modified TIMESTAMP NOT NULL,
     PRIMARY KEY (entity_type, operation)
 );
+
+CREATE TABLE translation_override (
+    message_key VARCHAR(512) NOT NULL,
+    locale VARCHAR(32) NOT NULL,
+    value TEXT NOT NULL,
+    updated_at TIMESTAMP NOT NULL,
+    PRIMARY KEY (message_key, locale)
+);
+
+CREATE INDEX idx_translation_override_locale ON translation_override (locale);

@@ -60,25 +60,23 @@ class UserCrudIntegrationTest {
         this.admin = this.repository.userRepo.findByUsername("admin").orElseThrow();
 
         ListType listType = this.repository.listTypeRepo.findById(LIST_ID).orElseGet(() ->
-                this.repository.listTypeRepo.saveAndFlush(new ListType(LIST_ID, "User list prop list"))
+                this.repository.listTypeRepo.saveAndFlush(new ListType(LIST_ID))
         );
 
         this.repository.listElementRepo.findById(ELEMENT_SECRET).orElseGet(() ->
                 this.repository.listElementRepo.saveAndFlush(
-                        new ListElement(ELEMENT_SECRET, listType, "Secret", "", 1, null, Set.of())
+                        new ListElement(ELEMENT_SECRET, listType, 1, null, Set.of())
                 )
         );
         this.repository.listElementRepo.findById(ELEMENT_TOP_SECRET).orElseGet(() ->
                 this.repository.listElementRepo.saveAndFlush(
-                        new ListElement(ELEMENT_TOP_SECRET, listType, "Top Secret", "", 2, null, Set.of())
+                        new ListElement(ELEMENT_TOP_SECRET, listType, 2, null, Set.of())
                 )
         );
 
         if (this.repository.objectPropertyRepo.findById(LIST_ITEM_PROP).isEmpty()) {
             ObjectProperty<IListElement> itemProp = new ObjectProperty<>(
                     LIST_ITEM_PROP,
-                    "User list item",
-                    "User list item",
                     PropertyType.LIST_ITEM,
                     listType,
                     null,
@@ -92,8 +90,6 @@ class UserCrudIntegrationTest {
         if (this.repository.objectPropertyRepo.findById(LIST_MULTI_PROP).isEmpty()) {
             ObjectProperty<Collection<IListElement>> multiProp = new ObjectProperty<>(
                     LIST_MULTI_PROP,
-                    "User list multiple",
-                    "User list multiple",
                     PropertyType.LIST_MULTIPLE,
                     listType,
                     null,

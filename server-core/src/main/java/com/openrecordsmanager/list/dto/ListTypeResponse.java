@@ -11,7 +11,6 @@ import java.util.List;
 
 public record ListTypeResponse(
         @NonNull ResourceIdentifier type,
-        @NonNull String name,
         @NotNull Instant dateCreated,
         @NotNull Instant dateModified,
         @NotBlank List<ListElementResponse> elements
@@ -19,7 +18,6 @@ public record ListTypeResponse(
     public static ListTypeResponse of(ListType listType) {
         return new ListTypeResponse(
                 listType.getId(),
-                listType.getName(),
                 listType.getDateCreated(),
                 listType.getDateModified(),
                 listType.getChildren().stream()

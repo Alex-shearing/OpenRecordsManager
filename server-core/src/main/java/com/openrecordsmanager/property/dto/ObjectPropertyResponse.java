@@ -2,7 +2,6 @@ package com.openrecordsmanager.property.dto;
 
 import com.openrecordsmanager.api.ResourceIdentifier;
 import com.openrecordsmanager.list.ListType;
-import com.openrecordsmanager.list.dto.SimpleListTypeResponse;
 import com.openrecordsmanager.property.ObjectProperty;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -13,10 +12,8 @@ import java.time.Instant;
 
 public record ObjectPropertyResponse(
         @NotBlank ResourceIdentifier id,
-        @NotBlank String name,
-        @NotBlank String description,
         @NotNull String type,
-        @Nullable SimpleListTypeResponse listType,
+        @Nullable ResourceIdentifier listType,
         @Nullable String validator,
         @Nullable String securityFilter,
         @Nullable JsonNode defaultValue,
@@ -28,10 +25,8 @@ public record ObjectPropertyResponse(
         ListType listType = property.getListType();
         return new ObjectPropertyResponse(
                 property.getId(),
-                property.getName(),
-                property.getDescription(),
                 property.getType().toString(),
-                listType != null ? SimpleListTypeResponse.of(listType) : null,
+                listType != null ? listType.getId() : null,
                 property.getValidator(),
                 property.getSecurityFilter(),
                 property.getDefaultValue(),

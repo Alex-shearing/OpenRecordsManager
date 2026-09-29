@@ -1,24 +1,25 @@
 package com.openrecordsmanager.list;
 
 import com.openrecordsmanager.api.ResourceIdentifier;
+import com.openrecordsmanager.api.types.ComponentType;
+import com.openrecordsmanager.api.types.ComponentTypes;
 import com.openrecordsmanager.database.util.ResourceIdentifierJavaType;
+import com.openrecordsmanager.template.RegisteredComponent;
 import jakarta.persistence.*;
 import org.hibernate.annotations.JavaType;
 
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @Entity
 @Table(name = "list_type")
 @SuppressWarnings({"NotNullFieldNotInitialized", "CanBeFinal"})
-public class ListType {
+public class ListType implements RegisteredComponent {
     @Id
     @JavaType(ResourceIdentifierJavaType.class)
     private ResourceIdentifier id;
-
-    @Column(nullable = false)
-    private String name;
 
     @Column(nullable = false)
     private Instant dateCreated;
@@ -34,24 +35,14 @@ public class ListType {
     protected ListType() {
     }
 
-    public ListType(ResourceIdentifier id, String name) {
+    public ListType(ResourceIdentifier id) {
         this.id = id;
-        this.name = name;
         this.dateCreated = Instant.now();
         this.dateModified = Instant.now();
     }
 
     public ResourceIdentifier getId() {
         return this.id;
-    }
-
-    public String getName() {
-        return this.name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-        this.touchDateModified();
     }
 
     public Instant getDateCreated() {
@@ -68,5 +59,21 @@ public class ListType {
 
     public List<ListElement> getChildren() {
         return this.children;
+    }
+
+    @Override
+    public ComponentType<?> getComponentType() {
+        return ComponentTypes.LIST;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (!(o instanceof ListType listType)) return false;
+        return Objects.equals(this.id, listType.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(this.id);
     }
 }

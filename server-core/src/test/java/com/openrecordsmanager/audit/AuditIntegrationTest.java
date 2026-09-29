@@ -76,16 +76,15 @@ class AuditIntegrationTest {
     void commentRequiredWhenPolicyEnabled() {
         this.auditPolicyService.ensurePolicyExists(
                 AuditEntityType.RECORD,
-                AuditOperation.CREATE,
-                "Record created",
-                "test"
+                AuditOperation.CREATE
         );
         this.repository.auditPolicyRepo.saveAndFlush(new AuditPolicyEntity(
-                new AuditPolicyId(AuditEntityType.RECORD, AuditOperation.CREATE),
+                new AuditPolicyId(
+                        AuditEntityType.RECORD,
+                        AuditOperation.CREATE
+                ),
                 true,
-                true,
-                "Record created",
-                "test"
+                true
         ));
 
         AuditContext.begin(null, "tester", null, true);
@@ -116,16 +115,15 @@ class AuditIntegrationTest {
     void aspectEnforcesCommentOnAnnotatedServiceMethod() {
         this.auditPolicyService.ensurePolicyExists(
                 AuditEntityType.LIST,
-                AuditOperation.CREATE,
-                "List created",
-                "test"
+                AuditOperation.CREATE
         );
         this.repository.auditPolicyRepo.saveAndFlush(new AuditPolicyEntity(
-                new AuditPolicyId(AuditEntityType.LIST, AuditOperation.CREATE),
+                new AuditPolicyId(
+                        AuditEntityType.LIST,
+                        AuditOperation.CREATE
+                ),
                 true,
-                true,
-                "List created",
-                "test"
+                true
         ));
 
         AuditContext.begin(null, "tester", null, true);

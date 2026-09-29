@@ -7,21 +7,9 @@ import java.util.Map;
 
 public abstract class RecordActionType<I extends Record> implements Component {
     private final Class<I> inputClass;
-    private final String displayName;
-    private final String description;
 
-    protected RecordActionType(Class<I> inputClass, String displayName, String description) {
+    protected RecordActionType(Class<I> inputClass) {
         this.inputClass = inputClass;
-        this.displayName = displayName;
-        this.description = description;
-    }
-
-    public String getDisplayName() {
-        return this.displayName;
-    }
-
-    public String getDescription() {
-        return this.description;
     }
 
     public Class<I> getInputClass() {

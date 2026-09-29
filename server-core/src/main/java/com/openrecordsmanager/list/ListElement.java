@@ -2,7 +2,10 @@ package com.openrecordsmanager.list;
 
 import com.openrecordsmanager.api.ResourceIdentifier;
 import com.openrecordsmanager.api.template.list.IListElement;
+import com.openrecordsmanager.api.types.ComponentType;
+import com.openrecordsmanager.api.types.ComponentTypes;
 import com.openrecordsmanager.database.util.ResourceIdentifierJavaType;
+import com.openrecordsmanager.template.RegisteredComponent;
 import jakarta.persistence.*;
 import org.hibernate.annotations.JavaType;
 import org.jspecify.annotations.Nullable;
@@ -15,7 +18,7 @@ import java.util.Set;
 @Entity
 @Table(name = "list_element")
 @SuppressWarnings("NotNullFieldNotInitialized")
-public class ListElement implements IListElement {
+public class ListElement implements IListElement, RegisteredComponent {
     @Id
     @JavaType(ResourceIdentifierJavaType.class)
     private ResourceIdentifier id;
@@ -23,12 +26,6 @@ public class ListElement implements IListElement {
     @ManyToOne(optional = false)
     @JoinColumn(nullable = false)
     private ListType parent;
-
-    @Column(nullable = false)
-    private String name;
-
-    @Column(nullable = false)
-    private String description;
 
     @Column(nullable = false)
     private int elementIndex;
@@ -57,16 +54,12 @@ public class ListElement implements IListElement {
     public ListElement(
             ResourceIdentifier id,
             ListType parent,
-            String name,
-            String description,
             int elementIndex,
             @Nullable Instant activeTo,
             Set<String> aliases
     ) {
         this.id = id;
         this.parent = parent;
-        this.name = name;
-        this.description = description;
         this.elementIndex = elementIndex;
         this.activeTo = activeTo;
         this.aliases = aliases;
@@ -80,24 +73,6 @@ public class ListElement implements IListElement {
 
     public ListType getParent() {
         return this.parent;
-    }
-
-    public String getName() {
-        return this.name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-        this.touchDateModified();
-    }
-
-    public String getDescription() {
-        return this.description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-        this.touchDateModified();
     }
 
     public int getElementIndex() {
@@ -142,6 +117,11 @@ public class ListElement implements IListElement {
     @Override
     public int index() {
         return this.elementIndex;
+    }
+    
+    @Override
+    public ComponentType<?> getComponentType() {
+        return ComponentTypes.LIST_ELEMENT;
     }
 
     @Override

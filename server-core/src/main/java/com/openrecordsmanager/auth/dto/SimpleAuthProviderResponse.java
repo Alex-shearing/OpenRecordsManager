@@ -28,9 +28,11 @@ public record SimpleAuthProviderResponse(
                         provider.getProviderType().getType(),
                         provider.getProviderType().getId(catalog).orElseThrow())
                 );
-        InputFormSchema schema = type instanceof InputAuthProviderType<?, ?> inputType
-                ? InputFormSchema.from(inputType.getInputClass())
-                : null;
+
+        InputFormSchema schema = null;
+        if (type instanceof InputAuthProviderType<?, ?> inputType) {
+            schema = InputFormSchema.from(inputType.getInputClass());
+        }
 
         return new SimpleAuthProviderResponse(
                 provider.getId(),

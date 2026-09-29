@@ -41,8 +41,6 @@ public class RecordTypeTemplateRegistrationMapper extends TemplateRegistrationMa
 
         RecordType type = new RecordType(
                 id,
-                component.name(),
-                component.description(),
                 component.allowedContentTypes(),
                 expressions.buildExpression(component.securityFilter()),
                 component.securityFilterUsage(),

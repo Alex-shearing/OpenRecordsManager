@@ -28,7 +28,7 @@ public class ListTemplateRegistrationMapper extends TemplateRegistrationMapper<L
             ResourceIdentifier id,
             ListTemplate component
     ) {
-        ListType type = new ListType(id, component.name());
+        ListType type = new ListType(id);
         repository.listTypeRepo.saveAndFlush(type);
 
         component.defaultEntries().forEach((s, listItem) -> {
@@ -37,7 +37,6 @@ public class ListTemplateRegistrationMapper extends TemplateRegistrationMapper<L
             catalog.getTemplateRegistry(ComponentCatalog.LIST_ELEMENT_MAPPER)
                     .register(repository, catalog, expressions, auditService, childId, listItem, false);
         });
-
     }
 
     @Override

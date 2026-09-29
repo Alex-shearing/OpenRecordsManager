@@ -9,11 +9,11 @@ import org.slf4j.LoggerFactory;
 
 public class AuthLocalPlugin implements Plugin {
     public static final Logger LOGGER = LoggerFactory.getLogger(AuthLocalPlugin.class);
-    
-    public static final ObjectPropertyTemplate<String> PASSWORD_HASH_PROPERTY = ObjectPropertyTemplate.builder("Password Hash", PropertyType.STRING)
-            .description("Hashed password for the user")
+
+    public static final ObjectPropertyTemplate<String> PASSWORD_HASH_PROPERTY = ObjectPropertyTemplate.builder(PropertyType.STRING)
             .userHidden()
             .build();
+
     @Override
     public void initialise(RegistrationContext registry) {
         LOGGER.info("Initializing plugin...");

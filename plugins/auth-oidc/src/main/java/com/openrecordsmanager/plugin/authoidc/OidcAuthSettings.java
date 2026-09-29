@@ -7,19 +7,34 @@ import jakarta.validation.constraints.NotBlank;
  * Persisted OIDC provider settings. {@code secret} is write-only in API responses.
  */
 public record OidcAuthSettings(
-        @Schema(title = "Client ID")
+        @Schema(title = "redirect_auth_provider.auth_oidc.oidc_auth.schema.clientId.title")
         @NotBlank String clientId,
 
-        @Schema(title = "Client Secret", format = "password", accessMode = Schema.AccessMode.WRITE_ONLY)
+        @Schema(
+                title = "redirect_auth_provider.auth_oidc.oidc_auth.schema.secret.title",
+                format = "password",
+                accessMode = Schema.AccessMode.WRITE_ONLY
+        )
         @NotBlank String secret,
 
-        @Schema(title = "Issuer URI", description = "OpenID Connect issuer URL")
+        @Schema(
+                title = "redirect_auth_provider.auth_oidc.oidc_auth.schema.uri.title",
+                description = "redirect_auth_provider.auth_oidc.oidc_auth.schema.uri.description"
+        )
         @NotBlank String uri,
 
-        @Schema(title = "Scope", description = "Space-separated scopes; openid is always included", defaultValue = "openid profile email")
+        @Schema(
+                title = "redirect_auth_provider.auth_oidc.oidc_auth.schema.scope.title",
+                description = "redirect_auth_provider.auth_oidc.oidc_auth.schema.scope.description",
+                defaultValue = "openid profile email"
+        )
         @NotBlank String scope,
 
-        @Schema(title = "Username claim", description = "ID token claim used as ORM username", defaultValue = "preferred_username")
+        @Schema(
+                title = "redirect_auth_provider.auth_oidc.oidc_auth.schema.usernameClaim.title",
+                description = "redirect_auth_provider.auth_oidc.oidc_auth.schema.usernameClaim.description",
+                defaultValue = "preferred_username"
+        )
         @NotBlank String usernameClaim
 ) {
 }

@@ -1,17 +1,16 @@
 package com.openrecordsmanager.plugin.registry;
 
-import com.google.common.collect.ImmutableBiMap;
+import com.google.common.collect.ImmutableMap;
 import com.openrecordsmanager.api.Component;
 import com.openrecordsmanager.api.ComponentAccess;
 import com.openrecordsmanager.api.ResourceIdentifier;
 
-import java.util.HashMap;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Stream;
 
 public class ComponentRegistry<T extends Component> implements ComponentAccess.RegistryAccess<T> {
-    private ImmutableBiMap<ResourceIdentifier, T> map = ImmutableBiMap.of();
+    private ImmutableMap<ResourceIdentifier, T> map = ImmutableMap.of();
+    private Map<T, ResourceIdentifier> inverse = Map.of();
 
     @Override
     public Optional<T> get(ResourceIdentifier id) {
@@ -20,7 +19,7 @@ public class ComponentRegistry<T extends Component> implements ComponentAccess.R
 
     @Override
     public Optional<ResourceIdentifier> getId(T definition) {
-        return Optional.ofNullable(this.map.inverse().get(definition));
+        return Optional.ofNullable(this.inverse.get(definition));
     }
 
     public Set<ResourceIdentifier> getIds() {
@@ -43,7 +42,10 @@ public class ComponentRegistry<T extends Component> implements ComponentAccess.R
         }
 
         public void build() {
-            ComponentRegistry.this.map = ImmutableBiMap.copyOf(this.builder);
+            ComponentRegistry.this.map = ImmutableMap.copyOf(this.builder);
+            Map<T, ResourceIdentifier> byIdentity = new IdentityHashMap<>();
+            this.builder.forEach((id, component) -> byIdentity.put(component, id));
+            ComponentRegistry.this.inverse = Collections.unmodifiableMap(byIdentity);
         }
     }
 }

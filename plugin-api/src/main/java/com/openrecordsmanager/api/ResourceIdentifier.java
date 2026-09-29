@@ -52,6 +52,10 @@ public record ResourceIdentifier(String source, String item) implements Serializ
         return input;
     }
 
+    public String getTranslationKey(String prefix) {
+        return prefix + "." + this.source() + "." + this.item();
+    }
+
     public boolean isBuiltin() {
         return this.source.equals(BuiltinPlugin.BUILTIN_PLUGIN_NAME);
     }

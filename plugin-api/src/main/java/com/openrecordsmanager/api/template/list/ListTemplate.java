@@ -13,37 +13,28 @@ import java.util.Objects;
 import java.util.function.Consumer;
 
 @JsonDeserialize
-public record ListTemplate(String name,
-                           Map<String, ListElementTemplate> defaultEntries) implements TemplateComponent {
+public record ListTemplate(Map<String, ListElementTemplate> defaultEntries) implements TemplateComponent {
     public ListTemplate {
-        Objects.requireNonNull(name, "Property 'name' must not be null");
         Objects.requireNonNull(defaultEntries, "Property 'defaultEntries' must not be null");
     }
 
-    public static Builder builder(String name) {
-        return new Builder(name);
+    public static Builder builder() {
+        return new Builder();
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(name, defaultEntries.size());
+        return Objects.hash(defaultEntries.size());
     }
 
     public static class Builder {
-        private String name;
         private final HashMap<String, ListElementTemplate.Builder> defaultEntries = new HashMap<>();
 
-        private Builder(String name) {
-            this.name = name;
+        private Builder() {
         }
 
-        public Builder name(String name) {
-            this.name = name;
-            return this;
-        }
-
-        public Builder entry(String id, String name, @Nullable Consumer<ListElementTemplate.Builder> builder) {
-            ListElementTemplate.Builder elementBuilder = new ListElementTemplate.Builder(name);
+        public Builder entry(String id, @Nullable Consumer<ListElementTemplate.Builder> builder) {
+            ListElementTemplate.Builder elementBuilder = new ListElementTemplate.Builder();
             if (builder != null) {
                 builder.accept(elementBuilder);
             }
@@ -51,8 +42,8 @@ public record ListTemplate(String name,
             return this;
         }
 
-        public Builder entry(String id, String name) {
-            return this.entry(id, name, null);
+        public Builder entry(String id) {
+            return this.entry(id, null);
         }
 
         protected void addEntry(String id, ListElementTemplate.Builder defaultEntry) {
@@ -60,7 +51,7 @@ public record ListTemplate(String name,
         }
 
         public ListTemplate build() {
-            ListTemplate parent = new ListTemplate(this.name, new HashMap<>());
+            ListTemplate parent = new ListTemplate(new HashMap<>());
 
             ComponentReference<ListTemplate> parentRef = ComponentReference.of(parent);
 

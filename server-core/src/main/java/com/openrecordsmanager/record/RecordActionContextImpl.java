@@ -88,7 +88,7 @@ class RecordActionContextImpl implements RecordActionContext {
         @SuppressWarnings("unchecked")
         ObjectProperty<T> prop = (ObjectProperty<T>) this.catalog.getTemplateRegistry(ComponentCatalog.OBJECT_PROPERTY_MAPPER)
                 .getRegistered(property, this.repository)
-                .orElseThrow(() -> new ResourceNotFoundException(ComponentTypes.OBJECT_PROPERTY, property.name()));
+                .orElseThrow(() -> new ResourceNotFoundException(ComponentTypes.OBJECT_PROPERTY, property.toString()));
 
         T oldValue = this.target.getProperty(prop);
         this.target.setProperty(prop, value);

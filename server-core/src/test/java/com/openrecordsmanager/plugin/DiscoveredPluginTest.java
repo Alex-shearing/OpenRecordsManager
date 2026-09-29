@@ -23,18 +23,11 @@ class DiscoveredPluginTest {
         DiscoveredPlugin info = DiscoveredPlugin.parseWithDescriptorFile(new ByteArrayInputStream("""
                 {
                   "id":"defaults_aus_gov",
-                  "version":"0.1.0",
-                  "displayName":"Australian Government Defaults",
-                  "description":"Default lists and record types for Australian Government protective markings."
+                  "version":"0.1.0"
                 }
                 """.getBytes(StandardCharsets.UTF_8)), null, null);
         assertEquals("defaults_aus_gov", info.id());
         assertEquals(new Semver("0.1.0"), info.version());
-        assertEquals("Australian Government Defaults", info.displayName());
-        assertEquals(
-                "Default lists and record types for Australian Government protective markings.",
-                info.description()
-        );
         assertNull(info.path());
     }
 
@@ -42,20 +35,16 @@ class DiscoveredPluginTest {
     void rejectsMissingId() {
         assertThrows(IllegalArgumentException.class, () -> DiscoveredPlugin.parseWithDescriptorFile(new ByteArrayInputStream("""
                 {
-                  "version":"0.1.0",
-                  "displayName":"Demo",
-                  "description":"A demo plugin"
+                  "version":"0.1.0"
                 }
                 """.getBytes(StandardCharsets.UTF_8)), null, null));
     }
 
     @Test
-    void rejectsMissingDisplayName() {
+    void rejectsMissingVersion() {
         assertThrows(IllegalArgumentException.class, () -> DiscoveredPlugin.parseWithDescriptorFile(new ByteArrayInputStream("""
                 {
-                  "id":"demo",
-                  "version":"0.1.0",
-                  "description":"A demo plugin"
+                  "id":"demo"
                 }
                 """.getBytes(StandardCharsets.UTF_8)), null, null));
     }
@@ -65,22 +54,22 @@ class DiscoveredPluginTest {
         Path jar = tempDir.resolve("plugin.jar");
         Path zip = tempDir.resolve("plugin.zip");
         writeArchive(jar, """
-                {"id":"demo","version":"1.2.3","displayName":"Demo","description":"Demo jar plugin"}
+                {"id":"demo","version":"1.2.3"}
                 """);
         writeArchive(zip, """
-                {"id":"demo_zip","version":"2.0.0","displayName":"Demo Zip","description":"Demo zip plugin"}
+                {"id":"demo_zip","version":"2.0.0"}
                 """);
 
         DiscoveredPlugin fromJar = DiscoveredPlugin.read(jar, null);
         assertEquals(
-                new DiscoveredPlugin("demo", new Semver("1.2.3"), "Demo", "Demo jar plugin", jar, null),
+                new DiscoveredPlugin("demo", new Semver("1.2.3"), jar, null),
                 fromJar
         );
         assertNotNull(fromJar.path());
 
         DiscoveredPlugin fromZip = DiscoveredPlugin.read(zip, null);
         assertEquals(
-                new DiscoveredPlugin("demo_zip", new Semver("2.0.0"), "Demo Zip", "Demo zip plugin", zip, null),
+                new DiscoveredPlugin("demo_zip", new Semver("2.0.0"), zip, null),
                 fromZip
         );
         assertNotNull(fromZip.path());

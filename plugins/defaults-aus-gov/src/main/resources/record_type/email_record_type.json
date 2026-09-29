@@ -1,6 +1,4 @@
 {
-  "name": "Email Record",
-  "description": "Use this to record email records.",
   "allowedContentTypes": [
     "text/plain",
     "text/html",

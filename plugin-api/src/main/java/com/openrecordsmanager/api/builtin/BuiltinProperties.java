@@ -11,52 +11,40 @@ import java.util.Map;
 
 public final class BuiltinProperties {
 
-    public static final ObjectPropertyTemplate<String> NOTES = ObjectPropertyTemplate.builder("Notes", PropertyType.STRING)
-            .description("Notes on the object")
+    public static final ObjectPropertyTemplate<String> NOTES = ObjectPropertyTemplate.builder(PropertyType.STRING)
             .build();
 
-    public static final ObjectPropertyTemplate<Instant> DATE_REGISTERED = ObjectPropertyTemplate.builder("Date Registered", PropertyType.DATE)
-            .description("Date the object was registered")
+    public static final ObjectPropertyTemplate<Instant> DATE_REGISTERED = ObjectPropertyTemplate.builder(PropertyType.DATE)
             .build();
 
-    public static final ObjectPropertyTemplate<Instant> DATE_CREATED = ObjectPropertyTemplate.builder("Date Created", PropertyType.DATE)
-            .description("Date the object was created")
+    public static final ObjectPropertyTemplate<Instant> DATE_CREATED = ObjectPropertyTemplate.builder(PropertyType.DATE)
             .build();
 
-    public static final ObjectPropertyTemplate<String> KEYWORDS = ObjectPropertyTemplate.builder("Keywords", PropertyType.STRING)
-            .description("Relevant keywords that can assist in searching")
+    public static final ObjectPropertyTemplate<String> KEYWORDS = ObjectPropertyTemplate.builder(PropertyType.STRING)
             .build();
 
-    public static final ObjectPropertyTemplate<List<String>> MIME_TYPES = ObjectPropertyTemplate.builder("MIME Types", PropertyType.STRING_LIST)
-            .description("Standardised internet types defining file types")
+    public static final ObjectPropertyTemplate<List<String>> MIME_TYPES = ObjectPropertyTemplate.builder(PropertyType.STRING_LIST)
             .build();
 
-    public static final ObjectPropertyTemplate<String> TITLE = ObjectPropertyTemplate.builder("Title", PropertyType.STRING)
-            .description("Title of the record")
+    public static final ObjectPropertyTemplate<String> TITLE = ObjectPropertyTemplate.builder(PropertyType.STRING)
             .build();
 
-    public static final ObjectPropertyTemplate<Instant> DATE_MODIFIED = ObjectPropertyTemplate.builder("Date Modified", PropertyType.DATE)
-            .description("Date the object was last modified")
+    public static final ObjectPropertyTemplate<Instant> DATE_MODIFIED = ObjectPropertyTemplate.builder(PropertyType.DATE)
             .build();
 
-    public static final ObjectPropertyTemplate<String> GIVEN_NAME = ObjectPropertyTemplate.builder("Given Name", PropertyType.STRING)
-            .description("Given name of the user")
+    public static final ObjectPropertyTemplate<String> GIVEN_NAME = ObjectPropertyTemplate.builder(PropertyType.STRING)
             .build();
 
-    public static final ObjectPropertyTemplate<String> SURNAME = ObjectPropertyTemplate.builder("Surname", PropertyType.STRING)
-            .description("Surname of the user")
+    public static final ObjectPropertyTemplate<String> SURNAME = ObjectPropertyTemplate.builder(PropertyType.STRING)
             .build();
 
-    public static final ObjectPropertyTemplate<String> HONORIFIC = ObjectPropertyTemplate.builder("Honorific", PropertyType.STRING)
-            .description("Honorific prefix for the user")
+    public static final ObjectPropertyTemplate<String> HONORIFIC = ObjectPropertyTemplate.builder(PropertyType.STRING)
             .build();
 
-    public static final ObjectPropertyTemplate<String> EMAIL = ObjectPropertyTemplate.builder("Email", PropertyType.STRING)
-            .description("Email address of the user")
+    public static final ObjectPropertyTemplate<String> EMAIL = ObjectPropertyTemplate.builder(PropertyType.STRING)
             .build();
 
-    public static final ObjectPropertyTemplate<String> USERNAME = ObjectPropertyTemplate.builder("Username", PropertyType.STRING)
-            .description("Login username of the user")
+    public static final ObjectPropertyTemplate<String> USERNAME = ObjectPropertyTemplate.builder(PropertyType.STRING)
             .build();
 
     public static final Map<ResourceIdentifier, ObjectPropertyTemplate<?>> BUILTIN_PROPERTIES;

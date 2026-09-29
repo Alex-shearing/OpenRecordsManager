@@ -131,13 +131,14 @@ public class FilestoreMiddlewareEncryptingType extends FileStoreMiddlewareType<F
 
     public record EncryptingMiddlewareSettings(
             @Schema(
-                    title = "Secret Key",
+                    title = "file_store_middleware.filestoremiddleware_encrypting.encrypting.schema.secretKey.title",
                     type = "string",
                     format = "byte",
                     accessMode = Schema.AccessMode.WRITE_ONLY
             )
             byte[] secretKey,
-            @Schema(title = "Algorithm") EncryptionType algorithm
+            @Schema(title = "file_store_middleware.filestoremiddleware_encrypting.encrypting.schema.algorithm.title")
+            EncryptionType algorithm
     ) {
     }
 }

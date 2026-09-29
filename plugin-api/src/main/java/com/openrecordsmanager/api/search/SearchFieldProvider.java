@@ -12,29 +12,12 @@ import java.util.UUID;
  * record/user ids. The host intersects or unions those ids with SQL property predicates.
  */
 public abstract class SearchFieldProvider implements Component {
-    private final String displayName;
-    private final String description;
     private final SearchFieldTarget target;
     private final Set<SearchOperator> supportedOperators;
 
-    protected SearchFieldProvider(
-            String displayName,
-            String description,
-            SearchFieldTarget target,
-            Set<SearchOperator> supportedOperators
-    ) {
-        this.displayName = displayName;
-        this.description = description;
+    protected SearchFieldProvider(SearchFieldTarget target, Set<SearchOperator> supportedOperators) {
         this.target = target;
         this.supportedOperators = Set.copyOf(supportedOperators);
-    }
-
-    public final String getDisplayName() {
-        return this.displayName;
-    }
-
-    public final String getDescription() {
-        return this.description;
     }
 
     public final SearchFieldTarget getTarget() {

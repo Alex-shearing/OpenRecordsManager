@@ -37,7 +37,7 @@ class TemplateJsonLoaderTest {
         assertInstanceOf(ListTemplate.class, context.components().get("colors"));
         assertInstanceOf(ListElementTemplate.class, context.components().get("red"));
         assertInstanceOf(ObjectPropertyTemplate.class, context.components().get("favorite_color"));
-        assertEquals("Colors", ((ListTemplate) context.components().get("colors")).name());
+        assertTrue(((ListTemplate) context.components().get("colors")).defaultEntries().isEmpty());
         assertEquals(1, ((ListElementTemplate) context.components().get("red")).index());
     }
 
@@ -93,22 +93,18 @@ class TemplateJsonLoaderTest {
 
         Files.writeString(listDir.resolve("colors.json"), """
                 {
-                  "name": "Colors",
                   "defaultEntries": {}
                 }
                 """);
         Files.writeString(elementDir.resolve("red.json"), """
                 {
-                  "name": "Red",
                   "index": 1,
                   "parent": "list/test:colors"
                 }
                 """);
         Files.writeString(propertyDir.resolve("favorite_color.json"), """
                 {
-                  "name": "Favorite Color",
                   "type": "list_item",
-                  "description": "A color",
                   "listType": "list/test:colors"
                 }
                 """);

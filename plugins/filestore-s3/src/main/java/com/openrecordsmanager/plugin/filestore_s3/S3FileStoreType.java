@@ -50,8 +50,11 @@ public class S3FileStoreType extends FileStoreType<S3FileStoreType.S3FileStoreSe
     }
 
     public record S3FileStoreSettings(
-            @Schema(title = "Bucket") @NotBlank String bucket,
-            @Schema(title = "Endpoint") @NotBlank String endpoint
+            @Schema(title = "file_store.filestore_s3.s3.schema.bucket.title")
+            @NotBlank String bucket,
+
+            @Schema(title = "file_store.filestore_s3.s3.schema.endpoint.title")
+            @NotBlank String endpoint
     ) {
     }
 }

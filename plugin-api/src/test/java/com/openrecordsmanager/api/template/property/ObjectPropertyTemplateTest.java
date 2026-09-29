@@ -12,16 +12,14 @@ class ObjectPropertyTemplateTest {
     @Test
     void testDeserialisation() {
         ObjectPropertyTemplate<?> property = load("user_email_property.json", ObjectPropertyTemplate.class);
-        ObjectPropertyTemplate<?> codeProperty = ObjectPropertyTemplate.builder("User Email Address", PropertyType.STRING)
-                .description("An email address")
+        ObjectPropertyTemplate<?> codeProperty = ObjectPropertyTemplate.builder(PropertyType.STRING)
                 .defaultValue("admin@company.com")
                 .validator("true")
                 .build();
 
-        Assertions.assertEquals(property.name(), codeProperty.name(), "Name should be equal");
-        Assertions.assertEquals(property.description(), codeProperty.description(), "Description should be equal");
         Assertions.assertEquals(property.defaultValue(), codeProperty.defaultValue(), "Default should be equal");
         Assertions.assertEquals(property.validator(), codeProperty.validator(), "Validator should be equal");
+        Assertions.assertEquals(property.type(), codeProperty.type(), "Type should be equal");
 
         Assertions.assertEquals(property, codeProperty, "Object should be equal");
     }

@@ -26,7 +26,7 @@ public class ListController {
 
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Get all list type identifiers")
-    public Set<SimpleListTypeResponse> getLists() {
+    public Set<ResourceIdentifier> getLists() {
         return this.service.getAll();
     }
 

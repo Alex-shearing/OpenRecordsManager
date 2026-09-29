@@ -4,35 +4,34 @@ import com.openrecordsmanager.api.ComponentReference;
 import com.openrecordsmanager.api.ResourceIdentifier;
 import com.openrecordsmanager.api.template.TemplateComponent;
 import com.openrecordsmanager.api.types.ComponentTypes;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.io.InputStream;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 class RecordTypeTemplateTest {
 
     @Test
     void testDeserialization() {
         RecordTypeTemplate type = load("test_record_type.json", RecordTypeTemplate.class);
-        RecordTypeTemplate codeType = RecordTypeTemplate.builder("Test record type")
-                .description("Test record description")
+        RecordTypeTemplate codeType = RecordTypeTemplate.builder()
                 .allowedContentTypes("application/json")
                 .property(ComponentReference.of(ComponentTypes.OBJECT_PROPERTY, ResourceIdentifier.valueOf("test:user_email_property")))
                 .property(ComponentReference.of(ComponentTypes.OBJECT_PROPERTY, ResourceIdentifier.valueOf("test:user_email_property_2")))
                 .build();
 
-        Assertions.assertEquals(codeType.name(), type.name(), "Names should be equal");
-        Assertions.assertEquals(codeType.allowedContentTypes(), type.allowedContentTypes(), "Content types should be equal");
-        Assertions.assertEquals(codeType.description(), type.description(), "Description should be equal");
-        Assertions.assertEquals(codeType.properties(), type.properties(), "Properties should be equal");
-        Assertions.assertEquals(codeType, type, "Objects should be equal");
+        assertEquals(codeType.allowedContentTypes(), type.allowedContentTypes(), "Content types should be equal");
+        assertEquals(codeType.properties(), type.properties(), "Properties should be equal");
+        assertEquals(codeType, type, "Objects should be equal");
 
-        RecordTypeTemplate otherType = RecordTypeTemplate.builder("Not the test record type")
-                .description("Test record description")
+        RecordTypeTemplate otherType = RecordTypeTemplate.builder()
+                .allowedContentTypes("text/plain")
                 .build();
 
-        Assertions.assertNotEquals(otherType, type, "Objects should not be equal");
+        assertNotEquals(otherType, type, "Objects should not be equal");
     }
 
     private static <T extends TemplateComponent> T load(String resource, Class<T> type) {

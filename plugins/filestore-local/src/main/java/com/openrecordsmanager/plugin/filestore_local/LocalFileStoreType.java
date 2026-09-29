@@ -76,7 +76,8 @@ public class LocalFileStoreType extends FileStoreType<LocalFileStoreType.LocalFi
     }
 
     public record LocalFileStoreSettings(
-            @Schema(title = "Root Directory") @NotBlank String rootDir
+            @Schema(title = "file_store.filestore_local.local.schema.rootDir.title")
+            @NotBlank String rootDir
     ) {
     }
 }

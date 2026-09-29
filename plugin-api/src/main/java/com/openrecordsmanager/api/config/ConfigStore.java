@@ -19,7 +19,7 @@ public interface ConfigStore {
     default <T> T getOrThrow(ConfigType<T> key) {
         T value = this.getValue(key);
         if (value == null) {
-            throw new IllegalStateException(String.format("No value found for key '%s'", key.name()));
+            throw new IllegalStateException(String.format("No value found for key '%s'", key.key()));
         }
         return value;
     }

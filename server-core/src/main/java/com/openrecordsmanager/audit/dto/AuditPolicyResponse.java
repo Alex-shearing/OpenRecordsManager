@@ -14,8 +14,6 @@ public record AuditPolicyResponse(
         @NotBlank @Schema(enumAsRef = true) AuditOperation operation,
         @NotBlank boolean enabled,
         @NotBlank boolean requiresComment,
-        @NotBlank String displayName,
-        @NotBlank String description,
         @NotNull Instant dateModified
 ) {
     public static AuditPolicyResponse of(AuditPolicyEntity entity) {
@@ -24,8 +22,6 @@ public record AuditPolicyResponse(
                 entity.operation(),
                 entity.isEnabled(),
                 entity.isRequiresComment(),
-                entity.getDisplayName(),
-                entity.getDescription() == null ? "" : entity.getDescription(),
                 entity.getDateModified()
         );
     }

@@ -382,11 +382,10 @@ public class AuthService implements UserAuthContext {
 
     @Transactional(readOnly = true)
     public AuthProviderTypeResponse[] listProviderTypes() {
-        Stream<AuthProviderType<?>> input = this.catalog.getRegistry(ComponentTypes.INPUT_AUTH_PROVIDER).stream()
-                .map(i -> i);
-        Stream<AuthProviderType<?>> redirect = this.catalog.getRegistry(ComponentTypes.REDIRECT_AUTH_PROVIDER).stream()
-                .map(i -> (AuthProviderType<?>) i);
-        return Stream.concat(input, redirect)
+        return Stream.concat(
+                        this.catalog.getRegistry(ComponentTypes.INPUT_AUTH_PROVIDER).stream(),
+                        this.catalog.getRegistry(ComponentTypes.REDIRECT_AUTH_PROVIDER).stream()
+                )
                 .map(type -> AuthProviderTypeResponse.of(this.catalog, type))
                 .toArray(AuthProviderTypeResponse[]::new);
     }

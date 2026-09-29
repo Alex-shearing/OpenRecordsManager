@@ -16,8 +16,8 @@ class AusGovJsonSmokeTest {
     @Test
     void loadsSecurityClassification() {
         ListTemplate list = load("list/security_classification.json", ListTemplate.class);
-        assertEquals("Security Classification", list.name());
         assertTrue(list.defaultEntries().containsKey("official_sensitive"));
+        assertEquals(0, list.defaultEntries().get("unofficial").index());
     }
 
     @Test
@@ -26,7 +26,6 @@ class AusGovJsonSmokeTest {
                 "object_property/record_security_classification.json",
                 ObjectPropertyTemplate.class
         );
-        assertEquals("Record Security Classification", prop.name());
         assertNotNull(prop.listType());
         assertNotNull(prop.securityFilter());
     }
@@ -34,8 +33,9 @@ class AusGovJsonSmokeTest {
     @Test
     void loadsEmailRecordType() {
         RecordTypeTemplate type = load("record_type/email_record_type.json", RecordTypeTemplate.class);
-        assertEquals("Email Record", type.name());
         assertFalse(type.properties().isEmpty());
+        assertNotNull(type.allowedContentTypes());
+        assertFalse(type.allowedContentTypes().isEmpty());
     }
 
     @Test

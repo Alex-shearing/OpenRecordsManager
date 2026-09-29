@@ -13,8 +13,6 @@ import java.util.Objects;
 import java.util.Set;
 
 public record ListElementTemplate(
-        String name,
-        @JsonSetter(nulls = Nulls.AS_EMPTY) String description,
         int index,
         @Nullable Instant activeTo,
         @JsonSetter(nulls = Nulls.AS_EMPTY) Set<String> aliases,
@@ -22,8 +20,6 @@ public record ListElementTemplate(
 ) implements TemplateComponent {
 
     public ListElementTemplate {
-        Objects.requireNonNull(name, "Property 'name' must not be null");
-        Objects.requireNonNull(description, "Property 'description' must not be null");
         Objects.requireNonNull(aliases, "Property 'aliases' must not be null");
         Objects.requireNonNull(parent, "Property 'parent' must not be null");
     }
@@ -35,15 +31,13 @@ public record ListElementTemplate(
     public boolean equals(Object o) {
         if (!(o instanceof ListElementTemplate that)) return false;
         return index == that.index &&
-                Objects.equals(name, that.name) &&
                 Objects.equals(activeTo, that.activeTo) &&
-                Objects.equals(description, that.description) &&
                 Objects.equals(aliases, that.aliases);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(name, description, index, activeTo, aliases);
+        return Objects.hash(index, activeTo, aliases);
     }
 
     @Override
@@ -52,21 +46,12 @@ public record ListElementTemplate(
     }
 
     public static class Builder {
-        private final String name;
         private final Set<String> aliases = new HashSet<>();
-
-        private String description = "";
         private int index = 0;
         @Nullable
         private Instant activeTo = null;
 
-        public Builder(String name) {
-            this.name = name;
-        }
-
-        public Builder description(String description) {
-            this.description = description;
-            return this;
+        public Builder() {
         }
 
         /**
@@ -96,8 +81,6 @@ public record ListElementTemplate(
 
         public ListElementTemplate build(ComponentReference<ListTemplate> parent) {
             return new ListElementTemplate(
-                    this.name,
-                    this.description,
                     this.index,
                     this.activeTo,
                     this.aliases,

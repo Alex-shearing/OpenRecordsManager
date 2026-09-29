@@ -1,6 +1,8 @@
 package com.openrecordsmanager.property;
 
+import com.openrecordsmanager.api.ComponentReference;
 import com.openrecordsmanager.api.ResourceIdentifier;
+import com.openrecordsmanager.api.TranslationField;
 import com.openrecordsmanager.api.audit.AuditEntityType;
 import com.openrecordsmanager.api.audit.AuditOperation;
 import com.openrecordsmanager.api.errors.InputValidationException;
@@ -10,6 +12,7 @@ import com.openrecordsmanager.audit.AuditEventDescriptions;
 import com.openrecordsmanager.audit.AuditService;
 import com.openrecordsmanager.audit.RequiresAuditComment;
 import com.openrecordsmanager.database.DataRepository;
+import com.openrecordsmanager.i18n.TranslationOverrideService;
 import com.openrecordsmanager.list.ListType;
 import com.openrecordsmanager.property.dto.NewObjectPropertyRequest;
 import com.openrecordsmanager.property.dto.ObjectPropertyResponse;
@@ -18,10 +21,12 @@ import com.openrecordsmanager.property.dto.UpdateObjectPropertyRequest;
 import com.openrecordsmanager.rest.errors.ResourceInUseException;
 import com.openrecordsmanager.rest.errors.ResourceNotFoundException;
 import org.jspecify.annotations.Nullable;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import tools.jackson.databind.JsonNode;
 
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -31,10 +36,16 @@ public class ObjectPropertyService {
 
     private final DataRepository repository;
     private final AuditService auditService;
+    private final TranslationOverrideService overrideService;
 
-    public ObjectPropertyService(DataRepository repository, AuditService auditService) {
+    public ObjectPropertyService(
+            DataRepository repository,
+            AuditService auditService,
+            TranslationOverrideService overrideService
+    ) {
         this.repository = repository;
         this.auditService = auditService;
+        this.overrideService = overrideService;
     }
 
     @Transactional(readOnly = true)
@@ -68,8 +79,6 @@ public class ObjectPropertyService {
 
         ObjectProperty<?> property = buildProperty(
                 input.id(),
-                input.name(),
-                input.description(),
                 input.type(),
                 input.listType(),
                 input.validator(),
@@ -78,7 +87,13 @@ public class ObjectPropertyService {
                 input.userHidden()
         );
 
+        ComponentReference.Reference<?> ref = property.getReference();
+
         this.repository.objectPropertyRepo.saveAndFlush(property);
+
+        Locale locale = LocaleContextHolder.getLocale();
+        this.overrideService.upsertSilent(ref.getTranslationKey(TranslationField.NAME), locale, input.name());
+        this.overrideService.upsertSilent(ref.getTranslationKey(TranslationField.DESCRIPTION), locale, input.description());
 
         this.auditService.addEvent(AuditOperation.CREATE, AuditEntityType.OBJECT_PROPERTY, property.getId());
 
@@ -95,8 +110,12 @@ public class ObjectPropertyService {
             throw new IllegalArgumentException("builtin object properties cannot be modified");
         }
 
-        String oldName = property.getName();
+        ComponentReference.Reference<?> ref = property.getReference();
+
         applyUpdate(property, input);
+        Locale locale = LocaleContextHolder.getLocale();
+        String oldName = this.overrideService.upsertSilent(ref.getTranslationKey(TranslationField.NAME), locale, input.name());
+        this.overrideService.upsertSilent(ref.getTranslationKey(TranslationField.DESCRIPTION), locale, input.description());
 
         this.repository.objectPropertyRepo.saveAndFlush(property);
 
@@ -135,8 +154,6 @@ public class ObjectPropertyService {
 
     private ObjectProperty<?> buildProperty(
             ResourceIdentifier id,
-            String name,
-            String description,
             PropertyType<?> type,
             @Nullable ResourceIdentifier listTypeId,
             @Nullable String validator,
@@ -145,7 +162,7 @@ public class ObjectPropertyService {
             boolean userHidden
     ) {
         ListType listType = resolveListType(type, listTypeId);
-        return createTypedProperty(id, name, description, type, listType, validator, securityFilter, defaultValue, userHidden);
+        return createTypedProperty(id, type, listType, validator, securityFilter, defaultValue, userHidden);
     }
 
     private @Nullable ListType resolveListType(PropertyType<?> type, @Nullable ResourceIdentifier listTypeId) {
@@ -166,8 +183,6 @@ public class ObjectPropertyService {
 
     private static <T> ObjectProperty<T> createTypedProperty(
             ResourceIdentifier id,
-            String name,
-            String description,
             PropertyType<T> type,
             @Nullable ListType listType,
             @Nullable String validator,
@@ -183,8 +198,6 @@ public class ObjectPropertyService {
         }
         return new ObjectProperty<>(
                 id,
-                name,
-                description,
                 type,
                 listType,
                 validator,
@@ -195,8 +208,6 @@ public class ObjectPropertyService {
     }
 
     private static <T> void applyUpdate(ObjectProperty<T> property, UpdateObjectPropertyRequest input) {
-        property.setName(input.name());
-        property.setDescription(input.description());
         property.setValidator(input.validator());
         property.setSecurityFilter(input.securityFilter());
         JsonNode defaultValue = input.defaultValue();

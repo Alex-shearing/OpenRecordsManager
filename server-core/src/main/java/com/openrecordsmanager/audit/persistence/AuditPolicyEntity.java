@@ -6,7 +6,6 @@ import jakarta.persistence.Column;
 import jakarta.persistence.EmbeddedId;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
-import org.jspecify.annotations.Nullable;
 
 import java.time.Instant;
 
@@ -24,13 +23,6 @@ public class AuditPolicyEntity {
     @Column(name = "requires_comment", nullable = false)
     private boolean requiresComment;
 
-    @Column(name = "display_name", nullable = false)
-    private String displayName;
-
-    @Column(length = 1000)
-    @Nullable
-    private String description;
-
     @Column(nullable = false)
     private Instant dateModified;
 
@@ -41,15 +33,11 @@ public class AuditPolicyEntity {
     public AuditPolicyEntity(
             AuditPolicyId id,
             boolean enabled,
-            boolean requiresComment,
-            String displayName,
-            @Nullable String description
+            boolean requiresComment
     ) {
         this.id = id;
         this.enabled = enabled;
         this.requiresComment = requiresComment;
-        this.displayName = displayName;
-        this.description = description;
         this.dateModified = Instant.now();
     }
 
@@ -72,24 +60,6 @@ public class AuditPolicyEntity {
 
     public void setRequiresComment(boolean requiresComment) {
         this.requiresComment = requiresComment;
-        this.touchDateModified();
-    }
-
-    public String getDisplayName() {
-        return this.displayName;
-    }
-
-    public void setDisplayName(String displayName) {
-        this.displayName = displayName;
-        this.touchDateModified();
-    }
-
-    public @Nullable String getDescription() {
-        return this.description;
-    }
-
-    public void setDescription(@Nullable String description) {
-        this.description = description;
         this.touchDateModified();
     }
 

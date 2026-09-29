@@ -2,9 +2,12 @@ package com.openrecordsmanager.property;
 
 import com.openrecordsmanager.api.ResourceIdentifier;
 import com.openrecordsmanager.api.template.property.PropertyType;
+import com.openrecordsmanager.api.types.ComponentType;
+import com.openrecordsmanager.api.types.ComponentTypes;
 import com.openrecordsmanager.database.util.PropertyTypeConverter;
 import com.openrecordsmanager.database.util.ResourceIdentifierJavaType;
 import com.openrecordsmanager.list.ListType;
+import com.openrecordsmanager.template.RegisteredComponent;
 import jakarta.persistence.*;
 import org.hibernate.annotations.JavaType;
 import org.hibernate.annotations.JdbcTypeCode;
@@ -19,16 +22,10 @@ import java.util.Objects;
 @Entity
 @Table(name = "object_property")
 @SuppressWarnings("NotNullFieldNotInitialized")
-public class ObjectProperty<T> {
+public class ObjectProperty<T> implements RegisteredComponent {
     @Id
     @JavaType(ResourceIdentifierJavaType.class)
     private ResourceIdentifier id;
-
-    @Column(nullable = false)
-    private String name;
-
-    @Column(nullable = false)
-    private String description;
 
     @Column(nullable = false)
     @Convert(converter = PropertyTypeConverter.class)
@@ -68,8 +65,6 @@ public class ObjectProperty<T> {
 
     public ObjectProperty(
             ResourceIdentifier identifier,
-            String name,
-            String description,
             PropertyType<T> type,
             @Nullable ListType listType,
             @Nullable String validator,
@@ -78,8 +73,6 @@ public class ObjectProperty<T> {
             boolean userHidden
     ) {
         this.id = identifier;
-        this.name = name;
-        this.description = description;
         this.type = type;
         this.listType = listType;
         this.validator = validator;
@@ -90,30 +83,12 @@ public class ObjectProperty<T> {
         this.dateModified = Instant.now();
     }
 
-    public ObjectProperty(ResourceIdentifier identifier, String name, String description, PropertyType<T> type) {
-        this(identifier, name, description, type, null, null, null, null, false);
+    public ObjectProperty(ResourceIdentifier identifier, PropertyType<T> type) {
+        this(identifier, type, null, null, null, null, false);
     }
 
     public ResourceIdentifier getId() {
         return this.id;
-    }
-
-    public String getName() {
-        return this.name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-        this.touchDateModified();
-    }
-
-    public String getDescription() {
-        return this.description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-        this.touchDateModified();
     }
 
     public PropertyType<T> getType() {
@@ -170,6 +145,11 @@ public class ObjectProperty<T> {
 
     public void touchDateModified() {
         this.dateModified = Instant.now();
+    }
+    
+    @Override
+    public ComponentType<?> getComponentType() {
+        return ComponentTypes.OBJECT_PROPERTY;
     }
 
     @Override

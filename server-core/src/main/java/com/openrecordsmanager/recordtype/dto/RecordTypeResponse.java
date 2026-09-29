@@ -13,8 +13,6 @@ import java.util.stream.Collectors;
 
 public record RecordTypeResponse(
         @NotBlank ResourceIdentifier id,
-        @NotBlank String name,
-        @NotBlank String description,
         @Nullable String securityFilter,
         @NotNull SecurityFilterUsage securityFilterUsage,
         @Nullable Set<String> contentTypes,
@@ -25,8 +23,6 @@ public record RecordTypeResponse(
     public static RecordTypeResponse of(RecordType recordType) {
         return new RecordTypeResponse(
                 recordType.getId(),
-                recordType.getName(),
-                recordType.getDescription(),
                 recordType.getSecurityFilter(),
                 recordType.getSecurityFilterUsage(),
                 recordType.getContentTypes(),

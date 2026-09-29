@@ -42,8 +42,6 @@ class BuiltinColumnPropertiesTest {
         ObjectProperty<String> notesProperty = requireProperty(BuiltinPropertyIds.NOTES);
         RecordType recordType = new RecordType(
                 ResourceIdentifier.valueOf("test:record_type"),
-                "Record type",
-                "Record type",
                 null,
                 null,
                 SecurityFilterUsage.SHOW_ALL,
@@ -80,8 +78,6 @@ class BuiltinColumnPropertiesTest {
         ObjectProperty<String> givenNameProperty = requireProperty(BuiltinPropertyIds.GIVEN_NAME);
         ObjectProperty<String> customProperty = new ObjectProperty<>(
                 ResourceIdentifier.valueOf("test:custom_property"),
-                "Custom",
-                "Custom",
                 PropertyType.STRING
         );
 
@@ -105,8 +101,6 @@ class BuiltinColumnPropertiesTest {
         ObjectProperty<String> notesProperty = requireProperty(BuiltinPropertyIds.NOTES);
         RecordType recordType = new RecordType(
                 ResourceIdentifier.valueOf("test:record_type"),
-                "Record type",
-                "Record type",
                 null,
                 null,
                 SecurityFilterUsage.SHOW_ALL,

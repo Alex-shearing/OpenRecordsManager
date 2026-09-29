@@ -9,11 +9,15 @@ import org.mindrot.jbcrypt.BCrypt;
 public class ResetLocalPasswordAction extends UserActionType<ResetLocalPasswordAction.Inputs> {
 
     public ResetLocalPasswordAction() {
-        super(Inputs.class, "Reset Local Password", "Set a new password for local authentication");
+        super(Inputs.class);
     }
 
     public record Inputs(
-            @Schema(title = "New Password", format = "password", accessMode = Schema.AccessMode.WRITE_ONLY)
+            @Schema(
+                    title = "user_action.auth_local.reset_password.schema.newPassword.title",
+                    format = "password",
+                    accessMode = Schema.AccessMode.WRITE_ONLY
+            )
             @NotBlank String newPassword
     ) {
     }

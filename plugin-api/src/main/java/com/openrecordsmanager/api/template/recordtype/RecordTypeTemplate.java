@@ -15,8 +15,6 @@ import java.util.stream.Stream;
 
 @JsonDeserialize
 public record RecordTypeTemplate(
-        String name,
-        String description,
         @JsonDeserialize(using = PropertyAssignment.ListDeserializer.class) List<PropertyAssignment<?>> properties,
         @Nullable Set<String> allowedContentTypes,
         @Nullable ExpressionBuilder securityFilter,
@@ -24,14 +22,12 @@ public record RecordTypeTemplate(
 ) implements TemplateComponent {
 
     public RecordTypeTemplate {
-        Objects.requireNonNull(name, "Property 'name' must not be null");
-        Objects.requireNonNull(description, "Property 'description' must not be null");
         Objects.requireNonNull(properties, "Property 'properties' must not be null");
         Objects.requireNonNull(securityFilterUsage, "Property 'securityFilterUsage' must not be null");
     }
 
-    public static Builder builder(String name) {
-        return new Builder(name);
+    public static Builder builder() {
+        return new Builder();
     }
 
     @Override
@@ -48,8 +44,6 @@ public record RecordTypeTemplate(
     }
 
     public static class Builder {
-        private String name;
-        private String description = "";
         private final List<PropertyAssignment<?>> properties = new ArrayList<>();
         @Nullable
         private Set<String> allowedContentTypes = null;
@@ -57,18 +51,7 @@ public record RecordTypeTemplate(
         private ExpressionBuilder securityFilter = null;
         private SecurityFilterUsage securityFilterUsage = SecurityFilterUsage.HIDE_FILES;
 
-        private Builder(String id) {
-            this.name = id;
-        }
-
-        public Builder name(String name) {
-            this.name = name;
-            return this;
-        }
-
-        public Builder description(String description) {
-            this.description = description;
-            return this;
+        private Builder() {
         }
 
         public Builder property(ComponentReference<? extends ObjectPropertyTemplate<?>> property) {
@@ -118,8 +101,6 @@ public record RecordTypeTemplate(
 
         public RecordTypeTemplate build() {
             return new RecordTypeTemplate(
-                    this.name,
-                    this.description,
                     this.properties,
                     this.allowedContentTypes,
                     this.securityFilter,

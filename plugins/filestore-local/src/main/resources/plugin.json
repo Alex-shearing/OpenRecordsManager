@@ -1,6 +1,4 @@
 {
   "id": "filestore_local",
-  "version": "0.1.0",
-  "displayName": "File System Store Type",
-  "description": "Store files on a standard filesystem under a configured root directory."
+  "version": "0.1.0"
 }

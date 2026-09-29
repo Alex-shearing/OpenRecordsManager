@@ -3,7 +3,8 @@ package com.openrecordsmanager.rest.dto;
 import io.swagger.v3.oas.annotations.media.Schema;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 class InputFormSchemaTest {
 
@@ -13,8 +14,13 @@ class InputFormSchemaTest {
     }
 
     record Settings(
-            @Schema(title = "Mode") SampleMode mode,
-            @Schema(title = "Name") String name
+            @Schema(title = "test.settings.schema.mode.title")
+            SampleMode mode,
+            @Schema(
+                    title = "test.settings.schema.name.title",
+                    description = "test.settings.schema.name.description"
+            )
+            String name
     ) {
     }
 
@@ -25,5 +31,18 @@ class InputFormSchemaTest {
         assertNotNull(mode);
         assertEquals("string", mode.type());
         assertEquals(java.util.List.of("ALPHA", "BETA"), mode.enumValues());
+    }
+
+    @Test
+    void usesSchemaTitleAndDescriptionAsMessageKeys() {
+        InputFormSchema schema = InputFormSchema.from(Settings.class);
+
+        InputFormSchemaField mode = schema.properties().get("mode");
+        assertEquals("test.settings.schema.mode.title", mode.title());
+        assertEquals("", mode.description());
+
+        InputFormSchemaField name = schema.properties().get("name");
+        assertEquals("test.settings.schema.name.title", name.title());
+        assertEquals("test.settings.schema.name.description", name.description());
     }
 }

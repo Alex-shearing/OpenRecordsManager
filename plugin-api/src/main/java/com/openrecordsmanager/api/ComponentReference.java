@@ -21,7 +21,7 @@ public abstract class ComponentReference<T extends Component> {
         return new Value<>(value);
     }
 
-    public static <K extends Component> ComponentReference<K> of(ComponentType<K> type, ResourceIdentifier id) {
+    public static <K extends Component> ComponentReference.Reference<K> of(ComponentType<K> type, ResourceIdentifier id) {
         return new Reference<>(type, id);
     }
 
@@ -77,6 +77,10 @@ public abstract class ComponentReference<T extends Component> {
         @Override
         public String toString() {
             return String.format("%s/%s", this.type.name(), this.id);
+        }
+
+        public String getTranslationKey(TranslationField field) {
+            return this.id.getTranslationKey(this.getType().name()) + "." + field.key();
         }
     }
 

@@ -20,8 +20,14 @@ public class LocalAuthProviderType extends InputAuthProviderType<Record, LocalAu
     }
 
     public record LocalAuthInputs(
-            @Schema(title = "Username") @NotBlank String username,
-            @Schema(title = "Password", format = "password", accessMode = Schema.AccessMode.WRITE_ONLY)
+            @Schema(title = "input_auth_provider.auth_local.local_auth.schema.username.title")
+            @NotBlank String username,
+            
+            @Schema(
+                    title = "input_auth_provider.auth_local.local_auth.schema.password.title",
+                    format = "password",
+                    accessMode = Schema.AccessMode.WRITE_ONLY
+            )
             @NotBlank String password
     ) {
     }

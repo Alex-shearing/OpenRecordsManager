@@ -8,13 +8,15 @@ import com.openrecordsmanager.property.ObjectProperty;
 import com.openrecordsmanager.recordtype.RecordType;
 import com.openrecordsmanager.recordtype.RecordTypeProperty;
 import com.openrecordsmanager.user.User;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import java.util.HashSet;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 @SpringBootTest
 class RecordSecurityFilterTest {
@@ -29,8 +31,6 @@ class RecordSecurityFilterTest {
         // Number property
         ObjectProperty<Long> numberProperty = new ObjectProperty<>(
                 ResourceIdentifier.valueOf("test:number_property"),
-                "Number property",
-                "Number property",
                 PropertyType.NUMBER
         );
         this.testUser.setProperty(numberProperty, 10L);
@@ -38,8 +38,6 @@ class RecordSecurityFilterTest {
         // String property
         ObjectProperty<String> stringProperty = new ObjectProperty<>(
                 ResourceIdentifier.valueOf("test:string_property"),
-                "String property",
-                "String property",
                 PropertyType.STRING
         );
         this.testUser.setProperty(stringProperty, "test value");
@@ -52,16 +50,12 @@ class RecordSecurityFilterTest {
     void securityFilter_properties() {
         ObjectProperty<String> stringProperty = new ObjectProperty<>(
                 ResourceIdentifier.valueOf("test:user_string_property"),
-                "String property",
-                "String property",
                 PropertyType.STRING
         );
         stringProperty.setSecurityFilter("value == principal['test:string_property']");
 
         RecordType recordType = new RecordType(
                 ResourceIdentifier.valueOf("test:record_type"),
-                "Record type",
-                "Record type",
                 null,
                 null,
                 SecurityFilterUsage.HIDE_RECORD,
@@ -72,30 +66,28 @@ class RecordSecurityFilterTest {
         Record record = new Record("Record", recordType);
         record.setProperty(stringProperty, "test value");
 
-        Assertions.assertEquals(SecurityFilterUsage.SHOW_ALL, record.securityFilter(this.expressionsService, this.testUser), "User should have access");
+        assertEquals(SecurityFilterUsage.SHOW_ALL, record.securityFilter(this.expressionsService, this.testUser), "User should have access");
 
         record.setProperty(stringProperty, "other value");
 
-        Assertions.assertEquals(SecurityFilterUsage.HIDE_RECORD, record.securityFilter(this.expressionsService, this.testUser), "User should not have access");
+        assertEquals(SecurityFilterUsage.HIDE_RECORD, record.securityFilter(this.expressionsService, this.testUser), "User should not have access");
     }
 
     @Test
     void securityFilter_recordType() {
         RecordType recordType = new RecordType(
                 ResourceIdentifier.valueOf("test:record_type"),
-                "Record type",
-                "Record type",
                 null,
                 "principal['test:string_property'] == 'not this'",
                 SecurityFilterUsage.HIDE_RECORD,
                 new HashSet<>()
         );
 
-        com.openrecordsmanager.record.Record record = new Record("Record", recordType);
+        Record record = new Record("Record", recordType);
 
-        Assertions.assertEquals(SecurityFilterUsage.HIDE_RECORD, record.securityFilter(this.expressionsService, this.testUser), "User should not have access");
+        assertEquals(SecurityFilterUsage.HIDE_RECORD, record.securityFilter(this.expressionsService, this.testUser), "User should not have access");
 
-        Assertions.assertNotEquals(SecurityFilterUsage.SHOW_ALL, record.securityFilter(this.expressionsService, this.testUser), "User should not have access");
-        Assertions.assertNotEquals(SecurityFilterUsage.HIDE_FILES, record.securityFilter(this.expressionsService, this.testUser), "User should not have access");
+        assertNotEquals(SecurityFilterUsage.SHOW_ALL, record.securityFilter(this.expressionsService, this.testUser), "User should not have access");
+        assertNotEquals(SecurityFilterUsage.HIDE_FILES, record.securityFilter(this.expressionsService, this.testUser), "User should not have access");
     }
 }

@@ -17,12 +17,10 @@ public final class ConfigTypeResponseSchema {
     @Schema(
             name = "ConfigTypeStringResponse",
             description = "String configuration value",
-            requiredProperties = {"key", "name", "description", "type"}
+            requiredProperties = {"key", "type"}
     )
     public record StringType(
             String key,
-            String name,
-            String description,
             @Schema(type = "string", allowableValues = {"string"}) String type,
             String currentValue,
             String defaultValue
@@ -32,12 +30,10 @@ public final class ConfigTypeResponseSchema {
     @Schema(
             name = "ConfigTypeBooleanResponse",
             description = "Boolean configuration value",
-            requiredProperties = {"key", "name", "description", "type"}
+            requiredProperties = {"key", "type"}
     )
     public record BooleanType(
             String key,
-            String name,
-            String description,
             @Schema(type = "string", allowableValues = {"boolean"}) String type,
             Boolean currentValue,
             Boolean defaultValue
@@ -47,12 +43,10 @@ public final class ConfigTypeResponseSchema {
     @Schema(
             name = "ConfigTypeNumberResponse",
             description = "Integer number configuration value",
-            requiredProperties = {"key", "name", "description", "type"}
+            requiredProperties = {"key", "type"}
     )
     public record NumberType(
             String key,
-            String name,
-            String description,
             @Schema(type = "string", allowableValues = {"number"}) String type,
             Long currentValue,
             Long defaultValue
@@ -62,12 +56,10 @@ public final class ConfigTypeResponseSchema {
     @Schema(
             name = "ConfigTypeDecimalResponse",
             description = "Decimal configuration value",
-            requiredProperties = {"key", "name", "description", "type"}
+            requiredProperties = {"key", "type"}
     )
     public record DecimalType(
             String key,
-            String name,
-            String description,
             @Schema(type = "string", allowableValues = {"decimal"}) String type,
             Double currentValue,
             Double defaultValue
@@ -77,12 +69,10 @@ public final class ConfigTypeResponseSchema {
     @Schema(
             name = "ConfigTypeUuidResponse",
             description = "UUID configuration value",
-            requiredProperties = {"key", "name", "description", "type"}
+            requiredProperties = {"key", "type"}
     )
     public record UuidType(
             String key,
-            String name,
-            String description,
             @Schema(type = "string", allowableValues = {"uuid"}) String type,
             String currentValue,
             String defaultValue
@@ -92,12 +82,10 @@ public final class ConfigTypeResponseSchema {
     @Schema(
             name = "ConfigTypeStringListResponse",
             description = "String list configuration value",
-            requiredProperties = {"key", "name", "description", "type"}
+            requiredProperties = {"key", "type"}
     )
     public record StringListType(
             String key,
-            String name,
-            String description,
             @Schema(type = "string", allowableValues = {"string_list"}) String type,
             List<String> currentValue,
             List<String> defaultValue
@@ -107,12 +95,10 @@ public final class ConfigTypeResponseSchema {
     @Schema(
             name = "ConfigTypeIntListResponse",
             description = "Integer list configuration value",
-            requiredProperties = {"key", "name", "description", "type"}
+            requiredProperties = {"key", "type"}
     )
     public record IntListType(
             String key,
-            String name,
-            String description,
             @Schema(type = "string", allowableValues = {"int_list"}) String type,
             List<Integer> currentValue,
             List<Integer> defaultValue
@@ -122,12 +108,10 @@ public final class ConfigTypeResponseSchema {
     @Schema(
             name = "ConfigTypeObjectResponse",
             description = "Opaque object configuration value",
-            requiredProperties = {"key", "name", "description", "type"}
+            requiredProperties = {"key", "type"}
     )
     public record ObjectType(
             String key,
-            String name,
-            String description,
             @Schema(type = "string", allowableValues = {"object"}) String type,
             JsonNode currentValue,
             JsonNode defaultValue

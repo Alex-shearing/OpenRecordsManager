@@ -7,8 +7,6 @@ import java.io.InputStream;
 
 public interface TemplateComponent extends Component {
 
-    String name();
-
     /**
      * Load a template from a JSON input stream.
      */

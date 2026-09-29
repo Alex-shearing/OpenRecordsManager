@@ -202,9 +202,17 @@ public class MssqlFilestreamFileStoreType
     }
 
     public record MssqlFilestreamFileStoreSettings(
-            @Schema(title = "JDBC URL") @NotBlank String jdbcUrl,
-            @Schema(title = "Username") String username,
-            @Schema(title = "Password", format = "password", accessMode = Schema.AccessMode.WRITE_ONLY)
+            @Schema(title = "file_store.filestore_mssql_filestream.filestream.schema.jdbcUrl.title")
+            @NotBlank String jdbcUrl,
+
+            @Schema(title = "file_store.filestore_mssql_filestream.filestream.schema.username.title")
+            String username,
+
+            @Schema(
+                    title = "file_store.filestore_mssql_filestream.filestream.schema.password.title",
+                    format = "password",
+                    accessMode = Schema.AccessMode.WRITE_ONLY
+            )
             String password
     ) {
     }

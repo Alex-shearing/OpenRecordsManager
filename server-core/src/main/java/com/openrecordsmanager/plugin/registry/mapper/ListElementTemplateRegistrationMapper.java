@@ -37,8 +37,6 @@ public class ListElementTemplateRegistrationMapper extends TemplateRegistrationM
         ListElement type = new ListElement(
                 id,
                 parent,
-                component.name(),
-                component.description(),
                 component.index(),
                 component.activeTo(),
                 component.aliases()

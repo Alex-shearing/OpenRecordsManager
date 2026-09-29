@@ -12,8 +12,6 @@ import java.util.*;
 @JsonDeserialize
 public record ObjectPropertyTemplate<T>(
         PropertyType<T> type,
-        String name,
-        String description,
         @Nullable ComponentReference<ListTemplate> listType,
         @Nullable ExpressionBuilder validator,
         @Nullable T defaultValue,
@@ -23,8 +21,6 @@ public record ObjectPropertyTemplate<T>(
 
     public ObjectPropertyTemplate {
         Objects.requireNonNull(type, "Property 'type' must not be null");
-        Objects.requireNonNull(name, "Property 'name' must not be null");
-        Objects.requireNonNull(description, "Property 'description' must not be null");
     }
 
     public Set<ComponentReference<? extends TemplateComponent>> getDependencies() {
@@ -36,14 +32,12 @@ public record ObjectPropertyTemplate<T>(
         return dependencies;
     }
 
-    public static <K> Builder<K> builder(String name, PropertyType<K> type) {
-        return new Builder<>(name, type);
+    public static <K> Builder<K> builder(PropertyType<K> type) {
+        return new Builder<>(type);
     }
 
     public static class Builder<T> {
         private PropertyType<T> type;
-        private String name;
-        private String description = "";
         @Nullable
         private ComponentReference<ListTemplate> listType = null;
         @Nullable
@@ -54,8 +48,7 @@ public record ObjectPropertyTemplate<T>(
         private ExpressionBuilder securityFilter = null;
         private boolean userHidden = false;
 
-        private Builder(String name, PropertyType<T> type) {
-            this.name = name;
+        private Builder(PropertyType<T> type) {
             this.type = type;
         }
 
@@ -67,28 +60,6 @@ public record ObjectPropertyTemplate<T>(
          */
         public Builder<T> type(PropertyType<T> type) {
             this.type = type;
-            return this;
-        }
-
-        /**
-         * Set the display name for the property
-         *
-         * @param name the property display name
-         * @return this builder
-         */
-        public Builder<T> name(String name) {
-            this.name = name;
-            return this;
-        }
-
-        /**
-         * Set a description for the property
-         *
-         * @param description the property description
-         * @return this builder
-         */
-        public Builder<T> description(String description) {
-            this.description = description;
             return this;
         }
 
@@ -154,8 +125,9 @@ public record ObjectPropertyTemplate<T>(
         }
 
         /**
-         * Hides this property from users (never returned by API responses).
+         * Apply a security filter to the object this property exists on.
          *
+         * @param expression the filter expression to check
          * @return this builder
          */
         public Builder<T> securityFilter(ExpressionBuilder expression) {
@@ -189,15 +161,11 @@ public record ObjectPropertyTemplate<T>(
         }
 
         public ObjectPropertyTemplate<T> build() {
-            T typedDefaultValue = this.defaultValue;
-
             return new ObjectPropertyTemplate<>(
                     this.type,
-                    this.name,
-                    this.description,
                     this.listType,
                     this.validator,
-                    typedDefaultValue,
+                    this.defaultValue,
                     this.securityFilter,
                     this.userHidden
             );

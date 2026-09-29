@@ -51,8 +51,6 @@ public class ObjectPropertyTemplateRegistrationMapper extends TemplateRegistrati
 
         ObjectProperty<?> type = new ObjectProperty<>(
                 id,
-                definition.name(),
-                definition.description(),
                 definition.type(),
                 listType,
                 expressions.buildExpression(definition.validator()),

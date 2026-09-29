@@ -55,22 +55,22 @@ class ExpressionsServiceTest {
     @BeforeEach
     void setUp() {
         ListType listType = this.repository.listTypeRepo.findById(LIST_ID).orElseGet(() ->
-                this.repository.listTypeRepo.saveAndFlush(new ListType(LIST_ID, "Expression list"))
+                this.repository.listTypeRepo.saveAndFlush(new ListType(LIST_ID))
         );
 
         this.listItem1 = this.repository.listElementRepo.findById(ELEMENT_1).orElseGet(() ->
                 this.repository.listElementRepo.saveAndFlush(
-                        new ListElement(ELEMENT_1, listType, "List Element 1", "", 1, null, Set.of())
+                        new ListElement(ELEMENT_1, listType, 1, null, Set.of())
                 )
         );
         this.listItem2 = this.repository.listElementRepo.findById(ELEMENT_2).orElseGet(() ->
                 this.repository.listElementRepo.saveAndFlush(
-                        new ListElement(ELEMENT_2, listType, "List Element 2", "", 2, null, Set.of())
+                        new ListElement(ELEMENT_2, listType, 2, null, Set.of())
                 )
         );
         this.listItem3 = this.repository.listElementRepo.findById(ELEMENT_3).orElseGet(() ->
                 this.repository.listElementRepo.saveAndFlush(
-                        new ListElement(ELEMENT_3, listType, "List Element 3", "", 3, null, Set.of())
+                        new ListElement(ELEMENT_3, listType, 3, null, Set.of())
                 )
         );
 
@@ -78,20 +78,18 @@ class ExpressionsServiceTest {
 
         ObjectProperty<Long> numberProperty = new ObjectProperty<>(
                 ResourceIdentifier.valueOf("test:number_property"),
-                "Number property", "Number property", PropertyType.NUMBER
+                PropertyType.NUMBER
         );
         this.testUser.setProperty(numberProperty, 10L);
 
         ObjectProperty<String> stringProperty = new ObjectProperty<>(
                 ResourceIdentifier.valueOf("test:string_property"),
-                "String property", "String property", PropertyType.STRING
+                PropertyType.STRING
         );
         this.testUser.setProperty(stringProperty, "test value");
 
         ObjectProperty<IListElement> listProperty = new ObjectProperty<>(
                 ResourceIdentifier.valueOf("test:list_property"),
-                "List property",
-                "List property",
                 PropertyType.LIST_ITEM,
                 listType,
                 null,
@@ -103,8 +101,6 @@ class ExpressionsServiceTest {
 
         ObjectProperty<Collection<IListElement>> listMultiple = new ObjectProperty<>(
                 ResourceIdentifier.valueOf("test:list_multiple_property"),
-                "List multiple property",
-                "List multiple property",
                 PropertyType.LIST_MULTIPLE,
                 listType,
                 null,
@@ -151,18 +147,22 @@ class ExpressionsServiceTest {
 
     @Test
     void checkPropertyExpression_withRecord() {
-        ObjectProperty<Boolean> recordProperty = new ObjectProperty<>(ResourceIdentifier.valueOf("test:record_boolean"), "Record Boolean", "Record Boolean", PropertyType.BOOLEAN);
+        ObjectProperty<Boolean> recordProperty = new ObjectProperty<>(
+                ResourceIdentifier.valueOf("test:record_boolean"),
+                PropertyType.BOOLEAN
+        );
 
         RecordType recordType = new RecordType(
                 ResourceIdentifier.valueOf("test:record_type"),
-                "Record type",
-                "Record type",
                 null,
                 null,
                 SecurityFilterUsage.HIDE_RECORD,
                 new HashSet<>()
         );
-        recordType.getProperties().add(new RecordTypeProperty<>(recordProperty, JsonNodeFactory.instance.booleanNode(false)));
+        recordType.getProperties().add(new RecordTypeProperty<>(
+                recordProperty,
+                JsonNodeFactory.instance.booleanNode(false)
+        ));
 
         Record record = new Record("Record title", recordType);
         record.setProperty(recordProperty, false);

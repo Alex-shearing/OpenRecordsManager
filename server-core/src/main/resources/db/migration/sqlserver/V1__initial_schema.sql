@@ -22,7 +22,6 @@ GO
 
 CREATE TABLE list_type (
     id NVARCHAR(255) NOT NULL PRIMARY KEY,
-    name NVARCHAR(255) NOT NULL,
     date_created DATETIMEOFFSET NOT NULL,
     date_modified DATETIMEOFFSET NOT NULL
 );
@@ -30,8 +29,6 @@ GO
 
 CREATE TABLE object_property (
     id NVARCHAR(255) NOT NULL PRIMARY KEY,
-    name NVARCHAR(255) NOT NULL,
-    description NVARCHAR(MAX) NOT NULL,
     type NVARCHAR(255) NOT NULL,
     list_type_id NVARCHAR(255) NULL,
     validator NVARCHAR(255) NULL,
@@ -50,8 +47,6 @@ GO
 CREATE TABLE list_element (
     id NVARCHAR(255) NOT NULL PRIMARY KEY,
     parent_id NVARCHAR(255) NOT NULL,
-    name NVARCHAR(255) NOT NULL,
-    description NVARCHAR(MAX) NOT NULL,
     element_index INT NOT NULL,
     active_to DATETIMEOFFSET NULL,
     date_created DATETIMEOFFSET NOT NULL,
@@ -75,8 +70,6 @@ GO
 
 CREATE TABLE record_type (
     id NVARCHAR(255) NOT NULL PRIMARY KEY,
-    name NVARCHAR(255) NOT NULL,
-    description NVARCHAR(MAX) NOT NULL,
     security_filter NVARCHAR(255) NULL,
     security_filter_usage TINYINT NOT NULL CHECK (security_filter_usage BETWEEN 0 AND 2),
     content_types VARCHAR(MAX) NULL,
@@ -263,9 +256,19 @@ CREATE TABLE audit_policy (
     operation NVARCHAR(50) NOT NULL,
     enabled BIT NOT NULL,
     requires_comment BIT NOT NULL,
-    display_name NVARCHAR(255) NOT NULL,
-    description NVARCHAR(MAX) NULL,
     date_modified DATETIMEOFFSET NOT NULL,
     PRIMARY KEY (entity_type, operation)
 );
+GO
+
+CREATE TABLE translation_override (
+    message_key NVARCHAR(512) NOT NULL,
+    locale NVARCHAR(32) NOT NULL,
+    value NVARCHAR(MAX) NOT NULL,
+    updated_at DATETIMEOFFSET NOT NULL,
+    PRIMARY KEY (message_key, locale)
+);
+GO
+
+CREATE INDEX idx_translation_override_locale ON translation_override (locale);
 GO

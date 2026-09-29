@@ -58,36 +58,32 @@ class PropertyValueCodecTest {
     @BeforeEach
     void setUp() {
         ListType listType = this.repository.listTypeRepo.findById(LIST_ID).orElseGet(() ->
-                this.repository.listTypeRepo.saveAndFlush(new ListType(LIST_ID, "Resolver list"))
+                this.repository.listTypeRepo.saveAndFlush(new ListType(LIST_ID))
         );
 
         ListType otherList = this.repository.listTypeRepo.findById(OTHER_LIST).orElseGet(() ->
-                this.repository.listTypeRepo.saveAndFlush(new ListType(OTHER_LIST, "Other list"))
+                this.repository.listTypeRepo.saveAndFlush(new ListType(OTHER_LIST))
         );
 
         this.elementA = this.repository.listElementRepo.findById(ELEMENT_A).orElseGet(() ->
                 this.repository.listElementRepo.saveAndFlush(
-                        new ListElement(ELEMENT_A, listType, "A", "", 1, null, Set.of())
+                        new ListElement(ELEMENT_A, listType, 1, null, Set.of())
                 )
         );
         this.elementB = this.repository.listElementRepo.findById(ELEMENT_B).orElseGet(() ->
                 this.repository.listElementRepo.saveAndFlush(
-                        new ListElement(ELEMENT_B, listType, "B", "", 2, null, Set.of())
+                        new ListElement(ELEMENT_B, listType, 2, null, Set.of())
                 )
         );
         this.repository.listElementRepo.findById(OTHER_ELEMENT).orElseGet(() ->
                 this.repository.listElementRepo.saveAndFlush(
-                        new ListElement(OTHER_ELEMENT, otherList, "Other", "", 1, null, Set.of())
+                        new ListElement(OTHER_ELEMENT, otherList, 1, null, Set.of())
                 )
         );
 
         this.listItemProperty = this.repository.objectPropertyRepo.findById(ITEM_PROP)
                 .map(p -> (ObjectProperty<IListElement>) p)
-                .orElseGet(() -> this.repository.objectPropertyRepo.saveAndFlush(new ObjectProperty<>(
-                        ITEM_PROP,
-                        "List item",
-                        "List item",
-                        PropertyType.LIST_ITEM,
+                .orElseGet(() -> this.repository.objectPropertyRepo.saveAndFlush(new ObjectProperty<>(ITEM_PROP, PropertyType.LIST_ITEM,
                         listType,
                         null,
                         null,
@@ -97,11 +93,7 @@ class PropertyValueCodecTest {
 
         this.listMultipleProperty = this.repository.objectPropertyRepo.findById(MULTI_PROP)
                 .map(p -> (ObjectProperty<Collection<IListElement>>) p)
-                .orElseGet(() -> this.repository.objectPropertyRepo.saveAndFlush(new ObjectProperty<>(
-                        MULTI_PROP,
-                        "List multiple",
-                        "List multiple",
-                        PropertyType.LIST_MULTIPLE,
+                .orElseGet(() -> this.repository.objectPropertyRepo.saveAndFlush(new ObjectProperty<>(MULTI_PROP, PropertyType.LIST_MULTIPLE,
                         listType,
                         null,
                         null,

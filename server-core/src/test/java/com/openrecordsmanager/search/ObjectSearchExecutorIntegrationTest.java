@@ -29,6 +29,7 @@ import tools.jackson.databind.node.JsonNodeFactory;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -128,13 +129,11 @@ class ObjectSearchExecutorIntegrationTest {
                 50
         );
 
-        assertEquals(List.of(alpha.getId(), beta.getId()).stream().sorted().toList(), ids);
+        assertEquals(Stream.of(alpha.getId(), beta.getId()).sorted().toList(), ids);
     }
 
     private void registerPluginProvider(Set<UUID> matchingIds) {
         SearchFieldProvider provider = new SearchFieldProvider(
-                "Executor test field",
-                "Returns fixed ids for merge coverage",
                 SearchFieldTarget.RECORD,
                 Set.of(SearchOperator.EQ)
         ) {
@@ -156,17 +155,11 @@ class ObjectSearchExecutorIntegrationTest {
                     .map(p -> (ObjectProperty<String>) p)
                     .orElseGet(() -> this.repository.objectPropertyRepo.saveAndFlush(new ObjectProperty<>(
                             BuiltinPropertyIds.TITLE,
-                            "Title",
-                            "Title",
                             PropertyType.STRING
                     )));
 
             RecordType type = this.repository.recordTypeRepo.findById(SEARCH_RECORD_TYPE).orElseGet(() ->
-                    this.repository.recordTypeRepo.saveAndFlush(new RecordType(
-                            SEARCH_RECORD_TYPE,
-                            "Executor search record type",
-                            "Record type for ObjectSearchExecutor tests",
-                            null,
+                    this.repository.recordTypeRepo.saveAndFlush(new RecordType(SEARCH_RECORD_TYPE, null,
                             null,
                             SecurityFilterUsage.SHOW_ALL,
                             Set.of(new RecordTypeProperty<>(titleProperty, null))

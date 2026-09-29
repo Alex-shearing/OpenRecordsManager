@@ -74,12 +74,7 @@ public class AuditPolicyService {
     }
 
     @Transactional
-    public void ensurePolicyExists(
-            AuditEntityType entityType,
-            AuditOperation operation,
-            String displayName,
-            @Nullable String description
-    ) {
+    public void ensurePolicyExists(AuditEntityType entityType, AuditOperation operation) {
         AuditPolicyId id = new AuditPolicyId(entityType, operation);
         if (this.repository.auditPolicyRepo.existsById(id)) {
             return;
@@ -87,9 +82,7 @@ public class AuditPolicyService {
         this.repository.auditPolicyRepo.saveAndFlush(new AuditPolicyEntity(
                 id,
                 true,
-                false,
-                displayName,
-                description
+                false
         ));
     }
 
@@ -100,37 +93,11 @@ public class AuditPolicyService {
         }
 
         for (AuditEntityType entityType : AuditEntityType.values()) {
-            String entityName = entityType.key();
-            this.ensurePolicyExists(
-                    entityType,
-                    AuditOperation.READ,
-                    entityName + " read",
-                    "Automatic audit when a " + entityName + " is read"
-            );
-            this.ensurePolicyExists(
-                    entityType,
-                    AuditOperation.CREATE,
-                    entityName + " created",
-                    "Automatic audit when a " + entityName + " is created"
-            );
-            this.ensurePolicyExists(
-                    entityType,
-                    AuditOperation.UPDATE,
-                    entityName + " updated",
-                    "Automatic audit when a " + entityName + " is updated"
-            );
-            this.ensurePolicyExists(
-                    entityType,
-                    AuditOperation.DELETE,
-                    entityName + " deleted",
-                    "Automatic audit when a " + entityName + " is deleted"
-            );
-            this.ensurePolicyExists(
-                    entityType,
-                    AuditOperation.ACTION,
-                    "ran action on " + entityName,
-                    "Automatic audit when an action is ran on a " + entityName
-            );
+            this.ensurePolicyExists(entityType, AuditOperation.READ);
+            this.ensurePolicyExists(entityType, AuditOperation.CREATE);
+            this.ensurePolicyExists(entityType, AuditOperation.UPDATE);
+            this.ensurePolicyExists(entityType, AuditOperation.DELETE);
+            this.ensurePolicyExists(entityType, AuditOperation.ACTION);
         }
     }
 
