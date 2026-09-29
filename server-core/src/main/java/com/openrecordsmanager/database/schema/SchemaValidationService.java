@@ -1,6 +1,6 @@
 package com.openrecordsmanager.database.schema;
 
-import com.openrecordsmanager.database.dto.SchemaValidationResponse;
+import com.openrecordsmanager.api.errors.ApiException;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import org.hibernate.Session;
@@ -16,15 +16,15 @@ public class SchemaValidationService {
     private EntityManager entityManager;
 
     @Transactional(readOnly = true)
-    public SchemaValidationResponse validate() {
+    public boolean validate() {
         try {
             Session session = this.entityManager.unwrap(Session.class);
             SessionFactory sessionFactory = session.getSessionFactory();
             sessionFactory.getSchemaManager().validateMappedObjects();
 
-            return new SchemaValidationResponse(true, null);
+            return true;
         } catch (SchemaManagementException e) {
-            return new SchemaValidationResponse(false, e.getMessage());
+            throw new ApiException("schema_validation_failed", e.getMessage());
         }
     }
 }

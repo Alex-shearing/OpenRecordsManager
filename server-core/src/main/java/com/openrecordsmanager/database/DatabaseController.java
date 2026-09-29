@@ -1,6 +1,5 @@
 package com.openrecordsmanager.database;
 
-import com.openrecordsmanager.database.dto.SchemaValidationResponse;
 import com.openrecordsmanager.database.dto.SetupStatusResponse;
 import com.openrecordsmanager.database.schema.SchemaMigrationService;
 import com.openrecordsmanager.database.schema.SchemaValidationService;
@@ -41,7 +40,7 @@ public class DatabaseController {
 
     @PostMapping(value = "/validate", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Validate the database matches the expected schema")
-    public SchemaValidationResponse validate() {
+    public boolean validate() {
         return this.schemaValidationService.validate();
     }
 }

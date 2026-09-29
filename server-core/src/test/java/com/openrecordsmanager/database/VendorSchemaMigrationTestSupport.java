@@ -1,6 +1,5 @@
 package com.openrecordsmanager.database;
 
-import com.openrecordsmanager.database.dto.SchemaValidationResponse;
 import com.openrecordsmanager.database.schema.SchemaMigrationState;
 import com.openrecordsmanager.database.schema.SchemaValidationService;
 import org.springframework.test.context.DynamicPropertyRegistry;
@@ -13,7 +12,6 @@ import java.sql.SQLException;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 final class VendorSchemaMigrationTestSupport {
@@ -65,9 +63,8 @@ final class VendorSchemaMigrationTestSupport {
             return;
         }
 
-        SchemaValidationResponse validationResponse = schemaValidationService.validate();
-        assertTrue(validationResponse.validated(), validationResponse.message());
-        assertNull(validationResponse.message());
+        boolean validationResponse = schemaValidationService.validate();
+        assertTrue(validationResponse);
     }
 
     private static void assertCoreTablesPresent(DataSource dataSource) throws SQLException {

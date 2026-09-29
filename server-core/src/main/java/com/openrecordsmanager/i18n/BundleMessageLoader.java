@@ -134,7 +134,7 @@ public class BundleMessageLoader {
         try (InputStream in = resource.getInputStream()) {
             putProperties(in, locale);
         }
-        LOGGER.debug("Loaded message(s) from {} ({})", resource, locale);
+        LOGGER.debug("Loaded errorMessage(s) from {} ({})", resource, locale);
     }
 
     private void putProperties(InputStream in, Locale locale) throws IOException {

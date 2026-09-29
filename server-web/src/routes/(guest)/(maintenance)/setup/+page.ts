@@ -3,6 +3,6 @@ import { getApiClient } from '$lib/api-client';
 
 export async function load() {
 	return {
-		status: await DatabaseController.upgrade({ client: getApiClient() }),
+		status: await DatabaseController.status({ client: getApiClient() }),
 	};
 }

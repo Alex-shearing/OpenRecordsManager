@@ -349,11 +349,6 @@ export type NewFileStoreMiddlewareRequest = {
     };
 };
 
-export type SchemaValidationResponse = {
-    validated: boolean;
-    message?: string;
-};
-
 export type SetupStatusResponse = {
     state: 'READY' | 'UPGRADE_REQUIRED';
     currentVersion?: string;
@@ -2903,7 +2898,7 @@ export type ValidateResponses = {
      * OK
      */
     200: ApiSuccessEnvelope & {
-        data: SchemaValidationResponse;
+        data: boolean;
     };
 };
 
