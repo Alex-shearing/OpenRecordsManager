@@ -1,6 +1,6 @@
 package com.openrecordsmanager.rest.swagger;
 
-import com.openrecordsmanager.rest.dto.ApiResponseV1;
+import static com.openrecordsmanager.rest.swagger.SwaggerConfiguration.API_ERROR_RESPONSE_REF;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -16,12 +16,13 @@ import java.lang.annotation.*;
         description = "Not Found",
         content = @Content(
                 mediaType = "application/json",
-                schema = @Schema(implementation = ApiResponseV1.class),
+                schema = @Schema(ref = API_ERROR_RESPONSE_REF),
                 examples = @ExampleObject(
                         value = """
                                 {
                                   "success": false,
-                                  "error": "object {0} of type {1} not found",
+                                  "error": "resource_not_found",
+                                  "errorArgs": ["550e8400-e29b-41d4-a716-446655440000", "user"],
                                   "timestamp": "2026-06-29T23:05:00Z"
                                 }
                                 """
