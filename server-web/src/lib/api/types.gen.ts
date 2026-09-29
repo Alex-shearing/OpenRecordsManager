@@ -4,6 +4,35 @@ export type ClientOptions = {
     baseUrl: 'http://localhost:8080' | (string & {});
 };
 
+/**
+ * Field-level validation error
+ */
+export type ApiFieldError = {
+    error: string;
+    errorArgs?: Array<string>;
+};
+
+/**
+ * Failed API envelope
+ */
+export type ApiErrorResponse = {
+    success: false;
+    timestamp: string;
+    error: string;
+    errorArgs?: Array<string>;
+    fieldErrors?: {
+        [key: string]: ApiFieldError;
+    };
+};
+
+/**
+ * Successful API envelope without payload
+ */
+export type ApiSuccessEnvelope = {
+    success: true;
+    timestamp: string;
+};
+
 export type UpdateUserRequest = {
     username?: string;
     authProvider?: string;
@@ -11,14 +40,6 @@ export type UpdateUserRequest = {
     properties?: {
         [key: string]: unknown;
     };
-};
-
-export type ApiResponseV1 = {
-    success: boolean;
-    error?: string;
-    timestamp: string;
-    data?: unknown;
-    errorData?: unknown;
 };
 
 export type UserResponse = {
@@ -337,7 +358,7 @@ export type SetupStatusResponse = {
     state: 'READY' | 'UPGRADE_REQUIRED';
     currentVersion?: string;
     pendingMigrations: Array<string>;
-    message?: string;
+    migrationsApplied: number;
 };
 
 export type LoginResponse = {
@@ -645,58 +666,23 @@ export type GetErrors = {
     /**
      * Unauthorized
      */
-    401: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    401: ApiErrorResponse;
     /**
      * Forbidden
      */
-    403: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    403: ApiErrorResponse;
     /**
      * Not Found
      */
-    404: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    404: ApiErrorResponse;
     /**
      * Audit comment required
      */
-    422: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    422: ApiErrorResponse;
     /**
      * Internal Server error
      */
-    500: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    500: ApiErrorResponse;
 };
 
 export type GetError = GetErrors[keyof GetErrors];
@@ -705,9 +691,7 @@ export type GetResponses = {
     /**
      * OK
      */
-    200: {
-        success: true;
-        timestamp: unknown;
+    200: ApiSuccessEnvelope & {
         data: UserResponse;
     };
 };
@@ -727,69 +711,27 @@ export type UpdateErrors = {
     /**
      * Unauthorized
      */
-    401: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    401: ApiErrorResponse;
     /**
      * Forbidden
      */
-    403: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    403: ApiErrorResponse;
     /**
      * Not Found
      */
-    404: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    404: ApiErrorResponse;
     /**
      * Resource in use
      */
-    409: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    409: ApiErrorResponse;
     /**
      * Audit comment required
      */
-    422: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    422: ApiErrorResponse;
     /**
      * Internal Server error
      */
-    500: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    500: ApiErrorResponse;
 };
 
 export type UpdateError = UpdateErrors[keyof UpdateErrors];
@@ -798,9 +740,7 @@ export type UpdateResponses = {
     /**
      * OK
      */
-    200: {
-        success: true;
-        timestamp: unknown;
+    200: ApiSuccessEnvelope & {
         data: UserResponse;
     };
 };
@@ -821,36 +761,15 @@ export type ListTranslationOverridesErrors = {
     /**
      * Unauthorized
      */
-    401: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    401: ApiErrorResponse;
     /**
      * Forbidden
      */
-    403: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    403: ApiErrorResponse;
     /**
      * Internal Server error
      */
-    500: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    500: ApiErrorResponse;
 };
 
 export type ListTranslationOverridesError = ListTranslationOverridesErrors[keyof ListTranslationOverridesErrors];
@@ -859,9 +778,7 @@ export type ListTranslationOverridesResponses = {
     /**
      * OK
      */
-    200: {
-        success: true;
-        timestamp: unknown;
+    200: ApiSuccessEnvelope & {
         data: Array<TranslationOverrideResponse>;
     };
 };
@@ -879,47 +796,19 @@ export type UpsertTranslationOverrideErrors = {
     /**
      * Unauthorized
      */
-    401: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    401: ApiErrorResponse;
     /**
      * Forbidden
      */
-    403: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    403: ApiErrorResponse;
     /**
      * Audit comment required
      */
-    422: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    422: ApiErrorResponse;
     /**
      * Internal Server error
      */
-    500: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    500: ApiErrorResponse;
 };
 
 export type UpsertTranslationOverrideError = UpsertTranslationOverrideErrors[keyof UpsertTranslationOverrideErrors];
@@ -928,9 +817,7 @@ export type UpsertTranslationOverrideResponses = {
     /**
      * OK
      */
-    200: {
-        success: true;
-        timestamp: unknown;
+    200: ApiSuccessEnvelope & {
         data: TranslationOverrideResponse;
     };
 };
@@ -950,58 +837,23 @@ export type Get1Errors = {
     /**
      * Unauthorized
      */
-    401: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    401: ApiErrorResponse;
     /**
      * Forbidden
      */
-    403: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    403: ApiErrorResponse;
     /**
      * Not Found
      */
-    404: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    404: ApiErrorResponse;
     /**
      * Audit comment required
      */
-    422: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    422: ApiErrorResponse;
     /**
      * Internal Server error
      */
-    500: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    500: ApiErrorResponse;
 };
 
 export type Get1Error = Get1Errors[keyof Get1Errors];
@@ -1010,9 +862,7 @@ export type Get1Responses = {
     /**
      * OK
      */
-    200: {
-        success: true;
-        timestamp: unknown;
+    200: ApiSuccessEnvelope & {
         data: RecordResponse;
     };
 };
@@ -1032,58 +882,23 @@ export type Update1Errors = {
     /**
      * Unauthorized
      */
-    401: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    401: ApiErrorResponse;
     /**
      * Forbidden
      */
-    403: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    403: ApiErrorResponse;
     /**
      * Not Found
      */
-    404: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    404: ApiErrorResponse;
     /**
      * Audit comment required
      */
-    422: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    422: ApiErrorResponse;
     /**
      * Internal Server error
      */
-    500: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    500: ApiErrorResponse;
 };
 
 export type Update1Error = Update1Errors[keyof Update1Errors];
@@ -1092,9 +907,7 @@ export type Update1Responses = {
     /**
      * OK
      */
-    200: {
-        success: true;
-        timestamp: unknown;
+    200: ApiSuccessEnvelope & {
         data: RecordResponse;
     };
 };
@@ -1115,23 +928,23 @@ export type GetRevisionErrors = {
     /**
      * Unauthorized
      */
-    401: ApiResponseV1;
+    401: ApiErrorResponse;
     /**
      * Forbidden
      */
-    403: ApiResponseV1;
+    403: ApiErrorResponse;
     /**
      * Not Found
      */
-    404: ApiResponseV1;
+    404: ApiErrorResponse;
     /**
      * Audit comment required
      */
-    422: ApiResponseV1;
+    422: ApiErrorResponse;
     /**
      * Internal Server error
      */
-    500: ApiResponseV1;
+    500: ApiErrorResponse;
 };
 
 export type GetRevisionError = GetRevisionErrors[keyof GetRevisionErrors];
@@ -1166,58 +979,23 @@ export type CreateRevision2Errors = {
     /**
      * Unauthorized
      */
-    401: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    401: ApiErrorResponse;
     /**
      * Forbidden
      */
-    403: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    403: ApiErrorResponse;
     /**
      * Not Found
      */
-    404: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    404: ApiErrorResponse;
     /**
      * Audit comment required
      */
-    422: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    422: ApiErrorResponse;
     /**
      * Internal Server error
      */
-    500: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    500: ApiErrorResponse;
 };
 
 export type CreateRevision2Error = CreateRevision2Errors[keyof CreateRevision2Errors];
@@ -1226,12 +1004,8 @@ export type CreateRevision2Responses = {
     /**
      * OK
      */
-    200: {
-        success: true;
-        timestamp: unknown;
-        data: {
-            success: true;
-            timestamp: unknown;
+    200: ApiSuccessEnvelope & {
+        data: ApiSuccessEnvelope & {
             data: RecordResponse;
         };
     };
@@ -1252,58 +1026,23 @@ export type DeletePluginErrors = {
     /**
      * Unauthorized
      */
-    401: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    401: ApiErrorResponse;
     /**
      * Forbidden
      */
-    403: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    403: ApiErrorResponse;
     /**
      * Not Found
      */
-    404: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    404: ApiErrorResponse;
     /**
      * Audit comment required
      */
-    422: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    422: ApiErrorResponse;
     /**
      * Internal Server error
      */
-    500: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    500: ApiErrorResponse;
 };
 
 export type DeletePluginError = DeletePluginErrors[keyof DeletePluginErrors];
@@ -1312,10 +1051,7 @@ export type DeletePluginResponses = {
     /**
      * OK
      */
-    200: {
-        success: true;
-        timestamp: unknown;
-    };
+    200: ApiSuccessEnvelope;
 };
 
 export type DeletePluginResponse = DeletePluginResponses[keyof DeletePluginResponses];
@@ -1333,58 +1069,23 @@ export type GetPluginErrors = {
     /**
      * Unauthorized
      */
-    401: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    401: ApiErrorResponse;
     /**
      * Forbidden
      */
-    403: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    403: ApiErrorResponse;
     /**
      * Not Found
      */
-    404: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    404: ApiErrorResponse;
     /**
      * Audit comment required
      */
-    422: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    422: ApiErrorResponse;
     /**
      * Internal Server error
      */
-    500: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    500: ApiErrorResponse;
 };
 
 export type GetPluginError = GetPluginErrors[keyof GetPluginErrors];
@@ -1393,9 +1094,7 @@ export type GetPluginResponses = {
     /**
      * OK
      */
-    200: {
-        success: true;
-        timestamp: unknown;
+    200: ApiSuccessEnvelope & {
         data: PluginResponse;
     };
 };
@@ -1415,58 +1114,23 @@ export type UpdatePluginErrors = {
     /**
      * Unauthorized
      */
-    401: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    401: ApiErrorResponse;
     /**
      * Forbidden
      */
-    403: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    403: ApiErrorResponse;
     /**
      * Not Found
      */
-    404: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    404: ApiErrorResponse;
     /**
      * Audit comment required
      */
-    422: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    422: ApiErrorResponse;
     /**
      * Internal Server error
      */
-    500: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    500: ApiErrorResponse;
 };
 
 export type UpdatePluginError = UpdatePluginErrors[keyof UpdatePluginErrors];
@@ -1475,9 +1139,7 @@ export type UpdatePluginResponses = {
     /**
      * OK
      */
-    200: {
-        success: true;
-        timestamp: unknown;
+    200: ApiSuccessEnvelope & {
         data: PluginResponse;
     };
 };
@@ -1497,69 +1159,27 @@ export type ObjectPropertyDeleteErrors = {
     /**
      * Unauthorized
      */
-    401: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    401: ApiErrorResponse;
     /**
      * Forbidden
      */
-    403: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    403: ApiErrorResponse;
     /**
      * Not Found
      */
-    404: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    404: ApiErrorResponse;
     /**
      * Resource in use
      */
-    409: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    409: ApiErrorResponse;
     /**
      * Audit comment required
      */
-    422: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    422: ApiErrorResponse;
     /**
      * Internal Server error
      */
-    500: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    500: ApiErrorResponse;
 };
 
 export type ObjectPropertyDeleteError = ObjectPropertyDeleteErrors[keyof ObjectPropertyDeleteErrors];
@@ -1568,10 +1188,7 @@ export type ObjectPropertyDeleteResponses = {
     /**
      * OK
      */
-    200: {
-        success: true;
-        timestamp: unknown;
-    };
+    200: ApiSuccessEnvelope;
 };
 
 export type ObjectPropertyDeleteResponse = ObjectPropertyDeleteResponses[keyof ObjectPropertyDeleteResponses];
@@ -1589,58 +1206,23 @@ export type ObjectPropertyRetrieveOneErrors = {
     /**
      * Unauthorized
      */
-    401: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    401: ApiErrorResponse;
     /**
      * Forbidden
      */
-    403: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    403: ApiErrorResponse;
     /**
      * Not Found
      */
-    404: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    404: ApiErrorResponse;
     /**
      * Audit comment required
      */
-    422: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    422: ApiErrorResponse;
     /**
      * Internal Server error
      */
-    500: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    500: ApiErrorResponse;
 };
 
 export type ObjectPropertyRetrieveOneError = ObjectPropertyRetrieveOneErrors[keyof ObjectPropertyRetrieveOneErrors];
@@ -1649,9 +1231,7 @@ export type ObjectPropertyRetrieveOneResponses = {
     /**
      * OK
      */
-    200: {
-        success: true;
-        timestamp: unknown;
+    200: ApiSuccessEnvelope & {
         data: ObjectPropertyResponse;
     };
 };
@@ -1671,58 +1251,23 @@ export type ObjectPropertyUpdateErrors = {
     /**
      * Unauthorized
      */
-    401: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    401: ApiErrorResponse;
     /**
      * Forbidden
      */
-    403: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    403: ApiErrorResponse;
     /**
      * Not Found
      */
-    404: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    404: ApiErrorResponse;
     /**
      * Audit comment required
      */
-    422: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    422: ApiErrorResponse;
     /**
      * Internal Server error
      */
-    500: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    500: ApiErrorResponse;
 };
 
 export type ObjectPropertyUpdateError = ObjectPropertyUpdateErrors[keyof ObjectPropertyUpdateErrors];
@@ -1731,9 +1276,7 @@ export type ObjectPropertyUpdateResponses = {
     /**
      * OK
      */
-    200: {
-        success: true;
-        timestamp: unknown;
+    200: ApiSuccessEnvelope & {
         data: ObjectPropertyResponse;
     };
 };
@@ -1753,69 +1296,27 @@ export type DeleteListErrors = {
     /**
      * Unauthorized
      */
-    401: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    401: ApiErrorResponse;
     /**
      * Forbidden
      */
-    403: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    403: ApiErrorResponse;
     /**
      * Not Found
      */
-    404: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    404: ApiErrorResponse;
     /**
      * Resource in use
      */
-    409: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    409: ApiErrorResponse;
     /**
      * Audit comment required
      */
-    422: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    422: ApiErrorResponse;
     /**
      * Internal Server error
      */
-    500: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    500: ApiErrorResponse;
 };
 
 export type DeleteListError = DeleteListErrors[keyof DeleteListErrors];
@@ -1824,10 +1325,7 @@ export type DeleteListResponses = {
     /**
      * OK
      */
-    200: {
-        success: true;
-        timestamp: unknown;
-    };
+    200: ApiSuccessEnvelope;
 };
 
 export type DeleteListResponse = DeleteListResponses[keyof DeleteListResponses];
@@ -1845,58 +1343,23 @@ export type GetListErrors = {
     /**
      * Unauthorized
      */
-    401: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    401: ApiErrorResponse;
     /**
      * Forbidden
      */
-    403: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    403: ApiErrorResponse;
     /**
      * Not Found
      */
-    404: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    404: ApiErrorResponse;
     /**
      * Audit comment required
      */
-    422: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    422: ApiErrorResponse;
     /**
      * Internal Server error
      */
-    500: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    500: ApiErrorResponse;
 };
 
 export type GetListError = GetListErrors[keyof GetListErrors];
@@ -1905,9 +1368,7 @@ export type GetListResponses = {
     /**
      * OK
      */
-    200: {
-        success: true;
-        timestamp: unknown;
+    200: ApiSuccessEnvelope & {
         data: ListTypeResponse;
     };
 };
@@ -1927,69 +1388,27 @@ export type CreateListElementErrors = {
     /**
      * Unauthorized
      */
-    401: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    401: ApiErrorResponse;
     /**
      * Forbidden
      */
-    403: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    403: ApiErrorResponse;
     /**
      * Not Found
      */
-    404: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    404: ApiErrorResponse;
     /**
      * Resource in use
      */
-    409: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    409: ApiErrorResponse;
     /**
      * Audit comment required
      */
-    422: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    422: ApiErrorResponse;
     /**
      * Internal Server error
      */
-    500: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    500: ApiErrorResponse;
 };
 
 export type CreateListElementError = CreateListElementErrors[keyof CreateListElementErrors];
@@ -1998,9 +1417,7 @@ export type CreateListElementResponses = {
     /**
      * OK
      */
-    200: {
-        success: true;
-        timestamp: unknown;
+    200: ApiSuccessEnvelope & {
         data: ListElementResponse;
     };
 };
@@ -2020,58 +1437,23 @@ export type UpdateListErrors = {
     /**
      * Unauthorized
      */
-    401: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    401: ApiErrorResponse;
     /**
      * Forbidden
      */
-    403: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    403: ApiErrorResponse;
     /**
      * Not Found
      */
-    404: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    404: ApiErrorResponse;
     /**
      * Audit comment required
      */
-    422: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    422: ApiErrorResponse;
     /**
      * Internal Server error
      */
-    500: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    500: ApiErrorResponse;
 };
 
 export type UpdateListError = UpdateListErrors[keyof UpdateListErrors];
@@ -2080,9 +1462,7 @@ export type UpdateListResponses = {
     /**
      * OK
      */
-    200: {
-        success: true;
-        timestamp: unknown;
+    200: ApiSuccessEnvelope & {
         data: ListTypeResponse;
     };
 };
@@ -2103,58 +1483,23 @@ export type DeleteListElementErrors = {
     /**
      * Unauthorized
      */
-    401: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    401: ApiErrorResponse;
     /**
      * Forbidden
      */
-    403: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    403: ApiErrorResponse;
     /**
      * Not Found
      */
-    404: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    404: ApiErrorResponse;
     /**
      * Audit comment required
      */
-    422: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    422: ApiErrorResponse;
     /**
      * Internal Server error
      */
-    500: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    500: ApiErrorResponse;
 };
 
 export type DeleteListElementError = DeleteListElementErrors[keyof DeleteListElementErrors];
@@ -2163,10 +1508,7 @@ export type DeleteListElementResponses = {
     /**
      * OK
      */
-    200: {
-        success: true;
-        timestamp: unknown;
-    };
+    200: ApiSuccessEnvelope;
 };
 
 export type DeleteListElementResponse = DeleteListElementResponses[keyof DeleteListElementResponses];
@@ -2185,58 +1527,23 @@ export type GetListElementErrors = {
     /**
      * Unauthorized
      */
-    401: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    401: ApiErrorResponse;
     /**
      * Forbidden
      */
-    403: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    403: ApiErrorResponse;
     /**
      * Not Found
      */
-    404: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    404: ApiErrorResponse;
     /**
      * Audit comment required
      */
-    422: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    422: ApiErrorResponse;
     /**
      * Internal Server error
      */
-    500: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    500: ApiErrorResponse;
 };
 
 export type GetListElementError = GetListElementErrors[keyof GetListElementErrors];
@@ -2245,9 +1552,7 @@ export type GetListElementResponses = {
     /**
      * OK
      */
-    200: {
-        success: true;
-        timestamp: unknown;
+    200: ApiSuccessEnvelope & {
         data: ListElementResponse;
     };
 };
@@ -2268,58 +1573,23 @@ export type UpdateListElementErrors = {
     /**
      * Unauthorized
      */
-    401: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    401: ApiErrorResponse;
     /**
      * Forbidden
      */
-    403: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    403: ApiErrorResponse;
     /**
      * Not Found
      */
-    404: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    404: ApiErrorResponse;
     /**
      * Audit comment required
      */
-    422: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    422: ApiErrorResponse;
     /**
      * Internal Server error
      */
-    500: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    500: ApiErrorResponse;
 };
 
 export type UpdateListElementError = UpdateListElementErrors[keyof UpdateListElementErrors];
@@ -2328,9 +1598,7 @@ export type UpdateListElementResponses = {
     /**
      * OK
      */
-    200: {
-        success: true;
-        timestamp: unknown;
+    200: ApiSuccessEnvelope & {
         data: ListElementResponse;
     };
 };
@@ -2350,69 +1618,27 @@ export type FileStoreDeleteErrors = {
     /**
      * Unauthorized
      */
-    401: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    401: ApiErrorResponse;
     /**
      * Forbidden
      */
-    403: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    403: ApiErrorResponse;
     /**
      * Not Found
      */
-    404: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    404: ApiErrorResponse;
     /**
      * Resource in use
      */
-    409: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    409: ApiErrorResponse;
     /**
      * Audit comment required
      */
-    422: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    422: ApiErrorResponse;
     /**
      * Internal Server error
      */
-    500: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    500: ApiErrorResponse;
 };
 
 export type FileStoreDeleteError = FileStoreDeleteErrors[keyof FileStoreDeleteErrors];
@@ -2421,10 +1647,7 @@ export type FileStoreDeleteResponses = {
     /**
      * OK
      */
-    200: {
-        success: true;
-        timestamp: unknown;
-    };
+    200: ApiSuccessEnvelope;
 };
 
 export type FileStoreDeleteResponse = FileStoreDeleteResponses[keyof FileStoreDeleteResponses];
@@ -2442,58 +1665,23 @@ export type FileStoreRetrieveOneErrors = {
     /**
      * Unauthorized
      */
-    401: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    401: ApiErrorResponse;
     /**
      * Forbidden
      */
-    403: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    403: ApiErrorResponse;
     /**
      * Not Found
      */
-    404: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    404: ApiErrorResponse;
     /**
      * Audit comment required
      */
-    422: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    422: ApiErrorResponse;
     /**
      * Internal Server error
      */
-    500: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    500: ApiErrorResponse;
 };
 
 export type FileStoreRetrieveOneError = FileStoreRetrieveOneErrors[keyof FileStoreRetrieveOneErrors];
@@ -2502,9 +1690,7 @@ export type FileStoreRetrieveOneResponses = {
     /**
      * OK
      */
-    200: {
-        success: true;
-        timestamp: unknown;
+    200: ApiSuccessEnvelope & {
         data: FileStoreResponse;
     };
 };
@@ -2524,58 +1710,23 @@ export type FileStoreUpdateErrors = {
     /**
      * Unauthorized
      */
-    401: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    401: ApiErrorResponse;
     /**
      * Forbidden
      */
-    403: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    403: ApiErrorResponse;
     /**
      * Not Found
      */
-    404: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    404: ApiErrorResponse;
     /**
      * Audit comment required
      */
-    422: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    422: ApiErrorResponse;
     /**
      * Internal Server error
      */
-    500: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    500: ApiErrorResponse;
 };
 
 export type FileStoreUpdateError = FileStoreUpdateErrors[keyof FileStoreUpdateErrors];
@@ -2584,9 +1735,7 @@ export type FileStoreUpdateResponses = {
     /**
      * OK
      */
-    200: {
-        success: true;
-        timestamp: unknown;
+    200: ApiSuccessEnvelope & {
         data: SimpleFileStoreResponse;
     };
 };
@@ -2606,69 +1755,27 @@ export type MiddlewareDeleteErrors = {
     /**
      * Unauthorized
      */
-    401: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    401: ApiErrorResponse;
     /**
      * Forbidden
      */
-    403: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    403: ApiErrorResponse;
     /**
      * Not Found
      */
-    404: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    404: ApiErrorResponse;
     /**
      * Resource in use
      */
-    409: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    409: ApiErrorResponse;
     /**
      * Audit comment required
      */
-    422: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    422: ApiErrorResponse;
     /**
      * Internal Server error
      */
-    500: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    500: ApiErrorResponse;
 };
 
 export type MiddlewareDeleteError = MiddlewareDeleteErrors[keyof MiddlewareDeleteErrors];
@@ -2677,10 +1784,7 @@ export type MiddlewareDeleteResponses = {
     /**
      * OK
      */
-    200: {
-        success: true;
-        timestamp: unknown;
-    };
+    200: ApiSuccessEnvelope;
 };
 
 export type MiddlewareDeleteResponse = MiddlewareDeleteResponses[keyof MiddlewareDeleteResponses];
@@ -2698,58 +1802,23 @@ export type MiddlewareRetrieveOneErrors = {
     /**
      * Unauthorized
      */
-    401: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    401: ApiErrorResponse;
     /**
      * Forbidden
      */
-    403: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    403: ApiErrorResponse;
     /**
      * Not Found
      */
-    404: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    404: ApiErrorResponse;
     /**
      * Audit comment required
      */
-    422: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    422: ApiErrorResponse;
     /**
      * Internal Server error
      */
-    500: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    500: ApiErrorResponse;
 };
 
 export type MiddlewareRetrieveOneError = MiddlewareRetrieveOneErrors[keyof MiddlewareRetrieveOneErrors];
@@ -2758,9 +1827,7 @@ export type MiddlewareRetrieveOneResponses = {
     /**
      * OK
      */
-    200: {
-        success: true;
-        timestamp: unknown;
+    200: ApiSuccessEnvelope & {
         data: MiddlewareResponse;
     };
 };
@@ -2780,58 +1847,23 @@ export type MiddlewareUpdateErrors = {
     /**
      * Unauthorized
      */
-    401: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    401: ApiErrorResponse;
     /**
      * Forbidden
      */
-    403: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    403: ApiErrorResponse;
     /**
      * Not Found
      */
-    404: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    404: ApiErrorResponse;
     /**
      * Audit comment required
      */
-    422: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    422: ApiErrorResponse;
     /**
      * Internal Server error
      */
-    500: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    500: ApiErrorResponse;
 };
 
 export type MiddlewareUpdateError = MiddlewareUpdateErrors[keyof MiddlewareUpdateErrors];
@@ -2840,9 +1872,7 @@ export type MiddlewareUpdateResponses = {
     /**
      * OK
      */
-    200: {
-        success: true;
-        timestamp: unknown;
+    200: ApiSuccessEnvelope & {
         data: SimpleMiddlewareResponse;
     };
 };
@@ -2865,47 +1895,19 @@ export type SetConfigsErrors = {
     /**
      * Unauthorized
      */
-    401: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    401: ApiErrorResponse;
     /**
      * Forbidden
      */
-    403: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    403: ApiErrorResponse;
     /**
      * Audit comment required
      */
-    422: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    422: ApiErrorResponse;
     /**
      * Internal Server error
      */
-    500: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    500: ApiErrorResponse;
 };
 
 export type SetConfigsError = SetConfigsErrors[keyof SetConfigsErrors];
@@ -2914,9 +1916,7 @@ export type SetConfigsResponses = {
     /**
      * OK
      */
-    200: {
-        success: true;
-        timestamp: unknown;
+    200: ApiSuccessEnvelope & {
         data: Array<ConfigResponse>;
     };
 };
@@ -2934,36 +1934,15 @@ export type RetrieveAllAuthProvidersErrors = {
     /**
      * Unauthorized
      */
-    401: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    401: ApiErrorResponse;
     /**
      * Forbidden
      */
-    403: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    403: ApiErrorResponse;
     /**
      * Internal Server error
      */
-    500: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    500: ApiErrorResponse;
 };
 
 export type RetrieveAllAuthProvidersError = RetrieveAllAuthProvidersErrors[keyof RetrieveAllAuthProvidersErrors];
@@ -2972,9 +1951,7 @@ export type RetrieveAllAuthProvidersResponses = {
     /**
      * OK
      */
-    200: {
-        success: true;
-        timestamp: unknown;
+    200: ApiSuccessEnvelope & {
         data: Array<AuthProviderResponse>;
     };
 };
@@ -2992,36 +1969,15 @@ export type CreateAuthProviderErrors = {
     /**
      * Unauthorized
      */
-    401: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    401: ApiErrorResponse;
     /**
      * Forbidden
      */
-    403: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    403: ApiErrorResponse;
     /**
      * Internal Server error
      */
-    500: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    500: ApiErrorResponse;
 };
 
 export type CreateAuthProviderError = CreateAuthProviderErrors[keyof CreateAuthProviderErrors];
@@ -3030,9 +1986,7 @@ export type CreateAuthProviderResponses = {
     /**
      * OK
      */
-    200: {
-        success: true;
-        timestamp: unknown;
+    200: ApiSuccessEnvelope & {
         data: AuthProviderResponse;
     };
 };
@@ -3052,47 +2006,19 @@ export type GetAuthProviderErrors = {
     /**
      * Unauthorized
      */
-    401: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    401: ApiErrorResponse;
     /**
      * Forbidden
      */
-    403: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    403: ApiErrorResponse;
     /**
      * Not Found
      */
-    404: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    404: ApiErrorResponse;
     /**
      * Internal Server error
      */
-    500: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    500: ApiErrorResponse;
 };
 
 export type GetAuthProviderError = GetAuthProviderErrors[keyof GetAuthProviderErrors];
@@ -3101,9 +2027,7 @@ export type GetAuthProviderResponses = {
     /**
      * OK
      */
-    200: {
-        success: true;
-        timestamp: unknown;
+    200: ApiSuccessEnvelope & {
         data: AuthProviderResponse;
     };
 };
@@ -3123,47 +2047,19 @@ export type UpdateAuthProviderErrors = {
     /**
      * Unauthorized
      */
-    401: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    401: ApiErrorResponse;
     /**
      * Forbidden
      */
-    403: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    403: ApiErrorResponse;
     /**
      * Not Found
      */
-    404: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    404: ApiErrorResponse;
     /**
      * Internal Server error
      */
-    500: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    500: ApiErrorResponse;
 };
 
 export type UpdateAuthProviderError = UpdateAuthProviderErrors[keyof UpdateAuthProviderErrors];
@@ -3172,9 +2068,7 @@ export type UpdateAuthProviderResponses = {
     /**
      * OK
      */
-    200: {
-        success: true;
-        timestamp: unknown;
+    200: ApiSuccessEnvelope & {
         data: AuthProviderResponse;
     };
 };
@@ -3192,47 +2086,19 @@ export type ListAuditPoliciesErrors = {
     /**
      * Unauthorized
      */
-    401: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    401: ApiErrorResponse;
     /**
      * Forbidden
      */
-    403: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    403: ApiErrorResponse;
     /**
      * Audit comment required
      */
-    422: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    422: ApiErrorResponse;
     /**
      * Internal Server error
      */
-    500: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    500: ApiErrorResponse;
 };
 
 export type ListAuditPoliciesError = ListAuditPoliciesErrors[keyof ListAuditPoliciesErrors];
@@ -3241,9 +2107,7 @@ export type ListAuditPoliciesResponses = {
     /**
      * OK
      */
-    200: {
-        success: true;
-        timestamp: unknown;
+    200: ApiSuccessEnvelope & {
         data: Array<AuditPolicyResponse>;
     };
 };
@@ -3264,58 +2128,23 @@ export type UpdateAuditPolicyErrors = {
     /**
      * Unauthorized
      */
-    401: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    401: ApiErrorResponse;
     /**
      * Forbidden
      */
-    403: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    403: ApiErrorResponse;
     /**
      * Not Found
      */
-    404: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    404: ApiErrorResponse;
     /**
      * Audit comment required
      */
-    422: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    422: ApiErrorResponse;
     /**
      * Internal Server error
      */
-    500: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    500: ApiErrorResponse;
 };
 
 export type UpdateAuditPolicyError = UpdateAuditPolicyErrors[keyof UpdateAuditPolicyErrors];
@@ -3324,9 +2153,7 @@ export type UpdateAuditPolicyResponses = {
     /**
      * OK
      */
-    200: {
-        success: true;
-        timestamp: unknown;
+    200: ApiSuccessEnvelope & {
         data: AuditPolicyResponse;
     };
 };
@@ -3344,58 +2171,23 @@ export type CreateErrors = {
     /**
      * Unauthorized
      */
-    401: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    401: ApiErrorResponse;
     /**
      * Forbidden
      */
-    403: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    403: ApiErrorResponse;
     /**
      * Resource in use
      */
-    409: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    409: ApiErrorResponse;
     /**
      * Audit comment required
      */
-    422: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    422: ApiErrorResponse;
     /**
      * Internal Server error
      */
-    500: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    500: ApiErrorResponse;
 };
 
 export type CreateError = CreateErrors[keyof CreateErrors];
@@ -3404,9 +2196,7 @@ export type CreateResponses = {
     /**
      * OK
      */
-    200: {
-        success: true;
-        timestamp: unknown;
+    200: ApiSuccessEnvelope & {
         data: UserResponse;
     };
 };
@@ -3429,58 +2219,23 @@ export type ExecuteActionErrors = {
     /**
      * Unauthorized
      */
-    401: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    401: ApiErrorResponse;
     /**
      * Forbidden
      */
-    403: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    403: ApiErrorResponse;
     /**
      * Not Found
      */
-    404: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    404: ApiErrorResponse;
     /**
      * Audit comment required
      */
-    422: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    422: ApiErrorResponse;
     /**
      * Internal Server error
      */
-    500: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    500: ApiErrorResponse;
 };
 
 export type ExecuteActionError = ExecuteActionErrors[keyof ExecuteActionErrors];
@@ -3489,10 +2244,7 @@ export type ExecuteActionResponses = {
     /**
      * OK
      */
-    200: {
-        success: true;
-        timestamp: unknown;
-    };
+    200: ApiSuccessEnvelope;
 };
 
 export type ExecuteActionResponse = ExecuteActionResponses[keyof ExecuteActionResponses];
@@ -3508,47 +2260,19 @@ export type SearchErrors = {
     /**
      * Unauthorized
      */
-    401: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    401: ApiErrorResponse;
     /**
      * Forbidden
      */
-    403: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    403: ApiErrorResponse;
     /**
      * Audit comment required
      */
-    422: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    422: ApiErrorResponse;
     /**
      * Internal Server error
      */
-    500: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    500: ApiErrorResponse;
 };
 
 export type SearchError = SearchErrors[keyof SearchErrors];
@@ -3557,9 +2281,7 @@ export type SearchResponses = {
     /**
      * OK
      */
-    200: {
-        success: true;
-        timestamp: unknown;
+    200: ApiSuccessEnvelope & {
         data: UserSearchResponse;
     };
 };
@@ -3582,58 +2304,23 @@ export type RegisterTemplateErrors = {
     /**
      * Unauthorized
      */
-    401: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    401: ApiErrorResponse;
     /**
      * Forbidden
      */
-    403: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    403: ApiErrorResponse;
     /**
      * Not Found
      */
-    404: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    404: ApiErrorResponse;
     /**
      * Audit comment required
      */
-    422: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    422: ApiErrorResponse;
     /**
      * Internal Server error
      */
-    500: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    500: ApiErrorResponse;
 };
 
 export type RegisterTemplateError = RegisterTemplateErrors[keyof RegisterTemplateErrors];
@@ -3642,10 +2329,7 @@ export type RegisterTemplateResponses = {
     /**
      * OK
      */
-    200: {
-        success: true;
-        timestamp: unknown;
-    };
+    200: ApiSuccessEnvelope;
 };
 
 export type RegisterTemplateResponse = RegisterTemplateResponses[keyof RegisterTemplateResponses];
@@ -3661,58 +2345,23 @@ export type NewRecordErrors = {
     /**
      * Unauthorized
      */
-    401: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    401: ApiErrorResponse;
     /**
      * Forbidden
      */
-    403: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    403: ApiErrorResponse;
     /**
      * Not Found
      */
-    404: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    404: ApiErrorResponse;
     /**
      * Audit comment required
      */
-    422: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    422: ApiErrorResponse;
     /**
      * Internal Server error
      */
-    500: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    500: ApiErrorResponse;
 };
 
 export type NewRecordError = NewRecordErrors[keyof NewRecordErrors];
@@ -3721,9 +2370,7 @@ export type NewRecordResponses = {
     /**
      * OK
      */
-    200: {
-        success: true;
-        timestamp: unknown;
+    200: ApiSuccessEnvelope & {
         data: RecordResponse;
     };
 };
@@ -3746,58 +2393,23 @@ export type ExecuteAction1Errors = {
     /**
      * Unauthorized
      */
-    401: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    401: ApiErrorResponse;
     /**
      * Forbidden
      */
-    403: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    403: ApiErrorResponse;
     /**
      * Not Found
      */
-    404: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    404: ApiErrorResponse;
     /**
      * Audit comment required
      */
-    422: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    422: ApiErrorResponse;
     /**
      * Internal Server error
      */
-    500: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    500: ApiErrorResponse;
 };
 
 export type ExecuteAction1Error = ExecuteAction1Errors[keyof ExecuteAction1Errors];
@@ -3806,10 +2418,7 @@ export type ExecuteAction1Responses = {
     /**
      * OK
      */
-    200: {
-        success: true;
-        timestamp: unknown;
-    };
+    200: ApiSuccessEnvelope;
 };
 
 export type ExecuteAction1Response = ExecuteAction1Responses[keyof ExecuteAction1Responses];
@@ -3825,47 +2434,19 @@ export type Search1Errors = {
     /**
      * Unauthorized
      */
-    401: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    401: ApiErrorResponse;
     /**
      * Forbidden
      */
-    403: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    403: ApiErrorResponse;
     /**
      * Audit comment required
      */
-    422: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    422: ApiErrorResponse;
     /**
      * Internal Server error
      */
-    500: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    500: ApiErrorResponse;
 };
 
 export type Search1Error = Search1Errors[keyof Search1Errors];
@@ -3874,9 +2455,7 @@ export type Search1Responses = {
     /**
      * OK
      */
-    200: {
-        success: true;
-        timestamp: unknown;
+    200: ApiSuccessEnvelope & {
         data: RecordSearchResponse;
     };
 };
@@ -3896,47 +2475,19 @@ export type ListPluginsErrors = {
     /**
      * Unauthorized
      */
-    401: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    401: ApiErrorResponse;
     /**
      * Forbidden
      */
-    403: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    403: ApiErrorResponse;
     /**
      * Audit comment required
      */
-    422: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    422: ApiErrorResponse;
     /**
      * Internal Server error
      */
-    500: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    500: ApiErrorResponse;
 };
 
 export type ListPluginsError = ListPluginsErrors[keyof ListPluginsErrors];
@@ -3945,9 +2496,7 @@ export type ListPluginsResponses = {
     /**
      * OK
      */
-    200: {
-        success: true;
-        timestamp: unknown;
+    200: ApiSuccessEnvelope & {
         data: Array<SimplePluginResponse>;
     };
 };
@@ -3969,58 +2518,23 @@ export type UploadPluginErrors = {
     /**
      * Unauthorized
      */
-    401: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    401: ApiErrorResponse;
     /**
      * Forbidden
      */
-    403: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    403: ApiErrorResponse;
     /**
      * Resource in use
      */
-    409: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    409: ApiErrorResponse;
     /**
      * Audit comment required
      */
-    422: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    422: ApiErrorResponse;
     /**
      * Internal Server error
      */
-    500: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    500: ApiErrorResponse;
 };
 
 export type UploadPluginError = UploadPluginErrors[keyof UploadPluginErrors];
@@ -4029,9 +2543,7 @@ export type UploadPluginResponses = {
     /**
      * OK
      */
-    200: {
-        success: true;
-        timestamp: unknown;
+    200: ApiSuccessEnvelope & {
         data: PluginResponse;
     };
 };
@@ -4049,47 +2561,19 @@ export type ObjectPropertyRetrieveAllErrors = {
     /**
      * Unauthorized
      */
-    401: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    401: ApiErrorResponse;
     /**
      * Forbidden
      */
-    403: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    403: ApiErrorResponse;
     /**
      * Audit comment required
      */
-    422: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    422: ApiErrorResponse;
     /**
      * Internal Server error
      */
-    500: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    500: ApiErrorResponse;
 };
 
 export type ObjectPropertyRetrieveAllError = ObjectPropertyRetrieveAllErrors[keyof ObjectPropertyRetrieveAllErrors];
@@ -4098,9 +2582,7 @@ export type ObjectPropertyRetrieveAllResponses = {
     /**
      * OK
      */
-    200: {
-        success: true;
-        timestamp: unknown;
+    200: ApiSuccessEnvelope & {
         data: Array<SimpleObjectPropertyResponse>;
     };
 };
@@ -4118,69 +2600,27 @@ export type ObjectPropertyCreateErrors = {
     /**
      * Unauthorized
      */
-    401: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    401: ApiErrorResponse;
     /**
      * Forbidden
      */
-    403: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    403: ApiErrorResponse;
     /**
      * Not Found
      */
-    404: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    404: ApiErrorResponse;
     /**
      * Resource in use
      */
-    409: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    409: ApiErrorResponse;
     /**
      * Audit comment required
      */
-    422: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    422: ApiErrorResponse;
     /**
      * Internal Server error
      */
-    500: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    500: ApiErrorResponse;
 };
 
 export type ObjectPropertyCreateError = ObjectPropertyCreateErrors[keyof ObjectPropertyCreateErrors];
@@ -4189,9 +2629,7 @@ export type ObjectPropertyCreateResponses = {
     /**
      * OK
      */
-    200: {
-        success: true;
-        timestamp: unknown;
+    200: ApiSuccessEnvelope & {
         data: ObjectPropertyResponse;
     };
 };
@@ -4209,47 +2647,19 @@ export type GetListsErrors = {
     /**
      * Unauthorized
      */
-    401: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    401: ApiErrorResponse;
     /**
      * Forbidden
      */
-    403: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    403: ApiErrorResponse;
     /**
      * Audit comment required
      */
-    422: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    422: ApiErrorResponse;
     /**
      * Internal Server error
      */
-    500: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    500: ApiErrorResponse;
 };
 
 export type GetListsError = GetListsErrors[keyof GetListsErrors];
@@ -4258,9 +2668,7 @@ export type GetListsResponses = {
     /**
      * OK
      */
-    200: {
-        success: true;
-        timestamp: unknown;
+    200: ApiSuccessEnvelope & {
         data: Array<string>;
     };
 };
@@ -4278,58 +2686,23 @@ export type CreateListErrors = {
     /**
      * Unauthorized
      */
-    401: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    401: ApiErrorResponse;
     /**
      * Forbidden
      */
-    403: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    403: ApiErrorResponse;
     /**
      * Resource in use
      */
-    409: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    409: ApiErrorResponse;
     /**
      * Audit comment required
      */
-    422: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    422: ApiErrorResponse;
     /**
      * Internal Server error
      */
-    500: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    500: ApiErrorResponse;
 };
 
 export type CreateListError = CreateListErrors[keyof CreateListErrors];
@@ -4338,9 +2711,7 @@ export type CreateListResponses = {
     /**
      * OK
      */
-    200: {
-        success: true;
-        timestamp: unknown;
+    200: ApiSuccessEnvelope & {
         data: ListTypeResponse;
     };
 };
@@ -4358,47 +2729,19 @@ export type FileStoreRetrieveAllErrors = {
     /**
      * Unauthorized
      */
-    401: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    401: ApiErrorResponse;
     /**
      * Forbidden
      */
-    403: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    403: ApiErrorResponse;
     /**
      * Audit comment required
      */
-    422: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    422: ApiErrorResponse;
     /**
      * Internal Server error
      */
-    500: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    500: ApiErrorResponse;
 };
 
 export type FileStoreRetrieveAllError = FileStoreRetrieveAllErrors[keyof FileStoreRetrieveAllErrors];
@@ -4407,9 +2750,7 @@ export type FileStoreRetrieveAllResponses = {
     /**
      * OK
      */
-    200: {
-        success: true;
-        timestamp: unknown;
+    200: ApiSuccessEnvelope & {
         data: Array<SimpleFileStoreResponse>;
     };
 };
@@ -4427,58 +2768,23 @@ export type FileStoreCreateErrors = {
     /**
      * Unauthorized
      */
-    401: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    401: ApiErrorResponse;
     /**
      * Forbidden
      */
-    403: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    403: ApiErrorResponse;
     /**
      * Not Found
      */
-    404: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    404: ApiErrorResponse;
     /**
      * Audit comment required
      */
-    422: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    422: ApiErrorResponse;
     /**
      * Internal Server error
      */
-    500: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    500: ApiErrorResponse;
 };
 
 export type FileStoreCreateError = FileStoreCreateErrors[keyof FileStoreCreateErrors];
@@ -4487,9 +2793,7 @@ export type FileStoreCreateResponses = {
     /**
      * OK
      */
-    200: {
-        success: true;
-        timestamp: unknown;
+    200: ApiSuccessEnvelope & {
         data: SimpleFileStoreResponse;
     };
 };
@@ -4507,47 +2811,19 @@ export type MiddlewareRetrieveAllErrors = {
     /**
      * Unauthorized
      */
-    401: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    401: ApiErrorResponse;
     /**
      * Forbidden
      */
-    403: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    403: ApiErrorResponse;
     /**
      * Audit comment required
      */
-    422: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    422: ApiErrorResponse;
     /**
      * Internal Server error
      */
-    500: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    500: ApiErrorResponse;
 };
 
 export type MiddlewareRetrieveAllError = MiddlewareRetrieveAllErrors[keyof MiddlewareRetrieveAllErrors];
@@ -4556,9 +2832,7 @@ export type MiddlewareRetrieveAllResponses = {
     /**
      * OK
      */
-    200: {
-        success: true;
-        timestamp: unknown;
+    200: ApiSuccessEnvelope & {
         data: Array<SimpleMiddlewareResponse>;
     };
 };
@@ -4576,58 +2850,23 @@ export type MiddlewareCreateErrors = {
     /**
      * Unauthorized
      */
-    401: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    401: ApiErrorResponse;
     /**
      * Forbidden
      */
-    403: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    403: ApiErrorResponse;
     /**
      * Not Found
      */
-    404: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    404: ApiErrorResponse;
     /**
      * Audit comment required
      */
-    422: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    422: ApiErrorResponse;
     /**
      * Internal Server error
      */
-    500: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    500: ApiErrorResponse;
 };
 
 export type MiddlewareCreateError = MiddlewareCreateErrors[keyof MiddlewareCreateErrors];
@@ -4636,9 +2875,7 @@ export type MiddlewareCreateResponses = {
     /**
      * OK
      */
-    200: {
-        success: true;
-        timestamp: unknown;
+    200: ApiSuccessEnvelope & {
         data: SimpleMiddlewareResponse;
     };
 };
@@ -4656,14 +2893,7 @@ export type ValidateErrors = {
     /**
      * Internal Server error
      */
-    500: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    500: ApiErrorResponse;
 };
 
 export type ValidateError = ValidateErrors[keyof ValidateErrors];
@@ -4672,9 +2902,7 @@ export type ValidateResponses = {
     /**
      * OK
      */
-    200: {
-        success: true;
-        timestamp: unknown;
+    200: ApiSuccessEnvelope & {
         data: SchemaValidationResponse;
     };
 };
@@ -4692,14 +2920,7 @@ export type UpgradeErrors = {
     /**
      * Internal Server error
      */
-    500: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    500: ApiErrorResponse;
 };
 
 export type UpgradeError = UpgradeErrors[keyof UpgradeErrors];
@@ -4708,9 +2929,7 @@ export type UpgradeResponses = {
     /**
      * OK
      */
-    200: {
-        success: true;
-        timestamp: unknown;
+    200: ApiSuccessEnvelope & {
         data: SetupStatusResponse;
     };
 };
@@ -4730,25 +2949,11 @@ export type SignupErrors = {
     /**
      * Not Found
      */
-    404: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    404: ApiErrorResponse;
     /**
      * Internal Server error
      */
-    500: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    500: ApiErrorResponse;
 };
 
 export type SignupError = SignupErrors[keyof SignupErrors];
@@ -4757,9 +2962,7 @@ export type SignupResponses = {
     /**
      * OK
      */
-    200: {
-        success: true;
-        timestamp: unknown;
+    200: ApiSuccessEnvelope & {
         data: string;
     };
 };
@@ -4777,25 +2980,11 @@ export type RefreshErrors = {
     /**
      * Refresh Failed
      */
-    401: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    401: ApiErrorResponse;
     /**
      * Internal Server error
      */
-    500: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    500: ApiErrorResponse;
 };
 
 export type RefreshError = RefreshErrors[keyof RefreshErrors];
@@ -4804,9 +2993,7 @@ export type RefreshResponses = {
     /**
      * OK
      */
-    200: {
-        success: true;
-        timestamp: unknown;
+    200: ApiSuccessEnvelope & {
         data: LoginResponse;
     };
 };
@@ -4824,14 +3011,7 @@ export type LogoutErrors = {
     /**
      * Internal Server error
      */
-    500: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    500: ApiErrorResponse;
 };
 
 export type LogoutError = LogoutErrors[keyof LogoutErrors];
@@ -4840,10 +3020,7 @@ export type LogoutResponses = {
     /**
      * OK
      */
-    200: {
-        success: true;
-        timestamp: unknown;
-    };
+    200: ApiSuccessEnvelope;
 };
 
 export type LogoutResponse = LogoutResponses[keyof LogoutResponses];
@@ -4863,47 +3040,19 @@ export type LoginErrors = {
     /**
      * Validation failed
      */
-    400: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    400: ApiErrorResponse;
     /**
      * Authentication Failed
      */
-    401: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    401: ApiErrorResponse;
     /**
      * Not Found
      */
-    404: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    404: ApiErrorResponse;
     /**
      * Internal Server error
      */
-    500: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    500: ApiErrorResponse;
 };
 
 export type LoginError = LoginErrors[keyof LoginErrors];
@@ -4912,9 +3061,7 @@ export type LoginResponses = {
     /**
      * OK
      */
-    200: {
-        success: true;
-        timestamp: unknown;
+    200: ApiSuccessEnvelope & {
         data: LoginResponse;
     };
 };
@@ -4932,14 +3079,7 @@ export type BrandingErrors = {
     /**
      * Internal Server error
      */
-    500: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    500: ApiErrorResponse;
 };
 
 export type BrandingError = BrandingErrors[keyof BrandingErrors];
@@ -4948,9 +3088,7 @@ export type BrandingResponses = {
     /**
      * OK
      */
-    200: {
-        success: true;
-        timestamp: unknown;
+    200: ApiSuccessEnvelope & {
         data: WebBrandingResponse;
     };
 };
@@ -4970,58 +3108,23 @@ export type ListActionsErrors = {
     /**
      * Unauthorized
      */
-    401: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    401: ApiErrorResponse;
     /**
      * Forbidden
      */
-    403: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    403: ApiErrorResponse;
     /**
      * Not Found
      */
-    404: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    404: ApiErrorResponse;
     /**
      * Audit comment required
      */
-    422: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    422: ApiErrorResponse;
     /**
      * Internal Server error
      */
-    500: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    500: ApiErrorResponse;
 };
 
 export type ListActionsError = ListActionsErrors[keyof ListActionsErrors];
@@ -5030,9 +3133,7 @@ export type ListActionsResponses = {
     /**
      * OK
      */
-    200: {
-        success: true;
-        timestamp: unknown;
+    200: ApiSuccessEnvelope & {
         data: Array<ActionResponse>;
     };
 };
@@ -5050,47 +3151,19 @@ export type MeErrors = {
     /**
      * Unauthorized
      */
-    401: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    401: ApiErrorResponse;
     /**
      * Forbidden
      */
-    403: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    403: ApiErrorResponse;
     /**
      * Audit comment required
      */
-    422: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    422: ApiErrorResponse;
     /**
      * Internal Server error
      */
-    500: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    500: ApiErrorResponse;
 };
 
 export type MeError = MeErrors[keyof MeErrors];
@@ -5099,9 +3172,7 @@ export type MeResponses = {
     /**
      * OK
      */
-    200: {
-        success: true;
-        timestamp: unknown;
+    200: ApiSuccessEnvelope & {
         data: UserResponse;
     };
 };
@@ -5122,58 +3193,23 @@ export type DeleteTranslationOverrideErrors = {
     /**
      * Unauthorized
      */
-    401: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    401: ApiErrorResponse;
     /**
      * Forbidden
      */
-    403: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    403: ApiErrorResponse;
     /**
      * Not Found
      */
-    404: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    404: ApiErrorResponse;
     /**
      * Audit comment required
      */
-    422: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    422: ApiErrorResponse;
     /**
      * Internal Server error
      */
-    500: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    500: ApiErrorResponse;
 };
 
 export type DeleteTranslationOverrideError = DeleteTranslationOverrideErrors[keyof DeleteTranslationOverrideErrors];
@@ -5182,10 +3218,7 @@ export type DeleteTranslationOverrideResponses = {
     /**
      * OK
      */
-    200: {
-        success: true;
-        timestamp: unknown;
-    };
+    200: ApiSuccessEnvelope;
 };
 
 export type DeleteTranslationOverrideResponse = DeleteTranslationOverrideResponses[keyof DeleteTranslationOverrideResponses];
@@ -5204,47 +3237,19 @@ export type GetTranslationOverrideErrors = {
     /**
      * Unauthorized
      */
-    401: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    401: ApiErrorResponse;
     /**
      * Forbidden
      */
-    403: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    403: ApiErrorResponse;
     /**
      * Not Found
      */
-    404: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    404: ApiErrorResponse;
     /**
      * Internal Server error
      */
-    500: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    500: ApiErrorResponse;
 };
 
 export type GetTranslationOverrideError = GetTranslationOverrideErrors[keyof GetTranslationOverrideErrors];
@@ -5253,9 +3258,7 @@ export type GetTranslationOverrideResponses = {
     /**
      * OK
      */
-    200: {
-        success: true;
-        timestamp: unknown;
+    200: ApiSuccessEnvelope & {
         data: TranslationOverrideResponse;
     };
 };
@@ -5273,14 +3276,7 @@ export type GetTranslationCatalogErrors = {
     /**
      * Internal Server error
      */
-    500: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    500: ApiErrorResponse;
 };
 
 export type GetTranslationCatalogError = GetTranslationCatalogErrors[keyof GetTranslationCatalogErrors];
@@ -5289,9 +3285,7 @@ export type GetTranslationCatalogResponses = {
     /**
      * OK
      */
-    200: {
-        success: true;
-        timestamp: unknown;
+    200: ApiSuccessEnvelope & {
         data: TranslationCatalogResponse;
     };
 };
@@ -5309,47 +3303,19 @@ export type GetTemplateTypesErrors = {
     /**
      * Unauthorized
      */
-    401: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    401: ApiErrorResponse;
     /**
      * Forbidden
      */
-    403: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    403: ApiErrorResponse;
     /**
      * Audit comment required
      */
-    422: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    422: ApiErrorResponse;
     /**
      * Internal Server error
      */
-    500: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    500: ApiErrorResponse;
 };
 
 export type GetTemplateTypesError = GetTemplateTypesErrors[keyof GetTemplateTypesErrors];
@@ -5358,9 +3324,7 @@ export type GetTemplateTypesResponses = {
     /**
      * OK
      */
-    200: {
-        success: true;
-        timestamp: unknown;
+    200: ApiSuccessEnvelope & {
         data: Array<string>;
     };
 };
@@ -5380,58 +3344,23 @@ export type GetTemplatesForTypeErrors = {
     /**
      * Unauthorized
      */
-    401: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    401: ApiErrorResponse;
     /**
      * Forbidden
      */
-    403: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    403: ApiErrorResponse;
     /**
      * Not Found
      */
-    404: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    404: ApiErrorResponse;
     /**
      * Audit comment required
      */
-    422: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    422: ApiErrorResponse;
     /**
      * Internal Server error
      */
-    500: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    500: ApiErrorResponse;
 };
 
 export type GetTemplatesForTypeError = GetTemplatesForTypeErrors[keyof GetTemplatesForTypeErrors];
@@ -5440,9 +3369,7 @@ export type GetTemplatesForTypeResponses = {
     /**
      * OK
      */
-    200: {
-        success: true;
-        timestamp: unknown;
+    200: ApiSuccessEnvelope & {
         data: Array<string>;
     };
 };
@@ -5463,58 +3390,23 @@ export type GetTemplateErrors = {
     /**
      * Unauthorized
      */
-    401: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    401: ApiErrorResponse;
     /**
      * Forbidden
      */
-    403: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    403: ApiErrorResponse;
     /**
      * Not Found
      */
-    404: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    404: ApiErrorResponse;
     /**
      * Audit comment required
      */
-    422: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    422: ApiErrorResponse;
     /**
      * Internal Server error
      */
-    500: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    500: ApiErrorResponse;
 };
 
 export type GetTemplateError = GetTemplateErrors[keyof GetTemplateErrors];
@@ -5523,9 +3415,7 @@ export type GetTemplateResponses = {
     /**
      * OK
      */
-    200: {
-        success: true;
-        timestamp: unknown;
+    200: ApiSuccessEnvelope & {
         data: TemplateComponent;
     };
 };
@@ -5545,58 +3435,23 @@ export type ListActions1Errors = {
     /**
      * Unauthorized
      */
-    401: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    401: ApiErrorResponse;
     /**
      * Forbidden
      */
-    403: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    403: ApiErrorResponse;
     /**
      * Not Found
      */
-    404: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    404: ApiErrorResponse;
     /**
      * Audit comment required
      */
-    422: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    422: ApiErrorResponse;
     /**
      * Internal Server error
      */
-    500: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    500: ApiErrorResponse;
 };
 
 export type ListActions1Error = ListActions1Errors[keyof ListActions1Errors];
@@ -5605,9 +3460,7 @@ export type ListActions1Responses = {
     /**
      * OK
      */
-    200: {
-        success: true;
-        timestamp: unknown;
+    200: ApiSuccessEnvelope & {
         data: Array<ActionResponse>;
     };
 };
@@ -5625,47 +3478,19 @@ export type GetRecordTypesErrors = {
     /**
      * Unauthorized
      */
-    401: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    401: ApiErrorResponse;
     /**
      * Forbidden
      */
-    403: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    403: ApiErrorResponse;
     /**
      * Audit comment required
      */
-    422: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    422: ApiErrorResponse;
     /**
      * Internal Server error
      */
-    500: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    500: ApiErrorResponse;
 };
 
 export type GetRecordTypesError = GetRecordTypesErrors[keyof GetRecordTypesErrors];
@@ -5674,9 +3499,7 @@ export type GetRecordTypesResponses = {
     /**
      * OK
      */
-    200: {
-        success: true;
-        timestamp: unknown;
+    200: ApiSuccessEnvelope & {
         data: Array<string>;
     };
 };
@@ -5696,58 +3519,23 @@ export type GetRecordTypeErrors = {
     /**
      * Unauthorized
      */
-    401: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    401: ApiErrorResponse;
     /**
      * Forbidden
      */
-    403: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    403: ApiErrorResponse;
     /**
      * Not Found
      */
-    404: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    404: ApiErrorResponse;
     /**
      * Audit comment required
      */
-    422: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    422: ApiErrorResponse;
     /**
      * Internal Server error
      */
-    500: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    500: ApiErrorResponse;
 };
 
 export type GetRecordTypeError = GetRecordTypeErrors[keyof GetRecordTypeErrors];
@@ -5756,9 +3544,7 @@ export type GetRecordTypeResponses = {
     /**
      * OK
      */
-    200: {
-        success: true;
-        timestamp: unknown;
+    200: ApiSuccessEnvelope & {
         data: RecordTypeResponse;
     };
 };
@@ -5780,58 +3566,23 @@ export type SearchListElementErrors = {
     /**
      * Unauthorized
      */
-    401: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    401: ApiErrorResponse;
     /**
      * Forbidden
      */
-    403: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    403: ApiErrorResponse;
     /**
      * Not Found
      */
-    404: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    404: ApiErrorResponse;
     /**
      * Audit comment required
      */
-    422: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    422: ApiErrorResponse;
     /**
      * Internal Server error
      */
-    500: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    500: ApiErrorResponse;
 };
 
 export type SearchListElementError = SearchListElementErrors[keyof SearchListElementErrors];
@@ -5840,9 +3591,7 @@ export type SearchListElementResponses = {
     /**
      * OK
      */
-    200: {
-        success: true;
-        timestamp: unknown;
+    200: ApiSuccessEnvelope & {
         data: Array<ListElementResponse>;
     };
 };
@@ -5860,47 +3609,19 @@ export type FileStoreTypeGetErrors = {
     /**
      * Unauthorized
      */
-    401: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    401: ApiErrorResponse;
     /**
      * Forbidden
      */
-    403: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    403: ApiErrorResponse;
     /**
      * Audit comment required
      */
-    422: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    422: ApiErrorResponse;
     /**
      * Internal Server error
      */
-    500: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    500: ApiErrorResponse;
 };
 
 export type FileStoreTypeGetError = FileStoreTypeGetErrors[keyof FileStoreTypeGetErrors];
@@ -5909,9 +3630,7 @@ export type FileStoreTypeGetResponses = {
     /**
      * OK
      */
-    200: {
-        success: true;
-        timestamp: unknown;
+    200: ApiSuccessEnvelope & {
         data: Array<FileStoreTypeResponse>;
     };
 };
@@ -5929,47 +3648,19 @@ export type FileStoreMiddlewareTypeGetErrors = {
     /**
      * Unauthorized
      */
-    401: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    401: ApiErrorResponse;
     /**
      * Forbidden
      */
-    403: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    403: ApiErrorResponse;
     /**
      * Audit comment required
      */
-    422: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    422: ApiErrorResponse;
     /**
      * Internal Server error
      */
-    500: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    500: ApiErrorResponse;
 };
 
 export type FileStoreMiddlewareTypeGetError = FileStoreMiddlewareTypeGetErrors[keyof FileStoreMiddlewareTypeGetErrors];
@@ -5978,9 +3669,7 @@ export type FileStoreMiddlewareTypeGetResponses = {
     /**
      * OK
      */
-    200: {
-        success: true;
-        timestamp: unknown;
+    200: ApiSuccessEnvelope & {
         data: Array<MiddlewareTypeResponse>;
     };
 };
@@ -5998,14 +3687,7 @@ export type StatusErrors = {
     /**
      * Internal Server error
      */
-    500: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    500: ApiErrorResponse;
 };
 
 export type StatusError = StatusErrors[keyof StatusErrors];
@@ -6014,9 +3696,7 @@ export type StatusResponses = {
     /**
      * OK
      */
-    200: {
-        success: true;
-        timestamp: unknown;
+    200: ApiSuccessEnvelope & {
         data: SetupStatusResponse;
     };
 };
@@ -6034,47 +3714,19 @@ export type GetAllConfigErrors = {
     /**
      * Unauthorized
      */
-    401: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    401: ApiErrorResponse;
     /**
      * Forbidden
      */
-    403: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    403: ApiErrorResponse;
     /**
      * Audit comment required
      */
-    422: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    422: ApiErrorResponse;
     /**
      * Internal Server error
      */
-    500: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    500: ApiErrorResponse;
 };
 
 export type GetAllConfigError = GetAllConfigErrors[keyof GetAllConfigErrors];
@@ -6083,9 +3735,7 @@ export type GetAllConfigResponses = {
     /**
      * OK
      */
-    200: {
-        success: true;
-        timestamp: unknown;
+    200: ApiSuccessEnvelope & {
         data: Array<ConfigTypeResponse>;
     };
 };
@@ -6105,47 +3755,19 @@ export type GetConfigErrors = {
     /**
      * Unauthorized
      */
-    401: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    401: ApiErrorResponse;
     /**
      * Forbidden
      */
-    403: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    403: ApiErrorResponse;
     /**
      * Audit comment required
      */
-    422: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    422: ApiErrorResponse;
     /**
      * Internal Server error
      */
-    500: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    500: ApiErrorResponse;
 };
 
 export type GetConfigError = GetConfigErrors[keyof GetConfigErrors];
@@ -6154,9 +3776,7 @@ export type GetConfigResponses = {
     /**
      * OK
      */
-    200: {
-        success: true;
-        timestamp: unknown;
+    200: ApiSuccessEnvelope & {
         data: {
             [key: string]: unknown;
         };
@@ -6176,47 +3796,19 @@ export type GetAllLocalConfigErrors = {
     /**
      * Unauthorized
      */
-    401: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    401: ApiErrorResponse;
     /**
      * Forbidden
      */
-    403: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    403: ApiErrorResponse;
     /**
      * Audit comment required
      */
-    422: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    422: ApiErrorResponse;
     /**
      * Internal Server error
      */
-    500: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    500: ApiErrorResponse;
 };
 
 export type GetAllLocalConfigError = GetAllLocalConfigErrors[keyof GetAllLocalConfigErrors];
@@ -6225,9 +3817,7 @@ export type GetAllLocalConfigResponses = {
     /**
      * OK
      */
-    200: {
-        success: true;
-        timestamp: unknown;
+    200: ApiSuccessEnvelope & {
         data: {
             [key: string]: {
                 [key: string]: unknown;
@@ -6251,47 +3841,19 @@ export type GetLocalConfigErrors = {
     /**
      * Unauthorized
      */
-    401: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    401: ApiErrorResponse;
     /**
      * Forbidden
      */
-    403: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    403: ApiErrorResponse;
     /**
      * Audit comment required
      */
-    422: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    422: ApiErrorResponse;
     /**
      * Internal Server error
      */
-    500: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    500: ApiErrorResponse;
 };
 
 export type GetLocalConfigError = GetLocalConfigErrors[keyof GetLocalConfigErrors];
@@ -6300,9 +3862,7 @@ export type GetLocalConfigResponses = {
     /**
      * OK
      */
-    200: {
-        success: true;
-        timestamp: unknown;
+    200: ApiSuccessEnvelope & {
         data: {
             [key: string]: unknown;
         };
@@ -6326,11 +3886,11 @@ export type RedirectErrors = {
     /**
      * Not Found
      */
-    404: ApiResponseV1;
+    404: ApiErrorResponse;
     /**
      * Internal Server error
      */
-    500: ApiResponseV1;
+    500: ApiErrorResponse;
 };
 
 export type RedirectError = RedirectErrors[keyof RedirectErrors];
@@ -6353,36 +3913,15 @@ export type RetrieveAuthProviderTypesErrors = {
     /**
      * Unauthorized
      */
-    401: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    401: ApiErrorResponse;
     /**
      * Forbidden
      */
-    403: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    403: ApiErrorResponse;
     /**
      * Internal Server error
      */
-    500: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    500: ApiErrorResponse;
 };
 
 export type RetrieveAuthProviderTypesError = RetrieveAuthProviderTypesErrors[keyof RetrieveAuthProviderTypesErrors];
@@ -6391,9 +3930,7 @@ export type RetrieveAuthProviderTypesResponses = {
     /**
      * OK
      */
-    200: {
-        success: true;
-        timestamp: unknown;
+    200: ApiSuccessEnvelope & {
         data: Array<AuthProviderTypeResponse>;
     };
 };
@@ -6413,11 +3950,11 @@ export type CallbackErrors = {
     /**
      * Not Found
      */
-    404: ApiResponseV1;
+    404: ApiErrorResponse;
     /**
      * Internal Server error
      */
-    500: ApiResponseV1;
+    500: ApiErrorResponse;
 };
 
 export type CallbackError = CallbackErrors[keyof CallbackErrors];
@@ -6440,14 +3977,7 @@ export type RetrieveAvailableAuthProvidersErrors = {
     /**
      * Internal Server error
      */
-    500: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    500: ApiErrorResponse;
 };
 
 export type RetrieveAvailableAuthProvidersError = RetrieveAvailableAuthProvidersErrors[keyof RetrieveAvailableAuthProvidersErrors];
@@ -6456,9 +3986,7 @@ export type RetrieveAvailableAuthProvidersResponses = {
     /**
      * OK
      */
-    200: {
-        success: true;
-        timestamp: unknown;
+    200: ApiSuccessEnvelope & {
         data: Array<SimpleAuthProviderResponse>;
     };
 };
@@ -6476,47 +4004,19 @@ export type GetAuditStatusErrors = {
     /**
      * Unauthorized
      */
-    401: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    401: ApiErrorResponse;
     /**
      * Forbidden
      */
-    403: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    403: ApiErrorResponse;
     /**
      * Audit comment required
      */
-    422: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    422: ApiErrorResponse;
     /**
      * Internal Server error
      */
-    500: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    500: ApiErrorResponse;
 };
 
 export type GetAuditStatusError = GetAuditStatusErrors[keyof GetAuditStatusErrors];
@@ -6525,9 +4025,7 @@ export type GetAuditStatusResponses = {
     /**
      * OK
      */
-    200: {
-        success: true;
-        timestamp: unknown;
+    200: ApiSuccessEnvelope & {
         data: AuditStatusResponse;
     };
 };
@@ -6550,47 +4048,19 @@ export type ListAuditEventsErrors = {
     /**
      * Unauthorized
      */
-    401: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    401: ApiErrorResponse;
     /**
      * Forbidden
      */
-    403: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    403: ApiErrorResponse;
     /**
      * Audit comment required
      */
-    422: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    422: ApiErrorResponse;
     /**
      * Internal Server error
      */
-    500: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    500: ApiErrorResponse;
 };
 
 export type ListAuditEventsError = ListAuditEventsErrors[keyof ListAuditEventsErrors];
@@ -6599,9 +4069,7 @@ export type ListAuditEventsResponses = {
     /**
      * OK
      */
-    200: {
-        success: true;
-        timestamp: unknown;
+    200: ApiSuccessEnvelope & {
         data: Array<AuditEventResponse>;
     };
 };
@@ -6621,58 +4089,23 @@ export type GetAuditEventErrors = {
     /**
      * Unauthorized
      */
-    401: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    401: ApiErrorResponse;
     /**
      * Forbidden
      */
-    403: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    403: ApiErrorResponse;
     /**
      * Not Found
      */
-    404: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    404: ApiErrorResponse;
     /**
      * Audit comment required
      */
-    422: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    422: ApiErrorResponse;
     /**
      * Internal Server error
      */
-    500: {
-        success: false;
-        timestamp: unknown;
-        error: string;
-        errorData?: {
-            [key: string]: unknown;
-        };
-    };
+    500: ApiErrorResponse;
 };
 
 export type GetAuditEventError = GetAuditEventErrors[keyof GetAuditEventErrors];
@@ -6681,9 +4114,7 @@ export type GetAuditEventResponses = {
     /**
      * OK
      */
-    200: {
-        success: true;
-        timestamp: unknown;
+    200: ApiSuccessEnvelope & {
         data: AuditEventResponse;
     };
 };

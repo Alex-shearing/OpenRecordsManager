@@ -3,8 +3,9 @@
 	import { auditHeaders, getApiClient } from '$lib/api-client';
 	import ConfigSettingRow from '$lib/components/ConfigSettingRow.svelte';
 	import AuditSaveCard from '$lib/components/AuditSaveCard.svelte';
+	import { type SchemaFormError } from '$lib/components/SchemaForm.svelte';
 	import { buildSavedValues, findChangedConfigs, groupConfigs } from '$lib/config/config-utils';
-	import { t } from '$lib/i18n/catalog';
+	import { t, tApiErrorResponse } from '$lib/i18n/catalog';
 	import { invalidateAll } from '$app/navigation';
 	import toast from 'svelte-hot-french-toast';
 
@@ -17,7 +18,7 @@
 	let draftValues = $state(buildSavedValues(data.configs));
 	let auditComment = $state('');
 	let submitting = $state(false);
-	let formError = $state('');
+	let formError = $state<SchemaFormError>();
 
 	const changedConfigs = $derived(findChangedConfigs(data.configs, draftValues, savedValues));
 	const isDirty = $derived(changedConfigs.length > 0);
@@ -30,7 +31,7 @@
 		}
 
 		submitting = true;
-		formError = '';
+		formError = undefined;
 
 		try {
 			const headers = auditHeaders(auditComment);
@@ -42,7 +43,7 @@
 			});
 
 			if (error) {
-				formError = error.error ?? t('web.config.save_failed');
+				formError = error;
 				return;
 			}
 
@@ -57,7 +58,7 @@
 
 	function handleReset() {
 		draftValues = buildSavedValues(data.configs);
-		formError = '';
+		formError = undefined;
 	}
 </script>
 
@@ -65,7 +66,7 @@
 <p class="mb-6 text-hint">{t('web.config.intro')}</p>
 
 {#if data.error}
-	<p class="text-destructive">{data.error}</p>
+	<p class="text-destructive">{tApiErrorResponse(data.error)}</p>
 {:else if data.configs.length === 0}
 	<p class="text-hint">{t('web.config.empty')}</p>
 {:else}
@@ -87,7 +88,7 @@
 			form="config-save-form"
 			bind:auditComment
 			required={data.requiresAuditComment}
-			{formError}
+			error={formError}
 			{submitting}
 			dirty={isDirty}
 			onreset={handleReset}

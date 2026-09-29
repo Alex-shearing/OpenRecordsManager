@@ -10,10 +10,8 @@ export async function load({ parent }) {
 		AuthController.retrieveAuthProviderTypes({ client }),
 	]);
 
-	const loadError = providersResult.error?.error || typesResult.error?.error;
-
 	return {
-		error: loadError,
+		error: providersResult.error ?? typesResult.error,
 		providers: providersResult.data?.success ? providersResult.data.data : [],
 		types: typesResult.data?.success ? typesResult.data.data : [],
 		auditCommentRequired: {

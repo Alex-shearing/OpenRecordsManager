@@ -37,6 +37,6 @@ class RedirectAuthCallbackIntegrationTest {
                         .queryParam("code", "abc")
                         .queryParam("state", "xyz"))
                 .andExpect(status().isFound())
-                .andExpect(header().string("Location", "/login?error=auth_failed"));
+                .andExpect(header().string("Location", "/login?error=authentication_failed"));
     }
 }

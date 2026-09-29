@@ -1,7 +1,6 @@
 package com.openrecordsmanager.auth;
 
 import com.openrecordsmanager.auth.dto.*;
-import com.openrecordsmanager.rest.swagger.SwaggerConfiguration;
 import com.openrecordsmanager.rest.swagger.*;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -200,7 +199,7 @@ public class AuthController {
             this.authService.clearAuthCookies(response);
 
             return ResponseEntity.status(HttpStatus.FOUND)
-                    .location(URI.create("/login?error=auth_failed"))
+                    .location(URI.create("/login?error=authentication_failed"))
                     .build();
         }
     }

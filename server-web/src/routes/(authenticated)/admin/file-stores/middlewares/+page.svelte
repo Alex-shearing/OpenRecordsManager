@@ -5,9 +5,10 @@
 	import DialogActions from '$lib/components/DialogActions.svelte';
 	import MonoId from '$lib/components/MonoId.svelte';
 	import SchemaForm from '$lib/components/SchemaForm.svelte';
+	import { type SchemaFormError } from '$lib/components/SchemaForm.svelte';
 	import TableCard from '$lib/components/TableCard.svelte';
 	import TargetDialog from '$lib/components/TargetDialog.svelte';
-	import { t } from '$lib/i18n/catalog';
+	import { t, tApiErrorResponse } from '$lib/i18n/catalog';
 	import { invalidateAll } from '$app/navigation';
 	import toast from 'svelte-hot-french-toast';
 
@@ -25,21 +26,19 @@
 	let createTypeId = $state(data.types.at(0)?.id ?? '');
 	let createName = $state('');
 	let createValues = $state<Record<string, string>>({});
-	let createFieldErrors = $state<Record<string, string>>({});
-	let createFormError = $state('');
+	let createError = $state<SchemaFormError>();
 	let createAuditComment = $state('');
 	let submitting = $state(false);
 
 	let editTarget = $state<MiddlewareResponse>();
 	let editName = $state('');
 	let editValues = $state<Record<string, string>>({});
-	let editFieldErrors = $state<Record<string, string>>({});
-	let editFormError = $state('');
+	let editError = $state<SchemaFormError>();
 	let editAuditComment = $state('');
 	let editLoading = $state(false);
 
 	let deleteTarget = $state<SimpleMiddlewareResponse>();
-	let deleteFormError = $state('');
+	let deleteError = $state<SchemaFormError>();
 	let deleteAuditComment = $state('');
 
 	const createType = $derived(sortedTypes.find(type => type.id === createTypeId));
@@ -53,21 +52,19 @@
 	function resetCreateForm() {
 		createName = '';
 		createValues = {};
-		createFieldErrors = {};
-		createFormError = '';
+		createError = undefined;
 		createAuditComment = '';
 	}
 
 	async function handleCreate(event: SubmitEvent) {
 		event.preventDefault();
 		if (!createTypeId) {
-			createFormError = t('web.middlewares.select_type');
+			createError = { error: 'web.middlewares.select_type' };
 			return;
 		}
 
 		submitting = true;
-		createFieldErrors = {};
-		createFormError = '';
+		createError = undefined;
 
 		const { error } = await FileStoreController.middlewareCreate({
 			client: getApiClient(),
@@ -82,8 +79,7 @@
 		submitting = false;
 
 		if (error) {
-			createFieldErrors = (error.errorData ?? {}) as Record<string, string>;
-			createFormError = error.error ?? t('web.middlewares.create_failed');
+			createError = error;
 			return;
 		}
 
@@ -95,8 +91,7 @@
 	async function openEdit(middleware: SimpleMiddlewareResponse) {
 		editLoading = true;
 		editValues = {};
-		editFieldErrors = {};
-		editFormError = '';
+		editError = undefined;
 		editAuditComment = '';
 
 		const { data: result, error } = await FileStoreController.middlewareRetrieveOne({
@@ -107,7 +102,7 @@
 		editLoading = false;
 
 		if (error) {
-			toast.error(error.error ?? t('web.middlewares.load_failed', middleware.id));
+			toast.error(tApiErrorResponse(error));
 			return;
 		}
 
@@ -121,8 +116,7 @@
 		if (!editTarget) return;
 
 		submitting = true;
-		editFieldErrors = {};
-		editFormError = '';
+		editError = undefined;
 
 		const { error } = await FileStoreController.middlewareUpdate({
 			client: getApiClient(),
@@ -137,8 +131,7 @@
 		submitting = false;
 
 		if (error) {
-			editFieldErrors = (error.errorData ?? {}) as Record<string, string>;
-			editFormError = error.error ?? t('web.middlewares.update_failed');
+			editError = error;
 			return;
 		}
 
@@ -152,9 +145,9 @@
 		if (!deleteTarget) return;
 
 		submitting = true;
-		deleteFormError = '';
+		deleteError = undefined;
 
-		const { error, response } = await FileStoreController.middlewareDelete({
+		const { error } = await FileStoreController.middlewareDelete({
 			client: getApiClient(),
 			path: { id: deleteTarget.id },
 			headers: auditHeaders(deleteAuditComment),
@@ -163,10 +156,7 @@
 		submitting = false;
 
 		if (error) {
-			deleteFormError =
-				response?.status === 409
-					? (error.error ?? t('web.middlewares.delete_in_use'))
-					: (error.error ?? t('web.middlewares.delete_failed'));
+			deleteError = error;
 			return;
 		}
 
@@ -180,7 +170,7 @@
 <p class="mb-6 text-hint">{t('web.middlewares.intro')}</p>
 
 {#if data.error}
-	<p class="text-destructive">{data.error}</p>
+	<p class="text-destructive">{tApiErrorResponse(data.error)}</p>
 {:else}
 	<TableCard
 		title={t('web.middlewares.table_title')}
@@ -216,7 +206,7 @@
 					onclick={() => {
 						deleteTarget = middleware;
 						deleteAuditComment = '';
-						deleteFormError = '';
+						deleteError = undefined;
 					}}
 				>
 					{t('web.common.delete')}
@@ -245,8 +235,7 @@
 					disabled={submitting}
 					onchange={() => {
 						createValues = {};
-						createFieldErrors = {};
-						createFormError = '';
+						createError = undefined;
 					}}
 				>
 					{#each sortedTypes as type (type.id)}
@@ -260,8 +249,7 @@
 					<SchemaForm
 						schema={createType.settingsSchema}
 						bind:values={createValues}
-						fieldErrors={createFieldErrors}
-						formError={createFormError}
+						error={createError}
 						{submitting}
 						idPrefix="middleware-create"
 					>
@@ -311,8 +299,7 @@
 					<SchemaForm
 						schema={targetType.settingsSchema}
 						bind:values={editValues}
-						fieldErrors={editFieldErrors}
-						formError={editFormError}
+						error={editError}
 						{submitting}
 						idPrefix="middleware-edit"
 					></SchemaForm>
@@ -346,7 +333,7 @@
 	bind:target={deleteTarget}
 	title="web.middlewares.delete_title"
 	onclose={() => {
-		deleteFormError = '';
+		deleteError = undefined;
 		deleteAuditComment = '';
 	}}
 >
@@ -364,8 +351,8 @@
 					rows={3}
 					class="input w-full"></textarea>
 			</label>
-			{#if deleteFormError}
-				<p class="text-sm text-destructive" role="alert">{deleteFormError}</p>
+			{#if deleteError}
+				<p class="text-sm text-destructive" role="alert">{tApiErrorResponse(deleteError)}</p>
 			{/if}
 		</form>
 	{/snippet}

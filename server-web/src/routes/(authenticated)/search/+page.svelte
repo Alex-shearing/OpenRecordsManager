@@ -4,7 +4,7 @@
 	import MonoId from '$lib/components/MonoId.svelte';
 	import TableCard from '$lib/components/TableCard.svelte';
 	import PageContent from '$lib/components/layout/PageContent.svelte';
-	import { t } from '$lib/i18n/catalog';
+	import { t, tApiErrorResponse } from '$lib/i18n/catalog';
 
 	let { data } = $props();
 
@@ -60,7 +60,7 @@
 					key: searchKey,
 					items: [...items],
 					nextCursor,
-					error: typeof result.error?.error === 'string' ? result.error.error : t('web.search.load_more_failed'),
+					error: result.error ? tApiErrorResponse(result.error) : t('web.search.load_more_failed'),
 				};
 				return;
 			}
@@ -83,9 +83,9 @@
 	<p class="mb-6 text-hint">{summary}</p>
 
 	{#if data.error}
-		<section class="card p-5 text-sm text-destructive">{data.error}</section>
-	{:else if data.message}
-		<section class="card p-5 text-hint">{data.message}</section>
+		<section class="card p-5 text-sm text-destructive">{tApiErrorResponse(data.error)}</section>
+	{:else if data.emptyKey}
+		<section class="card p-5 text-hint">{t(data.emptyKey)}</section>
 	{:else if data.type === 'record'}
 		<TableCard
 			title={t('web.search.records_title')}

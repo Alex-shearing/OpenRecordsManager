@@ -1,13 +1,14 @@
 <script lang="ts">
 	import { fly } from 'svelte/transition';
 	import CircleNotchIcon from 'phosphor-svelte/lib/CircleNotchIcon';
-	import { t } from '$lib/i18n/catalog';
+	import { t, tApiErrorResponse } from '$lib/i18n/catalog';
+	import { type SchemaFormError } from './SchemaForm.svelte';
 
 	let {
 		form,
 		auditComment = $bindable(''),
 		required = false,
-		formError = '',
+		error = undefined,
 		submitting = false,
 		dirty = false,
 		onreset,
@@ -15,7 +16,7 @@
 		form: string;
 		auditComment?: string;
 		required?: boolean;
-		formError?: string;
+		error?: SchemaFormError;
 		submitting?: boolean;
 		dirty?: boolean;
 		onreset?: () => void;
@@ -33,8 +34,6 @@
 		wasVisible = isVisible;
 	});
 </script>
-
-<!-- TODO: make formError a translatable string -->
 
 <div
 	class="transition-[min-height] duration-300 ease-out"
@@ -71,8 +70,8 @@
 					aria-describedby="{form}-audit-comment-hint"
 					class="input w-full resize-none"></textarea>
 
-				{#if formError}
-					<p class="mt-1.5 text-sm text-destructive" role="alert">{formError}</p>
+				{#if error}
+					<p class="mt-1.5 text-sm text-destructive" role="alert">{tApiErrorResponse(error)}</p>
 				{/if}
 			</div>
 

@@ -6,7 +6,7 @@
 	import PageContent from '$lib/components/layout/PageContent.svelte';
 	import UserActionDialog from '$lib/components/UserActionDialog.svelte';
 	import { objectPropertyName, userActionDescription, userActionName } from '$lib/i18n/labels';
-	import { t } from '$lib/i18n/catalog';
+	import { t, tApiErrorResponse } from '$lib/i18n/catalog';
 	import { goto } from '$app/navigation';
 
 	let { data } = $props();
@@ -51,7 +51,7 @@
 	<h1 class="mb-6 text-2xl font-semibold">{t('web.profile.title')}</h1>
 
 	{#if data.error}
-		<p class="text-destructive">{data.error}</p>
+		<p class="text-destructive">{tApiErrorResponse(data.error)}</p>
 	{:else if data.me}
 		<section class="card mb-8 p-4">
 			<h2 class="text-lg font-medium">{t('web.profile.account')}</h2>

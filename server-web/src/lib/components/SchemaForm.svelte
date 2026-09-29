@@ -1,13 +1,23 @@
+<script module lang="ts">
+	import type { ApiFieldError } from '$lib/api/types.gen';
+
+	/** Form-level error: wire field error shape, optionally with nested field errors. */
+	export type SchemaFormError = ApiFieldError & {
+		fieldErrors?: {
+			[key: string]: ApiFieldError;
+		};
+	};
+</script>
+
 <script lang="ts">
 	import type { InputFormSchema, InputFormSchemaField } from '$lib/api/types.gen';
-	import { t } from '$lib/i18n/catalog';
+	import { t, tApiErrorResponse } from '$lib/i18n/catalog';
 	import type { Snippet } from 'svelte';
 
 	let {
 		schema,
 		values = $bindable({}),
-		fieldErrors = {},
-		formError = '',
+		error = undefined,
 		submitting = false,
 		idPrefix = 'form',
 		before,
@@ -15,13 +25,14 @@
 	}: {
 		schema: InputFormSchema;
 		values?: Record<string, string>;
-		fieldErrors?: Record<string, string>;
-		formError?: string;
+		error?: SchemaFormError;
 		submitting?: boolean;
 		idPrefix?: string;
 		before?: Snippet;
 		after?: Snippet;
 	} = $props();
+
+	const fieldErrors = $derived(error?.fieldErrors ?? {});
 
 	function inputType(property: InputFormSchemaField): 'text' | 'password' | 'email' {
 		if (property.writeOnly || property.format === 'password') {
@@ -83,7 +94,7 @@
 			{/if}
 			{#if fieldErrors[key]}
 				<span id="{idPrefix}-{key}-error" class="text-sm text-destructive" role="alert">
-					{fieldErrors[key]}
+					{tApiErrorResponse(fieldErrors[key])}
 				</span>
 			{/if}
 		</label>
@@ -91,7 +102,7 @@
 
 	{@render after?.()}
 
-	{#if formError}
-		<p class="text-sm text-destructive" role="alert">{formError}</p>
+	{#if error}
+		<p class="text-sm text-destructive" role="alert">{tApiErrorResponse(error)}</p>
 	{/if}
 </div>

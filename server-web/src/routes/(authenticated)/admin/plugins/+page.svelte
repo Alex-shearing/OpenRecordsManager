@@ -7,7 +7,8 @@
 	import MonoId from '$lib/components/MonoId.svelte';
 	import TableCard from '$lib/components/TableCard.svelte';
 	import TargetDialog from '$lib/components/TargetDialog.svelte';
-	import { t } from '$lib/i18n/catalog';
+	import { type SchemaFormError } from '$lib/components/SchemaForm.svelte';
+	import { t, tApiErrorResponse } from '$lib/i18n/catalog';
 	import { pluginDescription, pluginName } from '$lib/i18n/labels';
 	import { invalidateAll } from '$app/navigation';
 	import toast from 'svelte-hot-french-toast';
@@ -33,7 +34,7 @@
 	let uploadFiles = $state<FileList>();
 	let auditComment = $state('');
 	let submitting = $state(false);
-	let formError = $state('');
+	let formError = $state<SchemaFormError>();
 	let deleteTarget = $state<SimplePluginResponse>();
 
 	const dirtyIds = $derived(
@@ -53,7 +54,7 @@
 
 	function resetDraft() {
 		draftEnabled = enabledDraft(data.plugins);
-		formError = '';
+		formError = undefined;
 	}
 
 	async function handleUpload(event: SubmitEvent) {
@@ -61,17 +62,17 @@
 
 		const file = uploadFiles?.[0];
 		if (!file) {
-			formError = t('web.plugins.select_file');
+			formError = { error: 'web.plugins.select_file' };
 			return;
 		}
 
 		if (data.auditCommentRequired.create && !auditComment.trim()) {
-			formError = t('web.common.audit_comment_required');
+			formError = { error: 'audit_comment_required' };
 			return;
 		}
 
 		submitting = true;
-		formError = '';
+		formError = undefined;
 
 		const type = file.name.toLowerCase().endsWith('.zip') ? 'zip' : 'jar';
 		const { error } = await PluginController.uploadPlugin({
@@ -84,7 +85,7 @@
 		submitting = false;
 
 		if (error) {
-			formError = error.error ?? t('web.plugins.upload_failed');
+			formError = error;
 			return;
 		}
 
@@ -102,7 +103,7 @@
 		}
 
 		submitting = true;
-		formError = '';
+		formError = undefined;
 
 		try {
 			const headers = auditHeaders(auditComment);
@@ -117,7 +118,7 @@
 				});
 
 				if (error) {
-					formError = error.error ?? t('web.plugins.update_failed', id, '');
+					formError = error;
 					return;
 				}
 			}
@@ -135,12 +136,12 @@
 		}
 
 		if (data.auditCommentRequired.delete && !auditComment.trim()) {
-			formError = t('web.common.audit_comment_required');
+			formError = { error: 'audit_comment_required' };
 			return;
 		}
 
 		submitting = true;
-		formError = '';
+		formError = undefined;
 
 		const id = deleteTarget.id;
 		const { error } = await PluginController.deletePlugin({
@@ -153,7 +154,7 @@
 		deleteTarget = undefined;
 
 		if (error) {
-			formError = error.error ?? t('web.plugins.delete_failed', id);
+			formError = error;
 			return;
 		}
 
@@ -167,7 +168,7 @@
 <p class="mb-6 text-hint">{t('web.plugins.intro')}</p>
 
 {#if data.error}
-	<p class="text-destructive">{data.error}</p>
+	<p class="text-destructive">{tApiErrorResponse(data.error)}</p>
 {:else}
 	<form id="plugins-save-form" onsubmit={handleSave}>
 		<TableCard
@@ -247,7 +248,7 @@
 		form="plugins-save-form"
 		bind:auditComment
 		required={data.auditCommentRequired.update}
-		{formError}
+		error={formError}
 		{submitting}
 		dirty={dirtyIds.length > 0}
 		onreset={resetDraft}

@@ -7,6 +7,7 @@
 	import AppDialog from './AppDialog.svelte';
 	import DialogActions from './DialogActions.svelte';
 	import SchemaForm from './SchemaForm.svelte';
+	import type { SchemaFormError } from './SchemaForm.svelte';
 
 	const formId = 'user-action-dialog-form';
 
@@ -24,8 +25,7 @@
 
 	let values = $state<Record<string, string>>({});
 	let auditComment = $state('');
-	let fieldErrors = $state<Record<string, string>>({});
-	let formError = $state('');
+	let error = $state<SchemaFormError>();
 	let submitting = $state(false);
 
 	function handleClose() {
@@ -41,15 +41,14 @@
 		}
 
 		if (action.requiresAuditComment && !auditComment.trim()) {
-			formError = t('web.common.audit_comment_required');
+			error = { error: 'audit_comment_required' };
 			return;
 		}
 
 		submitting = true;
-		fieldErrors = {};
-		formError = '';
+		error = undefined;
 
-		const { error } = await UserController.executeAction({
+		const { error: apiError } = await UserController.executeAction({
 			client: getApiClient(),
 			path: { id: userId, action: action.id },
 			body: values,
@@ -58,9 +57,8 @@
 
 		submitting = false;
 
-		if (error) {
-			fieldErrors = (error.errorData ?? {}) as Record<string, string>;
-			formError = error.error ?? t('web.user_action.failed');
+		if (apiError) {
+			error = apiError;
 			return;
 		}
 
@@ -70,20 +68,13 @@
 
 {#if action}
 	{#key action.id}
-		<AppDialog bind:open={open} title={`user_action.${action.id.replaceAll(':', '.')}.name`} onclose={handleClose}>
+		<AppDialog bind:open title={`user_action.${action.id.replaceAll(':', '.')}.name`} onclose={handleClose}>
 			{#snippet description()}
 				{userActionDescription(action.id)}
 			{/snippet}
 			{#snippet body()}
 				<form id={formId} class="flex flex-col gap-4" onsubmit={handleSubmit} novalidate>
-					<SchemaForm
-						schema={action.inputSchema}
-						bind:values
-						{fieldErrors}
-						{formError}
-						{submitting}
-						idPrefix="action-{action.id}"
-					>
+					<SchemaForm schema={action.inputSchema} bind:values {error} {submitting} idPrefix="action-{action.id}">
 						{#snippet after()}
 							<label class="flex flex-col gap-1">
 								<span class="text-label">{t('web.common.audit_comment')}</span>
@@ -92,19 +83,14 @@
 									required={action.requiresAuditComment}
 									disabled={submitting}
 									rows={3}
-									class="input w-full"
-								></textarea>
+									class="input w-full"></textarea>
 							</label>
 						{/snippet}
 					</SchemaForm>
 				</form>
 			{/snippet}
 			{#snippet footer()}
-				<DialogActions
-					{formId}
-					confirmLabel={`user_action.${action.id.replaceAll(':', '.')}.name`}
-					{submitting}
-				/>
+				<DialogActions {formId} confirmLabel={`user_action.${action.id.replaceAll(':', '.')}.name`} {submitting} />
 			{/snippet}
 		</AppDialog>
 	{/key}

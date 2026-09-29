@@ -14,6 +14,7 @@ import com.openrecordsmanager.api.ComponentReference;
 import com.openrecordsmanager.api.errors.ApiError;
 import com.openrecordsmanager.api.errors.ApiException;
 import org.jspecify.annotations.Nullable;
+import tools.jackson.core.JacksonException;
 import tools.jackson.databind.DeserializationFeature;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
@@ -175,8 +176,12 @@ public final class JsonSchemaValidator {
             return rec;
         }
 
-        Map<String, Object> validated = validateAndSerialize(recordClass, values);
-        return MAPPER.convertValue(validated, recordClass);
+        try {
+            Map<String, Object> validated = validateAndSerialize(recordClass, values);
+            return MAPPER.convertValue(validated, recordClass);
+        } catch (JacksonException e) {
+            throw new ApiException("input_schema_validation_failed", e.getMessage());
+        }
     }
 
     public static Map<String, ?> serializeSettings(Record record) throws ApiException {

@@ -1,6 +1,5 @@
 import { AuditController } from '$lib/api';
 import { getApiClient } from '$lib/api-client';
-import { t } from '$lib/i18n/catalog';
 
 export async function load() {
 	const client = getApiClient();
@@ -10,8 +9,8 @@ export async function load() {
 	]);
 
 	return {
+		error: statusResult.error ?? policiesResult.error,
 		status: statusResult.data?.success ? statusResult.data.data : null,
 		policies: policiesResult.data?.success ? policiesResult.data.data : [],
-		error: statusResult.error || policiesResult.error ? t('web.audit.load_failed') : null,
 	};
 }

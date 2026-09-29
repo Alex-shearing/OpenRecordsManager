@@ -3,6 +3,7 @@
 	import { getApiClient } from '$lib/api-client';
 	import AuditSaveCard from '$lib/components/AuditSaveCard.svelte';
 	import MonoId from '$lib/components/MonoId.svelte';
+	import { type SchemaFormError } from '$lib/components/SchemaForm.svelte';
 	import {
 		buildPolicyDraft,
 		findChangedPolicies,
@@ -11,7 +12,7 @@
 		groupPoliciesByEntity,
 		policyKey,
 	} from '$lib/audit/audit-utils';
-	import { t, tx } from '$lib/i18n/catalog';
+	import { t, tApiErrorResponse, tx } from '$lib/i18n/catalog';
 	import { invalidateAll } from '$app/navigation';
 	import toast from 'svelte-hot-french-toast';
 
@@ -23,7 +24,7 @@
 	let draftPolicies = $state(buildPolicyDraft(data.policies));
 	let auditComment = $state('');
 	let submitting = $state(false);
-	let formError = $state('');
+	let formError = $state<SchemaFormError>();
 
 	const changedPolicies = $derived(findChangedPolicies(data.policies, draftPolicies));
 	const isDirty = $derived(changedPolicies.length > 0);
@@ -35,7 +36,7 @@
 
 	function resetDraft() {
 		draftPolicies = buildPolicyDraft(data.policies);
-		formError = '';
+		formError = undefined;
 	}
 
 	async function handleSave(event: SubmitEvent) {
@@ -46,7 +47,7 @@
 		}
 
 		submitting = true;
-		formError = '';
+		formError = undefined;
 
 		try {
 			const client = getApiClient();
@@ -73,7 +74,7 @@
 				});
 
 				if (error) {
-					formError = error.error ?? t('web.audit.update_failed', entityType, operation);
+					formError = error;
 					return;
 				}
 			}
@@ -92,7 +93,7 @@
 <p class="mb-6 text-hint">{t('web.audit.intro')}</p>
 
 {#if data.error}
-	<p class="text-destructive">{data.error}</p>
+	<p class="text-destructive">{tApiErrorResponse(data.error)}</p>
 {:else}
 	<section class="card mb-6">
 		<div class="card-header">
@@ -252,7 +253,7 @@
 			form="audit-save-form"
 			bind:auditComment
 			required={false}
-			{formError}
+			error={formError}
 			{submitting}
 			dirty={isDirty}
 			onreset={resetDraft}

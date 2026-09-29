@@ -1,30 +1,31 @@
 <script lang="ts">
-	import { DatabaseController } from '$lib/api';
+	import { DatabaseController, type ApiErrorResponse } from '$lib/api';
 	import { getApiClient } from '$lib/api-client';
-	import { t } from '$lib/i18n/catalog';
+	import { t, tApiErrorResponse } from '$lib/i18n/catalog';
 
 	let { data } = $props();
 
 	// svelte-ignore state_referenced_locally
 	let statusData = $state(data.status);
 	let upgrading = $state(false);
-	let upgradeError = $state<string | null>(null);
+	let upgradeError = $state<ApiErrorResponse>();
 
 	const status = $derived(statusData.data || statusData.error);
 
 	async function upgrade() {
 		upgrading = true;
-		upgradeError = null;
+		upgradeError = undefined;
 		const client = getApiClient();
-		const { data, error } = await DatabaseController.upgrade({ client });
+		const result = await DatabaseController.upgrade({ client });
 		upgrading = false;
 
-		if (error) {
-			upgradeError = error.error;
+		if (result.error) {
+			upgradeError = result.error;
 			return;
 		}
 
-		statusData = await DatabaseController.status({ client });
+		// Prefer the upgrade payload (includes migrationsApplied); fall back to a status re-fetch.
+		statusData = result.data != null ? result : await DatabaseController.status({ client });
 	}
 </script>
 
@@ -39,12 +40,15 @@
 		{#if !status.success}
 			<p class="text-destructive">{t('web.setup.load_failed')}</p>
 		{:else if status.data.state === 'READY'}
-			<p class="mb-4 text-sm text-foreground">{t('web.setup.up_to_date', status.data.currentVersion || 'unknown')}</p>
+			{#if status.data.migrationsApplied >= 0}
+				<p class="mb-4 text-sm text-foreground">
+					{t('web.setup.migrations_applied', status.data.migrationsApplied)}
+				</p>
+			{:else}
+				<p class="mb-4 text-sm text-foreground">{t('web.setup.up_to_date', status.data.currentVersion || 'unknown')}</p>
+			{/if}
 			<a href="/login" class="text-link text-sm">{t('web.maintenance.continue_sign_in')}</a>
 		{:else}
-			<p class="mb-4 text-sm text-foreground">
-				{status.data.message || ''}
-			</p>
 			{#if status.data.currentVersion}
 				<p class="mb-2 text-sm">
 					<span class="font-medium">{t('web.setup.current_version', status.data.currentVersion)}</span>
@@ -59,7 +63,7 @@
 				</ul>
 			{/if}
 			{#if upgradeError}
-				<p class="mb-4 text-sm text-destructive">{upgradeError}</p>
+				<p class="mb-4 text-sm text-destructive">{tApiErrorResponse(upgradeError)}</p>
 			{/if}
 			<button type="button" class="btn-primary" disabled={upgrading} onclick={upgrade}>
 				{upgrading ? t('web.setup.upgrading') : t('web.setup.upgrade')}

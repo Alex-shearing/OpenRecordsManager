@@ -5,9 +5,10 @@
 	import DialogActions from '$lib/components/DialogActions.svelte';
 	import MonoId from '$lib/components/MonoId.svelte';
 	import SchemaForm from '$lib/components/SchemaForm.svelte';
+	import { type SchemaFormError } from '$lib/components/SchemaForm.svelte';
 	import TableCard from '$lib/components/TableCard.svelte';
 	import TargetDialog from '$lib/components/TargetDialog.svelte';
-	import { t } from '$lib/i18n/catalog';
+	import { t, tApiErrorResponse } from '$lib/i18n/catalog';
 	import { invalidateAll } from '$app/navigation';
 	import toast from 'svelte-hot-french-toast';
 
@@ -25,8 +26,7 @@
 	let createTypeId = $state(data.types.at(0)?.type.id ?? '');
 	let createName = $state('');
 	let createValues = $state<Record<string, string>>({});
-	let createFieldErrors = $state<Record<string, string>>({});
-	let createFormError = $state('');
+	let createError = $state<SchemaFormError>();
 	let createAuditComment = $state('');
 	let submitting = $state(false);
 
@@ -36,8 +36,7 @@
 	let editName = $state('');
 	let editEnabled = $state(true);
 	let editValues = $state<Record<string, string>>({});
-	let editFieldErrors = $state<Record<string, string>>({});
-	let editFormError = $state('');
+	let editError = $state<SchemaFormError>();
 	let editAuditComment = $state('');
 	let editLoading = $state(false);
 
@@ -52,13 +51,12 @@
 	async function handleCreate(event: SubmitEvent) {
 		event.preventDefault();
 		if (!createType) {
-			createFormError = t('web.auth_providers.select_type');
+			createError = { error: 'web.auth_providers.select_type' };
 			return;
 		}
 
 		submitting = true;
-		createFieldErrors = {};
-		createFormError = '';
+		createError = undefined;
 
 		const { data: result, error } = await AuthController.createAuthProvider({
 			client: getApiClient(),
@@ -73,8 +71,7 @@
 		submitting = false;
 
 		if (error) {
-			createFieldErrors = (error.errorData ?? {}) as Record<string, string>;
-			createFormError = error.error ?? t('web.auth_providers.create_failed', '');
+			createError = error;
 			return;
 		}
 
@@ -89,8 +86,7 @@
 
 		createName = '';
 		createValues = {};
-		createFieldErrors = {};
-		createFormError = '';
+		createError = undefined;
 		createAuditComment = '';
 
 		await invalidateAll();
@@ -99,8 +95,7 @@
 	async function openEdit(provider: SimpleAuthProviderResponse) {
 		editLoading = true;
 		editValues = {};
-		editFieldErrors = {};
-		editFormError = '';
+		editError = undefined;
 		editAuditComment = '';
 
 		const { data: result, error } = await AuthController.getAuthProvider({
@@ -111,7 +106,7 @@
 		editLoading = false;
 
 		if (error) {
-			toast.error(error.error ?? t('web.auth_providers.load_failed', provider.id));
+			toast.error(tApiErrorResponse(error));
 			return;
 		}
 
@@ -126,8 +121,7 @@
 		if (!editTarget) return;
 
 		submitting = true;
-		editFieldErrors = {};
-		editFormError = '';
+		editError = undefined;
 
 		const { error } = await AuthController.updateAuthProvider({
 			client: getApiClient(),
@@ -143,8 +137,7 @@
 		submitting = false;
 
 		if (error) {
-			editFieldErrors = (error.errorData ?? {}) as Record<string, string>;
-			editFormError = error.error ?? t('web.auth_providers.update_failed');
+			editError = error;
 			return;
 		}
 
@@ -158,7 +151,7 @@
 <p class="mb-6 text-hint">{t('web.auth_providers.intro')}</p>
 
 {#if data.error}
-	<p class="text-destructive">{data.error}</p>
+	<p class="text-destructive">{tApiErrorResponse(data.error)}</p>
 {:else}
 	<TableCard
 		title={t('web.auth_providers.table_title')}
@@ -208,8 +201,7 @@
 					disabled={submitting}
 					onchange={() => {
 						createValues = {};
-						createFieldErrors = {};
-						createFormError = '';
+						createError = undefined;
 					}}
 				>
 					{#each sortedTypes as type (type.type.id)}
@@ -224,8 +216,7 @@
 						<SchemaForm
 							schema={createType.settingsSchema}
 							bind:values={createValues}
-							fieldErrors={createFieldErrors}
-							formError={createFormError}
+							error={createError}
 							{submitting}
 							idPrefix="auth-provider-create"
 						>
@@ -244,8 +235,8 @@
 					{/key}
 				{:else}
 					<p class="mb-4 text-hint">{t('web.auth_providers.no_settings')}</p>
-					{#if createFormError}
-						<p class="mb-4 text-sm text-destructive" role="alert">{createFormError}</p>
+					{#if createError}
+						<p class="mb-4 text-sm text-destructive" role="alert">{tApiErrorResponse(createError)}</p>
 					{/if}
 					<label class="mb-4 flex flex-col gap-1">
 						<span class="text-label">{t('web.common.audit_comment')}</span>
@@ -294,16 +285,15 @@
 					<SchemaForm
 						schema={editType.settingsSchema}
 						bind:values={editValues}
-						fieldErrors={editFieldErrors}
-						formError={editFormError}
+						error={editError}
 						{submitting}
 						idPrefix="auth-provider-edit"
 					></SchemaForm>
 				{/key}
 			{:else}
 				<p class="text-hint">{t('web.auth_providers.no_settings')}</p>
-				{#if editFormError}
-					<p class="text-sm text-destructive" role="alert">{editFormError}</p>
+				{#if editError}
+					<p class="text-sm text-destructive" role="alert">{tApiErrorResponse(editError)}</p>
 				{/if}
 			{/if}
 

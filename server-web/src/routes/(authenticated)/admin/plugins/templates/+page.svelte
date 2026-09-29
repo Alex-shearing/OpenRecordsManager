@@ -1,8 +1,9 @@
 <script lang="ts">
-	import { TemplateController } from '$lib/api';
+	import { TemplateController, type ApiErrorResponse } from '$lib/api';
 	import { getApiClient } from '$lib/api-client';
 	import MonoId from '$lib/components/MonoId.svelte';
-	import { t } from '$lib/i18n/catalog';
+	import { type SchemaFormError } from '$lib/components/SchemaForm.svelte';
+	import { t, tApiErrorResponse } from '$lib/i18n/catalog';
 	import { templateName } from '$lib/i18n/labels';
 
 	let { data } = $props();
@@ -21,11 +22,14 @@
 			.sort((a, b) => a.type.localeCompare(b.type) || a.name.localeCompare(b.name))
 	);
 
-	const sectionErrors = $derived(data.sections.filter(section => section.error));
+	// as required because I could not get it to infer correctly
+	const sectionErrors = $derived(
+		data.sections.filter(section => !!section.error) as ((typeof data.sections)[number] & { error: ApiErrorResponse })[]
+	);
 
 	let selected = $state<Set<string>>(new Set());
 	let registering = $state(false);
-	let formError = $state('');
+	let formError = $state<SchemaFormError>();
 	let successMessage = $state('');
 
 	function rowKey(type: string, templateId: string) {
@@ -56,12 +60,12 @@
 		event.preventDefault();
 
 		if (selectedRows.length === 0) {
-			formError = t('web.templates.select_at_least_one');
+			formError = { error: 'web.templates.select_at_least_one' };
 			return;
 		}
 
 		registering = true;
-		formError = '';
+		formError = undefined;
 		successMessage = '';
 
 		const registeredKeys = new Set<string>();
@@ -77,7 +81,7 @@
 			if (error) {
 				registering = false;
 				selected = new Set([...selected].filter(k => !registeredKeys.has(k)));
-				formError = error.error ?? t('web.templates.register_failed', row.name);
+				formError = error;
 				if (registeredKeys.size > 0) {
 					successMessage = t('web.templates.registered_partial', registeredKeys.size);
 				}
@@ -97,13 +101,13 @@
 <p class="mb-6 text-hint">{t('web.templates.intro')}</p>
 
 {#if data.error}
-	<p class="text-destructive">{data.error}</p>
+	<p class="text-destructive">{tApiErrorResponse(data.error)}</p>
 {:else if data.sections.length === 0}
 	<p class="text-hint">{t('web.templates.no_types')}</p>
 {:else}
 	{#each sectionErrors as section (section.type)}
 		<p class="mb-4 text-sm text-destructive">
-			{t('web.templates.load_section_failed', section.type, section.error ?? '')}
+			{t('web.templates.load_section_failed', section.type, tApiErrorResponse(section.error))}
 		</p>
 	{/each}
 
@@ -163,7 +167,7 @@
 			</section>
 
 			{#if formError}
-				<p class="mt-6 text-sm text-destructive" role="alert">{formError}</p>
+				<p class="mt-6 text-sm text-destructive" role="alert">{tApiErrorResponse(formError)}</p>
 			{/if}
 			{#if successMessage}
 				<p class="mt-6 text-sm text-foreground">{successMessage}</p>

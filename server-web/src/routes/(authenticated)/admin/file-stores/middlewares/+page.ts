@@ -11,7 +11,7 @@ export async function load({ parent }) {
 	]);
 
 	return {
-		error: middlewaresResult.error?.error || typesResult.error?.error,
+		error: middlewaresResult.error ?? typesResult.error,
 		middlewares: middlewaresResult.data?.success ? middlewaresResult.data.data : [],
 		types: typesResult.data?.success ? typesResult.data.data : [],
 		auditCommentRequired: {

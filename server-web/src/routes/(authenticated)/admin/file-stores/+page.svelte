@@ -6,9 +6,10 @@
 	import MiddlewarePicker from '$lib/components/MiddlewarePicker.svelte';
 	import MonoId from '$lib/components/MonoId.svelte';
 	import SchemaForm from '$lib/components/SchemaForm.svelte';
+	import { type SchemaFormError } from '$lib/components/SchemaForm.svelte';
 	import TableCard from '$lib/components/TableCard.svelte';
 	import TargetDialog from '$lib/components/TargetDialog.svelte';
-	import { t } from '$lib/i18n/catalog';
+	import { t, tApiErrorResponse } from '$lib/i18n/catalog';
 	import { invalidateAll } from '$app/navigation';
 	import toast from 'svelte-hot-french-toast';
 
@@ -27,8 +28,7 @@
 	let createName = $state('');
 	let createValues = $state<Record<string, string>>({});
 	let selectedMiddlewareIds = $state<string[]>([]);
-	let createFieldErrors = $state<Record<string, string>>({});
-	let createFormError = $state('');
+	let createError = $state<SchemaFormError>();
 	let createAuditComment = $state('');
 	let submitting = $state(false);
 
@@ -37,13 +37,12 @@
 	let editTarget = $state<FileStoreResponse>();
 	let editName = $state('');
 	let editValues = $state<Record<string, string>>({});
-	let editFieldErrors = $state<Record<string, string>>({});
-	let editFormError = $state('');
+	let editError = $state<SchemaFormError>();
 	let editAuditComment = $state('');
 	let editLoading = $state(false);
 
 	let deleteTarget = $state<SimpleFileStoreResponse>();
-	let deleteFormError = $state('');
+	let deleteError = $state<SchemaFormError>();
 	let deleteAuditComment = $state('');
 
 	function toFormValues(properties: Record<string, unknown> | undefined): Record<string, string> {
@@ -55,13 +54,12 @@
 	async function handleCreate(event: SubmitEvent) {
 		event.preventDefault();
 		if (!createTypeId) {
-			createFormError = t('web.file_stores.select_type');
+			createError = { error: 'web.file_stores.select_type' };
 			return;
 		}
 
 		submitting = true;
-		createFieldErrors = {};
-		createFormError = '';
+		createError = undefined;
 
 		const { error } = await FileStoreController.fileStoreCreate({
 			client: getApiClient(),
@@ -77,8 +75,7 @@
 		submitting = false;
 
 		if (error) {
-			createFieldErrors = (error.errorData ?? {}) as Record<string, string>;
-			createFormError = error.error ?? t('web.file_stores.create_failed');
+			createError = error;
 			return;
 		}
 
@@ -87,8 +84,7 @@
 		createName = '';
 		createValues = {};
 		selectedMiddlewareIds = [];
-		createFieldErrors = {};
-		createFormError = '';
+		createError = undefined;
 		createAuditComment = '';
 
 		await invalidateAll();
@@ -97,8 +93,7 @@
 	async function openEdit(store: SimpleFileStoreResponse) {
 		editLoading = true;
 		editValues = {};
-		editFieldErrors = {};
-		editFormError = '';
+		editError = undefined;
 		editAuditComment = '';
 
 		const { data: result, error } = await FileStoreController.fileStoreRetrieveOne({
@@ -109,7 +104,7 @@
 		editLoading = false;
 
 		if (error) {
-			toast.error(error.error ?? t('web.file_stores.load_failed', store.id));
+			toast.error(tApiErrorResponse(error));
 			return;
 		}
 
@@ -123,8 +118,7 @@
 		if (!editTarget) return;
 
 		submitting = true;
-		editFieldErrors = {};
-		editFormError = '';
+		editError = undefined;
 
 		const { error } = await FileStoreController.fileStoreUpdate({
 			client: getApiClient(),
@@ -139,8 +133,7 @@
 		submitting = false;
 
 		if (error) {
-			editFieldErrors = (error.errorData ?? {}) as Record<string, string>;
-			editFormError = error.error ?? t('web.file_stores.update_failed');
+			editError = error;
 			return;
 		}
 
@@ -154,7 +147,7 @@
 		if (!deleteTarget) return;
 
 		submitting = true;
-		deleteFormError = '';
+		deleteError = undefined;
 
 		const { error } = await FileStoreController.fileStoreDelete({
 			client: getApiClient(),
@@ -165,7 +158,7 @@
 		submitting = false;
 
 		if (error) {
-			deleteFormError = error.error ?? t('web.file_stores.delete_failed', deleteTarget.id);
+			deleteError = error;
 			return;
 		}
 
@@ -179,7 +172,7 @@
 <p class="mb-6 text-hint">{t('web.file_stores.intro')}</p>
 
 {#if data.error}
-	<p class="text-destructive">{data.error}</p>
+	<p class="text-destructive">{tApiErrorResponse(data.error)}</p>
 {:else}
 	<TableCard
 		title={t('web.file_stores.table_title')}
@@ -210,7 +203,7 @@
 					onclick={() => {
 						deleteTarget = store;
 						deleteAuditComment = '';
-						deleteFormError = '';
+						deleteError = undefined;
 					}}
 				>
 					{t('web.common.delete')}
@@ -239,8 +232,7 @@
 					disabled={submitting}
 					onchange={() => {
 						createValues = {};
-						createFieldErrors = {};
-						createFormError = '';
+						createError = undefined;
 					}}
 				>
 					{#each sortedTypes as type (type.id)}
@@ -254,8 +246,7 @@
 					<SchemaForm
 						schema={createType.settingsSchema}
 						bind:values={createValues}
-						fieldErrors={createFieldErrors}
-						formError={createFormError}
+						error={createError}
 						{submitting}
 						idPrefix="file-store-create"
 					>
@@ -313,8 +304,7 @@
 					<SchemaForm
 						schema={targetType.settingsSchema}
 						bind:values={editValues}
-						fieldErrors={editFieldErrors}
-						formError={editFormError}
+						error={editError}
 						{submitting}
 						idPrefix="file-store-edit"
 					></SchemaForm>
@@ -365,7 +355,7 @@
 	bind:target={deleteTarget}
 	title="web.file_stores.delete_title"
 	onclose={() => {
-		deleteFormError = '';
+		deleteError = undefined;
 		deleteAuditComment = '';
 	}}
 >
@@ -383,8 +373,8 @@
 					rows={3}
 					class="input w-full"></textarea>
 			</label>
-			{#if deleteFormError}
-				<p class="text-sm text-destructive" role="alert">{deleteFormError}</p>
+			{#if deleteError}
+				<p class="text-sm text-destructive" role="alert">{tApiErrorResponse(deleteError)}</p>
 			{/if}
 		</form>
 	{/snippet}

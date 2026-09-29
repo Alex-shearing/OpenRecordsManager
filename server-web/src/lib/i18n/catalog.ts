@@ -1,3 +1,4 @@
+import type { ApiFieldError } from '$lib/api';
 import { writable, get } from 'svelte/store';
 
 export type TranslationCatalog = {
@@ -46,4 +47,13 @@ export function tx(key: string | null | undefined, fallback: string, ...args: Ar
 		return args.length > 0 ? formatMessage(fallback, args) : fallback;
 	}
 	return args.length > 0 ? formatMessage(template, args) : template;
+}
+
+/**
+ * Resolve a failed API error for display.
+ * `error.error` is a bare wire code (`authentication_failed`) or a full catalog key (`web.*`).
+ */
+export function tApiErrorResponse(error: ApiFieldError): string {
+	const key = error.error.startsWith('web.') ? error.error : `error.${error.error}`;
+	return t(key, ...(error.errorArgs ?? []));
 }

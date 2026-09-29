@@ -1,13 +1,14 @@
 <script lang="ts">
 	import LoginForm from '$lib/components/LoginForm.svelte';
 	import { page } from '$app/state';
-	import { t } from '$lib/i18n/catalog';
+	import { t, tApiErrorResponse } from '$lib/i18n/catalog';
 
 	let { data } = $props();
 
-	let authError = $derived(
-		page.url.searchParams.get('error') === 'auth_failed' ? t('web.login.auth_failed') : null
-	);
+	let authError = $derived(() => {
+		const error = page.url.searchParams.get('error');
+		return error ? tApiErrorResponse({ error }) : null;
+	});
 </script>
 
 <div class="card">
@@ -20,7 +21,9 @@
 			<p class="mb-4 text-sm text-destructive" role="alert">{authError}</p>
 		{/if}
 		{#if data.providersError}
-			<p class="text-sm text-destructive">{data.providersError}</p>
+			<p class="text-sm text-destructive">
+				{tApiErrorResponse(data.providersError)}
+			</p>
 		{:else if data.inputProviders.length === 0 && data.redirectProviders.length === 0}
 			<p class="text-hint">{t('web.login.no_options')}</p>
 		{:else}

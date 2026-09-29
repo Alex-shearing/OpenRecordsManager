@@ -4,6 +4,7 @@
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
 	import SchemaForm from './SchemaForm.svelte';
+	import type { SchemaFormError } from './SchemaForm.svelte';
 	import { getApiClient } from '$lib/api-client';
 	import { t } from '$lib/i18n/catalog';
 
@@ -35,8 +36,7 @@
 	// svelte-ignore state_referenced_locally
 	let selectedProviderId = $state<string | undefined>(inputProviders.at(0)?.id);
 	let values = $state<Record<string, string>>({});
-	let fieldErrors = $state<Record<string, string>>({});
-	let formError = $state('');
+	let error = $state<SchemaFormError>();
 	let submitting = $state(false);
 
 	let selectedProvider = $derived(inputProviders.find(provider => provider.id === selectedProviderId));
@@ -50,10 +50,9 @@
 		}
 
 		submitting = true;
-		fieldErrors = {};
-		formError = '';
+		error = undefined;
 
-		const { error } = await AuthController.login({
+		const { error: apiError } = await AuthController.login({
 			client: getApiClient(),
 			path: { provider: selectedProvider.id },
 			body: values,
@@ -61,9 +60,8 @@
 
 		submitting = false;
 
-		if (error) {
-			fieldErrors = (error.errorData ?? {}) as Record<string, string>;
-			formError = t('web.login.auth_failed');
+		if (apiError) {
+			error = apiError;
 			return;
 		}
 
@@ -74,14 +72,7 @@
 {#if inputProviders.length > 0}
 	{#if selectedProvider?.loginSchema}
 		<form class="flex flex-col gap-4" onsubmit={handleSubmit} novalidate>
-			<SchemaForm
-				schema={selectedProvider.loginSchema}
-				bind:values
-				{fieldErrors}
-				{formError}
-				{submitting}
-				idPrefix="login"
-			>
+			<SchemaForm schema={selectedProvider.loginSchema} bind:values {error} {submitting} idPrefix="login">
 				{#snippet before()}
 					{#if inputProviders.length > 1}
 						<label class="flex flex-col gap-1">
@@ -119,10 +110,7 @@
 		<ul class="list-panel">
 			{#each redirectProviders as provider (provider.id)}
 				{@const base = `${getApiClient().getConfig().baseUrl || ''}/api/auth/redirect/${provider.id}`}
-				{@const href =
-					postLoginRedirect !== '/'
-						? `${base}?redirect=${encodeURIComponent(postLoginRedirect)}`
-						: base}
+				{@const href = postLoginRedirect !== '/' ? `${base}?redirect=${encodeURIComponent(postLoginRedirect)}` : base}
 				<li>
 					<a {href} class="list-panel-item text-center font-medium">
 						{t('web.login.continue_with', providerLabel(provider))}

@@ -11,10 +11,8 @@ export async function load({ parent }) {
 		FileStoreController.middlewareRetrieveAll({ client }),
 	]);
 
-	const loadError = storesResult.error?.error || typesResult.error?.error || middlewaresResult.error?.error;
-
 	return {
-		error: loadError,
+		error: storesResult.error ?? typesResult.error ?? middlewaresResult.error,
 		stores: storesResult.data?.success ? storesResult.data.data : [],
 		types: typesResult.data?.success ? typesResult.data.data : [],
 		middlewares: middlewaresResult.data?.success ? middlewaresResult.data.data : [],

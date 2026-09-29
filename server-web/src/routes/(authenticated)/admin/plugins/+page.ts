@@ -1,6 +1,5 @@
 import { PluginController } from '$lib/api';
 import { getApiClient } from '$lib/api-client';
-import { t } from '$lib/i18n/catalog';
 
 export async function load({ parent }) {
 	const parentData = await parent();
@@ -12,6 +11,7 @@ export async function load({ parent }) {
 	const auditPolicy = parentData.auditPolicy;
 
 	return {
+		error: result.error,
 		plugins: result.data?.success ? result.data.data : [],
 		auditCommentRequired: {
 			create: auditPolicy.some(
@@ -24,6 +24,5 @@ export async function load({ parent }) {
 				policy => policy.entityType === 'plugin' && policy.operation === 'DELETE' && policy.requiresComment
 			),
 		},
-		error: result.error ? t('web.plugins.load_failed') : null,
 	};
 }
