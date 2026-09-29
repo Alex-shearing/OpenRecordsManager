@@ -1,6 +1,6 @@
 package com.openrecordsmanager.rest.swagger;
 
-import com.openrecordsmanager.rest.dto.ApiResponseV1;
+import static com.openrecordsmanager.rest.swagger.SwaggerConfiguration.API_ERROR_RESPONSE_REF;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -16,12 +16,13 @@ import java.lang.annotation.*;
         description = "Resource in use",
         content = @Content(
                 mediaType = "application/json",
-                schema = @Schema(implementation = ApiResponseV1.class),
+                schema = @Schema(ref = API_ERROR_RESPONSE_REF),
                 examples = @ExampleObject(
                         value = """
                                 {
                                   "success": false,
-                                  "error": "Cannot delete a store that contains files",
+                                  "error": "in_use",
+                                  "errorArgs": ["file_store"],
                                   "timestamp": "2026-06-29T23:05:00Z"
                                 }
                                 """

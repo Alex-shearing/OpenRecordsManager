@@ -1,7 +1,7 @@
 package com.openrecordsmanager.auth;
 
 import com.openrecordsmanager.auth.dto.*;
-import com.openrecordsmanager.rest.dto.ApiResponseV1;
+import com.openrecordsmanager.rest.swagger.SwaggerConfiguration;
 import com.openrecordsmanager.rest.swagger.*;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -105,7 +105,7 @@ public class AuthController {
             description = "Authentication Failed",
             content = @Content(
                     mediaType = MediaType.APPLICATION_JSON_VALUE,
-                    schema = @Schema(implementation = ApiResponseV1.class),
+                    schema = @Schema(ref = SwaggerConfiguration.API_ERROR_RESPONSE_REF),
                     examples = @ExampleObject(
                             value = """
                                     {
@@ -143,7 +143,7 @@ public class AuthController {
             description = "Refresh Failed",
             content = @Content(
                     mediaType = MediaType.APPLICATION_JSON_VALUE,
-                    schema = @Schema(implementation = ApiResponseV1.class),
+                    schema = @Schema(ref = SwaggerConfiguration.API_ERROR_RESPONSE_REF),
                     examples = @ExampleObject(
                             value = """
                                     {

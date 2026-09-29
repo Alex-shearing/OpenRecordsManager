@@ -1,6 +1,6 @@
 package com.openrecordsmanager.rest.swagger;
 
-import com.openrecordsmanager.rest.dto.ApiResponseV1;
+import static com.openrecordsmanager.rest.swagger.SwaggerConfiguration.API_ERROR_RESPONSE_REF;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -16,7 +16,7 @@ import java.lang.annotation.*;
         description = "Audit comment required",
         content = @Content(
                 mediaType = "application/json",
-                schema = @Schema(implementation = ApiResponseV1.class),
+                schema = @Schema(ref = API_ERROR_RESPONSE_REF),
                 examples = @ExampleObject(
                         value = """
                                 {

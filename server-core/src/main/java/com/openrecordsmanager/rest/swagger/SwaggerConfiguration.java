@@ -22,8 +22,19 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.method.HandlerMethod;
 import tools.jackson.databind.JsonNode;
 
+import java.util.List;
+
 @Configuration
 public class SwaggerConfiguration {
+
+    public static final String API_ERROR_RESPONSE = "ApiErrorResponse";
+    public static final String API_SUCCESS_ENVELOPE = "ApiSuccessEnvelope";
+    public static final String API_FIELD_ERROR = "ApiFieldError";
+    
+    public static final String API_ERROR_RESPONSE_REF = "#/components/schemas/" + API_ERROR_RESPONSE;
+
+    private static final String REF_SUCCESS = "#/components/schemas/" + API_SUCCESS_ENVELOPE;
+    private static final String REF_FIELD_ERROR = "#/components/schemas/" + API_FIELD_ERROR;
 
     static {
         // Prefer free-form JSON over JsonNode bean introspection (also covers early schema caching).
@@ -82,42 +93,53 @@ public class SwaggerConfiguration {
                 MediaType mediaType = content.computeIfAbsent("application/json", k -> new MediaType());
 
                 if (code.isError()) {
-                    mediaType.setSchema(getErrorSchema());
+                    mediaType.setSchema(new Schema<>().$ref(API_ERROR_RESPONSE_REF));
                     return;
                 }
 
-                Schema<?> wrappedSchema = new Schema<>()
-                        .type("object")
-                        .name("Response")
-                        .addProperty("success", new BooleanSchema()._const(true)).addRequiredItem("success")
-                        .addProperty("timestamp", new Schema<>().type("string").format("date-time")).addRequiredItem("timestamp");
+                Schema<?> dataProperty = mediaType.getSchema();
 
-                Schema<?> originalSchema = mediaType.getSchema();
-                if (originalSchema != null) {
-                    wrappedSchema
-                            .name("Wrapped_" + originalSchema.getType())
-                            .addProperty("data", originalSchema).addRequiredItem("data");
+                if (dataProperty == null) {
+                    mediaType.setSchema(new Schema<>().$ref(REF_SUCCESS));
+                    return;
                 }
 
-                // Override the old flat payload mapping with our custom generic layout
-                mediaType.setSchema(wrappedSchema);
+                mediaType.setSchema(new Schema<>()
+                        .allOf(List.of(
+                                new Schema<>().$ref(REF_SUCCESS),
+                                new ObjectSchema()
+                                        .addProperty("data", dataProperty)
+                                        .addRequiredItem("data")
+                        ))
+                );
             });
 
             return operation;
         };
     }
 
-    private static Schema<?> getErrorSchema() {
-        return new Schema<>()
-                .type("object")
-                .name("OrmError")
+    static Schema<?> fieldErrorSchema() {
+        return new ObjectSchema()
+                .description("Field-level validation error")
+                .addProperty("error", new StringSchema()).addRequiredItem("error")
+                .addProperty("errorArgs", new ArraySchema().items(new StringSchema()));
+    }
+
+    static Schema<?> errorSchema() {
+        return new ObjectSchema()
+                .description("Failed API envelope")
                 .addProperty("success", new BooleanSchema()._const(false)).addRequiredItem("success")
                 .addProperty("timestamp", new StringSchema().format("date-time")).addRequiredItem("timestamp")
                 .addProperty("error", new StringSchema()).addRequiredItem("error")
                 .addProperty("errorArgs", new ArraySchema().items(new StringSchema()))
-                .addProperty("fieldErrors", new ObjectSchema().additionalProperties(new ObjectSchema()
-                        .addProperty("error", new StringSchema()).addRequiredItem("error")
-                        .addProperty("errorArgs", new ArraySchema().items(new StringSchema()))));
+                .addProperty("fieldErrors", new ObjectSchema().additionalProperties(new Schema<>().$ref(REF_FIELD_ERROR)));
+    }
+
+    static Schema<?> successEnvelopeSchema() {
+        return new ObjectSchema()
+                .description("Successful API envelope without payload")
+                .addProperty("success", new BooleanSchema()._const(true)).addRequiredItem("success")
+                .addProperty("timestamp", new StringSchema().format("date-time")).addRequiredItem("timestamp");
     }
 
     @Bean
@@ -129,6 +151,9 @@ public class SwaggerConfiguration {
                         .description("REST API for the Open Records Management system")
                 )
                 .components(new Components()
+                        .addSchemas(API_FIELD_ERROR, fieldErrorSchema())
+                        .addSchemas(API_ERROR_RESPONSE, errorSchema())
+                        .addSchemas(API_SUCCESS_ENVELOPE, successEnvelopeSchema())
                         .addSecuritySchemes("bearerAuth", new SecurityScheme()
                                 .type(SecurityScheme.Type.HTTP)
                                 .in(SecurityScheme.In.HEADER)
