@@ -1,10 +1,9 @@
-package com.openrecordsmanager.rest.dto;
+package com.openrecordsmanager.schema;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.*;
 
 class InputFormSchemaTest {
 
@@ -27,7 +26,7 @@ class InputFormSchemaTest {
     @Test
     void preservesEnumValuesFromRecordSchema() {
         InputFormSchema schema = InputFormSchema.from(Settings.class);
-        InputFormSchemaField mode = schema.properties().get("mode");
+        InputFormSchema.InputFormSchemaField mode = schema.properties().get("mode");
         assertNotNull(mode);
         assertEquals("string", mode.type());
         assertEquals(java.util.List.of("ALPHA", "BETA"), mode.enumValues());
@@ -37,11 +36,11 @@ class InputFormSchemaTest {
     void usesSchemaTitleAndDescriptionAsMessageKeys() {
         InputFormSchema schema = InputFormSchema.from(Settings.class);
 
-        InputFormSchemaField mode = schema.properties().get("mode");
+        InputFormSchema.InputFormSchemaField mode = schema.properties().get("mode");
         assertEquals("test.settings.schema.mode.title", mode.title());
-        assertEquals(null, mode.description());
+        assertNull(mode.description());
 
-        InputFormSchemaField name = schema.properties().get("name");
+        InputFormSchema.InputFormSchemaField name = schema.properties().get("name");
         assertEquals("test.settings.schema.name.title", name.title());
         assertEquals("test.settings.schema.name.description", name.description());
     }

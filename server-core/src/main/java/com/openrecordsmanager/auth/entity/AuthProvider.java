@@ -2,12 +2,12 @@ package com.openrecordsmanager.auth.entity;
 
 import com.openrecordsmanager.api.ComponentReference;
 import com.openrecordsmanager.api.auth.*;
-import com.openrecordsmanager.api.schema.JsonSchemaValidator;
 import com.openrecordsmanager.auth.AuthService;
 import com.openrecordsmanager.auth.PluginAuthenticationProvider;
 import com.openrecordsmanager.database.util.ComponentReferenceConverter;
 import com.openrecordsmanager.plugin.registry.ComponentCatalog;
 import com.openrecordsmanager.rest.exception.ResourceNotFoundException;
+import com.openrecordsmanager.schema.JsonSchemaValidator;
 import jakarta.persistence.*;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.id.uuid.UuidVersion7Strategy;
@@ -21,6 +21,7 @@ import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.function.BiFunction;
 
 @Entity
 @Table(name = "auth_provider")
@@ -94,17 +95,19 @@ public class AuthProvider {
     }
 
     public Map<String, ?> getSettings(ComponentCatalog catalog) {
-        AuthProviderType<?> t = this.getProviderType(catalog, AuthProviderType.class);
-        return JsonSchemaValidator.serializeSettingsForClient(t.parseSettings(this.settings));
+        return withParsedSettings(
+                this.getProviderType(catalog),
+                this.settings,
+                (_, s) -> JsonSchemaValidator.serializeSettingsForClient(s)
+        );
     }
 
     public void setProperties(ComponentCatalog catalog, Map<String, ?> properties) {
-        AuthProviderType<?> type = this.getProviderType(catalog, AuthProviderType.class);
-        Map<String, Object> merged = JsonSchemaValidator.mergeFromExisting(
-                properties,
-                this.settings
+        this.settings = withParsedSettings(
+                this.getProviderType(catalog),
+                JsonSchemaValidator.mergeFromExisting(properties, this.settings),
+                (_, s) -> JsonSchemaValidator.serializeSettings(s)
         );
-        this.settings = JsonSchemaValidator.serializeSettings(type.parseSettings(merged));
         this.touchDateModified();
     }
 
@@ -121,17 +124,12 @@ public class AuthProvider {
         return this.providerType;
     }
 
-    public <T extends AuthProviderType<?>> T getProviderType(ComponentCatalog catalog, Class<T> type) {
-        AuthProviderType<?> genericProvider = this.providerType.getComponent(catalog)
-                .orElseThrow(() -> new ResourceNotFoundException(this.providerType.getType(), this.providerType.getId(catalog).orElseThrow()));
-
-        if (type.isInstance(genericProvider)) {
-            @SuppressWarnings("unchecked")
-            T value = (T) genericProvider;
-            return value;
-        }
-
-        throw new ResourceNotFoundException(this.providerType.getType(), this.providerType.getId(catalog).orElseThrow());
+    public AuthProviderType<?> getProviderType(ComponentCatalog catalog) {
+        return this.providerType.getComponent(catalog)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        this.providerType.getType(),
+                        this.providerType.getId(catalog).orElseThrow()
+                ));
     }
 
     public RedirectAuthChallenge beginRedirectLogin(ComponentCatalog catalog, String publicBaseUrl) {
@@ -139,9 +137,15 @@ public class AuthProvider {
             throw new DisabledException("authentication provider is not enabled");
         }
 
-        RedirectAuthProviderType<?> type = this.getProviderType(catalog, RedirectAuthProviderType.class);
+        if (!(this.getProviderType(catalog) instanceof RedirectAuthProviderType<?> type)) {
+            throw new ResourceNotFoundException(
+                    this.providerType.getType(),
+                    this.providerType.getId(catalog).orElseThrow()
+            );
+        }
+
         URI callbackUri = URI.create(publicBaseUrl + "/api/auth/callback/" + this.getId());
-        return type.beginUntyped(callbackUri, this.settings);
+        return withParsedSettings(type, this.settings, (t, s) -> t.begin(callbackUri, s));
     }
 
     public @Nullable UserAuthDetails login(ComponentCatalog catalog, AuthService authService, PluginAuthenticationProvider.AbstractPluginToken token) {
@@ -149,23 +153,34 @@ public class AuthProvider {
             throw new DisabledException("authentication provider is not enabled");
         }
 
-        AuthProviderType<?> type = this.getProviderType(catalog, AuthProviderType.class);
-
+        AuthProviderType<?> type = this.getProviderType(catalog);
         return switch (type) {
             case InputAuthProviderType<?, ?> provider -> {
                 PluginAuthenticationProvider.InputToken input = ((PluginAuthenticationProvider.InputToken) token);
-                yield provider.authenticateUntyped(authService, this.settings, input.getCredentials());
+                yield withParsedSettings(provider, this.settings, (p, s) -> p.authenticate(
+                        authService,
+                        s,
+                        JsonSchemaValidator.toRecord(p.getInputClass(), input.getCredentials())
+                ));
             }
             case RedirectAuthProviderType<?> provider -> {
                 PluginAuthenticationProvider.RedirectToken redirect = (PluginAuthenticationProvider.RedirectToken) token;
-                yield provider.completeUntyped(
+                yield withParsedSettings(provider, this.settings, (p, s) -> p.complete(
                         authService,
                         redirect.getCredentials(),
                         redirect.getPending(),
-                        this.settings
-                );
+                        s
+                ));
             }
             default -> throw new InternalAuthenticationServiceException("Unexpected provider type: " + type);
         };
+    }
+
+    private static <R extends @Nullable Object, S extends Record, T extends AuthProviderType<S>> R withParsedSettings(
+            T type,
+            Map<String, ?> settings,
+            BiFunction<T, S, R> function
+    ) {
+        return function.apply(type, JsonSchemaValidator.toRecord(type.getSettingsClass(), settings));
     }
 }

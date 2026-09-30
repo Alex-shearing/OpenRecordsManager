@@ -26,7 +26,6 @@ import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.Date;
-import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
@@ -118,7 +117,7 @@ class OidcAuthProviderTypeTest {
 
     @Test
     void beginIncludesStateNonceAndPkce() {
-        RedirectAuthChallenge challenge = this.provider.beginUntyped(
+        RedirectAuthChallenge challenge = this.provider.begin(
                 URI.create("http://localhost:8080/api/auth/callback/" + UUID.randomUUID()),
                 validSettings()
         );
@@ -137,10 +136,10 @@ class OidcAuthProviderTypeTest {
     @Test
     void completeRejectsStateMismatch() {
         UUID id = UUID.randomUUID();
-        Map<String, ?> settings = validSettings();
+        OidcAuthSettings settings = validSettings();
 
         URI callback = URI.create("http://localhost:8080/api/auth/callback/" + id);
-        RedirectAuthChallenge challenge = this.provider.beginUntyped(callback, settings);
+        RedirectAuthChallenge challenge = this.provider.begin(callback, settings);
 
         PendingRedirectAuth pending = new PendingRedirectAuth(
                 id,
@@ -149,16 +148,16 @@ class OidcAuthProviderTypeTest {
         );
 
         URI forged = URI.create(callback + "?code=abc&state=wrong-state");
-        assertNull(this.provider.completeUntyped(emptyContext(), forged, pending, settings));
+        assertNull(this.provider.complete(emptyContext(), forged, pending, settings));
     }
 
     @Test
     void completeHappyPathMapsPreferredUsername() throws Exception {
         UUID id = UUID.randomUUID();
-        Map<String, ?> settings = validSettings();
+        OidcAuthSettings settings = validSettings();
 
         URI callback = URI.create("http://localhost:8080/api/auth/callback/" + id);
-        RedirectAuthChallenge challenge = this.provider.beginUntyped(callback, settings);
+        RedirectAuthChallenge challenge = this.provider.begin(callback, settings);
         String nonce = challenge.attributes().get(OidcAuthProviderType.ATTR_NONCE);
 
         String idToken = signIdToken(nonce, "alice", "alice@example.com");
@@ -177,7 +176,7 @@ class OidcAuthProviderTypeTest {
         );
 
         URI fullCallback = URI.create(callback + "?code=auth-code&state=" + challenge.state());
-        UserAuthDetails details = this.provider.completeUntyped(
+        UserAuthDetails details = this.provider.complete(
                 emptyContext(),
                 fullCallback,
                 pending,
@@ -193,10 +192,10 @@ class OidcAuthProviderTypeTest {
     @Test
     void completeFailsClosedOnTokenError() {
         UUID id = UUID.randomUUID();
-        Map<String, ?> settings = validSettings();
+        OidcAuthSettings settings = validSettings();
 
         URI callback = URI.create("http://localhost:8080/api/auth/callback/" + id);
-        RedirectAuthChallenge challenge = this.provider.beginUntyped(callback, settings);
+        RedirectAuthChallenge challenge = this.provider.begin(callback, settings);
 
         this.server.removeContext("/token");
         this.server.createContext("/token", exchange -> writeJson(exchange, 400, """
@@ -210,16 +209,16 @@ class OidcAuthProviderTypeTest {
         );
 
         URI fullCallback = URI.create(callback + "?code=auth-code&state=" + challenge.state());
-        assertNull(this.provider.completeUntyped(emptyContext(), fullCallback, pending, settings));
+        assertNull(this.provider.complete(emptyContext(), fullCallback, pending, settings));
     }
 
-    private Map<String, ?> validSettings() {
-        return Map.of(
-                "clientId", CLIENT_ID,
-                "secret", CLIENT_SECRET,
-                "uri", this.issuer,
-                "scope", "openid profile",
-                "usernameClaim", "preferred_username"
+    private OidcAuthSettings validSettings() {
+        return new OidcAuthSettings(
+                CLIENT_ID,
+                CLIENT_SECRET,
+                this.issuer,
+                "openid profile",
+                "preferred_username"
         );
     }
 

@@ -1,12 +1,12 @@
 package com.openrecordsmanager.plugin;
 
 import com.google.common.io.MoreFiles;
-import com.openrecordsmanager.api.schema.JsonSchemaValidator;
 import com.openrecordsmanager.filestore.store.FileStore;
 import com.openrecordsmanager.plugin.registry.ComponentCatalog;
 import org.jspecify.annotations.Nullable;
 import org.semver4j.Semver;
 import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -45,7 +45,7 @@ public record DiscoveredPlugin(
     }
 
     public static DiscoveredPlugin parseWithDescriptorFile(InputStream descriptorFile, @Nullable Path file, @Nullable PluginRepository repo) throws IOException {
-        JsonNode node = JsonSchemaValidator.MAPPER.readTree(descriptorFile);
+        JsonNode node = JsonMapper.shared().readTree(descriptorFile);
         if (node == null || !node.isObject()) {
             throw new IOException(FILE_NAME + " must be a JSON object");
         }

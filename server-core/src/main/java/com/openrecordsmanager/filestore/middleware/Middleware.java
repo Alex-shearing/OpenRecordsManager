@@ -2,10 +2,10 @@ package com.openrecordsmanager.filestore.middleware;
 
 import com.openrecordsmanager.api.ResourceIdentifier;
 import com.openrecordsmanager.api.filestore.FileStoreMiddlewareType;
-import com.openrecordsmanager.api.schema.JsonSchemaValidator;
 import com.openrecordsmanager.api.types.ComponentTypes;
 import com.openrecordsmanager.database.util.ResourceIdentifierJavaType;
 import com.openrecordsmanager.plugin.registry.ComponentCatalog;
+import com.openrecordsmanager.schema.JsonSchemaValidator;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
@@ -20,6 +20,7 @@ import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.function.BiFunction;
 
 @Entity
 @Table(name = "file_store_middleware")
@@ -54,8 +55,10 @@ public class Middleware {
         this.id = UuidVersion7Strategy.INSTANCE.generateUuid(null);
         this.name = name;
         this.type = catalog.getRegistry(ComponentTypes.FILE_STORE_MIDDLEWARE).getId(type).orElseThrow();
-        this.properties = JsonSchemaValidator.serializeSettings(type.parseSettings(properties));
-        type.initializeUntyped(this.properties);
+        this.properties = withParsedSettings(type, properties, (t, settings) -> {
+            t.initialize(settings);
+            return JsonSchemaValidator.serializeSettings(settings);
+        });
         this.dateCreated = Instant.now();
         this.dateModified = Instant.now();
     }
@@ -86,8 +89,10 @@ public class Middleware {
     }
 
     public Map<String, ?> getProperties(ComponentCatalog catalog) {
-        return JsonSchemaValidator.serializeSettingsForClient(
-                this.getMiddlewareType(catalog).parseSettings(this.properties)
+        return withParsedSettings(
+                this.getMiddlewareType(catalog),
+                this.properties,
+                (_, settings) -> JsonSchemaValidator.serializeSettingsForClient(settings)
         );
     }
 
@@ -98,22 +103,38 @@ public class Middleware {
     }
 
     public InputStream duringSave(ComponentCatalog catalog, InputStream stream) {
-        return this.getMiddlewareType(catalog).duringSaveUntyped(this.properties, stream);
+        return withParsedSettings(
+                this.getMiddlewareType(catalog),
+                this.properties,
+                (type, setting) -> type.duringSave(setting, stream)
+        );
     }
 
     public InputStream duringRetrieve(ComponentCatalog catalog, InputStream stream) {
-        return this.getMiddlewareType(catalog).duringRetrieveUntyped(this.properties, stream);
+        return withParsedSettings(
+                this.getMiddlewareType(catalog),
+                this.properties,
+                (type, setting) -> type.duringRetrieve(setting, stream)
+        );
     }
 
     public void setProperties(ComponentCatalog catalog, Map<String, ?> properties) {
-        FileStoreMiddlewareType<?> type = this.getMiddlewareType(catalog);
-        Map<String, Object> merged = JsonSchemaValidator.mergeFromExisting(
-                properties,
-                this.properties
+        this.properties = withParsedSettings(
+                this.getMiddlewareType(catalog),
+                JsonSchemaValidator.mergeFromExisting(properties, this.properties),
+                (t, settings) -> {
+                    t.initialize(settings);
+                    return JsonSchemaValidator.serializeSettings(settings);
+                }
         );
-        this.properties = JsonSchemaValidator.serializeSettings(type.parseSettings(merged));
-        type.initializeUntyped(this.properties);
         this.touchDateModified();
     }
 
+    private static <R, S extends Record> R withParsedSettings(
+            FileStoreMiddlewareType<S> mw,
+            Map<String, ?> settings,
+            BiFunction<FileStoreMiddlewareType<S>, S, R> function
+    ) {
+        return function.apply(mw, JsonSchemaValidator.toRecord(mw.getSettingsClass(), settings));
+    }
 }

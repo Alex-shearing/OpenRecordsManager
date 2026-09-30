@@ -1,12 +1,7 @@
 package com.openrecordsmanager.record;
 
 import com.openrecordsmanager.api.ResourceIdentifier;
-import com.openrecordsmanager.record.dto.NewRecordRequest;
-import com.openrecordsmanager.record.dto.RecordResponse;
-import com.openrecordsmanager.record.dto.RecordRevisionResponse;
-import com.openrecordsmanager.record.dto.RecordSearchRequest;
-import com.openrecordsmanager.record.dto.RecordSearchResponse;
-import com.openrecordsmanager.record.dto.UpdateRecordRequest;
+import com.openrecordsmanager.record.dto.*;
 import com.openrecordsmanager.rest.dto.ActionResponse;
 import com.openrecordsmanager.rest.swagger.DefaultApiResponses;
 import com.openrecordsmanager.rest.swagger.NotFoundApiResponse;
@@ -108,7 +103,7 @@ public class RecordController {
             @RequestHeader(value = HttpHeaders.CONTENT_DISPOSITION, required = false) @Nullable String dispositionHeader,
             @RequestParam(value = "ext", required = false, defaultValue = "") String fileExtension,
             InputStream file
-    ) {
+    ) throws IOException {
         // if no explicit stream extension is supplied, attempt to extract it from the content disposition header
         if (fileExtension.isBlank() && dispositionHeader != null) {
             ContentDisposition disposition = ContentDisposition.parse(dispositionHeader);

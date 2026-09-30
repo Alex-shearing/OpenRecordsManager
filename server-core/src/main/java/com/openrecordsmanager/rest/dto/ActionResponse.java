@@ -8,6 +8,7 @@ import com.openrecordsmanager.api.types.ComponentTypes;
 import com.openrecordsmanager.api.user.UserActionType;
 import com.openrecordsmanager.audit.AuditPolicyService;
 import com.openrecordsmanager.plugin.registry.ComponentCatalog;
+import com.openrecordsmanager.schema.InputFormSchema;
 import jakarta.validation.constraints.NotNull;
 
 public record ActionResponse(

@@ -1,4 +1,4 @@
-package com.openrecordsmanager.api.schema;
+package com.openrecordsmanager.schema;
 
 import com.github.victools.jsonschema.generator.*;
 import com.github.victools.jsonschema.module.jackson.JacksonOption;
@@ -10,29 +10,20 @@ import com.networknt.schema.Error;
 import com.networknt.schema.Schema;
 import com.networknt.schema.SchemaRegistry;
 import com.networknt.schema.SpecificationVersion;
-import com.openrecordsmanager.api.ComponentReference;
 import com.openrecordsmanager.api.errors.ApiError;
 import com.openrecordsmanager.api.errors.ApiException;
 import org.jspecify.annotations.Nullable;
 import tools.jackson.core.JacksonException;
-import tools.jackson.databind.DeserializationFeature;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.json.JsonMapper;
-import tools.jackson.databind.module.SimpleModule;
 import tools.jackson.databind.node.ObjectNode;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 public final class JsonSchemaValidator {
-    public static final ObjectMapper MAPPER = JsonMapper.builder()
-            // Template JSON may omit primitives that builders default (e.g. list entry index → 0).
-            .disable(DeserializationFeature.FAIL_ON_NULL_FOR_PRIMITIVES)
-            .addModule(new SimpleModule()
-                    .addKeyDeserializer(ComponentReference.class, new ComponentReference.RefKeyDeserializer())
-            )
-            .build();
+    static final ObjectMapper MAPPER = JsonMapper.shared();
 
     private static final Record EMPTY_RECORD = new EmptyRecord();
 

@@ -1,4 +1,4 @@
-package com.openrecordsmanager.api.schema;
+package com.openrecordsmanager.schema;
 
 import com.openrecordsmanager.api.errors.ApiException;
 import io.swagger.v3.oas.annotations.media.Schema;

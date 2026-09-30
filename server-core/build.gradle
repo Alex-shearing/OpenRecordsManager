@@ -27,6 +27,13 @@ dependencies {
     runtimeOnly 'org.flywaydb:flyway-database-postgresql'
     runtimeOnly 'org.flywaydb:flyway-mysql'
 
+    // JSON Schema generation (Jackson 3) + validation for plugin settings/inputs
+    implementation 'com.github.victools:jsonschema-generator:5.0.0'
+    implementation 'com.github.victools:jsonschema-module-jackson:5.0.0'
+    implementation 'com.github.victools:jsonschema-module-swagger-2:5.0.0'
+    implementation 'com.github.victools:jsonschema-module-jakarta-validation:5.0.0'
+    implementation 'com.networknt:json-schema-validator:3.0.6'
+
     // JSON Web Tokens
     implementation 'io.jsonwebtoken:jjwt-api:0.13.0'
     implementation 'io.jsonwebtoken:jjwt-impl:0.13.0'

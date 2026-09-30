@@ -20,6 +20,7 @@ import com.openrecordsmanager.rest.exception.ActionNotAvailableException;
 import com.openrecordsmanager.rest.exception.ResourceAlreadyExistsException;
 import com.openrecordsmanager.rest.exception.ResourceInUseException;
 import com.openrecordsmanager.rest.exception.ResourceNotFoundException;
+import com.openrecordsmanager.schema.JsonSchemaValidator;
 import com.openrecordsmanager.search.ObjectSearchExecutor;
 import com.openrecordsmanager.search.sql.BuiltinColumnResolver;
 import com.openrecordsmanager.search.sql.ObjectSearchSchema;
@@ -257,7 +258,7 @@ public class UserService {
 
         this.auditPolicyService.validateCommentRequired(AuditEntityType.USER, AuditOperation.ACTION);
 
-        action.executeUntyped(context, inputs);
+        parseAndExecute(action, context, inputs);
 
         this.auditService.addActionRanEvent(
                 actionId,
@@ -265,5 +266,13 @@ public class UserService {
                 targetUserId,
                 Map.of("inputs", inputs.keySet())
         );
+    }
+
+    private static <I extends Record> void parseAndExecute(
+            UserActionType<I> action,
+            UserActionContextImpl context,
+            Map<String, ?> inputs
+    ) {
+        action.execute(context, JsonSchemaValidator.toRecord(action.getInputClass(), inputs));
     }
 }

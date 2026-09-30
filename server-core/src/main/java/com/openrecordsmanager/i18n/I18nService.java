@@ -1,12 +1,16 @@
 package com.openrecordsmanager.i18n;
 
+import com.google.common.collect.ImmutableMap;
 import org.apache.commons.lang3.StringUtils;
 import org.jspecify.annotations.Nullable;
 import org.springframework.context.support.AbstractMessageSource;
 import org.springframework.stereotype.Service;
 
 import java.text.MessageFormat;
-import java.util.*;
+import java.util.HashSet;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -47,12 +51,9 @@ public class I18nService extends AbstractMessageSource {
      * Flattened catalog for a locale: every known key resolved with override → bundled precedence.
      */
     public Map<String, String> snapshot(Locale locale) {
-        Map<String, String> out = new HashMap<>();
-        for (String key : this.allKeys()) {
-            String value = resolveKeyToFormat(key, locale);
-            out.put(key, value);
-        }
-        return Map.copyOf(out);
+        return this.allKeys().stream()
+                .map(s -> Map.entry(s, this.resolveKeyToFormat(s, locale)))
+                .collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 
     private Set<String> allKeys() {

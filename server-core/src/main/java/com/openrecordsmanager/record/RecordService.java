@@ -23,6 +23,7 @@ import com.openrecordsmanager.rest.dto.ActionResponse;
 import com.openrecordsmanager.rest.exception.ActionNotAvailableException;
 import com.openrecordsmanager.rest.exception.ForbiddenException;
 import com.openrecordsmanager.rest.exception.ResourceNotFoundException;
+import com.openrecordsmanager.schema.JsonSchemaValidator;
 import com.openrecordsmanager.search.ObjectSearchExecutor;
 import com.openrecordsmanager.search.sql.BuiltinColumnResolver;
 import com.openrecordsmanager.search.sql.ObjectSearchSchema;
@@ -30,6 +31,7 @@ import com.openrecordsmanager.user.User;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -212,7 +214,7 @@ public class RecordService {
 
     @Transactional
     @RequiresAuditComment(operation = AuditOperation.CREATE, targetType = AuditEntityType.RECORD_REVISION)
-    public RecordResponse createRevision(User actor, UUID id, String version, String fileExtension, InputStream file) {
+    public RecordResponse createRevision(User actor, UUID id, String version, String fileExtension, InputStream file) throws IOException {
         Record record = this.repository.recordRepo.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("record", id));
 
@@ -325,7 +327,7 @@ public class RecordService {
 
         this.auditPolicyService.validateCommentRequired(AuditEntityType.RECORD, AuditOperation.ACTION);
 
-        action.executeUntyped(context, inputs);
+        parseAndExecute(action, context, inputs);
 
         this.auditService.addActionRanEvent(
                 actionId,
@@ -333,5 +335,13 @@ public class RecordService {
                 recordId,
                 Map.of("inputs", inputs.keySet())
         );
+    }
+
+    private static <I extends java.lang.Record> void parseAndExecute(
+            RecordActionType<I> action,
+            RecordActionContextImpl context,
+            Map<String, ?> inputs
+    ) {
+        action.execute(context, JsonSchemaValidator.toRecord(action.getInputClass(), inputs));
     }
 }

@@ -5,11 +5,12 @@ import com.google.common.hash.HashingInputStream;
 import com.google.common.io.CountingInputStream;
 import com.openrecordsmanager.api.ResourceIdentifier;
 import com.openrecordsmanager.api.filestore.FileStoreType;
-import com.openrecordsmanager.api.schema.JsonSchemaValidator;
 import com.openrecordsmanager.api.types.ComponentTypes;
 import com.openrecordsmanager.database.util.ResourceIdentifierJavaType;
 import com.openrecordsmanager.filestore.middleware.Middleware;
 import com.openrecordsmanager.plugin.registry.ComponentCatalog;
+import com.openrecordsmanager.schema.JsonSchemaValidator;
+import com.openrecordsmanager.schema.ThrowingBiFunction;
 import jakarta.persistence.*;
 import org.hibernate.annotations.JavaType;
 import org.hibernate.annotations.JdbcTypeCode;
@@ -62,8 +63,10 @@ public class FileStore {
         this.id = UuidVersion7Strategy.INSTANCE.generateUuid(null);
         this.name = name;
         this.type = catalog.getRegistry(ComponentTypes.FILE_STORE).getId(type).orElseThrow();
-        this.properties = JsonSchemaValidator.serializeSettings(type.parseSettings(properties));
-        type.initializeUntyped(this.properties);
+        this.properties = withParsedSettings(type, properties, (t, settings) -> {
+            t.initialize(settings);
+            return JsonSchemaValidator.serializeSettings(settings);
+        });
         this.dateCreated = Instant.now();
         this.dateModified = Instant.now();
     }
@@ -99,7 +102,7 @@ public class FileStore {
         this.touchDateModified();
     }
 
-    public FileStoreEntry newFile(ComponentCatalog catalog, InputStream file, String extension) {
+    public FileStoreEntry newFile(ComponentCatalog catalog, InputStream file, String extension) throws IOException {
         HashFunction hashFunction = FileStoreService.getHashFunction(FileStoreService.CURRENT_HASH_ALGORITHM);
 
         CountingInputStream countingStream = new CountingInputStream(file);
@@ -111,12 +114,12 @@ public class FileStore {
         }
 
         // Save the stream into the store
-        String path;
-        try {
-            path = this.getStoreType(catalog).saveUntyped(this.properties, stream, extension);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        final InputStream toStore = stream;
+        String path = withParsedSettings(
+                this.getStoreType(catalog),
+                this.properties,
+                (t, settings) -> t.save(settings, toStore, extension)
+        );
 
         return new FileStoreEntry(
                 this,
@@ -129,13 +132,19 @@ public class FileStore {
     }
 
     public Map<String, ?> getProperties(ComponentCatalog catalog) {
-        return JsonSchemaValidator.serializeSettingsForClient(
-                this.getStoreType(catalog).parseSettings(this.properties)
+        return withParsedSettings(
+                this.getStoreType(catalog),
+                this.properties,
+                (_, settings) -> JsonSchemaValidator.serializeSettingsForClient(settings)
         );
     }
 
     public InputStream getFile(ComponentCatalog catalog, FileStoreEntry entry) throws IOException {
-        InputStream stream = this.getStoreType(catalog).retrieveUntyped(this.properties, entry.getPath());
+        InputStream stream = withParsedSettings(
+                this.getStoreType(catalog),
+                this.properties,
+                (t, settings) -> t.retrieve(settings, entry.getPath())
+        );
 
         for (MiddlewareUsage middleware : this.middlewares) {
             stream = middleware.middleware.duringRetrieve(catalog, stream);
@@ -149,18 +158,27 @@ public class FileStore {
     }
 
     public void setProperties(ComponentCatalog catalog, Map<String, ?> properties) {
-        FileStoreType<?> type = this.getStoreType(catalog);
-        Map<String, Object> merged = JsonSchemaValidator.mergeFromExisting(
-                properties,
-                this.properties
+        this.properties = withParsedSettings(
+                this.getStoreType(catalog),
+                JsonSchemaValidator.mergeFromExisting(properties, this.properties),
+                (t, settings) -> {
+                    t.initialize(settings);
+                    return JsonSchemaValidator.serializeSettings(settings);
+                }
         );
-        this.properties = JsonSchemaValidator.serializeSettings(type.parseSettings(merged));
-        type.initializeUntyped(this.properties);
         this.touchDateModified();
     }
 
     public List<Middleware> getMiddlewares() {
         return this.middlewares.stream().map(middlewareUsage -> middlewareUsage.middleware).toList();
+    }
+
+    private static <E extends Exception, R, S extends Record> R withParsedSettings(
+            FileStoreType<S> type,
+            Map<String, ?> settings,
+            ThrowingBiFunction<FileStoreType<S>, S, R, E> function
+    ) throws E {
+        return function.apply(type, JsonSchemaValidator.toRecord(type.getSettingsClass(), settings));
     }
 
     @Embeddable
