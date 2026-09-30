@@ -16,22 +16,24 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
-import java.util.*;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
-import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
 /**
- * Loads {@code META-INF/orm/i18n/messages*.properties} from the application classpath and
+ * Loads {@code i18n/messages*.properties} from the application classpath and
  * plugin jar/zip archives.
  */
 @Component
 public class BundleMessageLoader {
     private static final Logger LOGGER = LoggerFactory.getLogger(BundleMessageLoader.class);
 
-    public static final String BUNDLE_PATH = "META-INF/orm/i18n/";
-    public static final String BUNDLE_PATTERN = "classpath*:META-INF/orm/i18n/messages*.properties";
+    public static final String BUNDLE_PATH = "i18n/";
+    public static final String BUNDLE_PATTERN = "classpath*:i18n/messages*.properties";
 
     private final @Nullable PluginManager pluginManager;
 
@@ -47,14 +49,16 @@ public class BundleMessageLoader {
      */
     @PostConstruct
     public void refresh() {
+        this.bundled.clear();
         this.reloadClasspathBundles();
         if (this.pluginManager == null) {
             return;
         }
+
         for (LoadedPlugin loaded : this.pluginManager.getLoadedPlugins()) {
             Path path = loaded.info().path();
             if (path != null) {
-                loadFromArchive(path);
+                this.loadFromArchive(path);
             }
         }
     }
@@ -75,11 +79,19 @@ public class BundleMessageLoader {
      * use {@link #loadFromArchive(Path)} for those.
      */
     void reloadClasspathBundles() {
-        this.bundled.clear();
         try {
             Resource[] resources = this.resolver.getResources(BUNDLE_PATTERN);
             for (Resource resource : resources) {
-                loadResource(resource);
+                String filename = resource.getFilename();
+                if (filename == null) {
+                    return;
+                }
+
+                Locale locale = localeFromFilename(filename);
+                try (InputStream in = resource.getInputStream()) {
+                    this.putProperties(in, locale);
+                }
+                LOGGER.debug("Loaded i18n from {} ({})", resource, locale);
             }
             LOGGER.info("Loaded {} classpath i18n bundle resource(s)", resources.length);
         } catch (IOException e) {
@@ -88,35 +100,31 @@ public class BundleMessageLoader {
     }
 
     /**
-     * Load all {@code META-INF/orm/i18n/messages*.properties} entries from a plugin jar or zip.
+     * Load all {@code i18n/messages*.properties} entries from a plugin jar or zip.
      * Reads the archive directly so parent classloader resources cannot shadow plugin keys.
      */
     void loadFromArchive(Path archive) {
         try (ZipFile zip = new ZipFile(archive.toFile())) {
-            int loaded = 0;
-            Enumeration<? extends ZipEntry> entries = zip.entries();
-            while (entries.hasMoreElements()) {
-                ZipEntry entry = entries.nextElement();
-                if (entry.isDirectory()) {
-                    continue;
-                }
-                String name = entry.getName();
-                if (!name.startsWith(BUNDLE_PATH) || !name.endsWith(".properties")) {
-                    continue;
-                }
-                String filename = name.substring(BUNDLE_PATH.length());
-                if (filename.isEmpty() || filename.contains("/")) {
-                    continue;
-                }
-                if (!filename.startsWith("messages")) {
-                    continue;
-                }
-                Locale locale = localeFromFilename(filename);
-                try (InputStream in = zip.getInputStream(entry)) {
-                    putProperties(in, locale);
-                    loaded++;
-                }
-            }
+            long loaded = zip.stream()
+                    .filter(e -> !e.isDirectory())
+                    .filter(e -> e.getName().startsWith(BUNDLE_PATH))
+                    .filter(e -> e.getName().endsWith(".properties"))
+                    .filter(e -> e.getName().substring(BUNDLE_PATH.length()).startsWith("messages"))
+                    .mapToLong(entry -> {
+                        String filename = entry.getName().substring(BUNDLE_PATH.length());
+
+                        try (InputStream in = zip.getInputStream(entry)) {
+                            Locale locale = localeFromFilename(filename);
+                            this.putProperties(in, locale);
+                            LOGGER.debug("Loaded i18n from archive {} / {} ({})", archive, zip.getName(), locale);
+                            return 1;
+                        } catch (IOException e) {
+                            LOGGER.error("Failed to parse bundle entry: {}", entry.getName(), e);
+                            return 0;
+                        }
+                    })
+                    .sum();
+
             if (loaded > 0) {
                 LOGGER.info("Loaded {} i18n bundle(s) from {}", loaded, archive.getFileName());
             }
@@ -125,37 +133,27 @@ public class BundleMessageLoader {
         }
     }
 
-    private void loadResource(Resource resource) throws IOException {
-        String filename = resource.getFilename();
-        if (filename == null) {
-            return;
-        }
-        Locale locale = localeFromFilename(filename);
-        try (InputStream in = resource.getInputStream()) {
-            putProperties(in, locale);
-        }
-        LOGGER.debug("Loaded errorMessage(s) from {} ({})", resource, locale);
-    }
 
     private void putProperties(InputStream in, Locale locale) throws IOException {
         Properties properties = new Properties();
-        properties.load(new InputStreamReader(in, StandardCharsets.UTF_8));
-        Map<String, String> messages = new ConcurrentHashMap<>();
-        for (String name : properties.stringPropertyNames()) {
-            messages.put(name, properties.getProperty(name));
+        try (var reader = new InputStreamReader(in, StandardCharsets.UTF_8)) {
+            properties.load(reader);
         }
 
-        ConcurrentHashMap<String, String> dest = this.bundled.computeIfAbsent(
-                locale,
-                ignored -> new ConcurrentHashMap<>()
-        );
-        dest.putAll(messages);
+        Map<String, String> dest = this.bundled.computeIfAbsent(locale, _ -> new ConcurrentHashMap<>());
+        properties.stringPropertyNames().forEach(name -> dest.put(name, properties.getProperty(name)));
     }
 
-    static Locale localeFromFilename(String filename) {
-        // messages.properties → en
-        // messages_fr.properties → fr
-        // messages_en_AU.properties → en_AU
+    /**
+     * Map a file name to an associated locale
+     * messages.properties -> en
+     * messages_fr.properties -> fr
+     * messages_en_AU.properties -> en-AU
+     *
+     * @param filename filename
+     * @return the Locale extracted from the file name
+     */
+    static Locale localeFromFilename(String filename) throws IOException {
         if ("messages.properties".equals(filename)) {
             return Locale.ENGLISH;
         }
@@ -163,6 +161,7 @@ public class BundleMessageLoader {
             String tag = filename.substring("messages_".length(), filename.length() - ".properties".length());
             return Locale.forLanguageTag(tag.replace('_', '-'));
         }
-        return Locale.ENGLISH;
+
+        throw new IOException("could not get language code from file name " + filename);
     }
 }

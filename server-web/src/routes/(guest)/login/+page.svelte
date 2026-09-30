@@ -5,10 +5,8 @@
 
 	let { data } = $props();
 
-	let authError = $derived(() => {
-		const error = page.url.searchParams.get('error');
-		return error ? tApiErrorResponse({ error }) : null;
-	});
+	const error = page.url.searchParams.get('error');
+	const authError = error ? tApiErrorResponse({ error }) : null;
 </script>
 
 <div class="card">

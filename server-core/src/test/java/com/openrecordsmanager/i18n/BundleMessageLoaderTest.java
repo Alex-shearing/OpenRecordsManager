@@ -22,7 +22,7 @@ class BundleMessageLoaderTest {
     void loadFromArchiveReadsPluginMessagesIgnoringParentClasspathShadowing() throws Exception {
         Path jar = tempDir.resolve("demo-plugin.jar");
         try (JarOutputStream jos = new JarOutputStream(Files.newOutputStream(jar))) {
-            jos.putNextEntry(new JarEntry("META-INF/orm/i18n/messages.properties"));
+            jos.putNextEntry(new JarEntry("i18n/messages.properties"));
             jos.write("""
                     plugin.demo.name=Demo Plugin
                     plugin.demo.description=From the plugin jar
@@ -42,7 +42,7 @@ class BundleMessageLoaderTest {
     void reloadClasspathBundlesClearsPreviouslyLoadedArchiveKeys() throws Exception {
         Path jar = tempDir.resolve("ephemeral.jar");
         try (JarOutputStream jos = new JarOutputStream(Files.newOutputStream(jar))) {
-            jos.putNextEntry(new JarEntry("META-INF/orm/i18n/messages.properties"));
+            jos.putNextEntry(new JarEntry("i18n/messages.properties"));
             jos.write("plugin.ephemeral.name=Ephemeral\n".getBytes(StandardCharsets.UTF_8));
             jos.closeEntry();
         }
@@ -51,7 +51,7 @@ class BundleMessageLoaderTest {
         loader.loadFromArchive(jar);
         assertEquals("Ephemeral", loader.findMessage(Locale.ENGLISH, "plugin.ephemeral.name"));
 
-        loader.reloadClasspathBundles();
+        loader.refresh();
         assertNull(loader.findMessage(Locale.ENGLISH, "plugin.ephemeral.name"));
     }
 
