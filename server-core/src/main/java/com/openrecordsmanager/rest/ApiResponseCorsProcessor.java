@@ -1,5 +1,6 @@
 package com.openrecordsmanager.rest;
 
+import com.openrecordsmanager.api.errors.ApiError;
 import com.openrecordsmanager.rest.dto.ApiResponseV1;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -25,7 +26,7 @@ public class ApiResponseCorsProcessor extends DefaultCorsProcessor {
     protected void rejectRequest(ServerHttpResponse response) throws IOException {
         response.setStatusCode(HttpStatus.FORBIDDEN);
         response.getHeaders().setContentType(MediaType.APPLICATION_JSON);
-        this.jsonMapper.writeValue(response.getBody(), ApiResponseV1.error("invalid_cors_request"));
+        this.jsonMapper.writeValue(response.getBody(), ApiResponseV1.error(ApiError.of("invalid_cors_request")));
         response.flush();
     }
 }

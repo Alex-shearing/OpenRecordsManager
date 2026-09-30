@@ -1,13 +1,14 @@
 package com.openrecordsmanager.rest.exception;
 
 import com.openrecordsmanager.api.builtin.BuiltinConfigs;
+import com.openrecordsmanager.api.errors.ApiError;
 import com.openrecordsmanager.api.errors.ApiException;
 import com.openrecordsmanager.config.ConfigService;
 import com.openrecordsmanager.rest.dto.ApiResponseV1;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.util.List;
+import java.util.Map;
 
 @RestControllerAdvice
 public class ExceptionController {
@@ -37,46 +39,49 @@ public class ExceptionController {
             default -> HttpStatus.BAD_REQUEST;
         };
 
-        return ResponseEntity.status(status)
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(ApiResponseV1.error(ex.getCode(), ex.getArgs(), ex.getFieldErrors()));
+        return makeErrResponse(status, ex.getError(), ex.getFieldErrors());
     }
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiResponseV1<Void>> handleGeneralException(Exception ex) {
-        HttpStatusCode httpStatusCode = HttpStatus.INTERNAL_SERVER_ERROR;
         LOGGER.error("Unexpected error encountered while processing request", ex);
 
         boolean detailed = this.config.getOrDefault(BuiltinConfigs.DEBUG_DETAILED_ERRORS, false);
-        if (detailed && ex.getMessage() != null) {
-            return ResponseEntity.status(httpStatusCode)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .body(ApiResponseV1.error("internal_server_error_detailed", List.of(ex.getMessage())));
-        }
 
-        return ResponseEntity.status(httpStatusCode)
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(ApiResponseV1.error("internal_server_error"));
+        ApiError error = detailed && !StringUtils.isBlank(ex.getMessage())
+                ? ApiError.of("internal_server_error_detailed", List.of(ex.getMessage()))
+                : ApiError.of("internal_server_error");
+
+        return makeErrResponse(HttpStatus.INTERNAL_SERVER_ERROR, error);
     }
 
     @ExceptionHandler(AuthenticationException.class)
     public ResponseEntity<ApiResponseV1<Void>> handleAuth(AuthenticationException ex) {
         boolean detailed = this.config.getOrDefault(BuiltinConfigs.DEBUG_DETAILED_ERRORS, false);
-        if (detailed && ex.getMessage() != null && !ex.getMessage().isBlank()) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .body(ApiResponseV1.error("authentication_failed_detailed", List.of(ex.getMessage())));
-        }
 
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(ApiResponseV1.error("authentication_failed"));
+        ApiError error = detailed && !StringUtils.isBlank(ex.getMessage())
+                ? ApiError.of("authentication_failed_detailed", List.of(ex.getMessage()))
+                : ApiError.of("authentication_failed");
+
+        return makeErrResponse(HttpStatus.UNAUTHORIZED, error);
     }
 
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<ApiResponseV1<Void>> accessDenied(AccessDeniedException ex) {
-        return ResponseEntity.status(HttpStatus.FORBIDDEN)
+        return makeErrResponse(HttpStatus.FORBIDDEN, ApiError.of("access_denied"));
+    }
+
+    private static ResponseEntity<ApiResponseV1<Void>> makeErrResponse(HttpStatus status, ApiError error) {
+        return makeErrResponse(status, error, Map.of());
+    }
+
+    private static ResponseEntity<ApiResponseV1<Void>> makeErrResponse(
+            HttpStatus status,
+            ApiError error,
+            Map<String, ApiError> fieldErrors
+    ) {
+        return ResponseEntity.status(status)
                 .contentType(MediaType.APPLICATION_JSON)
-                .body(ApiResponseV1.error("access_denied"));
+                .body(ApiResponseV1.error(error, fieldErrors));
     }
 }

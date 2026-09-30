@@ -24,25 +24,21 @@ public record ApiResponseV1<T extends @Nullable Object>(
         return new ApiResponseV1<>(true, data, null, null, null, Instant.now());
     }
 
-    public static <T> ApiResponseV1<T> error(String error) {
-        return error(error, List.of(), Map.of());
-    }
-
-    public static <T> ApiResponseV1<T> error(String error, List<String> errorArgs) {
-        return error(error, errorArgs, Map.of());
-    }
-
-    public static <T> ApiResponseV1<T> error(String error, List<String> errorArgs, Map<String, ApiError> fieldErrors) {
+    public static <T> ApiResponseV1<T> error(ApiError error, Map<String, ApiError> fieldErrors) {
         return new ApiResponseV1<>(
                 false,
                 null,
-                error,
-                errorArgs.isEmpty() ? null : List.copyOf(errorArgs),
+                error.code(),
+                error.args().isEmpty() ? null : List.copyOf(error.args()),
                 fieldErrors.isEmpty() ? null : Map.copyOf(fieldErrors),
                 Instant.now()
         );
     }
 
+    public static <T> ApiResponseV1<T> error(ApiError error) {
+        return error(error, Map.of());
+    }
+    
     @Override
     public String toString() {
         return "ApiResponseV1{" +

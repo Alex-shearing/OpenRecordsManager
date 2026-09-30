@@ -1,5 +1,6 @@
 package com.openrecordsmanager.database;
 
+import com.openrecordsmanager.api.errors.ApiError;
 import com.openrecordsmanager.database.schema.SchemaMigrationState;
 import com.openrecordsmanager.rest.dto.ApiResponseV1;
 import jakarta.servlet.FilterChain;
@@ -61,7 +62,7 @@ public class SchemaUpgradeGateFilter extends OncePerRequestFilter {
 
         this.jsonMapper.writeValue(
                 response.getOutputStream(),
-                ApiResponseV1.error("schema_upgrade_required")
+                ApiResponseV1.error(ApiError.of("schema_upgrade_required"))
         );
     }
 }

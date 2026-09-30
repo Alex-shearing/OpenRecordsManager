@@ -9,8 +9,7 @@ import java.util.Map;
  * and optional per-field errors.
  */
 public class ApiException extends RuntimeException {
-    private final String code;
-    private final List<String> args;
+    private final ApiError error;
     private final Map<String, ApiError> fieldErrors;
 
     public ApiException(String code) {
@@ -30,17 +29,20 @@ public class ApiException extends RuntimeException {
         if (code.isBlank()) {
             throw new IllegalArgumentException("error code is required");
         }
-        this.code = code;
-        this.args = List.copyOf(args);
+        this.error = new ApiError(code, List.copyOf(args));
         this.fieldErrors = Map.copyOf(fieldErrors);
     }
 
     public String getCode() {
-        return this.code;
+        return this.error.code();
     }
 
     public List<String> getArgs() {
-        return this.args;
+        return this.error.args();
+    }
+
+    public ApiError getError() {
+        return this.error;
     }
 
     public Map<String, ApiError> getFieldErrors() {
