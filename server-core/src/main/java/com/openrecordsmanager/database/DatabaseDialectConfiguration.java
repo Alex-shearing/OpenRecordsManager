@@ -7,8 +7,11 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 /**
- * Resolves the Hibernate dialect from the JDBC URL without contacting the database.
- * Required so the app can start when the primary is offline and only a read replica is reachable.
+ * Sets an explicit Hibernate dialect from the JDBC URL so the SessionFactory can start
+ * without requiring a live primary connection.
+ * <p>
+ * When the primary is offline, metadata access fails and Hibernate falls back to this
+ * explicit dialect so startup still succeeds.
  *
  * <p>Also overrides Spring's default {@code DELAYED_ACQUISITION_AND_HOLD} connection mode.
  * HOLD keeps the first JDBC connection for the whole OSIV session, so a read-only request
@@ -37,7 +40,6 @@ public class DatabaseDialectConfiguration {
     @Bean
     public HibernatePropertiesCustomizer ormHibernateProperties(DatabaseVendor vendor) {
         return properties -> {
-            properties.put("hibernate.boot.allow_jdbc_metadata_access", false);
             properties.put("hibernate.dialect", vendor.hibernateDialectClassName());
             properties.put(
                     "hibernate.connection.handling_mode",

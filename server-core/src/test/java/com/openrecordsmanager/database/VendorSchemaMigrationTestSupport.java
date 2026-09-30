@@ -52,16 +52,10 @@ final class VendorSchemaMigrationTestSupport {
     static void assertMigratedAndValid(
             SchemaMigrationState schemaMigrationState,
             SchemaValidationService schemaValidationService,
-            DataSource dataSource,
-            String jdbcUrl
+            DataSource dataSource
     ) throws SQLException {
         assertEquals(SchemaMigrationState.Status.READY, schemaMigrationState.getStatus());
         assertCoreTablesPresent(dataSource);
-
-        if (jdbcUrl.toLowerCase().contains("sqlite")) {
-            // Hibernate schema validation cannot reliably read SQLite metadata when JDBC metadata access is disabled.
-            return;
-        }
 
         boolean validationResponse = schemaValidationService.validate();
         assertTrue(validationResponse);

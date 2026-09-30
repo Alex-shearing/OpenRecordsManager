@@ -39,7 +39,17 @@ public class DataSourceConfig {
 
     @Bean
     public DataSource writeDataSource() {
-        return buildDataSource(primaryDataSourceProperties());
+        DataSource dataSource = buildDataSource(primaryDataSourceProperties());
+
+        // When a read replica is configured, EMF boot may try the write pool for JDBC metadata
+        // (ALLOW). Cap connect time so an offline primary fails fast and Hibernate falls back
+        // to the explicit dialect instead of waiting on Hikari's default 30s timeout.
+        if (hasDistinctReadReplica(primaryDataSourceProperties(), readOnlyDataSourceProperties())
+                && dataSource instanceof HikariDataSource hikari
+                && hikari.getConnectionTimeout() > 5_000L) {
+            hikari.setConnectionTimeout(5_000L);
+        }
+        return dataSource;
     }
 
     @Bean

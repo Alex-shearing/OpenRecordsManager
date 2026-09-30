@@ -47,8 +47,7 @@ class PostgreSqlSchemaMigrationIntegrationTest {
         VendorSchemaMigrationTestSupport.assertMigratedAndValid(
                 this.schemaMigrationState,
                 this.schemaValidationService,
-                this.writeDataSource,
-                postgres.getJdbcUrl()
+                this.writeDataSource
         );
     }
 }

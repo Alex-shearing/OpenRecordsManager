@@ -40,8 +40,7 @@ class SqliteSchemaMigrationIntegrationTest {
         VendorSchemaMigrationTestSupport.assertMigratedAndValid(
                 this.schemaMigrationState,
                 this.schemaValidationService,
-                this.writeDataSource,
-                JDBC_URL
+                this.writeDataSource
         );
     }
 }

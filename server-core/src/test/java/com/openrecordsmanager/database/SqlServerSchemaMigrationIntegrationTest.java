@@ -48,8 +48,7 @@ class SqlServerSchemaMigrationIntegrationTest {
         VendorSchemaMigrationTestSupport.assertMigratedAndValid(
                 this.schemaMigrationState,
                 this.schemaValidationService,
-                this.writeDataSource,
-                sqlServer.getJdbcUrl()
+                this.writeDataSource
         );
     }
 }

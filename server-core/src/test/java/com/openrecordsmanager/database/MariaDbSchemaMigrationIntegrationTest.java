@@ -47,8 +47,7 @@ class MariaDbSchemaMigrationIntegrationTest {
         VendorSchemaMigrationTestSupport.assertMigratedAndValid(
                 this.schemaMigrationState,
                 this.schemaValidationService,
-                this.writeDataSource,
-                mariadb.getJdbcUrl()
+                this.writeDataSource
         );
     }
 }
