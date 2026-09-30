@@ -6,7 +6,7 @@ CREATE TABLE system_configurations (
 );
 
 CREATE TABLE auth_provider (
-    id BINARY(16) NOT NULL PRIMARY KEY,
+    id UUID NOT NULL PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
     provider_type VARCHAR(255) NOT NULL,
     settings JSON NOT NULL,
@@ -76,9 +76,9 @@ CREATE TABLE record_type_property (
 CREATE INDEX idx_rtp_property_id ON record_type_property (property_id);
 
 CREATE TABLE user_details (
-    id BINARY(16) NOT NULL PRIMARY KEY,
+    id UUID NOT NULL PRIMARY KEY,
     username VARCHAR(255) NOT NULL UNIQUE,
-    auth_provider_id BINARY(16),
+    auth_provider_id UUID,
     date_created DATETIME(6) NOT NULL,
     date_modified DATETIME(6) NOT NULL,
     given_name VARCHAR(255),
@@ -94,7 +94,7 @@ CREATE TABLE user_details (
 CREATE INDEX idx_user_details_auth_provider_id ON user_details (auth_provider_id);
 
 CREATE TABLE user_property_value (
-    user_id BINARY(16) NOT NULL,
+    user_id UUID NOT NULL,
     property_id VARCHAR(255) NOT NULL,
     property_value JSON,
     PRIMARY KEY (user_id, property_id),
@@ -105,7 +105,7 @@ CREATE TABLE user_property_value (
 CREATE INDEX idx_upv_property_id ON user_property_value (property_id);
 
 CREATE TABLE file_store (
-    id BINARY(16) NOT NULL PRIMARY KEY,
+    id UUID NOT NULL PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
     type VARCHAR(255) NOT NULL,
     properties JSON NOT NULL,
@@ -114,7 +114,7 @@ CREATE TABLE file_store (
 );
 
 CREATE TABLE file_store_middleware (
-    id BINARY(16) NOT NULL PRIMARY KEY,
+    id UUID NOT NULL PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
     type VARCHAR(255) NOT NULL,
     properties JSON NOT NULL,
@@ -123,8 +123,8 @@ CREATE TABLE file_store_middleware (
 );
 
 CREATE TABLE file_store_middleware_usage (
-    file_store_id BINARY(16) NOT NULL,
-    middleware_id BINARY(16) NOT NULL,
+    file_store_id UUID NOT NULL,
+    middleware_id UUID NOT NULL,
     application_order INT,
     CONSTRAINT fk_fsmu_store FOREIGN KEY (file_store_id) REFERENCES file_store (id),
     CONSTRAINT fk_fsmu_middleware FOREIGN KEY (middleware_id) REFERENCES file_store_middleware (id)
@@ -133,8 +133,8 @@ CREATE TABLE file_store_middleware_usage (
 CREATE INDEX idx_fsmu_file_store_id ON file_store_middleware_usage (file_store_id);
 
 CREATE TABLE file_store_entry (
-    id BINARY(16) NOT NULL PRIMARY KEY,
-    store_id BINARY(16) NOT NULL,
+    id UUID NOT NULL PRIMARY KEY,
+    store_id UUID NOT NULL,
     path VARCHAR(255) NOT NULL,
     hash_algorithm VARCHAR(255) NOT NULL,
     hash VARCHAR(255) NOT NULL,
@@ -149,7 +149,7 @@ CREATE INDEX idx_fse_store_id ON file_store_entry (store_id);
 CREATE TABLE plugin (
     name VARCHAR(255) NOT NULL PRIMARY KEY,
     version VARCHAR(255) NOT NULL,
-    file_id BINARY(16) UNIQUE,
+    file_id UUID UNIQUE,
     enabled BOOLEAN NOT NULL DEFAULT TRUE,
     date_created TIMESTAMP NOT NULL,
     date_modified TIMESTAMP NOT NULL,
@@ -157,7 +157,7 @@ CREATE TABLE plugin (
 );
 
 CREATE TABLE `record` (
-    id BINARY(16) NOT NULL PRIMARY KEY,
+    id UUID NOT NULL PRIMARY KEY,
     title VARCHAR(255) NOT NULL,
     type_id VARCHAR(255) NOT NULL,
     notes LONGTEXT,
@@ -172,7 +172,7 @@ CREATE TABLE `record` (
 CREATE INDEX idx_record_type_id ON `record` (type_id);
 
 CREATE TABLE record_property_value (
-    record_id BINARY(16) NOT NULL,
+    record_id UUID NOT NULL,
     property_id VARCHAR(255) NOT NULL,
     property_value JSON,
     PRIMARY KEY (record_id, property_id),
@@ -183,20 +183,20 @@ CREATE TABLE record_property_value (
 CREATE INDEX idx_rpv_property_id ON record_property_value (property_id);
 
 CREATE TABLE record_revision (
-    id BINARY(16) NOT NULL PRIMARY KEY,
+    id UUID NOT NULL PRIMARY KEY,
     version VARCHAR(255) NOT NULL,
     date_created DATETIME(6) NOT NULL,
-    record_id BINARY(16) NOT NULL,
-    file_id BINARY(16) NOT NULL UNIQUE,
+    record_id UUID NOT NULL,
+    file_id UUID NOT NULL UNIQUE,
     CONSTRAINT uk_record_version UNIQUE (record_id, version),
     CONSTRAINT fk_rr_record FOREIGN KEY (record_id) REFERENCES `record` (id),
     CONSTRAINT fk_rr_file FOREIGN KEY (file_id) REFERENCES file_store_entry (id)
 );
 
 CREATE TABLE audit_event (
-    id BINARY(16) NOT NULL PRIMARY KEY,
+    id UUID NOT NULL PRIMARY KEY,
     occurred_at DATETIME(6) NOT NULL,
-    actor_id BINARY(16),
+    actor_id UUID,
     actor_username VARCHAR(255),
     operation VARCHAR(50) NOT NULL,
     target_type VARCHAR(100) NOT NULL,
