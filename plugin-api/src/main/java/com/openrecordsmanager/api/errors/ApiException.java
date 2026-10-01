@@ -33,14 +33,6 @@ public class ApiException extends RuntimeException {
         this.fieldErrors = Map.copyOf(fieldErrors);
     }
 
-    public String getCode() {
-        return this.error.code();
-    }
-
-    public List<String> getArgs() {
-        return this.error.args();
-    }
-
     public ApiError getError() {
         return this.error;
     }
