@@ -3,35 +3,21 @@ import { getApiClient } from '$lib/api-client';
 import { templateName } from '$lib/i18n/labels';
 
 export async function load() {
-	const client = getApiClient();
-	const typesResult = await TemplateController.getTemplateTypes({ client });
+	const { data, error } = await TemplateController.listTemplates({
+		client: getApiClient(),
+	});
 
-	if (!typesResult.data?.success) {
-		return {
-			sections: [],
-			error: typesResult.error,
-		};
+	if (!data?.success) {
+		return { templates: [], error };
 	}
 
-	const types = typesResult.data.data.toSorted((a, b) => a.localeCompare(b));
-	const sections = await Promise.all(
-		types.map(async type => {
-			const templatesResult = await TemplateController.getTemplatesForType({
-				client,
-				path: { type },
-			});
+	const templates = data.data
+		.map(template => ({
+			type: template.type,
+			id: template.id,
+			name: templateName(template.type, template.id),
+		}))
+		.toSorted((a, b) => a.type.localeCompare(b.type) || a.name.localeCompare(b.name));
 
-			return {
-				error: templatesResult.error,
-				type,
-				templates: templatesResult.data?.success
-					? [...(templatesResult.data.data ?? [])].sort((a, b) =>
-							templateName(type, a).localeCompare(templateName(type, b))
-						)
-					: [],
-			};
-		})
-	);
-
-	return { sections };
+	return { templates };
 }

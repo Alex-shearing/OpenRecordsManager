@@ -3287,55 +3287,16 @@ export type GetTranslationCatalogResponses = {
 
 export type GetTranslationCatalogResponse = GetTranslationCatalogResponses[keyof GetTranslationCatalogResponses];
 
-export type GetTemplateTypesData = {
+export type ListTemplatesData = {
     body?: never;
     path?: never;
-    query?: never;
+    query?: {
+        type?: string;
+    };
     url: '/api/templates';
 };
 
-export type GetTemplateTypesErrors = {
-    /**
-     * Unauthorized
-     */
-    401: ApiErrorResponse;
-    /**
-     * Forbidden
-     */
-    403: ApiErrorResponse;
-    /**
-     * Audit comment required
-     */
-    422: ApiErrorResponse;
-    /**
-     * Internal Server error
-     */
-    500: ApiErrorResponse;
-};
-
-export type GetTemplateTypesError = GetTemplateTypesErrors[keyof GetTemplateTypesErrors];
-
-export type GetTemplateTypesResponses = {
-    /**
-     * OK
-     */
-    200: ApiSuccessEnvelope & {
-        data: Array<string>;
-    };
-};
-
-export type GetTemplateTypesResponse = GetTemplateTypesResponses[keyof GetTemplateTypesResponses];
-
-export type GetTemplatesForTypeData = {
-    body?: never;
-    path: {
-        type: string;
-    };
-    query?: never;
-    url: '/api/templates/{type}';
-};
-
-export type GetTemplatesForTypeErrors = {
+export type ListTemplatesErrors = {
     /**
      * Unauthorized
      */
@@ -3358,18 +3319,18 @@ export type GetTemplatesForTypeErrors = {
     500: ApiErrorResponse;
 };
 
-export type GetTemplatesForTypeError = GetTemplatesForTypeErrors[keyof GetTemplatesForTypeErrors];
+export type ListTemplatesError = ListTemplatesErrors[keyof ListTemplatesErrors];
 
-export type GetTemplatesForTypeResponses = {
+export type ListTemplatesResponses = {
     /**
      * OK
      */
     200: ApiSuccessEnvelope & {
-        data: Array<string>;
+        data: Array<ComponentReference>;
     };
 };
 
-export type GetTemplatesForTypeResponse = GetTemplatesForTypeResponses[keyof GetTemplatesForTypeResponses];
+export type ListTemplatesResponse = ListTemplatesResponses[keyof ListTemplatesResponses];
 
 export type GetTemplateData = {
     body?: never;

@@ -1,7 +1,5 @@
 # TODO
 
-- Template controller get all at once, optional search.filter string for tempalte type
-
 ## Users & auth
 
 - User hidden/sensitve properties are shown in the audit log

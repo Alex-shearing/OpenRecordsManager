@@ -2,9 +2,11 @@ package com.openrecordsmanager.template;
 
 import com.openrecordsmanager.api.ResourceIdentifier;
 import com.openrecordsmanager.api.template.TemplateComponent;
+import com.openrecordsmanager.rest.dto.ComponentReferenceDto;
 import com.openrecordsmanager.rest.swagger.DefaultApiResponses;
 import com.openrecordsmanager.rest.swagger.NotFoundApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
+import org.jspecify.annotations.Nullable;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -24,16 +26,12 @@ public class TemplateController {
     }
 
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(summary = "List templates types available")
-    public Set<String> getTemplateTypes() {
-        return this.service.listTemplateTypes();
-    }
-
-    @GetMapping(value = "/{type}", produces = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(summary = "List templates available for type")
+    @Operation(summary = "List templates available")
     @NotFoundApiResponse
-    public Set<ResourceIdentifier> getTemplatesForType(@PathVariable("type") String typeName) {
-        return this.service.listTemplates(typeName);
+    public Set<ComponentReferenceDto> listTemplates(
+            @RequestParam(value = "type", required = false) @Nullable String type
+    ) {
+        return this.service.listTemplates(type);
     }
 
     @GetMapping(value = "/{type}/{template}", produces = MediaType.APPLICATION_JSON_VALUE)

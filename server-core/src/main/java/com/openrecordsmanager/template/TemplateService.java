@@ -5,7 +5,6 @@ import com.openrecordsmanager.api.ResourceIdentifier;
 import com.openrecordsmanager.api.audit.AuditEntityType;
 import com.openrecordsmanager.api.audit.AuditOperation;
 import com.openrecordsmanager.api.template.TemplateComponent;
-import com.openrecordsmanager.api.types.ComponentType;
 import com.openrecordsmanager.audit.AuditContext;
 import com.openrecordsmanager.audit.AuditPolicyService;
 import com.openrecordsmanager.audit.AuditService;
@@ -14,12 +13,16 @@ import com.openrecordsmanager.plugin.ExpressionsService;
 import com.openrecordsmanager.plugin.registry.ComponentCatalog;
 import com.openrecordsmanager.plugin.registry.TemplateComponentRegistry;
 import com.openrecordsmanager.plugin.registry.mapper.TemplateRegistrationMapper;
+import com.openrecordsmanager.rest.dto.ComponentReferenceDto;
 import com.openrecordsmanager.rest.exception.ResourceNotFoundException;
+import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 public class TemplateService {
@@ -45,19 +48,17 @@ public class TemplateService {
     }
 
     @Transactional(readOnly = true)
-    public Set<String> listTemplateTypes() {
-        return this.catalog.getTemplateTypes().stream()
-                .map(ComponentType::toString)
+    public Set<ComponentReferenceDto> listTemplates(@Nullable String typeName) {
+        Set<ComponentReferenceDto> templates = (StringUtils.isBlank(typeName)
+                ? ComponentCatalog.TEMPLATE_MAPPERS.stream()
+                : Stream.of(this.resolveMapper(typeName)))
+                .flatMap(mapper ->
+                        this.catalog.getTemplateRegistry(mapper).getIds().stream()
+                                .map(id -> ComponentReferenceDto.of(mapper.componentType(), id)))
                 .collect(Collectors.toSet());
-    }
 
-    @Transactional(readOnly = true)
-    public Set<ResourceIdentifier> listTemplates(String typeName) {
-        TemplateRegistrationMapper<?, ?> mapper = resolveMapper(typeName);
-        TemplateComponentRegistry<?, ?> registry = this.catalog.getTemplateRegistry(mapper);
-
-        this.auditService.recordCollectionRead(AuditEntityType.TEMPLATE, registry.getIds().size());
-        return registry.getIds();
+        this.auditService.recordCollectionRead(AuditEntityType.TEMPLATE, templates.size());
+        return templates;
     }
 
     @Transactional(readOnly = true)

@@ -1,31 +1,11 @@
 <script lang="ts">
-	import { TemplateController, type ApiErrorResponse } from '$lib/api';
+	import { TemplateController } from '$lib/api';
 	import { getApiClient } from '$lib/api-client';
 	import MonoId from '$lib/components/MonoId.svelte';
 	import { type SchemaFormError } from '$lib/components/SchemaForm.svelte';
 	import { t, tApiErrorResponse } from '$lib/i18n/catalog';
-	import { templateName } from '$lib/i18n/labels';
 
 	let { data } = $props();
-
-	const templateRows = $derived(
-		data.sections
-			.flatMap(section =>
-				section.error
-					? []
-					: section.templates.map(template => ({
-							type: section.type,
-							id: template,
-							name: templateName(section.type, template),
-						}))
-			)
-			.sort((a, b) => a.type.localeCompare(b.type) || a.name.localeCompare(b.name))
-	);
-
-	// as required because I could not get it to infer correctly
-	const sectionErrors = $derived(
-		data.sections.filter(section => !!section.error) as ((typeof data.sections)[number] & { error: ApiErrorResponse })[]
-	);
 
 	let selected = $state<Set<string>>(new Set());
 	let registering = $state(false);
@@ -36,10 +16,10 @@
 		return `${type}:${templateId}`;
 	}
 
-	const selectedRows = $derived(templateRows.filter(row => selected.has(rowKey(row.type, row.id))));
+	const selectedRows = $derived(data.templates.filter(row => selected.has(rowKey(row.type, row.id))));
 
 	const allSelected = $derived(
-		templateRows.length > 0 && templateRows.every(row => selected.has(rowKey(row.type, row.id)))
+		data.templates.length > 0 && data.templates.every(row => selected.has(rowKey(row.type, row.id)))
 	);
 
 	function setSelected(key: string, checked: boolean) {
@@ -53,7 +33,7 @@
 	}
 
 	function setAllSelected(checked: boolean) {
-		selected = checked ? new Set(templateRows.map(row => rowKey(row.type, row.id))) : new Set();
+		selected = checked ? new Set(data.templates.map(row => rowKey(row.type, row.id))) : new Set();
 	}
 
 	async function handleRegister(event: SubmitEvent) {
@@ -102,76 +82,66 @@
 
 {#if data.error}
 	<p class="text-destructive">{tApiErrorResponse(data.error)}</p>
-{:else if data.sections.length === 0}
-	<p class="text-hint">{t('web.templates.no_types')}</p>
+{:else if data.templates.length === 0}
+	<p class="text-hint">{t('web.templates.empty')}</p>
 {:else}
-	{#each sectionErrors as section (section.type)}
-		<p class="mb-4 text-sm text-destructive">
-			{t('web.templates.load_section_failed', section.type, tApiErrorResponse(section.error))}
-		</p>
-	{/each}
-
-	{#if templateRows.length === 0}
-		<p class="text-hint">{t('web.templates.empty')}</p>
-	{:else}
-		<form onsubmit={handleRegister}>
-			<section class="card">
-				<div class="overflow-x-auto">
-					<table class="w-full text-sm">
-						<thead class="border-b border-border text-left text-label">
+	<form onsubmit={handleRegister}>
+		<section class="card">
+			<div class="overflow-x-auto">
+				<table class="w-full text-sm">
+					<thead class="border-b border-border text-left text-label">
+						<tr>
+							<th class="px-5 py-3 font-medium">
+								<input
+									type="checkbox"
+									class="size-4 rounded border-border-input"
+									checked={allSelected}
+									disabled={registering}
+									aria-label={t('web.templates.select_all')}
+									onchange={event => setAllSelected(event.currentTarget.checked)}
+								/>
+							</th>
+							<th class="px-5 py-3 font-medium">{t('web.templates.col_type')}</th>
+							<th class="px-5 py-3 font-medium">{t('web.templates.col_template')}</th>
+						</tr>
+					</thead>
+					<tbody class="divide-y divide-border">
+						{#each data.templates as template (`${template.type}:${template.id}`)}
+							{@const key = rowKey(template.type, template.id)}
 							<tr>
-								<th class="px-5 py-3 font-medium">
+								<td class="px-5 py-4">
 									<input
 										type="checkbox"
 										class="size-4 rounded border-border-input"
-										checked={allSelected}
+										checked={selected.has(key)}
 										disabled={registering}
-										aria-label={t('web.templates.select_all')}
-										onchange={event => setAllSelected(event.currentTarget.checked)}
+										aria-label={t('web.templates.select_one', template.name)}
+										onchange={event => setSelected(key, event.currentTarget.checked)}
 									/>
-								</th>
-								<th class="px-5 py-3 font-medium">{t('web.templates.col_type')}</th>
-								<th class="px-5 py-3 font-medium">{t('web.templates.col_template')}</th>
+								</td>
+								<td class="px-5 py-4"><MonoId value={template.type} /></td>
+								<td class="px-5 py-4">
+									<p class="font-medium">{template.name}</p>
+									<p><MonoId value={template.id} muted /></p>
+								</td>
 							</tr>
-						</thead>
-						<tbody class="divide-y divide-border">
-							{#each templateRows as template (`${template.type}:${template.id}`)}
-								{@const key = rowKey(template.type, template.id)}
-								<tr>
-									<td class="px-5 py-4">
-										<input
-											type="checkbox"
-											class="size-4 rounded border-border-input"
-											checked={selected.has(key)}
-											disabled={registering}
-											aria-label={t('web.templates.select_one', template.name)}
-											onchange={event => setSelected(key, event.currentTarget.checked)}
-										/>
-									</td>
-									<td class="px-5 py-4"><MonoId value={template.type} /></td>
-									<td class="px-5 py-4">
-										<p class="font-medium">{template.name}</p>
-										<p><MonoId value={template.id} muted /></p>
-									</td>
-								</tr>
-							{/each}
-						</tbody>
-					</table>
-				</div>
+						{/each}
+					</tbody>
+				</table>
+			</div>
 
-				<div class="border-t border-border p-5">
-					<button type="submit" class="btn-primary" disabled={registering || selectedRows.length === 0}>
-						{registering ? t('web.templates.registering') : t('web.templates.register')}
-					</button>
-				</div>
-			</section>
+			<div class="border-t border-border p-5">
+				<button type="submit" class="btn-primary" disabled={registering || selectedRows.length === 0}>
+					{registering ? t('web.templates.registering') : t('web.templates.register')}
+				</button>
+			</div>
+		</section>
 
-			{#if formError}
-				<p class="mt-6 text-sm text-destructive" role="alert">{tApiErrorResponse(formError)}</p>
-			{/if}
-			{#if successMessage}
-				<p class="mt-6 text-sm text-foreground">{successMessage}</p>
-			{/if}
-		</form>
-	{/if}
+		{#if formError}
+			<p class="mt-6 text-sm text-destructive" role="alert">{tApiErrorResponse(formError)}</p>
+		{/if}
+		{#if successMessage}
+			<p class="mt-6 text-sm text-foreground">{successMessage}</p>
+		{/if}
+	</form>
 {/if}

@@ -24,6 +24,10 @@ public record ComponentReferenceDto(
         );
     }
 
+    public static ComponentReferenceDto of(ComponentType<?> catalog, ResourceIdentifier id) {
+        return new ComponentReferenceDto(id, catalog.name());
+    }
+
     public <T extends Component> ComponentReference<T> toReference() {
         @SuppressWarnings("unchecked")
         ComponentType<T> componentType = (ComponentType<T>) ComponentTypes.fromName(this.type);
