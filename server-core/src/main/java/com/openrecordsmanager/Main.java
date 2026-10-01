@@ -8,6 +8,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.http.support.JacksonHandlerInstantiator;
 import org.springframework.scheduling.annotation.EnableScheduling;
+import tools.jackson.databind.MapperFeature;
 import tools.jackson.databind.json.JsonMapper;
 
 @SpringBootApplication
@@ -22,7 +23,10 @@ public class Main {
     @Bean
     public JsonMapper jsonMapper(ApplicationContext applicationContext) {
         JacksonHandlerInstantiator instantiator = new JacksonHandlerInstantiator(applicationContext.getAutowireCapableBeanFactory());
-        return JsonMapper.builder().handlerInstantiator(instantiator).build();
+        return JsonMapper.builder()
+                .enable(MapperFeature.ACCEPT_CASE_INSENSITIVE_ENUMS)
+                .handlerInstantiator(instantiator)
+                .build();
     }
 
 }

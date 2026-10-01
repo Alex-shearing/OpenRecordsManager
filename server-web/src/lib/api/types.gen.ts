@@ -275,6 +275,15 @@ export type UserSearchResponse = {
     nextCursor?: string;
 };
 
+export const TemplateType = {
+    LIST: 'list',
+    LIST_ELEMENT: 'list_element',
+    OBJECT_PROPERTY: 'object_property',
+    RECORD_TYPE: 'record_type'
+} as const;
+
+export type TemplateType = typeof TemplateType[keyof typeof TemplateType];
+
 export type NewRecordRequest = {
     type: string;
     /**
@@ -2286,7 +2295,7 @@ export type SearchResponse = SearchResponses[keyof SearchResponses];
 export type RegisterTemplateData = {
     body?: never;
     path: {
-        type: string;
+        type: TemplateType;
         template: string;
     };
     query?: {
@@ -3291,7 +3300,7 @@ export type ListTemplatesData = {
     body?: never;
     path?: never;
     query?: {
-        type?: string;
+        type?: TemplateType;
     };
     url: '/api/templates';
 };
@@ -3305,10 +3314,6 @@ export type ListTemplatesErrors = {
      * Forbidden
      */
     403: ApiErrorResponse;
-    /**
-     * Not Found
-     */
-    404: ApiErrorResponse;
     /**
      * Audit comment required
      */
@@ -3335,7 +3340,7 @@ export type ListTemplatesResponse = ListTemplatesResponses[keyof ListTemplatesRe
 export type GetTemplateData = {
     body?: never;
     path: {
-        type: string;
+        type: TemplateType;
         template: string;
     };
     query?: never;

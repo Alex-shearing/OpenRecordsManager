@@ -11,10 +11,12 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import java.util.List;
 import java.util.Map;
@@ -40,6 +42,17 @@ public class ExceptionController {
         };
 
         return makeErrResponse(status, ex.getError(), ex.getFieldErrors());
+    }
+
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<ApiResponseV1<Void>> handleTypeMismatch(MethodArgumentTypeMismatchException ex) {
+        String value = ex.getValue() != null ? String.valueOf(ex.getValue()) : "";
+        return makeErrResponse(HttpStatus.BAD_REQUEST, ApiError.of("invalid_request_parameter", ex.getName(), value));
+    }
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<ApiResponseV1<Void>> handleUnreadableBody(HttpMessageNotReadableException ex) {
+        return makeErrResponse(HttpStatus.BAD_REQUEST, ApiError.of("invalid_request_body"));
     }
 
     @ExceptionHandler(Exception.class)

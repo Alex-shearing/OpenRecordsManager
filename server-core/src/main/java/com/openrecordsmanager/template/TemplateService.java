@@ -15,7 +15,7 @@ import com.openrecordsmanager.plugin.registry.TemplateComponentRegistry;
 import com.openrecordsmanager.plugin.registry.mapper.TemplateRegistrationMapper;
 import com.openrecordsmanager.rest.dto.ComponentReferenceDto;
 import com.openrecordsmanager.rest.exception.ResourceNotFoundException;
-import org.apache.commons.lang3.StringUtils;
+import com.openrecordsmanager.template.dto.TemplateType;
 import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -48,10 +48,10 @@ public class TemplateService {
     }
 
     @Transactional(readOnly = true)
-    public Set<ComponentReferenceDto> listTemplates(@Nullable String typeName) {
-        Set<ComponentReferenceDto> templates = (StringUtils.isBlank(typeName)
+    public Set<ComponentReferenceDto> listTemplates(@Nullable TemplateType type) {
+        Set<ComponentReferenceDto> templates = (type == null
                 ? ComponentCatalog.TEMPLATE_MAPPERS.stream()
-                : Stream.of(this.resolveMapper(typeName)))
+                : Stream.of(ComponentCatalog.mapperFromComponent(type.componentType())))
                 .flatMap(mapper ->
                         this.catalog.getTemplateRegistry(mapper).getIds().stream()
                                 .map(id -> ComponentReferenceDto.of(mapper.componentType(), id)))
@@ -62,12 +62,12 @@ public class TemplateService {
     }
 
     @Transactional(readOnly = true)
-    public TemplateComponent getTemplate(String typeName, ResourceIdentifier templateId) {
-        TemplateRegistrationMapper<?, ?> type = resolveMapper(typeName);
-        TemplateComponentRegistry<?, ?> registry = this.catalog.getTemplateRegistry(type);
+    public TemplateComponent getTemplate(TemplateType type, ResourceIdentifier templateId) {
+        TemplateRegistrationMapper<?, ?> mapper = ComponentCatalog.mapperFromComponent(type.componentType());
+        TemplateComponentRegistry<?, ?> registry = this.catalog.getTemplateRegistry(mapper);
 
         TemplateComponent template = registry.get(templateId)
-                .orElseThrow(() -> new ResourceNotFoundException(type.componentType(), templateId));
+                .orElseThrow(() -> new ResourceNotFoundException(mapper.componentType(), templateId));
 
         this.auditService.addReadEvent(AuditEntityType.TEMPLATE, templateId);
         return template;
@@ -75,11 +75,11 @@ public class TemplateService {
 
     @Transactional
     public void registerTemplate(
-            String typeName,
+            TemplateType type,
             ResourceIdentifier templateId,
             boolean includeDependencies
     ) {
-        TemplateRegistrationMapper<?, ?> mapper = this.resolveMapper(typeName);
+        TemplateRegistrationMapper<?, ?> mapper = ComponentCatalog.mapperFromComponent(type.componentType());
 
         // Audit logic
         AuditEntityType targetType = AuditEntityType.fromComponentType(mapper.componentType());
@@ -107,13 +107,5 @@ public class TemplateService {
                 ref,
                 includeDependencies
         );
-    }
-
-    private TemplateRegistrationMapper<?, ?> resolveMapper(String typeName) {
-        TemplateRegistrationMapper<?, ?> type = ComponentCatalog.mapperFromName(typeName);
-        if (type == null) {
-            throw new ResourceNotFoundException("template type", typeName);
-        }
-        return type;
     }
 }

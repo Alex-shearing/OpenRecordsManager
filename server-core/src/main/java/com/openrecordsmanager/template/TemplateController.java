@@ -5,6 +5,7 @@ import com.openrecordsmanager.api.template.TemplateComponent;
 import com.openrecordsmanager.rest.dto.ComponentReferenceDto;
 import com.openrecordsmanager.rest.swagger.DefaultApiResponses;
 import com.openrecordsmanager.rest.swagger.NotFoundApiResponse;
+import com.openrecordsmanager.template.dto.TemplateType;
 import io.swagger.v3.oas.annotations.Operation;
 import org.jspecify.annotations.Nullable;
 import org.springframework.http.MediaType;
@@ -27,9 +28,8 @@ public class TemplateController {
 
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "List templates available")
-    @NotFoundApiResponse
     public Set<ComponentReferenceDto> listTemplates(
-            @RequestParam(value = "type", required = false) @Nullable String type
+            @RequestParam(value = "type", required = false) @Nullable TemplateType type
     ) {
         return this.service.listTemplates(type);
     }
@@ -37,7 +37,10 @@ public class TemplateController {
     @GetMapping(value = "/{type}/{template}", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Get template details")
     @NotFoundApiResponse
-    public TemplateComponent getTemplate(@PathVariable("type") String typeName, @PathVariable("template") ResourceIdentifier templateId) {
+    public TemplateComponent getTemplate(
+            @PathVariable("type") TemplateType typeName,
+            @PathVariable("template") ResourceIdentifier templateId
+    ) {
         return this.service.getTemplate(typeName, templateId);
     }
 
@@ -45,7 +48,7 @@ public class TemplateController {
     @Operation(summary = "Register a template to the database")
     @NotFoundApiResponse
     public void registerTemplate(
-            @PathVariable("type") String typeName,
+            @PathVariable("type") TemplateType typeName,
             @PathVariable("template") ResourceIdentifier templateId,
             @RequestParam(value = "includeDependencies", required = false, defaultValue = "false") boolean includeDependencies
     ) {
