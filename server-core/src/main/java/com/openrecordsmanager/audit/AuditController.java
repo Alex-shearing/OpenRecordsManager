@@ -8,7 +8,7 @@ import com.openrecordsmanager.audit.dto.AuditStatusResponse;
 import com.openrecordsmanager.audit.dto.UpdateAuditPolicyRequest;
 import com.openrecordsmanager.rest.swagger.DefaultApiResponses;
 import com.openrecordsmanager.rest.swagger.NotFoundApiResponse;
-import com.openrecordsmanager.user.User;
+import com.openrecordsmanager.location.user.User;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import org.jspecify.annotations.Nullable;

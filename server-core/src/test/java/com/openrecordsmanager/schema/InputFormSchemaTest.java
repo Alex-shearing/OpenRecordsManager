@@ -3,6 +3,8 @@ package com.openrecordsmanager.schema;
 import io.swagger.v3.oas.annotations.media.Schema;
 import org.junit.jupiter.api.Test;
 
+import java.util.List;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 class InputFormSchemaTest {
@@ -29,7 +31,7 @@ class InputFormSchemaTest {
         InputFormSchema.InputFormSchemaField mode = schema.properties().get("mode");
         assertNotNull(mode);
         assertEquals("string", mode.type());
-        assertEquals(java.util.List.of("ALPHA", "BETA"), mode.enumValues());
+        assertEquals(List.of("ALPHA", "BETA"), mode.enumValues());
     }
 
     @Test

@@ -42,8 +42,7 @@ public class BuiltinPlugin implements Plugin {
                 BuiltinConfigs.AUDIT_FILE_ARCHIVE_ENABLED
         );
 
-        BuiltinProperties.BUILTIN_PROPERTIES.forEach((i, template) ->
-                registry.registerComponent(i.item(), template)
-        );
+        BuiltinProperties.BUILTIN_PROPERTIES.forEach(registry::registerComponent);
+        BuiltinRelationshipTypes.BUILTIN_RELATIONSHIP_TYPES.forEach(registry::registerComponent);
     }
 }

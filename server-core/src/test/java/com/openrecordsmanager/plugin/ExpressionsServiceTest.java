@@ -13,7 +13,7 @@ import com.openrecordsmanager.property.ObjectProperty;
 import com.openrecordsmanager.record.Record;
 import com.openrecordsmanager.recordtype.RecordType;
 import com.openrecordsmanager.recordtype.RecordTypeProperty;
-import com.openrecordsmanager.user.User;
+import com.openrecordsmanager.location.user.User;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

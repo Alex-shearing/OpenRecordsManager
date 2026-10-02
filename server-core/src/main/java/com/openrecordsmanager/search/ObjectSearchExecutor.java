@@ -7,7 +7,7 @@ import com.openrecordsmanager.api.search.SearchFieldTarget;
 import com.openrecordsmanager.api.search.SearchMatchMode;
 import com.openrecordsmanager.search.sql.ObjectSearchSchema;
 import com.openrecordsmanager.search.sql.SqlSearchSupport;
-import com.openrecordsmanager.user.User;
+import com.openrecordsmanager.location.user.User;
 import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Component;
 

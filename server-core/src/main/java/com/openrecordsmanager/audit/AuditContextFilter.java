@@ -1,6 +1,6 @@
 package com.openrecordsmanager.audit;
 
-import com.openrecordsmanager.user.User;
+import com.openrecordsmanager.location.user.User;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;

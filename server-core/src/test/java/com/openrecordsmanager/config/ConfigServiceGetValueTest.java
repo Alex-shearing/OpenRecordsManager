@@ -12,12 +12,16 @@ import com.openrecordsmanager.filestore.middleware.MiddlewareRepository;
 import com.openrecordsmanager.filestore.store.FileStoreRepository;
 import com.openrecordsmanager.list.ListElementRepository;
 import com.openrecordsmanager.list.ListTypeRepository;
+import com.openrecordsmanager.location.LocationRepository;
+import com.openrecordsmanager.location.group.GroupRepository;
+import com.openrecordsmanager.location.relationship.LocationRelationshipRepository;
+import com.openrecordsmanager.location.relationship.LocationRelationshipTypeRepository;
+import com.openrecordsmanager.location.user.UserRepository;
 import com.openrecordsmanager.plugin.PluginRepository;
 import com.openrecordsmanager.plugin.registry.ComponentCatalog;
 import com.openrecordsmanager.property.ObjectPropertyRepository;
 import com.openrecordsmanager.record.RecordRepository;
 import com.openrecordsmanager.recordtype.RecordTypeRepository;
-import com.openrecordsmanager.user.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -32,16 +36,10 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.lenient;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class ConfigServiceGetValueTest {
@@ -69,7 +67,7 @@ class ConfigServiceGetValueTest {
         this.databaseConfigQueries = new AtomicInteger();
         this.databaseConfigJdbc = mock(JdbcTemplate.class);
         lenient().when(this.databaseConfigJdbc.query(anyString(), any(RowMapper.class), any()))
-                .thenAnswer(invocation -> {
+                .thenAnswer(_ -> {
                     this.databaseConfigQueries.incrementAndGet();
                     throw new IllegalStateException("DatabaseConfigSource must not be queried via ConfigService");
                 });
@@ -92,7 +90,11 @@ class ConfigServiceGetValueTest {
                 mock(FileStoreRepository.class),
                 mock(MiddlewareRepository.class),
                 mock(PluginRepository.class),
-                mock(UserRepository.class)
+                mock(UserRepository.class),
+                mock(GroupRepository.class),
+                mock(LocationRepository.class),
+                mock(LocationRelationshipTypeRepository.class),
+                mock(LocationRelationshipRepository.class)
         );
 
         this.configService = new ConfigService(

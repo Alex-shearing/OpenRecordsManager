@@ -75,34 +75,76 @@ CREATE TABLE record_type_property (
 
 CREATE INDEX IF NOT EXISTS idx_rtp_property_id ON record_type_property (property_id);
 
+CREATE TABLE location (
+    id BLOB NOT NULL PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    notes VARCHAR(255),
+    date_created TIMESTAMP NOT NULL,
+    date_modified TIMESTAMP NOT NULL,
+    location_kind VARCHAR(32) NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_location_kind ON location (location_kind);
+CREATE INDEX IF NOT EXISTS idx_location_name ON location (name);
+
 CREATE TABLE user_details (
     id BLOB NOT NULL PRIMARY KEY,
     username VARCHAR(255) NOT NULL UNIQUE,
     auth_provider_id BLOB,
-    date_created TIMESTAMP NOT NULL,
-    date_modified TIMESTAMP NOT NULL,
     given_name VARCHAR(255),
     surname VARCHAR(255),
     honorific VARCHAR(255),
     email VARCHAR(255),
-    notes VARCHAR(255),
     enabled BOOLEAN NOT NULL DEFAULT TRUE,
     session_epoch INTEGER NOT NULL DEFAULT 0,
+    CONSTRAINT fk_user_location FOREIGN KEY (id) REFERENCES location (id),
     CONSTRAINT fk_user_auth_provider FOREIGN KEY (auth_provider_id) REFERENCES auth_provider (id)
 );
 
 CREATE INDEX IF NOT EXISTS idx_user_details_auth_provider_id ON user_details (auth_provider_id);
 
-CREATE TABLE user_property_value (
-    user_id BLOB NOT NULL,
-    property_id VARCHAR(255) NOT NULL,
-    property_value CLOB,
-    PRIMARY KEY (user_id, property_id),
-    CONSTRAINT fk_upv_user FOREIGN KEY (user_id) REFERENCES user_details (id),
-    CONSTRAINT fk_upv_property FOREIGN KEY (property_id) REFERENCES object_property (id)
+CREATE TABLE group_details (
+    id BLOB NOT NULL PRIMARY KEY,
+    CONSTRAINT fk_group_location FOREIGN KEY (id) REFERENCES location (id)
 );
 
-CREATE INDEX IF NOT EXISTS idx_upv_property_id ON user_property_value (property_id);
+CREATE TABLE location_property_value (
+    location_id BLOB NOT NULL,
+    property_id VARCHAR(255) NOT NULL,
+    property_value CLOB,
+    PRIMARY KEY (location_id, property_id),
+    CONSTRAINT fk_lpv_location FOREIGN KEY (location_id) REFERENCES location (id),
+    CONSTRAINT fk_lpv_property FOREIGN KEY (property_id) REFERENCES object_property (id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_lpv_property_id ON location_property_value (property_id);
+
+CREATE TABLE location_relationship_type (
+    id VARCHAR(255) NOT NULL PRIMARY KEY,
+    source_kind VARCHAR(32) NOT NULL,
+    target_kind VARCHAR(32) NOT NULL,
+    unique_per_source BOOLEAN NOT NULL,
+    date_created TIMESTAMP NOT NULL,
+    date_modified TIMESTAMP NOT NULL
+);
+
+CREATE TABLE location_relationship (
+    id BLOB NOT NULL PRIMARY KEY,
+    source_id BLOB NOT NULL,
+    target_id BLOB NOT NULL,
+    type_id VARCHAR(255) NOT NULL,
+    date_created TIMESTAMP NOT NULL,
+    active_to TIMESTAMP,
+    CONSTRAINT fk_lr_source FOREIGN KEY (source_id) REFERENCES location (id),
+    CONSTRAINT fk_lr_target FOREIGN KEY (target_id) REFERENCES location (id),
+    CONSTRAINT fk_lr_type FOREIGN KEY (type_id) REFERENCES location_relationship_type (id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_lr_source ON location_relationship (source_id);
+CREATE INDEX IF NOT EXISTS idx_lr_target ON location_relationship (target_id);
+CREATE INDEX IF NOT EXISTS idx_lr_type ON location_relationship (type_id);
+CREATE UNIQUE INDEX IF NOT EXISTS uk_lr_active_edge ON location_relationship (source_id, target_id, type_id)
+    WHERE active_to IS NULL;
 
 CREATE TABLE file_store (
     id BLOB NOT NULL PRIMARY KEY,

@@ -7,7 +7,7 @@ import com.openrecordsmanager.plugin.ExpressionsService;
 import com.openrecordsmanager.property.ObjectProperty;
 import com.openrecordsmanager.recordtype.RecordType;
 import com.openrecordsmanager.recordtype.RecordTypeProperty;
-import com.openrecordsmanager.user.User;
+import com.openrecordsmanager.location.user.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

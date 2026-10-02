@@ -90,19 +90,33 @@ GO
 CREATE INDEX idx_rtp_property_id ON record_type_property (property_id);
 GO
 
+CREATE TABLE location (
+    id UNIQUEIDENTIFIER NOT NULL PRIMARY KEY,
+    name NVARCHAR(255) NOT NULL,
+    notes NVARCHAR(255) NULL,
+    date_created DATETIMEOFFSET NOT NULL,
+    date_modified DATETIMEOFFSET NOT NULL,
+    location_kind NVARCHAR(32) NOT NULL
+);
+GO
+
+CREATE INDEX idx_location_kind ON location (location_kind);
+GO
+
+CREATE INDEX idx_location_name ON location (name);
+GO
+
 CREATE TABLE user_details (
     id UNIQUEIDENTIFIER NOT NULL PRIMARY KEY,
     username NVARCHAR(255) NOT NULL UNIQUE,
     auth_provider_id UNIQUEIDENTIFIER NULL,
-    date_created DATETIMEOFFSET NOT NULL,
-    date_modified DATETIMEOFFSET NOT NULL,
     given_name NVARCHAR(255) NULL,
     surname NVARCHAR(255) NULL,
     honorific NVARCHAR(255) NULL,
     email NVARCHAR(255) NULL,
-    notes NVARCHAR(255) NULL,
     enabled BIT NOT NULL CONSTRAINT df_user_details_enabled DEFAULT 1,
     session_epoch INT NOT NULL CONSTRAINT df_user_details_session_epoch DEFAULT 0,
+    CONSTRAINT fk_user_location FOREIGN KEY (id) REFERENCES location (id),
     CONSTRAINT fk_user_auth_provider FOREIGN KEY (auth_provider_id) REFERENCES auth_provider (id)
 );
 GO
@@ -110,17 +124,58 @@ GO
 CREATE INDEX idx_user_details_auth_provider_id ON user_details (auth_provider_id);
 GO
 
-CREATE TABLE user_property_value (
-    user_id UNIQUEIDENTIFIER NOT NULL,
-    property_id NVARCHAR(255) NOT NULL,
-    property_value VARCHAR(MAX) NULL,
-    PRIMARY KEY (user_id, property_id),
-    CONSTRAINT fk_upv_user FOREIGN KEY (user_id) REFERENCES user_details (id),
-    CONSTRAINT fk_upv_property FOREIGN KEY (property_id) REFERENCES object_property (id)
+CREATE TABLE group_details (
+    id UNIQUEIDENTIFIER NOT NULL PRIMARY KEY,
+    CONSTRAINT fk_group_location FOREIGN KEY (id) REFERENCES location (id)
 );
 GO
 
-CREATE INDEX idx_upv_property_id ON user_property_value (property_id);
+CREATE TABLE location_property_value (
+    location_id UNIQUEIDENTIFIER NOT NULL,
+    property_id NVARCHAR(255) NOT NULL,
+    property_value VARCHAR(MAX) NULL,
+    PRIMARY KEY (location_id, property_id),
+    CONSTRAINT fk_lpv_location FOREIGN KEY (location_id) REFERENCES location (id),
+    CONSTRAINT fk_lpv_property FOREIGN KEY (property_id) REFERENCES object_property (id)
+);
+GO
+
+CREATE INDEX idx_lpv_property_id ON location_property_value (property_id);
+GO
+
+CREATE TABLE location_relationship_type (
+    id NVARCHAR(255) NOT NULL PRIMARY KEY,
+    source_kind NVARCHAR(32) NOT NULL,
+    target_kind NVARCHAR(32) NOT NULL,
+    unique_per_source BIT NOT NULL,
+    date_created DATETIMEOFFSET NOT NULL,
+    date_modified DATETIMEOFFSET NOT NULL
+);
+GO
+
+CREATE TABLE location_relationship (
+    id UNIQUEIDENTIFIER NOT NULL PRIMARY KEY,
+    source_id UNIQUEIDENTIFIER NOT NULL,
+    target_id UNIQUEIDENTIFIER NOT NULL,
+    type_id NVARCHAR(255) NOT NULL,
+    date_created DATETIMEOFFSET NOT NULL,
+    active_to DATETIMEOFFSET NULL,
+    CONSTRAINT fk_lr_source FOREIGN KEY (source_id) REFERENCES location (id),
+    CONSTRAINT fk_lr_target FOREIGN KEY (target_id) REFERENCES location (id),
+    CONSTRAINT fk_lr_type FOREIGN KEY (type_id) REFERENCES location_relationship_type (id)
+);
+GO
+
+CREATE INDEX idx_lr_source ON location_relationship (source_id);
+GO
+
+CREATE INDEX idx_lr_target ON location_relationship (target_id);
+GO
+
+CREATE INDEX idx_lr_type ON location_relationship (type_id);
+GO
+
+CREATE UNIQUE INDEX uk_lr_active_edge ON location_relationship (source_id, target_id, type_id) WHERE active_to IS NULL;
 GO
 
 CREATE TABLE file_store (

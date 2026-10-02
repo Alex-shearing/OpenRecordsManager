@@ -9,7 +9,8 @@ import java.util.Locale;
  */
 public enum SearchFieldTarget {
     RECORD,
-    USER;
+    USER,
+    LOCATION;
 
     @JsonCreator
     public static SearchFieldTarget fromString(String value) {

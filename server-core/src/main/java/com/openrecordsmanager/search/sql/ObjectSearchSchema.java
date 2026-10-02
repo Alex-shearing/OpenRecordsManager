@@ -6,10 +6,7 @@ import com.openrecordsmanager.api.template.property.PropertyType;
 import com.openrecordsmanager.property.BuiltinPropertyBinding;
 import org.jspecify.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Table / column metadata for SQL search against an {@code ObjectPropertyHolder} kind.
@@ -17,30 +14,39 @@ import java.util.Map;
  */
 public record ObjectSearchSchema(
         SearchFieldTarget target,
-        String tableName,
-        String idColumn,
-        String propertyValueTable,
-        String propertyValueFk,
-        @Nullable String typeColumn,
+        QualifiedSqlColumn primaryKey,
+        List<QualifiedSqlColumn> joins,
+        QualifiedSqlColumn holderFk,
+        QualifiedSqlColumn propertyId,
+        QualifiedSqlColumn propertyValue,
+        @Nullable QualifiedSqlColumn typeColumn,
         Map<ResourceIdentifier, BuiltinColumn> builtinColumns,
         List<ResourceIdentifier> defaultSearchFields
 ) {
-    public static <T> ObjectSearchSchema of(
+    public static ObjectSearchSchema of(
             SearchFieldTarget target,
-            Class<T> entityClass,
-            Map<ResourceIdentifier, BuiltinPropertyBinding<T, ?>> bindings,
+            Class<?> entityClass,
+            Map<ResourceIdentifier, ? extends BuiltinPropertyBinding<?, ?>> bindings,
             BuiltinColumnResolver columnResolver
     ) {
-        BuiltinColumnResolver.HolderTableMetadata tables = columnResolver.holderTables(entityClass);
+        BuiltinColumnResolver.HolderTableMetadata mainTable = columnResolver.holderTables(entityClass);
+
         Map<ResourceIdentifier, BuiltinColumn> columns = new HashMap<>();
         List<ResourceIdentifier> defaultSearchFields = new ArrayList<>();
+        Set<QualifiedSqlColumn> joins = new LinkedHashSet<>();
 
         for (BuiltinPropertyBinding<?, ?> binding : bindings.values()) {
-            String sqlColumn = columnResolver.sqlColumn(entityClass, binding.javaAttribute());
+            BuiltinColumnResolver.ResolvedColumn resolved =
+                    columnResolver.resolveColumn(entityClass, binding.javaAttribute());
+
             columns.put(
                     binding.id(),
-                    new BuiltinColumn(sqlColumn, binding.propertyType(), binding.jsonStored())
+                    new BuiltinColumn(resolved.column(), binding.propertyType(), binding.jsonStored())
             );
+
+            if (!resolved.tablePrimaryKey().equals(mainTable.primaryKey())) {
+                joins.add(resolved.tablePrimaryKey());
+            }
             if (binding.defaultSearch()) {
                 defaultSearchFields.add(binding.id());
             }
@@ -48,16 +54,21 @@ public record ObjectSearchSchema(
 
         return new ObjectSearchSchema(
                 target,
-                tables.tableName(),
-                tables.idColumn(),
-                tables.propertyValueTable(),
-                tables.propertyValueFk(),
-                tables.typeColumn(),
+                mainTable.primaryKey(),
+                List.copyOf(joins),
+                mainTable.holderFk(),
+                mainTable.propertyId(),
+                mainTable.propertyValue(),
+                mainTable.typeColumn(),
                 Map.copyOf(columns),
                 List.copyOf(defaultSearchFields)
         );
     }
 
-    public record BuiltinColumn(String sqlColumn, PropertyType<?> type, boolean jsonStored) {
+    public record BuiltinColumn(
+            QualifiedSqlColumn column,
+            PropertyType<?> type,
+            boolean jsonStored
+    ) {
     }
 }

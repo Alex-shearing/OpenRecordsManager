@@ -58,15 +58,20 @@ public class SqlSearchSupport {
         List<@Nullable Object> params = new ArrayList<>();
         List<String> where = new ArrayList<>();
 
+        String primaryKeyReference = schema.primaryKey().column(this.dialect);
+
+        // If the search supports filtering by 'type'
         if (typeScope != null) {
             if (schema.typeColumn() == null) {
                 throw ApiException.validationFailed("type", SearchOperatorSupport.TYPE_SCOPE_UNSUPPORTED);
             }
-            where.add(schema.typeColumn() + " = ?");
+            where.add(schema.typeColumn().column(this.dialect) + " = ?");
             params.add(typeScope.toString());
         }
+
+        // Add filtering for 'after' primary key
         if (afterId != null) {
-            where.add(schema.idColumn() + " > ?");
+            where.add(primaryKeyReference + " > ?");
             params.add(afterId);
         }
 
@@ -98,16 +103,25 @@ public class SqlSearchSupport {
         }
 
         StringBuilder sql = new StringBuilder("SELECT ")
-                .append(schema.idColumn())
+                .append(primaryKeyReference)
                 .append(" FROM ")
-                .append(this.dialect.quoteIdent(schema.tableName()));
+                .append(schema.primaryKey().tableName(this.dialect));
+
+        for (QualifiedSqlColumn join : schema.joins()) {
+            sql.append(" INNER JOIN ")
+                    .append(join.tableName(this.dialect))
+                    .append(" ON ")
+                    .append(join.column(this.dialect))
+                    .append(" = ")
+                    .append(primaryKeyReference);
+        }
 
         if (!where.isEmpty()) {
             sql.append(" WHERE ").append(String.join(" AND ", where));
         }
 
         String finalSql = sql.append(" ORDER BY ")
-                .append(schema.idColumn())
+                .append(primaryKeyReference)
                 .append(" ASC")
                 .append(this.dialect.withLimit(Math.max(1, limit)))
                 .toString();
@@ -245,7 +259,7 @@ public class SqlSearchSupport {
                 }
                 yield new UUID(msb, lsb);
             }
-            default -> throw new IllegalStateException("Unexpected id type from search query: " + value.getClass());
+            default -> throw new IllegalStateException("Unexpected id type key search query: " + value.getClass());
         };
     }
 }

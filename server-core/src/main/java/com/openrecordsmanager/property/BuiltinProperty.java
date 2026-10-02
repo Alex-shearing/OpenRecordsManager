@@ -1,6 +1,5 @@
 package com.openrecordsmanager.property;
 
-import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -13,13 +12,11 @@ import java.lang.annotation.Target;
  * {@code jsonStored} is inferred from {@code @JdbcTypeCode(SqlTypes.JSON)}.
  * {@code required} is inferred from {@code @Column(nullable = false)}.
  */
-@Documented
 @Target(ElementType.FIELD)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface BuiltinProperty {
     /**
-     * Builtin property item name (e.g. {@link com.openrecordsmanager.api.builtin.BuiltinPropertyIds#GIVEN_NAME_ID}),
-     * resolved via {@link com.openrecordsmanager.api.builtin.BuiltinPropertyIds#id(String)}.
+     * Builtin property item name (e.g. {@link com.openrecordsmanager.api.builtin.BuiltinPropertyIds#GIVEN_NAME}).
      */
     String value();
 

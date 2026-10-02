@@ -1,6 +1,6 @@
 package com.openrecordsmanager.audit;
 
-import com.openrecordsmanager.user.User;
+import com.openrecordsmanager.location.user.User;
 import org.jspecify.annotations.Nullable;
 
 import java.util.UUID;

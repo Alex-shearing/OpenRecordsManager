@@ -12,7 +12,7 @@ import com.openrecordsmanager.database.DataRepository;
 import com.openrecordsmanager.plugin.registry.ComponentCatalog;
 import com.openrecordsmanager.property.ObjectProperty;
 import com.openrecordsmanager.rest.exception.ResourceNotFoundException;
-import com.openrecordsmanager.user.User;
+import com.openrecordsmanager.location.user.User;
 import org.jspecify.annotations.Nullable;
 
 import java.util.Optional;

@@ -1,8 +1,8 @@
 package com.openrecordsmanager.property;
 
 import com.openrecordsmanager.api.ResourceIdentifier;
+import com.openrecordsmanager.api.builtin.BuiltinPlugin;
 import com.openrecordsmanager.api.builtin.BuiltinProperties;
-import com.openrecordsmanager.api.builtin.BuiltinPropertyIds;
 import com.openrecordsmanager.api.template.property.ObjectPropertyTemplate;
 import com.openrecordsmanager.api.template.property.PropertyType;
 import jakarta.persistence.Column;
@@ -11,9 +11,7 @@ import org.hibernate.type.SqlTypes;
 import org.jspecify.annotations.Nullable;
 
 import java.lang.reflect.Field;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 
@@ -40,28 +38,31 @@ public record BuiltinPropertyBinding<T, P>(
     }
 
     /**
-     * Scans {@code entityClass} for {@link BuiltinProperty}-annotated fields (declaration order).
+     * Scans {@code entityClass} and its superclasses up to {@link ObjectPropertyHolder}
+     * for {@link BuiltinProperty}-annotated fields (superclass fields first).
      */
-    public static <T> Map<ResourceIdentifier, BuiltinPropertyBinding<T, ?>> scan(Class<T> entityClass) {
+    public static <T> Map<ResourceIdentifier, BuiltinPropertyBinding<T, ?>> scan(Class<? extends T> entityClass) {
         Map<ResourceIdentifier, BuiltinPropertyBinding<T, ?>> indexed = new HashMap<>();
 
-        for (Field field : entityClass.getDeclaredFields()) {
-            BuiltinProperty annotation = field.getAnnotation(BuiltinProperty.class);
-            if (annotation == null) {
-                continue;
+        for (Class<?> type : hierarchyClasses(entityClass)) {
+            for (Field field : type.getDeclaredFields()) {
+                BuiltinProperty annotation = field.getAnnotation(BuiltinProperty.class);
+                if (annotation == null) {
+                    continue;
+                }
+                field.setAccessible(true);
+
+                ResourceIdentifier id = new ResourceIdentifier(BuiltinPlugin.BUILTIN_PLUGIN_NAME, annotation.value());
+                ObjectPropertyTemplate<?> template = BuiltinProperties.BUILTIN_PROPERTIES.get(annotation.value());
+
+                if (indexed.containsKey(id)) {
+                    throw new IllegalArgumentException(
+                            "Duplicate @BuiltinProperty id '" + id + "' on " + entityClass.getName()
+                    );
+                }
+
+                indexed.put(id, bindingFromField(entityClass, field, id, template, annotation));
             }
-            field.setAccessible(true);
-
-            ResourceIdentifier id = BuiltinPropertyIds.id(annotation.value());
-            ObjectPropertyTemplate<?> template = BuiltinProperties.BUILTIN_PROPERTIES.get(id);
-
-            if (indexed.containsKey(id)) {
-                throw new IllegalArgumentException(
-                        "Duplicate @BuiltinProperty id '" + id + "' on " + entityClass.getName()
-                );
-            }
-
-            indexed.put(id, bindingFromField(entityClass, field, id, template, annotation));
         }
 
         if (indexed.isEmpty()) {
@@ -71,8 +72,23 @@ public record BuiltinPropertyBinding<T, P>(
         return Collections.unmodifiableMap(indexed);
     }
 
+    private static List<Class<?>> hierarchyClasses(Class<?> entityClass) {
+        List<Class<?>> chain = new ArrayList<>();
+
+        for (Class<?> current = entityClass;
+             current != null && ObjectPropertyHolder.class.isAssignableFrom(current)
+                     && current != ObjectPropertyHolder.class;
+             current = current.getSuperclass()
+        ) {
+
+            chain.addFirst(current);
+        }
+
+        return chain;
+    }
+
     private static <T> BuiltinPropertyBinding<T, ?> bindingFromField(
-            Class<T> entityClass,
+            Class<?> entityClass,
             Field field,
             ResourceIdentifier id,
             ObjectPropertyTemplate<?> template,

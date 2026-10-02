@@ -7,7 +7,7 @@ import com.openrecordsmanager.list.ListElement;
 import com.openrecordsmanager.list.ListElementRepository;
 import com.openrecordsmanager.plugin.registry.ComponentCatalog;
 import com.openrecordsmanager.record.Record;
-import com.openrecordsmanager.user.User;
+import com.openrecordsmanager.location.user.User;
 import dev.cel.common.CelAbstractSyntaxTree;
 import dev.cel.common.CelFunctionDecl;
 import dev.cel.common.CelOverloadDecl;

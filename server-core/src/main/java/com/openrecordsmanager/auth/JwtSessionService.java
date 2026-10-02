@@ -5,7 +5,7 @@ import com.openrecordsmanager.auth.dto.SessionMode;
 import com.openrecordsmanager.auth.dto.TokenPair;
 import com.openrecordsmanager.config.ConfigService;
 import com.openrecordsmanager.database.DataRepository;
-import com.openrecordsmanager.user.User;
+import com.openrecordsmanager.location.user.User;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;

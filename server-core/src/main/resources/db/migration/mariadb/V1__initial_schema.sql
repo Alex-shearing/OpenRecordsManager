@@ -75,34 +75,77 @@ CREATE TABLE record_type_property (
 
 CREATE INDEX idx_rtp_property_id ON record_type_property (property_id);
 
+CREATE TABLE location (
+    id UUID NOT NULL PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    notes VARCHAR(255),
+    date_created DATETIME(6) NOT NULL,
+    date_modified DATETIME(6) NOT NULL,
+    location_kind VARCHAR(32) NOT NULL
+);
+
+CREATE INDEX idx_location_kind ON location (location_kind);
+CREATE INDEX idx_location_name ON location (name);
+
 CREATE TABLE user_details (
     id UUID NOT NULL PRIMARY KEY,
     username VARCHAR(255) NOT NULL UNIQUE,
     auth_provider_id UUID,
-    date_created DATETIME(6) NOT NULL,
-    date_modified DATETIME(6) NOT NULL,
     given_name VARCHAR(255),
     surname VARCHAR(255),
     honorific VARCHAR(255),
     email VARCHAR(255),
-    notes VARCHAR(255),
     enabled BOOLEAN NOT NULL DEFAULT TRUE,
     session_epoch INT NOT NULL DEFAULT 0,
+    CONSTRAINT fk_user_location FOREIGN KEY (id) REFERENCES location (id),
     CONSTRAINT fk_user_auth_provider FOREIGN KEY (auth_provider_id) REFERENCES auth_provider (id)
 );
 
 CREATE INDEX idx_user_details_auth_provider_id ON user_details (auth_provider_id);
 
-CREATE TABLE user_property_value (
-    user_id UUID NOT NULL,
-    property_id VARCHAR(255) NOT NULL,
-    property_value JSON,
-    PRIMARY KEY (user_id, property_id),
-    CONSTRAINT fk_upv_user FOREIGN KEY (user_id) REFERENCES user_details (id),
-    CONSTRAINT fk_upv_property FOREIGN KEY (property_id) REFERENCES object_property (id)
+CREATE TABLE group_details (
+    id UUID NOT NULL PRIMARY KEY,
+    CONSTRAINT fk_group_location FOREIGN KEY (id) REFERENCES location (id)
 );
 
-CREATE INDEX idx_upv_property_id ON user_property_value (property_id);
+CREATE TABLE location_property_value (
+    location_id UUID NOT NULL,
+    property_id VARCHAR(255) NOT NULL,
+    property_value JSON,
+    PRIMARY KEY (location_id, property_id),
+    CONSTRAINT fk_lpv_location FOREIGN KEY (location_id) REFERENCES location (id),
+    CONSTRAINT fk_lpv_property FOREIGN KEY (property_id) REFERENCES object_property (id)
+);
+
+CREATE INDEX idx_lpv_property_id ON location_property_value (property_id);
+
+CREATE TABLE location_relationship_type (
+    id VARCHAR(255) NOT NULL PRIMARY KEY,
+    source_kind VARCHAR(32) NOT NULL,
+    target_kind VARCHAR(32) NOT NULL,
+    unique_per_source BOOLEAN NOT NULL,
+    date_created DATETIME(6) NOT NULL,
+    date_modified DATETIME(6) NOT NULL
+);
+
+CREATE TABLE location_relationship (
+    id UUID NOT NULL PRIMARY KEY,
+    source_id UUID NOT NULL,
+    target_id UUID NOT NULL,
+    type_id VARCHAR(255) NOT NULL,
+    date_created DATETIME(6) NOT NULL,
+    active_to DATETIME(6),
+    -- MariaDB has no filtered unique indexes; NULL marker lets ended edges share the same key.
+    active_edge_marker CHAR(1) AS (IF(active_to IS NULL, 'Y', NULL)) STORED,
+    CONSTRAINT fk_lr_source FOREIGN KEY (source_id) REFERENCES location (id),
+    CONSTRAINT fk_lr_target FOREIGN KEY (target_id) REFERENCES location (id),
+    CONSTRAINT fk_lr_type FOREIGN KEY (type_id) REFERENCES location_relationship_type (id),
+    UNIQUE KEY uk_lr_active_edge (source_id, target_id, type_id, active_edge_marker)
+);
+
+CREATE INDEX idx_lr_source ON location_relationship (source_id);
+CREATE INDEX idx_lr_target ON location_relationship (target_id);
+CREATE INDEX idx_lr_type ON location_relationship (type_id);
 
 CREATE TABLE file_store (
     id UUID NOT NULL PRIMARY KEY,

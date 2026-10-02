@@ -9,7 +9,7 @@ import com.openrecordsmanager.plugin.ExpressionsService;
 import com.openrecordsmanager.property.ObjectProperty;
 import com.openrecordsmanager.record.Record;
 import com.openrecordsmanager.template.RegisteredComponent;
-import com.openrecordsmanager.user.User;
+import com.openrecordsmanager.location.user.User;
 import jakarta.persistence.*;
 import org.hibernate.annotations.JavaType;
 import org.hibernate.annotations.JdbcTypeCode;

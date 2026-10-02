@@ -14,7 +14,8 @@ public enum TemplateType {
     LIST(ComponentTypes.LIST),
     LIST_ELEMENT(ComponentTypes.LIST_ELEMENT),
     OBJECT_PROPERTY(ComponentTypes.OBJECT_PROPERTY),
-    RECORD_TYPE(ComponentTypes.RECORD_TYPE);
+    RECORD_TYPE(ComponentTypes.RECORD_TYPE),
+    LOCATION_RELATIONSHIP_TYPE(ComponentTypes.LOCATION_RELATIONSHIP_TYPE);
 
     private final ComponentType<? extends TemplateComponent> componentType;
 

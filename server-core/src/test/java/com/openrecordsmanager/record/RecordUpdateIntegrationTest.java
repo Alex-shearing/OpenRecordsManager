@@ -4,6 +4,7 @@ import com.openrecordsmanager.api.ResourceIdentifier;
 import com.openrecordsmanager.api.audit.AuditEntityType;
 import com.openrecordsmanager.api.audit.AuditOperation;
 import com.openrecordsmanager.api.builtin.BuiltinConfigs;
+import com.openrecordsmanager.api.builtin.BuiltinPlugin;
 import com.openrecordsmanager.api.builtin.BuiltinPropertyIds;
 import com.openrecordsmanager.api.template.list.IListElement;
 import com.openrecordsmanager.api.template.property.PropertyType;
@@ -13,13 +14,13 @@ import com.openrecordsmanager.audit.AuditTestSupport;
 import com.openrecordsmanager.database.DataRepository;
 import com.openrecordsmanager.list.ListElement;
 import com.openrecordsmanager.list.ListType;
+import com.openrecordsmanager.location.user.User;
 import com.openrecordsmanager.property.ObjectProperty;
 import com.openrecordsmanager.record.dto.NewRecordRequest;
 import com.openrecordsmanager.record.dto.RecordResponse;
 import com.openrecordsmanager.record.dto.UpdateRecordRequest;
 import com.openrecordsmanager.recordtype.RecordType;
 import com.openrecordsmanager.recordtype.RecordTypeProperty;
-import com.openrecordsmanager.user.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,6 +41,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 @SpringBootTest
 class RecordUpdateIntegrationTest {
 
+    private static final ResourceIdentifier TITLE =
+            new ResourceIdentifier(BuiltinPlugin.BUILTIN_PLUGIN_NAME, BuiltinPropertyIds.TITLE);
     private static final ResourceIdentifier TEST_RECORD_TYPE = ResourceIdentifier.valueOf("test:update_record_type");
     private static final ResourceIdentifier LIST_ID = ResourceIdentifier.valueOf("test:record_list_prop_list");
     private static final ResourceIdentifier ELEMENT_A = ResourceIdentifier.valueOf("test:record_list_a");
@@ -76,12 +79,12 @@ class RecordUpdateIntegrationTest {
         this.auditPolicyService.updatePolicy(AuditEntityType.RECORD, AuditOperation.UPDATE, true, false);
         this.auditPolicyService.updatePolicy(AuditEntityType.RECORD, AuditOperation.READ, true, false);
 
-        this.transactionTemplate.executeWithoutResult(status -> {
+        this.transactionTemplate.executeWithoutResult(_ -> {
             if (this.repository.recordTypeRepo.findById(TEST_RECORD_TYPE).isEmpty()) {
-                ObjectProperty<String> titleProperty = this.repository.objectPropertyRepo.findById(BuiltinPropertyIds.TITLE)
+                ObjectProperty<String> titleProperty = this.repository.objectPropertyRepo.findById(TITLE)
                         .map(p -> (ObjectProperty<String>) p)
                         .orElseGet(() -> this.repository.objectPropertyRepo.saveAndFlush(new ObjectProperty<>(
-                                BuiltinPropertyIds.TITLE,
+                                TITLE,
                                 PropertyType.STRING
                         )));
                 RecordType recordType = new RecordType(TEST_RECORD_TYPE, null,
@@ -132,7 +135,7 @@ class RecordUpdateIntegrationTest {
                     )));
 
             if (this.repository.recordTypeRepo.findById(LIST_RECORD_TYPE).isEmpty()) {
-                ObjectProperty<String> titleProperty = this.repository.objectPropertyRepo.findById(BuiltinPropertyIds.TITLE)
+                ObjectProperty<String> titleProperty = this.repository.objectPropertyRepo.findById(TITLE)
                         .map(p -> (ObjectProperty<String>) p)
                         .orElseThrow();
 
@@ -158,20 +161,20 @@ class RecordUpdateIntegrationTest {
         RecordResponse created = AuditTestSupport.withAudit(this.admin, () -> this.recordService.create(
                 new NewRecordRequest(TEST_RECORD_TYPE, Map.of())
         ));
-        assertEquals("tba", created.properties().get(BuiltinPropertyIds.TITLE.toString()).asString());
+        assertEquals("tba", created.properties().get(TITLE.toString()).asString());
 
         RecordResponse updated = AuditTestSupport.withAudit(this.admin, () -> this.recordService.update(
                 this.admin,
                 created.id(),
                 new UpdateRecordRequest(
                         null,
-                        Map.of(BuiltinPropertyIds.TITLE, JsonNodeFactory.instance.stringNode("Updated title"))
+                        Map.of(TITLE, JsonNodeFactory.instance.stringNode("Updated title"))
                 )
         ));
-        assertEquals("Updated title", updated.properties().get(BuiltinPropertyIds.TITLE.toString()).asString());
+        assertEquals("Updated title", updated.properties().get(TITLE.toString()).asString());
 
         RecordResponse loaded = this.recordService.get(this.admin, created.id());
-        assertEquals("Updated title", loaded.properties().get(BuiltinPropertyIds.TITLE.toString()).asString());
+        assertEquals("Updated title", loaded.properties().get(TITLE.toString()).asString());
     }
 
     @Test

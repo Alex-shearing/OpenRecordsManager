@@ -1,6 +1,6 @@
 package com.openrecordsmanager.rest.swagger;
 
-import com.openrecordsmanager.user.dto.UserResponse;
+import com.openrecordsmanager.location.user.dto.UserResponse;
 import io.swagger.v3.core.converter.AnnotatedType;
 import io.swagger.v3.core.converter.ModelConverters;
 import io.swagger.v3.core.converter.ResolvedSchema;

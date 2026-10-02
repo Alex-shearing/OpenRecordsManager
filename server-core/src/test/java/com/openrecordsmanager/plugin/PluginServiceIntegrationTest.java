@@ -16,7 +16,7 @@ import com.openrecordsmanager.plugin.dto.PluginResponse;
 import com.openrecordsmanager.plugin.dto.PluginTypeRequest;
 import com.openrecordsmanager.plugin.dto.UpdatePluginRequest;
 import com.openrecordsmanager.plugin.registry.ComponentCatalog;
-import com.openrecordsmanager.user.User;
+import com.openrecordsmanager.location.user.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

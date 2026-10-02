@@ -11,7 +11,7 @@ import com.openrecordsmanager.property.ObjectProperty;
 import com.openrecordsmanager.property.ObjectPropertyHolder;
 import com.openrecordsmanager.recordtype.RecordType;
 import com.openrecordsmanager.recordtype.RecordTypeProperty;
-import com.openrecordsmanager.user.User;
+import com.openrecordsmanager.location.user.User;
 import jakarta.persistence.*;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.id.uuid.UuidVersion7Strategy;
@@ -33,7 +33,7 @@ public class Record extends ObjectPropertyHolder<Record, RecordPropertyValue> {
     @Id
     private UUID id;
 
-    @BuiltinProperty(value = BuiltinPropertyIds.TITLE_ID, defaultSearch = true)
+    @BuiltinProperty(value = BuiltinPropertyIds.TITLE, defaultSearch = true)
     @Column(nullable = false)
     private String title;
 
@@ -41,32 +41,32 @@ public class Record extends ObjectPropertyHolder<Record, RecordPropertyValue> {
     @JoinColumn(nullable = false)
     private RecordType type;
 
-    @BuiltinProperty(value = BuiltinPropertyIds.KEYWORDS_ID, defaultSearch = true)
+    @BuiltinProperty(value = BuiltinPropertyIds.KEYWORDS, defaultSearch = true)
     @Column
     @JdbcTypeCode(SqlTypes.LONG32VARCHAR)
     @Nullable
     private String keywords;
 
-    @BuiltinProperty(value = BuiltinPropertyIds.NOTES_ID, defaultSearch = true)
+    @BuiltinProperty(value = BuiltinPropertyIds.NOTES, defaultSearch = true)
     @Column
     @JdbcTypeCode(SqlTypes.LONG32VARCHAR)
     @Nullable
     private String notes;
 
-    @BuiltinProperty(BuiltinPropertyIds.DATE_CREATED_ID)
+    @BuiltinProperty(BuiltinPropertyIds.DATE_CREATED)
     @Column(nullable = false)
     private Instant dateCreated;
 
-    @BuiltinProperty(BuiltinPropertyIds.DATE_REGISTERED_ID)
+    @BuiltinProperty(BuiltinPropertyIds.DATE_REGISTERED)
     @Column
     @Nullable
     private Instant dateRegistered;
 
-    @BuiltinProperty(value = BuiltinPropertyIds.DATE_MODIFIED_ID, readOnly = true)
+    @BuiltinProperty(value = BuiltinPropertyIds.DATE_MODIFIED, readOnly = true)
     @Column(nullable = false)
     private Instant dateModified;
 
-    @BuiltinProperty(BuiltinPropertyIds.MIME_TYPES_ID)
+    @BuiltinProperty(BuiltinPropertyIds.MIME_TYPES)
     @Column
     @JdbcTypeCode(SqlTypes.JSON)
     @Nullable

@@ -3,7 +3,7 @@ package com.openrecordsmanager.auth;
 import com.openrecordsmanager.auth.dto.SessionMode;
 import com.openrecordsmanager.auth.dto.TokenPair;
 import com.openrecordsmanager.database.DataRepository;
-import com.openrecordsmanager.user.User;
+import com.openrecordsmanager.location.user.User;
 import org.springframework.stereotype.Component;
 
 @Component

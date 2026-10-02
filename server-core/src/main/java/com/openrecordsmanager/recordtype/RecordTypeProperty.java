@@ -3,7 +3,7 @@ package com.openrecordsmanager.recordtype;
 import com.openrecordsmanager.plugin.ExpressionsService;
 import com.openrecordsmanager.property.ObjectProperty;
 import com.openrecordsmanager.record.Record;
-import com.openrecordsmanager.user.User;
+import com.openrecordsmanager.location.user.User;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 import jakarta.persistence.ManyToOne;

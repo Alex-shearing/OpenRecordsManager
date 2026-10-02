@@ -6,10 +6,13 @@
 - Only create audit log for component registrations that actually made a change
 - `POST /api/auth/signup` — wire through `AuthService` (endpoint exists but returns `null`; see `AuthController` TODO).
 
-## Locations (future)
+## Relationships
 
-- Location entity (possibly just a record extension?) + CRUD/search API — the web SearchBar already exposes a “Location”
-  filter, but no location concept exists in the backend yet. Define the domain model and routes before building UI.
+- Improve relationships system to include Record->Record, Location->Record
+
+## Permissions System
+
+System for assigning permissions to explicit locations
 
 ## User types
 

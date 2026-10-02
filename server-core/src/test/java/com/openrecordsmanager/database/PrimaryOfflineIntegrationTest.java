@@ -1,7 +1,9 @@
 package com.openrecordsmanager.database;
 
 import com.jayway.jsonpath.JsonPath;
+import com.openrecordsmanager.api.ResourceIdentifier;
 import com.openrecordsmanager.api.builtin.BuiltinConfigs;
+import com.openrecordsmanager.api.builtin.BuiltinPlugin;
 import com.openrecordsmanager.api.builtin.BuiltinProperties;
 import com.openrecordsmanager.database.schema.SchemaMigrationState;
 import org.flywaydb.core.Flyway;
@@ -76,7 +78,7 @@ class PrimaryOfflineIntegrationTest {
                         seedObjectProperty(
                                 property,
                                 now,
-                                id.toString(),
+                                new ResourceIdentifier(BuiltinPlugin.BUILTIN_PLUGIN_NAME, id).toString(),
                                 template.type().getName(),
                                 template.userHidden()
                         );
@@ -100,25 +102,38 @@ class PrimaryOfflineIntegrationTest {
                 provider.executeUpdate();
             }
 
+            try (PreparedStatement location = connection.prepareStatement(
+                    """
+                            INSERT INTO location
+                            (id, name, notes, date_created, date_modified, location_kind)
+                            VALUES (?, ?, NULL, ?, ?, ?)
+                            """
+            )) {
+                location.setBytes(1, uuidBytes(USER_ID));
+                location.setString(2, "admin");
+                location.setTimestamp(3, now);
+                location.setTimestamp(4, now);
+                location.setString(5, "USER");
+                location.executeUpdate();
+            }
+
             try (PreparedStatement user = connection.prepareStatement(
                     """
                             INSERT INTO user_details
-                            (id, username, auth_provider_id, date_created, date_modified, enabled, session_epoch)
-                            VALUES (?, ?, ?, ?, ?, ?, ?)
+                            (id, username, auth_provider_id, enabled, session_epoch)
+                            VALUES (?, ?, ?, ?, ?)
                             """
             )) {
                 user.setBytes(1, uuidBytes(USER_ID));
                 user.setString(2, "admin");
                 user.setBytes(3, uuidBytes(PROVIDER_ID));
-                user.setTimestamp(4, now);
-                user.setTimestamp(5, now);
-                user.setBoolean(6, true);
-                user.setInt(7, 0);
+                user.setBoolean(4, true);
+                user.setInt(5, 0);
                 user.executeUpdate();
             }
 
             try (PreparedStatement value = connection.prepareStatement(
-                    "INSERT INTO user_property_value (user_id, property_id, property_value) VALUES (?, ?, ?)"
+                    "INSERT INTO location_property_value (location_id, property_id, property_value) VALUES (?, ?, ?)"
             )) {
                 value.setBytes(1, uuidBytes(USER_ID));
                 value.setString(2, "auth_local:password_hash");

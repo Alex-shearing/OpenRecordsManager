@@ -3,7 +3,7 @@ package com.openrecordsmanager.auth;
 import com.openrecordsmanager.api.builtin.BuiltinConfigs;
 import com.openrecordsmanager.auth.dto.SessionMode;
 import com.openrecordsmanager.auth.dto.TokenPair;
-import com.openrecordsmanager.user.User;
+import com.openrecordsmanager.location.user.User;
 import io.jsonwebtoken.Claims;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

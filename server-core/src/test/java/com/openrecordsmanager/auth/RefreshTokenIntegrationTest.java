@@ -6,7 +6,7 @@ import com.openrecordsmanager.auth.dto.TokenPair;
 import com.openrecordsmanager.auth.entity.AuthProvider;
 import com.openrecordsmanager.database.DataRepository;
 import com.openrecordsmanager.database.SqliteTestSupport;
-import com.openrecordsmanager.user.User;
+import com.openrecordsmanager.location.user.User;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;

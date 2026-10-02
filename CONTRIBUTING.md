@@ -33,6 +33,30 @@
 - **List / ListElement** — controlled vocabulary and its entries; referenced by list-typed object properties.
 - **RecordAction / UserAction** — plugin-provided operations on a record or user (availability + typed input).
 
+## REST controllers
+
+Controller handler method names become OpenAPI `operationId`s. Name every handler with a **verb + noun** that uniquely
+identifies the action across the API — do not use bare verbs like `get`, `create`, `update`, `search`, or `getAll`.
+
+Good: `getLocation`, `searchGroups`, `createLocationRelationship`, `listLocationRelationshipTypes`.  
+Bad: `get`, `create`, `update`, `search`, `getAll`, `listRelationships` (noun too generic when another controller may
+share it).
+
+Prefer camelCase (`getAuthProvider`, `createList`) over underscored prefixes unless an existing controller already
+uses that style.
+
+## Packages / nullness
+
+Every Java package must have a `package-info.java` annotated with `@NullMarked` (`org.jspecify.annotations.NullMarked`)
+so types default to non-null. Use `@Nullable` only where null is intentional.
+
+```java
+@NullMarked
+package com.openrecordsmanager.example;
+
+import org.jspecify.annotations.NullMarked;
+```
+
 ## Testing
 
 Prefer the lowest layer that still proves the behavior you care about. Do not climb into MockMvc (or the full web stack)

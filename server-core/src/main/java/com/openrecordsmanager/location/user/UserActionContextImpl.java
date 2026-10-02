@@ -1,0 +1,111 @@
+package com.openrecordsmanager.location.user;
+
+import com.openrecordsmanager.api.audit.AuditEmitter;
+import com.openrecordsmanager.api.audit.AuditEntityType;
+import com.openrecordsmanager.api.config.ConfigStore;
+import com.openrecordsmanager.api.template.property.ObjectPropertyTemplate;
+import com.openrecordsmanager.api.types.ComponentTypes;
+import com.openrecordsmanager.api.user.UserActionContext;
+import com.openrecordsmanager.audit.AuditEmitterImpl;
+import com.openrecordsmanager.audit.AuditService;
+import com.openrecordsmanager.database.DataRepository;
+import com.openrecordsmanager.plugin.registry.ComponentCatalog;
+import com.openrecordsmanager.property.ObjectProperty;
+import com.openrecordsmanager.rest.exception.ResourceNotFoundException;
+import org.jspecify.annotations.Nullable;
+
+import java.util.Optional;
+import java.util.UUID;
+
+class UserActionContextImpl implements UserActionContext {
+    private final DataRepository repository;
+    private final ComponentCatalog catalog;
+    private final ConfigStore config;
+    private final AuditService auditService;
+    private final User actor;
+    private final User target;
+
+    UserActionContextImpl(
+            DataRepository repository,
+            ComponentCatalog catalog,
+            ConfigStore config,
+            AuditService auditService,
+            User actor,
+            User target
+    ) {
+        this.repository = repository;
+        this.catalog = catalog;
+        this.config = config;
+        this.auditService = auditService;
+        this.actor = actor;
+        this.target = target;
+    }
+
+    @Override
+    public UUID getActorId() {
+        return this.actor.getId();
+    }
+
+    @Override
+    public String getActorUsername() {
+        return this.actor.getUsername();
+    }
+
+    @Override
+    public UUID getTargetUserId() {
+        return this.target.getId();
+    }
+
+    @Override
+    public String getTargetUsername() {
+        return this.target.getUsername();
+    }
+
+    @Override
+    public ConfigStore getConfig() {
+        return this.config;
+    }
+
+    @Override
+    public <T> boolean isPropertyRegistered(ObjectPropertyTemplate<T> property) {
+        return this.catalog.getTemplateRegistry(ComponentCatalog.OBJECT_PROPERTY_MAPPER)
+                .getRegistered(property, this.repository)
+                .isPresent();
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public <T> Optional<T> getTargetProperty(ObjectPropertyTemplate<T> property) {
+        Optional<ObjectProperty<?>> prop = this.catalog.getTemplateRegistry(ComponentCatalog.OBJECT_PROPERTY_MAPPER)
+                .getRegistered(property, this.repository);
+
+        if (prop.isEmpty()) {
+            return Optional.empty();
+        }
+
+        ObjectProperty<T> typedProp = (ObjectProperty<T>) prop.get();
+        return Optional.ofNullable(this.target.getProperty(typedProp));
+    }
+
+    @Override
+    public <T> void setTargetProperty(ObjectPropertyTemplate<T> property, @Nullable T value) {
+        @SuppressWarnings("unchecked")
+        ObjectProperty<T> prop = (ObjectProperty<T>) this.catalog.getTemplateRegistry(ComponentCatalog.OBJECT_PROPERTY_MAPPER)
+                .getRegistered(property, this.repository)
+                .orElseThrow(() -> new ResourceNotFoundException(ComponentTypes.OBJECT_PROPERTY, property.toString()));
+
+        T oldValue = this.target.getProperty(prop);
+        this.target.setProperty(prop, value);
+
+        this.repository.userRepo.saveAndFlush(this.target);
+
+        if (oldValue != value) {
+            this.getAudit().addPropertyChangeEvent(prop.getId().toString(), oldValue, value);
+        }
+    }
+
+    @Override
+    public AuditEmitter getAudit() {
+        return new AuditEmitterImpl(this.auditService, AuditEntityType.USER, this.target.getId().toString());
+    }
+}

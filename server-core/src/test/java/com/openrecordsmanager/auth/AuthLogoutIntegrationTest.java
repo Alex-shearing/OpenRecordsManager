@@ -3,7 +3,7 @@ package com.openrecordsmanager.auth;
 import com.openrecordsmanager.api.builtin.BuiltinConfigs;
 import com.openrecordsmanager.auth.dto.TokenPair;
 import com.openrecordsmanager.database.DataRepository;
-import com.openrecordsmanager.user.User;
+import com.openrecordsmanager.location.user.User;
 import jakarta.servlet.http.Cookie;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -5,6 +5,7 @@ import com.openrecordsmanager.api.ComponentAccess;
 import com.openrecordsmanager.api.RegistrationContext;
 import com.openrecordsmanager.api.ResourceIdentifier;
 import com.openrecordsmanager.api.template.TemplateComponent;
+import com.openrecordsmanager.api.template.list.ListElementTemplate;
 import com.openrecordsmanager.api.template.list.ListTemplate;
 import com.openrecordsmanager.api.types.ComponentType;
 import com.openrecordsmanager.api.types.ComponentTypes;
@@ -31,12 +32,15 @@ public class ComponentCatalog implements ComponentAccess {
     public static final ListElementTemplateRegistrationMapper LIST_ELEMENT_MAPPER = new ListElementTemplateRegistrationMapper();
     public static final ObjectPropertyTemplateRegistrationMapper OBJECT_PROPERTY_MAPPER = new ObjectPropertyTemplateRegistrationMapper();
     public static final RecordTypeTemplateRegistrationMapper RECORD_TYPE_MAPPER = new RecordTypeTemplateRegistrationMapper();
+    public static final LocationRelationshipTypeTemplateRegistrationMapper LOCATION_RELATIONSHIP_TYPE_MAPPER =
+            new LocationRelationshipTypeTemplateRegistrationMapper();
 
     public static final List<TemplateRegistrationMapper<?, ?>> TEMPLATE_MAPPERS = List.of(
             LIST_MAPPER,
             LIST_ELEMENT_MAPPER,
             OBJECT_PROPERTY_MAPPER,
-            RECORD_TYPE_MAPPER
+            RECORD_TYPE_MAPPER,
+            LOCATION_RELATIONSHIP_TYPE_MAPPER
     );
 
     // Templates Registries
@@ -134,8 +138,10 @@ public class ComponentCatalog implements ComponentAccess {
 
             typeBuilder.register(identifier, component);
 
-            if (component instanceof ListTemplate template) {
-                template.defaultEntries().forEach((s, element) -> {
+            if (component instanceof ListTemplate(
+                    Map<String, ListElementTemplate> defaultEntries
+            )) {
+                defaultEntries.forEach((s, element) -> {
                     this.registerInstance(context, s, element);
                 });
             }

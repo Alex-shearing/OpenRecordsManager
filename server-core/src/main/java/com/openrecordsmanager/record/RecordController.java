@@ -5,7 +5,7 @@ import com.openrecordsmanager.record.dto.*;
 import com.openrecordsmanager.rest.dto.ActionResponse;
 import com.openrecordsmanager.rest.swagger.DefaultApiResponses;
 import com.openrecordsmanager.rest.swagger.NotFoundApiResponse;
-import com.openrecordsmanager.user.User;
+import com.openrecordsmanager.location.user.User;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.constraints.Pattern;
 import org.jspecify.annotations.Nullable;

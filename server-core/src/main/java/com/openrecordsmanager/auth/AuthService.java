@@ -24,7 +24,7 @@ import com.openrecordsmanager.plugin.registry.mapper.TemplateRegistrationMapper;
 import com.openrecordsmanager.property.ObjectProperty;
 import com.openrecordsmanager.rest.CookieService;
 import com.openrecordsmanager.rest.exception.ResourceNotFoundException;
-import com.openrecordsmanager.user.User;
+import com.openrecordsmanager.location.user.User;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;

@@ -2,6 +2,7 @@ package com.openrecordsmanager.search;
 
 import com.openrecordsmanager.api.ResourceIdentifier;
 import com.openrecordsmanager.api.builtin.BuiltinConfigs;
+import com.openrecordsmanager.api.builtin.BuiltinPlugin;
 import com.openrecordsmanager.api.builtin.BuiltinPropertyIds;
 import com.openrecordsmanager.api.search.*;
 import com.openrecordsmanager.api.template.property.PropertyType;
@@ -9,6 +10,7 @@ import com.openrecordsmanager.api.template.recordtype.SecurityFilterUsage;
 import com.openrecordsmanager.api.types.ComponentTypes;
 import com.openrecordsmanager.database.DataRepository;
 import com.openrecordsmanager.database.SqliteTestSupport;
+import com.openrecordsmanager.location.user.User;
 import com.openrecordsmanager.plugin.registry.ComponentCatalog;
 import com.openrecordsmanager.property.ObjectProperty;
 import com.openrecordsmanager.record.Record;
@@ -16,7 +18,6 @@ import com.openrecordsmanager.recordtype.RecordType;
 import com.openrecordsmanager.recordtype.RecordTypeProperty;
 import com.openrecordsmanager.search.sql.BuiltinColumnResolver;
 import com.openrecordsmanager.search.sql.ObjectSearchSchema;
-import com.openrecordsmanager.user.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -150,11 +151,11 @@ class ObjectSearchExecutorIntegrationTest {
 
     @SuppressWarnings("unchecked")
     private RecordType ensureRecordType() {
-        return this.transactionTemplate.execute(status -> {
-            ObjectProperty<String> titleProperty = this.repository.objectPropertyRepo.findById(BuiltinPropertyIds.TITLE)
+        return this.transactionTemplate.execute(_ -> {
+            ObjectProperty<String> titleProperty = this.repository.objectPropertyRepo.findById(new ResourceIdentifier(BuiltinPlugin.BUILTIN_PLUGIN_NAME, BuiltinPropertyIds.TITLE))
                     .map(p -> (ObjectProperty<String>) p)
                     .orElseGet(() -> this.repository.objectPropertyRepo.saveAndFlush(new ObjectProperty<>(
-                            BuiltinPropertyIds.TITLE,
+                            new ResourceIdentifier(BuiltinPlugin.BUILTIN_PLUGIN_NAME, BuiltinPropertyIds.TITLE),
                             PropertyType.STRING
                     )));
 

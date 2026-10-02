@@ -11,7 +11,7 @@ import com.openrecordsmanager.auth.dto.AuthProviderTypeResponse;
 import com.openrecordsmanager.auth.dto.UpdateAuthProviderRequest;
 import com.openrecordsmanager.database.DataRepository;
 import com.openrecordsmanager.database.SqliteTestSupport;
-import com.openrecordsmanager.user.User;
+import com.openrecordsmanager.location.user.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

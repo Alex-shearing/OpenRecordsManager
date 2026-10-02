@@ -15,7 +15,7 @@ import com.openrecordsmanager.config.ConfigService;
 import com.openrecordsmanager.database.DataRepository;
 import com.openrecordsmanager.database.DatabaseWritableProbe;
 import com.openrecordsmanager.rest.exception.ResourceNotFoundException;
-import com.openrecordsmanager.user.User;
+import com.openrecordsmanager.location.user.User;
 import org.jspecify.annotations.Nullable;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;

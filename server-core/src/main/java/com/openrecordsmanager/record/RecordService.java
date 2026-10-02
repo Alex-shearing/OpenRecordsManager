@@ -27,7 +27,7 @@ import com.openrecordsmanager.schema.JsonSchemaValidator;
 import com.openrecordsmanager.search.ObjectSearchExecutor;
 import com.openrecordsmanager.search.sql.BuiltinColumnResolver;
 import com.openrecordsmanager.search.sql.ObjectSearchSchema;
-import com.openrecordsmanager.user.User;
+import com.openrecordsmanager.location.user.User;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 

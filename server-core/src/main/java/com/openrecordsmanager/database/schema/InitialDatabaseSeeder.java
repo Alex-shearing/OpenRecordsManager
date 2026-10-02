@@ -2,6 +2,7 @@ package com.openrecordsmanager.database.schema;
 
 import com.openrecordsmanager.api.ComponentReference;
 import com.openrecordsmanager.api.ResourceIdentifier;
+import com.openrecordsmanager.api.template.location.LocationRelationshipTypeTemplate;
 import com.openrecordsmanager.api.template.property.ObjectPropertyTemplate;
 import com.openrecordsmanager.api.types.ComponentTypes;
 import com.openrecordsmanager.audit.AuditContext;
@@ -11,12 +12,13 @@ import com.openrecordsmanager.auth.dto.AuthProviderResponse;
 import com.openrecordsmanager.auth.entity.AuthProvider;
 import com.openrecordsmanager.database.DataRepository;
 import com.openrecordsmanager.database.DatabaseWritableProbe;
+import com.openrecordsmanager.location.relationship.LocationRelationshipType;
+import com.openrecordsmanager.location.user.User;
+import com.openrecordsmanager.location.user.UserService;
 import com.openrecordsmanager.plugin.ExpressionsService;
 import com.openrecordsmanager.plugin.registry.ComponentCatalog;
 import com.openrecordsmanager.plugin.registry.TemplateComponentRegistry;
 import com.openrecordsmanager.property.ObjectProperty;
-import com.openrecordsmanager.user.User;
-import com.openrecordsmanager.user.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
@@ -82,6 +84,7 @@ public class InitialDatabaseSeeder {
         AuditContext.disableCapture();
         try {
             this.seedBuiltinProperties();
+            this.seedBuiltinRelationshipTypes();
 
             if (!this.state.consumeInitialSeedPending()) {
                 return;
@@ -138,6 +141,26 @@ public class InitialDatabaseSeeder {
                     this.expressions,
                     this.auditService,
                     ComponentReference.of(ComponentTypes.OBJECT_PROPERTY, id),
+                    true
+            );
+        }
+    }
+
+    public void seedBuiltinRelationshipTypes() {
+        TemplateComponentRegistry<LocationRelationshipTypeTemplate, LocationRelationshipType> registry =
+                this.catalog.getTemplateRegistry(ComponentCatalog.LOCATION_RELATIONSHIP_TYPE_MAPPER);
+
+        for (ResourceIdentifier id : registry.getIds()) {
+            if (!id.isBuiltin()) {
+                continue;
+            }
+
+            registry.register(
+                    this.repository,
+                    this.catalog,
+                    this.expressions,
+                    this.auditService,
+                    ComponentReference.of(ComponentTypes.LOCATION_RELATIONSHIP_TYPE, id),
                     true
             );
         }

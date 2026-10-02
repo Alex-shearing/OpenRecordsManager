@@ -15,6 +15,7 @@ import org.springframework.stereotype.Component;
 public class BuiltinColumnResolver {
 
     private static final String PROPERTIES_ATTRIBUTE = "properties";
+    private static final String PROPERTY_VALUE_ATTRIBUTE = "value";
     private static final String TYPE_ATTRIBUTE = "type";
 
     private final MappingMetamodelImplementor mappingMetamodel;
@@ -24,31 +25,62 @@ public class BuiltinColumnResolver {
         this.mappingMetamodel = sessionFactory.getMappingMetamodel();
     }
 
-    String sqlColumn(Class<?> entityClass, String javaAttribute) {
-        AttributeMapping attribute = requireAttribute(entityPersister(entityClass), entityClass, javaAttribute);
-        if (!(attribute instanceof SelectableMapping selectable) || selectable.isFormula()) {
-            throw new IllegalArgumentException(
-                    "Attribute '" + javaAttribute + "' on " + entityClass.getName()
-                            + " is not a physical column"
-            );
+    /**
+     * @param column          the attribute's physical column
+     * @param tablePrimaryKey primary key of the table that owns {@code column} (used for joins)
+     */
+    record ResolvedColumn(QualifiedSqlColumn column, QualifiedSqlColumn tablePrimaryKey) {
+    }
+
+    ResolvedColumn resolveColumn(Class<?> entityClass, String javaAttribute) {
+        EntityPersister persister = entityPersister(entityClass);
+        SelectableMapping selectable = requirePhysicalSelectable(
+                requireAttribute(persister, entityClass, javaAttribute),
+                entityClass,
+                javaAttribute
+        );
+        String table = selectable.getContainingTableExpression();
+        if (table == null || table.isBlank()) {
+            table = tableName(persister, entityClass);
         }
-        return requireSelectableName(selectable, entityClass, javaAttribute);
+        return new ResolvedColumn(
+                new QualifiedSqlColumn(table, requireSelectableName(selectable, entityClass, javaAttribute)),
+                idColumnForTable(entityClass, table)
+        );
     }
 
     HolderTableMetadata holderTables(Class<?> entityClass) {
         EntityPersister persister = entityPersister(entityClass);
         PluralAttributeMapping properties = requirePlural(persister, entityClass);
+        String eavTable = propertyValueTable(properties, entityClass);
+
         return new HolderTableMetadata(
-                tableName(persister, entityClass),
                 idColumn(persister, entityClass),
-                collectionTable(properties, entityClass),
-                collectionFkColumn(properties, entityClass),
-                associationFkColumn(persister, entityClass)
+                holderFk(properties, entityClass, eavTable),
+                propertyId(properties, entityClass, eavTable),
+                propertyValue(properties, entityClass, eavTable),
+                getTypeColumn(persister, entityClass)
         );
     }
 
     private EntityPersister entityPersister(Class<?> entityClass) {
         return this.mappingMetamodel.getEntityDescriptor(entityClass);
+    }
+
+    private QualifiedSqlColumn idColumnForTable(Class<?> entityClass, String table) {
+        for (Class<?> type = entityClass; type != null && type != Object.class; type = type.getSuperclass()) {
+            EntityPersister persister = this.mappingMetamodel.findEntityDescriptor(type);
+            if (persister == null) {
+                continue;
+            }
+            if (table.equals(tableName(persister, type))) {
+                return idColumn(persister, type);
+            }
+        }
+        throw new IllegalArgumentException(
+                "Table '" + table + "' is not mapped by " + entityClass.getName()
+                        + " or a superclass entity"
+        );
     }
 
     private static String tableName(EntityPersister persister, Class<?> entityClass) {
@@ -59,7 +91,7 @@ public class BuiltinColumnResolver {
         return tableName;
     }
 
-    private static String idColumn(EntityPersister persister, Class<?> entityClass) {
+    private static QualifiedSqlColumn idColumn(EntityPersister persister, Class<?> entityClass) {
         String[] columns = persister.getIdentifierColumnNames();
         if (columns == null || columns.length != 1) {
             throw new IllegalStateException(
@@ -71,13 +103,13 @@ public class BuiltinColumnResolver {
         if (column.isBlank()) {
             throw new IllegalStateException("Blank identifier column on " + entityClass.getName());
         }
-        return column;
+        return new QualifiedSqlColumn(tableName(persister, entityClass), column);
     }
 
     /**
-     * Join-column name for a to-one association on the owning entity, or {@code null} if absent.
+     * Join-column for a to-one association on the owning entity, or {@code null} if absent.
      */
-    private static @Nullable String associationFkColumn(
+    private static @Nullable QualifiedSqlColumn getTypeColumn(
             EntityPersister persister,
             Class<?> entityClass
     ) {
@@ -91,27 +123,87 @@ public class BuiltinColumnResolver {
                             + " is not an association"
             );
         }
-        return singleKeyColumn(association.getForeignKeyDescriptor(), entityClass, TYPE_ATTRIBUTE);
+
+        return new QualifiedSqlColumn(
+                tableName(persister, entityClass),
+                singleColumnName(association.getForeignKeyDescriptor().getKeyPart(), entityClass, TYPE_ATTRIBUTE)
+        );
     }
 
-    private static String collectionTable(
-            PluralAttributeMapping plural,
+    /** Physical table for the holder's {@code properties} EAV map. */
+    private static String propertyValueTable(
+            PluralAttributeMapping properties,
             Class<?> entityClass
     ) {
-        String tableName = plural.getCollectionDescriptor().getTableName();
+        String tableName = properties.getCollectionDescriptor().getTableName();
         if (tableName == null || tableName.isBlank()) {
             throw new IllegalStateException(
-                    "Blank collection table for '" + PROPERTIES_ATTRIBUTE + "' on " + entityClass.getName()
+                    "Blank property-value table for '" + PROPERTIES_ATTRIBUTE + "' on " + entityClass.getName()
             );
         }
         return tableName;
     }
 
-    private static String collectionFkColumn(
-            PluralAttributeMapping plural,
-            Class<?> entityClass
+    /** FK from the EAV table back to the holder ({@code record_id} / {@code location_id}). */
+    private static QualifiedSqlColumn holderFk(
+            PluralAttributeMapping properties,
+            Class<?> entityClass,
+            String eavTable
     ) {
-        return singleKeyColumn(plural.getKeyDescriptor(), entityClass, PROPERTIES_ATTRIBUTE);
+        return new QualifiedSqlColumn(
+                eavTable,
+                singleColumnName(properties.getKeyDescriptor().getKeyPart(), entityClass, PROPERTIES_ATTRIBUTE)
+        );
+    }
+
+    /** Map-key column on the EAV table ({@code property_id}). */
+    private static QualifiedSqlColumn propertyId(
+            PluralAttributeMapping properties,
+            Class<?> entityClass,
+            String eavTable
+    ) {
+        CollectionPart index = properties.getIndexDescriptor();
+        if (index == null) {
+            throw new IllegalStateException(
+                    "No map-key mapping for '" + PROPERTIES_ATTRIBUTE + "' on " + entityClass.getName()
+            );
+        }
+        return new QualifiedSqlColumn(
+                eavTable,
+                singleColumnName(index, entityClass, PROPERTIES_ATTRIBUTE + ".key")
+        );
+    }
+
+    /** JSON value column on the EAV table ({@code property_value}). */
+    private static QualifiedSqlColumn propertyValue(
+            PluralAttributeMapping properties,
+            Class<?> entityClass,
+            String eavTable
+    ) {
+        CollectionPart element = properties.getElementDescriptor();
+        if (!(element instanceof EmbeddableValuedModelPart embeddable)) {
+            throw new IllegalStateException(
+                    "Expected an embeddable element for '" + PROPERTIES_ATTRIBUTE + "' on "
+                            + entityClass.getName()
+            );
+        }
+        String path = PROPERTIES_ATTRIBUTE + "." + PROPERTY_VALUE_ATTRIBUTE;
+        AttributeMapping valueAttribute = embeddable.getEmbeddableTypeDescriptor()
+                .findAttributeMapping(PROPERTY_VALUE_ATTRIBUTE);
+        if (valueAttribute == null) {
+            throw new IllegalStateException(
+                    "No '" + PROPERTY_VALUE_ATTRIBUTE + "' attribute on '" + PROPERTIES_ATTRIBUTE
+                            + "' element for " + entityClass.getName()
+            );
+        }
+        return new QualifiedSqlColumn(
+                eavTable,
+                requireSelectableName(
+                        requirePhysicalSelectable(valueAttribute, entityClass, path),
+                        entityClass,
+                        path
+                )
+        );
     }
 
     private static AttributeMapping requireAttribute(
@@ -142,41 +234,54 @@ public class BuiltinColumnResolver {
         return plural;
     }
 
-    private static String singleKeyColumn(
-            ForeignKeyDescriptor foreignKey,
+    private static SelectableMapping requirePhysicalSelectable(
+            AttributeMapping attribute,
             Class<?> entityClass,
-            String javaAttribute
+            String path
     ) {
-        ValuedModelPart keyPart = foreignKey.getKeyPart();
-        if (keyPart.getJdbcTypeCount() != 1) {
-            throw new IllegalStateException(
-                    "Expected a single FK column for '" + javaAttribute + "' on "
-                            + entityClass.getName() + ", got " + keyPart.getJdbcTypeCount()
+        if (!(attribute instanceof SelectableMapping selectable) || selectable.isFormula()) {
+            throw new IllegalArgumentException(
+                    "Attribute '" + path + "' on " + entityClass.getName()
+                            + " is not a physical column"
             );
         }
-        return requireSelectableName(keyPart.getSelectable(0), entityClass, javaAttribute);
+        return selectable;
+    }
+
+    private static String singleColumnName(
+            ValuedModelPart part,
+            Class<?> entityClass,
+            String path
+    ) {
+        if (part.getJdbcTypeCount() != 1) {
+            throw new IllegalStateException(
+                    "Expected a single column for '" + path + "' on "
+                            + entityClass.getName() + ", got " + part.getJdbcTypeCount()
+            );
+        }
+        return requireSelectableName(part.getSelectable(0), entityClass, path);
     }
 
     private static String requireSelectableName(
             SelectableMapping selectable,
             Class<?> entityClass,
-            String javaAttribute
+            String path
     ) {
         String column = selectable.getSelectableName();
         if (column == null || column.isBlank()) {
             throw new IllegalStateException(
-                    "Blank selectable name for '" + javaAttribute + "' on " + entityClass.getName()
+                    "Blank selectable name for '" + path + "' on " + entityClass.getName()
             );
         }
         return column;
     }
 
     record HolderTableMetadata(
-            String tableName,
-            String idColumn,
-            String propertyValueTable,
-            String propertyValueFk,
-            @Nullable String typeColumn
+            QualifiedSqlColumn primaryKey,
+            QualifiedSqlColumn holderFk,
+            QualifiedSqlColumn propertyId,
+            QualifiedSqlColumn propertyValue,
+            @Nullable QualifiedSqlColumn typeColumn
     ) {
     }
 }

@@ -8,11 +8,15 @@ import com.openrecordsmanager.filestore.middleware.MiddlewareRepository;
 import com.openrecordsmanager.filestore.store.FileStoreRepository;
 import com.openrecordsmanager.list.ListElementRepository;
 import com.openrecordsmanager.list.ListTypeRepository;
+import com.openrecordsmanager.location.LocationRepository;
+import com.openrecordsmanager.location.group.GroupRepository;
+import com.openrecordsmanager.location.relationship.LocationRelationshipRepository;
+import com.openrecordsmanager.location.relationship.LocationRelationshipTypeRepository;
+import com.openrecordsmanager.location.user.UserRepository;
 import com.openrecordsmanager.plugin.PluginRepository;
 import com.openrecordsmanager.property.ObjectPropertyRepository;
 import com.openrecordsmanager.record.RecordRepository;
 import com.openrecordsmanager.recordtype.RecordTypeRepository;
-import com.openrecordsmanager.user.UserRepository;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -30,6 +34,10 @@ public class DataRepository {
     public final MiddlewareRepository fileStoreMiddlewareRepo;
     public final PluginRepository pluginRepo;
     public final UserRepository userRepo;
+    public final GroupRepository groupRepo;
+    public final LocationRepository locationRepo;
+    public final LocationRelationshipTypeRepository locationRelationshipTypeRepo;
+    public final LocationRelationshipRepository locationRelationshipRepo;
 
     public DataRepository(
             AuditEventRepository auditEventRepo,
@@ -44,7 +52,11 @@ public class DataRepository {
             FileStoreRepository fileStoreRepo,
             MiddlewareRepository fileStoreMiddlewareRepo,
             PluginRepository pluginRepo,
-            UserRepository userRepo
+            UserRepository userRepo,
+            GroupRepository groupRepo,
+            LocationRepository locationRepo,
+            LocationRelationshipTypeRepository locationRelationshipTypeRepo,
+            LocationRelationshipRepository locationRelationshipRepo
     ) {
         this.auditEventRepo = auditEventRepo;
         this.auditPolicyRepo = auditPolicyRepo;
@@ -59,5 +71,9 @@ public class DataRepository {
         this.fileStoreMiddlewareRepo = fileStoreMiddlewareRepo;
         this.pluginRepo = pluginRepo;
         this.userRepo = userRepo;
+        this.groupRepo = groupRepo;
+        this.locationRepo = locationRepo;
+        this.locationRelationshipTypeRepo = locationRelationshipTypeRepo;
+        this.locationRelationshipRepo = locationRelationshipRepo;
     }
 }

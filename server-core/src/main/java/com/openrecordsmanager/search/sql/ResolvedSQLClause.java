@@ -33,7 +33,7 @@ public interface ResolvedSQLClause {
                 ObjectSearchSchema schema,
                 List<@Nullable Object> params
         ) {
-            String expr = this.builtin.sqlColumn();
+            String expr = this.builtin.column().column(support.getDialect());
             if (this.builtin.jsonStored()) {
                 boolean numeric = this.builtin.type() == PropertyType.NUMBER
                         || this.builtin.type() == PropertyType.DECIMAL;
@@ -71,9 +71,11 @@ public interface ResolvedSQLClause {
                     || this.property.getType() == PropertyType.DECIMAL;
 
             String extracted = numeric
-                    ? support.getDialect().jsonNumeric("pv.property_value")
-                    : support.getDialect().jsonText("pv.property_value");
+                    ? support.getDialect().jsonNumeric(schema.propertyValue().column(support.getDialect()))
+                    : support.getDialect().jsonText(schema.propertyValue().column(support.getDialect()));
 
+            // Bind property id before the value comparison so placeholders match SQL order.
+            params.add(this.property.getId().toString());
             String comparison = support.compare(
                     extracted,
                     this.property.getType(),
@@ -82,10 +84,14 @@ public interface ResolvedSQLClause {
                     params
             );
 
-            params.add(this.property.getId().toString());
-            return "EXISTS (SELECT 1 FROM " + schema.propertyValueTable() + " pv WHERE pv."
-                    + schema.propertyValueFk() + " = " + schema.idColumn()
-                    + " AND pv.property_id = ? AND " + comparison + ")";
+            return "EXISTS (SELECT 1 FROM %s WHERE %s = %s AND %s = ? AND %s)".formatted(
+                    schema.holderFk().tableName(support.getDialect()),
+                    schema.holderFk().column(support.getDialect()),
+                    schema.primaryKey().column(support.getDialect()),
+                    schema.propertyId().column(support.getDialect()),
+                    comparison
+            );
+
         }
     }
 }

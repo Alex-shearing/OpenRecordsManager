@@ -4,7 +4,7 @@ import com.openrecordsmanager.api.audit.AuditEntityType;
 import com.openrecordsmanager.database.DataRepository;
 import com.openrecordsmanager.plugin.ExpressionsService;
 import com.openrecordsmanager.rest.exception.ResourceNotFoundException;
-import com.openrecordsmanager.user.User;
+import com.openrecordsmanager.location.user.User;
 import org.springframework.stereotype.Service;
 
 import java.util.UUID;
