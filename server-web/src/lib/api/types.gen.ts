@@ -120,6 +120,19 @@ export type ObjectPropertyResponse = {
     dateModified: string;
 };
 
+export type UpdateLocationRelationshipTypeRequest = {
+    sourceKind?: 'user' | 'group' | 'any';
+    targetKind?: 'user' | 'group' | 'any';
+    uniquePerSource?: boolean;
+};
+
+export type LocationRelationshipTypeResponse = {
+    id: string;
+    sourceKind: 'user' | 'group' | 'any';
+    targetKind: 'user' | 'group' | 'any';
+    uniquePerSource: boolean;
+};
+
 export type UpdateListTypeRequest = {
     name: string;
 };
@@ -146,6 +159,21 @@ export type UpdateListElementRequest = {
     index: number;
     activeTo?: string;
     aliases: Array<string>;
+};
+
+export type UpdateGroupRequest = {
+    name?: string;
+    properties?: {
+        [key: string]: unknown;
+    };
+};
+
+export type GroupResponse = {
+    id: string;
+    name: string;
+    properties: {
+        [key: string]: unknown;
+    };
 };
 
 export type UpdateFileStoreRequest = {
@@ -235,7 +263,7 @@ export const AuditOperation = {
 export type AuditOperation = typeof AuditOperation[keyof typeof AuditOperation];
 
 export type AuditPolicyResponse = {
-    entityType: 'record' | 'user' | 'record_type' | 'config' | 'list' | 'list_element' | 'object_property' | 'file_store' | 'auth_provider' | 'record_revision' | 'file_store_middleware' | 'template' | 'plugin';
+    entityType: 'record' | 'user' | 'group' | 'location' | 'location_relationship' | 'location_relationship_type' | 'record_type' | 'config' | 'list' | 'list_element' | 'object_property' | 'file_store' | 'auth_provider' | 'record_revision' | 'file_store_middleware' | 'template' | 'plugin';
     operation: AuditOperation;
     enabled: boolean;
     requiresComment: boolean;
@@ -279,7 +307,8 @@ export const TemplateType = {
     LIST: 'list',
     LIST_ELEMENT: 'list_element',
     OBJECT_PROPERTY: 'object_property',
-    RECORD_TYPE: 'record_type'
+    RECORD_TYPE: 'record_type',
+    LOCATION_RELATIONSHIP_TYPE: 'location_relationship_type'
 } as const;
 
 export type TemplateType = typeof TemplateType[keyof typeof TemplateType];
@@ -327,6 +356,50 @@ export type PropertyTypeObject = {
     name?: string;
 };
 
+export type NewLocationRelationshipRequest = {
+    targetId: string;
+    typeId: string;
+    activeTo?: string;
+};
+
+export type LocationRelationshipResponse = {
+    id: string;
+    sourceId: string;
+    targetId: string;
+    typeId: string;
+    dateCreated: string;
+    activeTo?: string;
+};
+
+export type LocationSearchRequest = {
+    q?: string;
+    filters?: Array<SearchClause>;
+    match?: 'ALL' | 'ANY';
+    limit?: number;
+    cursor?: string;
+};
+
+export type LocationResponse = {
+    id: string;
+    name: string;
+    kind: 'user' | 'group' | 'any';
+    properties: {
+        [key: string]: unknown;
+    };
+};
+
+export type LocationSearchResponse = {
+    items?: Array<LocationResponse>;
+    nextCursor?: string;
+};
+
+export type NewLocationRelationshipTypeRequest = {
+    id: string;
+    sourceKind: 'user' | 'group' | 'any';
+    targetKind: 'user' | 'group' | 'any';
+    uniquePerSource?: boolean;
+};
+
 export type NewListTypeRequest = {
     id: string;
     name: string;
@@ -339,6 +412,26 @@ export type NewListElementRequest = {
     index?: number;
     activeTo?: string;
     aliases: Array<string>;
+};
+
+export type NewGroupRequest = {
+    name: string;
+    properties: {
+        [key: string]: unknown;
+    };
+};
+
+export type GroupSearchRequest = {
+    q?: string;
+    filters?: Array<SearchClause>;
+    match?: 'ALL' | 'ANY';
+    limit?: number;
+    cursor?: string;
+};
+
+export type GroupSearchResponse = {
+    items?: Array<GroupResponse>;
+    nextCursor?: string;
 };
 
 export type NewFileStoreRequest = {
@@ -627,7 +720,7 @@ export type AuditEventResponse = {
     actorId?: string;
     actorUsername?: string;
     operation?: 'CREATE' | 'READ' | 'UPDATE' | 'DELETE' | 'ACTION';
-    targetType?: 'record' | 'user' | 'record_type' | 'config' | 'list' | 'list_element' | 'object_property' | 'file_store' | 'auth_provider' | 'record_revision' | 'file_store_middleware' | 'template' | 'plugin';
+    targetType?: 'record' | 'user' | 'group' | 'location' | 'location_relationship' | 'location_relationship_type' | 'record_type' | 'config' | 'list' | 'list_element' | 'object_property' | 'file_store' | 'auth_provider' | 'record_revision' | 'file_store_middleware' | 'template' | 'plugin';
     targetId?: string;
     actionId?: string;
     summary?: string;
@@ -652,7 +745,7 @@ export type AuditPropertyChange = {
 };
 
 export type AuditRelationship = {
-    type?: 'record' | 'user' | 'record_type' | 'config' | 'list' | 'list_element' | 'object_property' | 'file_store' | 'auth_provider' | 'record_revision' | 'file_store_middleware' | 'template' | 'plugin';
+    type?: 'record' | 'user' | 'group' | 'location' | 'location_relationship' | 'location_relationship_type' | 'record_type' | 'config' | 'list' | 'list_element' | 'object_property' | 'file_store' | 'auth_provider' | 'record_revision' | 'file_store_middleware' | 'template' | 'plugin';
     id?: string;
     role?: string;
 };
@@ -1287,6 +1380,96 @@ export type ObjectPropertyUpdateResponses = {
 
 export type ObjectPropertyUpdateResponse = ObjectPropertyUpdateResponses[keyof ObjectPropertyUpdateResponses];
 
+export type GetLocationRelationshipTypeData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/location-relationship-type/{id}';
+};
+
+export type GetLocationRelationshipTypeErrors = {
+    /**
+     * Unauthorized
+     */
+    401: ApiErrorResponse;
+    /**
+     * Forbidden
+     */
+    403: ApiErrorResponse;
+    /**
+     * Not Found
+     */
+    404: ApiErrorResponse;
+    /**
+     * Audit comment required
+     */
+    422: ApiErrorResponse;
+    /**
+     * Internal Server error
+     */
+    500: ApiErrorResponse;
+};
+
+export type GetLocationRelationshipTypeError = GetLocationRelationshipTypeErrors[keyof GetLocationRelationshipTypeErrors];
+
+export type GetLocationRelationshipTypeResponses = {
+    /**
+     * OK
+     */
+    200: ApiSuccessEnvelope & {
+        data: LocationRelationshipTypeResponse;
+    };
+};
+
+export type GetLocationRelationshipTypeResponse = GetLocationRelationshipTypeResponses[keyof GetLocationRelationshipTypeResponses];
+
+export type UpdateLocationRelationshipTypeData = {
+    body: UpdateLocationRelationshipTypeRequest;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/location-relationship-type/{id}';
+};
+
+export type UpdateLocationRelationshipTypeErrors = {
+    /**
+     * Unauthorized
+     */
+    401: ApiErrorResponse;
+    /**
+     * Forbidden
+     */
+    403: ApiErrorResponse;
+    /**
+     * Not Found
+     */
+    404: ApiErrorResponse;
+    /**
+     * Audit comment required
+     */
+    422: ApiErrorResponse;
+    /**
+     * Internal Server error
+     */
+    500: ApiErrorResponse;
+};
+
+export type UpdateLocationRelationshipTypeError = UpdateLocationRelationshipTypeErrors[keyof UpdateLocationRelationshipTypeErrors];
+
+export type UpdateLocationRelationshipTypeResponses = {
+    /**
+     * OK
+     */
+    200: ApiSuccessEnvelope & {
+        data: LocationRelationshipTypeResponse;
+    };
+};
+
+export type UpdateLocationRelationshipTypeResponse = UpdateLocationRelationshipTypeResponses[keyof UpdateLocationRelationshipTypeResponses];
+
 export type DeleteListData = {
     body?: never;
     path: {
@@ -1608,6 +1791,96 @@ export type UpdateListElementResponses = {
 };
 
 export type UpdateListElementResponse = UpdateListElementResponses[keyof UpdateListElementResponses];
+
+export type GetGroupData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/group/{id}';
+};
+
+export type GetGroupErrors = {
+    /**
+     * Unauthorized
+     */
+    401: ApiErrorResponse;
+    /**
+     * Forbidden
+     */
+    403: ApiErrorResponse;
+    /**
+     * Not Found
+     */
+    404: ApiErrorResponse;
+    /**
+     * Audit comment required
+     */
+    422: ApiErrorResponse;
+    /**
+     * Internal Server error
+     */
+    500: ApiErrorResponse;
+};
+
+export type GetGroupError = GetGroupErrors[keyof GetGroupErrors];
+
+export type GetGroupResponses = {
+    /**
+     * OK
+     */
+    200: ApiSuccessEnvelope & {
+        data: GroupResponse;
+    };
+};
+
+export type GetGroupResponse = GetGroupResponses[keyof GetGroupResponses];
+
+export type UpdateGroupData = {
+    body: UpdateGroupRequest;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/group/{id}';
+};
+
+export type UpdateGroupErrors = {
+    /**
+     * Unauthorized
+     */
+    401: ApiErrorResponse;
+    /**
+     * Forbidden
+     */
+    403: ApiErrorResponse;
+    /**
+     * Not Found
+     */
+    404: ApiErrorResponse;
+    /**
+     * Audit comment required
+     */
+    422: ApiErrorResponse;
+    /**
+     * Internal Server error
+     */
+    500: ApiErrorResponse;
+};
+
+export type UpdateGroupError = UpdateGroupErrors[keyof UpdateGroupErrors];
+
+export type UpdateGroupResponses = {
+    /**
+     * OK
+     */
+    200: ApiSuccessEnvelope & {
+        data: GroupResponse;
+    };
+};
+
+export type UpdateGroupResponse = UpdateGroupResponses[keyof UpdateGroupResponses];
 
 export type FileStoreDeleteData = {
     body?: never;
@@ -2640,6 +2913,224 @@ export type ObjectPropertyCreateResponses = {
 
 export type ObjectPropertyCreateResponse = ObjectPropertyCreateResponses[keyof ObjectPropertyCreateResponses];
 
+export type ListLocationRelationshipsData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: {
+        direction?: 'outgoing' | 'incoming';
+        type?: string;
+    };
+    url: '/api/location/{id}/relationships';
+};
+
+export type ListLocationRelationshipsErrors = {
+    /**
+     * Unauthorized
+     */
+    401: ApiErrorResponse;
+    /**
+     * Forbidden
+     */
+    403: ApiErrorResponse;
+    /**
+     * Not Found
+     */
+    404: ApiErrorResponse;
+    /**
+     * Audit comment required
+     */
+    422: ApiErrorResponse;
+    /**
+     * Internal Server error
+     */
+    500: ApiErrorResponse;
+};
+
+export type ListLocationRelationshipsError = ListLocationRelationshipsErrors[keyof ListLocationRelationshipsErrors];
+
+export type ListLocationRelationshipsResponses = {
+    /**
+     * OK
+     */
+    200: ApiSuccessEnvelope & {
+        data: Array<LocationRelationshipResponse>;
+    };
+};
+
+export type ListLocationRelationshipsResponse = ListLocationRelationshipsResponses[keyof ListLocationRelationshipsResponses];
+
+export type CreateLocationRelationshipData = {
+    body: NewLocationRelationshipRequest;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/location/{id}/relationships';
+};
+
+export type CreateLocationRelationshipErrors = {
+    /**
+     * Unauthorized
+     */
+    401: ApiErrorResponse;
+    /**
+     * Forbidden
+     */
+    403: ApiErrorResponse;
+    /**
+     * Not Found
+     */
+    404: ApiErrorResponse;
+    /**
+     * Resource in use
+     */
+    409: ApiErrorResponse;
+    /**
+     * Audit comment required
+     */
+    422: ApiErrorResponse;
+    /**
+     * Internal Server error
+     */
+    500: ApiErrorResponse;
+};
+
+export type CreateLocationRelationshipError = CreateLocationRelationshipErrors[keyof CreateLocationRelationshipErrors];
+
+export type CreateLocationRelationshipResponses = {
+    /**
+     * OK
+     */
+    200: ApiSuccessEnvelope & {
+        data: LocationRelationshipResponse;
+    };
+};
+
+export type CreateLocationRelationshipResponse = CreateLocationRelationshipResponses[keyof CreateLocationRelationshipResponses];
+
+export type SearchLocationsData = {
+    body: LocationSearchRequest;
+    path?: never;
+    query?: never;
+    url: '/api/location/search';
+};
+
+export type SearchLocationsErrors = {
+    /**
+     * Unauthorized
+     */
+    401: ApiErrorResponse;
+    /**
+     * Forbidden
+     */
+    403: ApiErrorResponse;
+    /**
+     * Audit comment required
+     */
+    422: ApiErrorResponse;
+    /**
+     * Internal Server error
+     */
+    500: ApiErrorResponse;
+};
+
+export type SearchLocationsError = SearchLocationsErrors[keyof SearchLocationsErrors];
+
+export type SearchLocationsResponses = {
+    /**
+     * OK
+     */
+    200: ApiSuccessEnvelope & {
+        data: LocationSearchResponse;
+    };
+};
+
+export type SearchLocationsResponse = SearchLocationsResponses[keyof SearchLocationsResponses];
+
+export type ListLocationRelationshipTypesData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/location-relationship-type';
+};
+
+export type ListLocationRelationshipTypesErrors = {
+    /**
+     * Unauthorized
+     */
+    401: ApiErrorResponse;
+    /**
+     * Forbidden
+     */
+    403: ApiErrorResponse;
+    /**
+     * Audit comment required
+     */
+    422: ApiErrorResponse;
+    /**
+     * Internal Server error
+     */
+    500: ApiErrorResponse;
+};
+
+export type ListLocationRelationshipTypesError = ListLocationRelationshipTypesErrors[keyof ListLocationRelationshipTypesErrors];
+
+export type ListLocationRelationshipTypesResponses = {
+    /**
+     * OK
+     */
+    200: ApiSuccessEnvelope & {
+        data: Array<LocationRelationshipTypeResponse>;
+    };
+};
+
+export type ListLocationRelationshipTypesResponse = ListLocationRelationshipTypesResponses[keyof ListLocationRelationshipTypesResponses];
+
+export type CreateLocationRelationshipTypeData = {
+    body: NewLocationRelationshipTypeRequest;
+    path?: never;
+    query?: never;
+    url: '/api/location-relationship-type';
+};
+
+export type CreateLocationRelationshipTypeErrors = {
+    /**
+     * Unauthorized
+     */
+    401: ApiErrorResponse;
+    /**
+     * Forbidden
+     */
+    403: ApiErrorResponse;
+    /**
+     * Resource in use
+     */
+    409: ApiErrorResponse;
+    /**
+     * Audit comment required
+     */
+    422: ApiErrorResponse;
+    /**
+     * Internal Server error
+     */
+    500: ApiErrorResponse;
+};
+
+export type CreateLocationRelationshipTypeError = CreateLocationRelationshipTypeErrors[keyof CreateLocationRelationshipTypeErrors];
+
+export type CreateLocationRelationshipTypeResponses = {
+    /**
+     * OK
+     */
+    200: ApiSuccessEnvelope & {
+        data: LocationRelationshipTypeResponse;
+    };
+};
+
+export type CreateLocationRelationshipTypeResponse = CreateLocationRelationshipTypeResponses[keyof CreateLocationRelationshipTypeResponses];
+
 export type GetListsData = {
     body?: never;
     path?: never;
@@ -2721,6 +3212,84 @@ export type CreateListResponses = {
 };
 
 export type CreateListResponse = CreateListResponses[keyof CreateListResponses];
+
+export type CreateGroupData = {
+    body: NewGroupRequest;
+    path?: never;
+    query?: never;
+    url: '/api/group';
+};
+
+export type CreateGroupErrors = {
+    /**
+     * Unauthorized
+     */
+    401: ApiErrorResponse;
+    /**
+     * Forbidden
+     */
+    403: ApiErrorResponse;
+    /**
+     * Audit comment required
+     */
+    422: ApiErrorResponse;
+    /**
+     * Internal Server error
+     */
+    500: ApiErrorResponse;
+};
+
+export type CreateGroupError = CreateGroupErrors[keyof CreateGroupErrors];
+
+export type CreateGroupResponses = {
+    /**
+     * OK
+     */
+    200: ApiSuccessEnvelope & {
+        data: GroupResponse;
+    };
+};
+
+export type CreateGroupResponse = CreateGroupResponses[keyof CreateGroupResponses];
+
+export type SearchGroupsData = {
+    body: GroupSearchRequest;
+    path?: never;
+    query?: never;
+    url: '/api/group/search';
+};
+
+export type SearchGroupsErrors = {
+    /**
+     * Unauthorized
+     */
+    401: ApiErrorResponse;
+    /**
+     * Forbidden
+     */
+    403: ApiErrorResponse;
+    /**
+     * Audit comment required
+     */
+    422: ApiErrorResponse;
+    /**
+     * Internal Server error
+     */
+    500: ApiErrorResponse;
+};
+
+export type SearchGroupsError = SearchGroupsErrors[keyof SearchGroupsErrors];
+
+export type SearchGroupsResponses = {
+    /**
+     * OK
+     */
+    200: ApiSuccessEnvelope & {
+        data: GroupSearchResponse;
+    };
+};
+
+export type SearchGroupsResponse = SearchGroupsResponses[keyof SearchGroupsResponses];
 
 export type FileStoreRetrieveAllData = {
     body?: never;
@@ -3512,6 +4081,51 @@ export type GetRecordTypeResponses = {
 
 export type GetRecordTypeResponse = GetRecordTypeResponses[keyof GetRecordTypeResponses];
 
+export type GetLocationData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/location/{id}';
+};
+
+export type GetLocationErrors = {
+    /**
+     * Unauthorized
+     */
+    401: ApiErrorResponse;
+    /**
+     * Forbidden
+     */
+    403: ApiErrorResponse;
+    /**
+     * Not Found
+     */
+    404: ApiErrorResponse;
+    /**
+     * Audit comment required
+     */
+    422: ApiErrorResponse;
+    /**
+     * Internal Server error
+     */
+    500: ApiErrorResponse;
+};
+
+export type GetLocationError = GetLocationErrors[keyof GetLocationErrors];
+
+export type GetLocationResponses = {
+    /**
+     * OK
+     */
+    200: ApiSuccessEnvelope & {
+        data: LocationResponse;
+    };
+};
+
+export type GetLocationResponse = GetLocationResponses[keyof GetLocationResponses];
+
 export type SearchListElementData = {
     body?: never;
     path: {
@@ -4081,3 +4695,47 @@ export type GetAuditEventResponses = {
 };
 
 export type GetAuditEventResponse = GetAuditEventResponses[keyof GetAuditEventResponses];
+
+export type EndLocationRelationshipData = {
+    body?: never;
+    path: {
+        id: string;
+        relationshipId: string;
+    };
+    query?: never;
+    url: '/api/location/{id}/relationships/{relationshipId}';
+};
+
+export type EndLocationRelationshipErrors = {
+    /**
+     * Unauthorized
+     */
+    401: ApiErrorResponse;
+    /**
+     * Forbidden
+     */
+    403: ApiErrorResponse;
+    /**
+     * Not Found
+     */
+    404: ApiErrorResponse;
+    /**
+     * Audit comment required
+     */
+    422: ApiErrorResponse;
+    /**
+     * Internal Server error
+     */
+    500: ApiErrorResponse;
+};
+
+export type EndLocationRelationshipError = EndLocationRelationshipErrors[keyof EndLocationRelationshipErrors];
+
+export type EndLocationRelationshipResponses = {
+    /**
+     * OK
+     */
+    200: ApiSuccessEnvelope;
+};
+
+export type EndLocationRelationshipResponse = EndLocationRelationshipResponses[keyof EndLocationRelationshipResponses];
