@@ -1,4 +1,4 @@
-package com.openrecordsmanager.recordtype;
+package com.openrecordsmanager.record.type;
 
 import com.openrecordsmanager.api.ResourceIdentifier;
 import org.springframework.data.jpa.repository.JpaRepository;

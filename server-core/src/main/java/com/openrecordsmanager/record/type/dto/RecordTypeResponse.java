@@ -1,8 +1,8 @@
-package com.openrecordsmanager.recordtype.dto;
+package com.openrecordsmanager.record.type.dto;
 
 import com.openrecordsmanager.api.ResourceIdentifier;
 import com.openrecordsmanager.api.template.recordtype.SecurityFilterUsage;
-import com.openrecordsmanager.recordtype.RecordType;
+import com.openrecordsmanager.record.type.RecordType;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import org.jspecify.annotations.Nullable;

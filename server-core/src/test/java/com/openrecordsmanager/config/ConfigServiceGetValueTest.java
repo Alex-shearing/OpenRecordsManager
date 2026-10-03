@@ -21,7 +21,7 @@ import com.openrecordsmanager.plugin.PluginRepository;
 import com.openrecordsmanager.plugin.registry.ComponentCatalog;
 import com.openrecordsmanager.property.ObjectPropertyRepository;
 import com.openrecordsmanager.record.RecordRepository;
-import com.openrecordsmanager.recordtype.RecordTypeRepository;
+import com.openrecordsmanager.record.type.RecordTypeRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

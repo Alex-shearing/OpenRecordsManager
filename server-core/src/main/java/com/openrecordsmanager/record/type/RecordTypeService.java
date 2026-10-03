@@ -1,11 +1,11 @@
-package com.openrecordsmanager.recordtype;
+package com.openrecordsmanager.record.type;
 
 import com.openrecordsmanager.api.ResourceIdentifier;
 import com.openrecordsmanager.api.audit.AuditEntityType;
 import com.openrecordsmanager.api.types.ComponentTypes;
 import com.openrecordsmanager.audit.AuditService;
 import com.openrecordsmanager.database.DataRepository;
-import com.openrecordsmanager.recordtype.dto.RecordTypeResponse;
+import com.openrecordsmanager.record.type.dto.RecordTypeResponse;
 import com.openrecordsmanager.rest.exception.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

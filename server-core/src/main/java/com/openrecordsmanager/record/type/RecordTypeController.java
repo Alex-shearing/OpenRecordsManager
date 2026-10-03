@@ -1,7 +1,7 @@
-package com.openrecordsmanager.recordtype;
+package com.openrecordsmanager.record.type;
 
 import com.openrecordsmanager.api.ResourceIdentifier;
-import com.openrecordsmanager.recordtype.dto.RecordTypeResponse;
+import com.openrecordsmanager.record.type.dto.RecordTypeResponse;
 import com.openrecordsmanager.rest.swagger.DefaultApiResponses;
 import com.openrecordsmanager.rest.swagger.NotFoundApiResponse;
 import io.swagger.v3.oas.annotations.Operation;

@@ -1,9 +1,9 @@
-package com.openrecordsmanager.recordtype;
+package com.openrecordsmanager.record.type;
 
+import com.openrecordsmanager.location.user.User;
 import com.openrecordsmanager.plugin.ExpressionsService;
 import com.openrecordsmanager.property.ObjectProperty;
 import com.openrecordsmanager.record.Record;
-import com.openrecordsmanager.location.user.User;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 import jakarta.persistence.ManyToOne;

@@ -16,7 +16,7 @@ import com.openrecordsmanager.location.user.UserRepository;
 import com.openrecordsmanager.plugin.PluginRepository;
 import com.openrecordsmanager.property.ObjectPropertyRepository;
 import com.openrecordsmanager.record.RecordRepository;
-import com.openrecordsmanager.recordtype.RecordTypeRepository;
+import com.openrecordsmanager.record.type.RecordTypeRepository;
 import org.springframework.stereotype.Service;
 
 @Service

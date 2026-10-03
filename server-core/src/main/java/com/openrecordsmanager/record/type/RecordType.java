@@ -1,15 +1,15 @@
-package com.openrecordsmanager.recordtype;
+package com.openrecordsmanager.record.type;
 
 import com.openrecordsmanager.api.ResourceIdentifier;
 import com.openrecordsmanager.api.template.recordtype.SecurityFilterUsage;
 import com.openrecordsmanager.api.types.ComponentType;
 import com.openrecordsmanager.api.types.ComponentTypes;
 import com.openrecordsmanager.database.util.ResourceIdentifierJavaType;
+import com.openrecordsmanager.location.user.User;
 import com.openrecordsmanager.plugin.ExpressionsService;
 import com.openrecordsmanager.property.ObjectProperty;
 import com.openrecordsmanager.record.Record;
 import com.openrecordsmanager.template.RegisteredComponent;
-import com.openrecordsmanager.location.user.User;
 import jakarta.persistence.*;
 import org.hibernate.annotations.JavaType;
 import org.hibernate.annotations.JdbcTypeCode;

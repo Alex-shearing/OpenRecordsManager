@@ -1,8 +1,8 @@
-package com.openrecordsmanager.recordtype.dto;
+package com.openrecordsmanager.record.type.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.openrecordsmanager.property.dto.ObjectPropertyResponse;
-import com.openrecordsmanager.recordtype.RecordTypeProperty;
+import com.openrecordsmanager.record.type.RecordTypeProperty;
 import jakarta.validation.constraints.NotNull;
 import org.jspecify.annotations.Nullable;
 import tools.jackson.databind.JsonNode;

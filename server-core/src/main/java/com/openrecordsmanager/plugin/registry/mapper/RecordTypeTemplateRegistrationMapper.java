@@ -11,8 +11,8 @@ import com.openrecordsmanager.database.DataRepository;
 import com.openrecordsmanager.plugin.ExpressionsService;
 import com.openrecordsmanager.plugin.registry.ComponentCatalog;
 import com.openrecordsmanager.property.ObjectProperty;
-import com.openrecordsmanager.recordtype.RecordType;
-import com.openrecordsmanager.recordtype.RecordTypeProperty;
+import com.openrecordsmanager.record.type.RecordType;
+import com.openrecordsmanager.record.type.RecordTypeProperty;
 
 import java.util.Optional;
 import java.util.Set;
