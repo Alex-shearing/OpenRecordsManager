@@ -46,6 +46,7 @@ export type UserResponse = {
     id: string;
     type: string;
     username: string;
+    authProvider?: string;
     enabled: boolean;
     properties: {
         [key: string]: unknown;
@@ -67,6 +68,7 @@ export type TranslationOverrideResponse = {
 
 export type UpdateRecordRequest = {
     type?: string;
+    title?: string;
     properties?: {
         [key: string]: unknown;
     };
@@ -319,6 +321,7 @@ export type TemplateType = typeof TemplateType[keyof typeof TemplateType];
 
 export type NewRecordRequest = {
     type: string;
+    title: string;
     /**
      * Property id → JSON value
      */
@@ -4052,7 +4055,7 @@ export type GetRecordTypesResponses = {
      * OK
      */
     200: ApiSuccessEnvelope & {
-        data: Array<string>;
+        data: Array<RecordTypeResponse>;
     };
 };
 
@@ -4106,7 +4109,12 @@ export type GetRecordTypeResponse = GetRecordTypeResponses[keyof GetRecordTypeRe
 export type ListLocationTypesData = {
     body?: never;
     path?: never;
-    query?: never;
+    query?: {
+        /**
+         * Optional location kind filter
+         */
+        kind?: 'user' | 'group' | 'any';
+    };
     url: '/api/location_types';
 };
 
@@ -4136,7 +4144,7 @@ export type ListLocationTypesResponses = {
      * OK
      */
     200: ApiSuccessEnvelope & {
-        data: Array<string>;
+        data: Array<LocationTypeResponse>;
     };
 };
 

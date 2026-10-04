@@ -1,24 +1,24 @@
 <script lang="ts">
 	import type { ActionResponse } from '$lib/api/types.gen';
-	import { UserController } from '$lib/api';
+	import { RecordController } from '$lib/api';
 	import { auditHeaders, getApiClient } from '$lib/api-client';
 	import { t } from '$lib/i18n/catalog';
-	import { userActionDescription } from '$lib/i18n/labels';
+	import { recordActionDescription } from '$lib/i18n/labels';
 	import AppDialog from './AppDialog.svelte';
 	import DialogActions from './DialogActions.svelte';
 	import SchemaForm from './SchemaForm.svelte';
 	import type { SchemaFormError } from './SchemaForm.svelte';
 
-	const formId = 'user-action-dialog-form';
+	const formId = 'record-action-dialog-form';
 
 	let {
 		open = $bindable(false),
-		userId,
+		recordId,
 		action,
 		onclose,
 	}: {
 		open?: boolean;
-		userId: string;
+		recordId: string;
 		action?: ActionResponse;
 		onclose?: () => void;
 	} = $props();
@@ -48,9 +48,9 @@
 		submitting = true;
 		error = undefined;
 
-		const { error: apiError } = await UserController.executeAction({
+		const { error: apiError } = await RecordController.executeAction1({
 			client: getApiClient(),
-			path: { id: userId, action: action.id },
+			path: { id: recordId, action: action.id },
 			body: values,
 			headers: auditHeaders(auditComment),
 		});
@@ -68,9 +68,9 @@
 
 {#if action}
 	{#key action.id}
-		<AppDialog bind:open title={`user_action.${action.id.replaceAll(':', '.')}.name`} onclose={handleClose}>
+		<AppDialog bind:open title={`record_action.${action.id.replaceAll(':', '.')}.name`} onclose={handleClose}>
 			{#snippet description()}
-				{userActionDescription(action.id)}
+				{recordActionDescription(action.id)}
 			{/snippet}
 			{#snippet body()}
 				<form id={formId} class="flex flex-col gap-4" onsubmit={handleSubmit} novalidate>
@@ -90,7 +90,7 @@
 				</form>
 			{/snippet}
 			{#snippet footer()}
-				<DialogActions {formId} confirmLabel={`user_action.${action.id.replaceAll(':', '.')}.name`} {submitting} />
+				<DialogActions {formId} confirmLabel={`record_action.${action.id.replaceAll(':', '.')}.name`} {submitting} />
 			{/snippet}
 		</AppDialog>
 	{/key}

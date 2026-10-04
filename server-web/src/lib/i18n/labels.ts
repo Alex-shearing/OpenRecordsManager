@@ -22,6 +22,14 @@ export function recordTypeDescription(id: string): string {
 	return t(`record_type.${idSegment(id)}.description`);
 }
 
+export function locationTypeName(id: string): string {
+	return t(`location_type.${idSegment(id)}.name`);
+}
+
+export function locationTypeDescription(id: string): string {
+	return t(`location_type.${idSegment(id)}.description`);
+}
+
 export function listTypeName(id: string): string {
 	return t(`list.${idSegment(id)}.name`);
 }
@@ -77,6 +85,8 @@ export function templateName(type: string, id: string): string {
 			return listElementName(id);
 		case 'record_type':
 			return recordTypeName(id);
+		case 'location_type':
+			return locationTypeName(id);
 		default:
 			return t(`${type}.${idSegment(id)}.name`);
 	}

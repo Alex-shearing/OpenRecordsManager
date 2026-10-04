@@ -2,14 +2,14 @@
 	import { NavigationMenu } from 'bits-ui';
 	import { page } from '$app/state';
 	import type { Snippet } from 'svelte';
-	import type { RouteId } from '$app/types';
-	import { resolve, resolveRoute } from '$app/paths';
+	import { resolve } from '$app/paths';
+	import type { StaticRouteId } from '$lib/routing';
 
 	let {
 		route,
 		children,
 	}: {
-		route: RouteId;
+		route: StaticRouteId;
 		children: Snippet;
 	} = $props();
 

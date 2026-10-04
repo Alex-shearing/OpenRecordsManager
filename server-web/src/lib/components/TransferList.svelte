@@ -16,12 +16,15 @@
 		items,
 		selected = $bindable<string[]>([]),
 		getKey,
+		getSearchText,
+		availableLimit = 10,
 		disabled = false,
 		labelledBy,
 		selectedTitle = 'web.transfer.selected',
 		availableTitle = 'web.transfer.available',
 		selectedEmpty = 'web.transfer.none_selected',
 		availableEmpty = 'web.transfer.none_available',
+		noMatches = 'web.transfer.no_matches',
 		selectedHint = 'web.transfer.drag_selected_hint',
 		availableHint = 'web.transfer.drag_available_hint',
 		compareAvailable,
@@ -30,12 +33,15 @@
 		items: T[];
 		selected?: string[];
 		getKey: (item: T) => string;
+		getSearchText?: (item: T) => string;
+		availableLimit?: number;
 		disabled?: boolean;
 		labelledBy?: string;
 		selectedTitle?: string;
 		availableTitle?: string;
 		selectedEmpty?: string;
 		availableEmpty?: string;
+		noMatches?: string;
 		selectedHint?: string;
 		availableHint?: string;
 		compareAvailable?: (a: T, b: T) => number;
@@ -45,6 +51,7 @@
 	const baseId = $props.id();
 	const selectedHeadingId = `${baseId}-selected`;
 	const availableHeadingId = `${baseId}-available`;
+	const availableSearchId = `${baseId}-available-search`;
 
 	const byKey = $derived(new Map(items.map(entry => [getKey(entry), entry])));
 
@@ -58,6 +65,20 @@
 		}
 		return remaining;
 	});
+
+	let availableQuery = $state('');
+
+	const filteredAvailableItems = $derived.by(() => {
+		const query = availableQuery.trim().toLowerCase();
+		if (!query) return availableItems;
+		return availableItems.filter(entry => {
+			const text = (getSearchText?.(entry) ?? getKey(entry)).toLowerCase();
+			return text.includes(query);
+		});
+	});
+
+	const showSearch = $derived(availableItems.length > availableLimit);
+	const visibleItems = $derived(filteredAvailableItems.slice(0, availableLimit));
 
 	let dragKey = $state<string | null>(null);
 	let dragFrom = $state<ListSide | null>(null);
@@ -219,6 +240,7 @@
 						ondragend={clearDrag}
 						ondragover={event => onDragOverItem('selected', index, event)}
 						ondrop={event => onDropItem('selected', index, event)}
+						ondblclick={() => remove(getKey(entry))}
 					>
 						<span class="shrink-0 text-muted-foreground" aria-hidden="true">
 							<DotsSixVerticalIcon class="size-4" />
@@ -277,24 +299,35 @@
 		<header class="border-b border-border px-3 py-2">
 			<h3 id={availableHeadingId} class="text-label">{t(availableTitle)}</h3>
 			<p class="text-hint text-xs">{t(availableHint)}</p>
+			{#if showSearch}
+				<input
+					id={availableSearchId}
+					type="search"
+					class="input mt-2 w-full"
+					placeholder={t('web.transfer.search_placeholder')}
+					aria-label={t('web.transfer.search_placeholder')}
+					bind:value={availableQuery}
+					{disabled}
+				/>
+			{/if}
 		</header>
 
 		{#if availableItems.length === 0}
 			<p class="p-3 text-sm text-hint">{t(availableEmpty)}</p>
+		{:else if visibleItems.length === 0}
+			<p class="p-3 text-sm text-hint">{t(noMatches)}</p>
 		{:else}
 			<ul class="flex flex-1 flex-col gap-1 p-2">
-				{#each availableItems as entry (getKey(entry))}
+				{#each visibleItems as entry (getKey(entry))}
 					<li
-						class={[
-							'flex items-center gap-1 rounded-md px-1 py-1',
-							dragKey === getKey(entry) && 'opacity-50',
-						]}
+						class={['flex items-center gap-1 rounded-md px-1 py-1', dragKey === getKey(entry) && 'opacity-50']}
 						animate:flip={{ duration: motionDuration.flip }}
 						in:fade={{ duration: motionDuration.fade }}
 						out:fade={{ duration: motionDuration.fade }}
 						draggable={!disabled}
 						ondragstart={event => onDragStart('available', getKey(entry), event)}
 						ondragend={clearDrag}
+						ondblclick={() => add(getKey(entry))}
 					>
 						<div class="min-w-0 flex-1 text-sm">{@render item(entry)}</div>
 						<button
@@ -309,6 +342,11 @@
 					</li>
 				{/each}
 			</ul>
+			{#if filteredAvailableItems.length > visibleItems.length}
+				<p class="px-3 pb-2 text-xs text-hint">
+					{t('web.transfer.showing_limited', visibleItems.length, filteredAvailableItems.length)}
+				</p>
+			{/if}
 		{/if}
 	</section>
 </div>

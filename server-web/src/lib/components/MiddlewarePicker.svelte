@@ -19,7 +19,7 @@
 	const labelId = $props.id();
 
 	function compareAvailable(a: SimpleMiddlewareResponse, b: SimpleMiddlewareResponse) {
-		const nameCmp = (a.name ?? '').localeCompare(b.name ?? '');
+		const nameCmp = a.name.localeCompare(b.name);
 		if (nameCmp !== 0) return nameCmp;
 		const typeCmp = a.type.localeCompare(b.type);
 		return typeCmp !== 0 ? typeCmp : a.id.localeCompare(b.id);
@@ -40,6 +40,7 @@
 			items={middlewares}
 			bind:selected
 			getKey={middleware => middleware.id}
+			getSearchText={m => `${m.name} ${m.type} ${m.id}`}
 			{disabled}
 			labelledBy={labelId}
 			selectedTitle="web.common.enabled"

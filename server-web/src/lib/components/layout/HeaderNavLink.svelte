@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
-	import type { RouteId } from '$app/types';
 	import { t } from '$lib/i18n/catalog';
+	import type { StaticRouteId } from '$lib/routing';
 	import type { Component, Snippet } from 'svelte';
 	import type { IconComponentProps } from 'phosphor-svelte';
 
@@ -14,7 +14,7 @@
 		class: className = '',
 		children,
 	}: {
-		route?: RouteId;
+		route?: StaticRouteId;
 		href?: string;
 		label?: string;
 		icon?: Component<IconComponentProps>;
