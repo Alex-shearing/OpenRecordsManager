@@ -5,6 +5,7 @@ import com.openrecordsmanager.api.ResourceIdentifier;
 import com.openrecordsmanager.api.builtin.BuiltinConfigs;
 import com.openrecordsmanager.api.builtin.BuiltinPlugin;
 import com.openrecordsmanager.api.builtin.BuiltinProperties;
+import com.openrecordsmanager.api.builtin.BuiltinPropertyIds;
 import com.openrecordsmanager.database.schema.SchemaMigrationState;
 import org.flywaydb.core.Flyway;
 import org.junit.jupiter.api.Test;
@@ -68,7 +69,7 @@ class PrimaryOfflineIntegrationTest {
         try (Connection connection = DriverManager.getConnection(jdbcUrl)) {
             Timestamp now = Timestamp.from(Instant.now());
 
-            // /api/user/me serializes User wire properties via ObjectPropertyLookup; primary seeding
+            // /api/location/me serializes User wire properties via ObjectPropertyLookup; primary seeding
             // is skipped when the primary DB is offline, so builtins must exist on the read replica.
             try (PreparedStatement property = connection.prepareStatement(
                     "INSERT INTO object_property (id, type, user_hidden, date_created, date_modified) VALUES (?, ?, ?, ?, ?)"
@@ -116,6 +117,28 @@ class PrimaryOfflineIntegrationTest {
                 locationType.executeUpdate();
             }
 
+            try (PreparedStatement typeProperty = connection.prepareStatement(
+                    "INSERT INTO location_type_property (location_type, property_id, default_value) VALUES (?, ?, NULL)"
+            )) {
+                for (String propertyId : new String[]{
+                        BuiltinPropertyIds.NAME,
+                        BuiltinPropertyIds.NOTES,
+                        BuiltinPropertyIds.DATE_CREATED,
+                        BuiltinPropertyIds.DATE_MODIFIED,
+                        BuiltinPropertyIds.GIVEN_NAME,
+                        BuiltinPropertyIds.SURNAME,
+                        BuiltinPropertyIds.HONORIFIC,
+                        BuiltinPropertyIds.EMAIL
+                }) {
+                    typeProperty.setString(1, "builtin:user");
+                    typeProperty.setString(
+                            2,
+                            new ResourceIdentifier(BuiltinPlugin.BUILTIN_PLUGIN_NAME, propertyId).toString()
+                    );
+                    typeProperty.executeUpdate();
+                }
+            }
+
             try (PreparedStatement location = connection.prepareStatement(
                     """
                             INSERT INTO location
@@ -135,15 +158,14 @@ class PrimaryOfflineIntegrationTest {
             try (PreparedStatement user = connection.prepareStatement(
                     """
                             INSERT INTO user_details
-                            (id, username, auth_provider_id, enabled, session_epoch)
-                            VALUES (?, ?, ?, ?, ?)
+                            (id, auth_provider_id, enabled, session_epoch)
+                            VALUES (?, ?, ?, ?)
                             """
             )) {
                 user.setBytes(1, uuidBytes(USER_ID));
-                user.setString(2, "admin");
-                user.setBytes(3, uuidBytes(PROVIDER_ID));
-                user.setBoolean(4, true);
-                user.setInt(5, 0);
+                user.setBytes(2, uuidBytes(PROVIDER_ID));
+                user.setBoolean(3, true);
+                user.setInt(4, 0);
                 user.executeUpdate();
             }
 
@@ -246,12 +268,12 @@ class PrimaryOfflineIntegrationTest {
         String refreshToken = JsonPath.read(body, "$.data.refreshToken");
 
         this.mockMvc.perform(
-                        get("/api/user/me")
+                        get("/api/location/me")
                                 .header("Authorization", "Bearer " + accessToken)
                                 .accept(MediaType.APPLICATION_JSON)
                 )
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.username").value("admin"))
+                .andExpect(jsonPath("$.data.name").value("admin"))
                 .andExpect(headerSessionModeDegraded());
 
         MvcResult refreshResult = this.mockMvc.perform(
@@ -267,7 +289,7 @@ class PrimaryOfflineIntegrationTest {
         assertNotEquals(accessToken, refreshedAccess);
 
         this.mockMvc.perform(
-                        get("/api/user/me")
+                        get("/api/location/me")
                                 .header("Authorization", "Bearer " + refreshedAccess)
                                 .accept(MediaType.APPLICATION_JSON)
                 )

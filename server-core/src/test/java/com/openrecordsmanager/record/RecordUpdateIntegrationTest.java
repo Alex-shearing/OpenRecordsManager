@@ -74,7 +74,7 @@ class RecordUpdateIntegrationTest {
 
     @BeforeEach
     void setUpRecordType() {
-        this.admin = this.repository.userRepo.findByUsername("admin").orElseThrow();
+        this.admin = this.repository.userRepo.findByName("admin").orElseThrow();
         this.auditPolicyService.updatePolicy(AuditEntityType.RECORD, AuditOperation.CREATE, true, false);
         this.auditPolicyService.updatePolicy(AuditEntityType.RECORD, AuditOperation.UPDATE, true, false);
         this.auditPolicyService.updatePolicy(AuditEntityType.RECORD, AuditOperation.READ, true, false);

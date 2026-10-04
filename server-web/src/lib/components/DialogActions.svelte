@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { t } from '$lib/i18n/catalog';
+	import { t } from '#lib/i18n/catalog.js';
 
 	let {
 		confirmLabel,

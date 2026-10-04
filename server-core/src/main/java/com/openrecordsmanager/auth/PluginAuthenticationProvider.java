@@ -51,7 +51,7 @@ public class PluginAuthenticationProvider implements AuthenticationProvider {
             throw new BadCredentialsException("Username or password is incorrect'");
         }
 
-        User user = this.repository.userRepo.findByUsername(authDetails.getName())
+        User user = this.repository.userRepo.findByName(authDetails.getName())
                 .orElseThrow(() -> {
                     LOGGER.warn(
                             "No ORM user found for authenticated principal '{}' from provider {}",

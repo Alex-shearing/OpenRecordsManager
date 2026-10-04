@@ -1,14 +1,16 @@
-package com.openrecordsmanager.location.user;
+package com.openrecordsmanager.location;
 
 import com.openrecordsmanager.api.audit.AuditEmitter;
 import com.openrecordsmanager.api.audit.AuditEntityType;
 import com.openrecordsmanager.api.config.ConfigStore;
+import com.openrecordsmanager.api.location.LocationActionContext;
+import com.openrecordsmanager.api.location.LocationKind;
 import com.openrecordsmanager.api.template.property.ObjectPropertyTemplate;
 import com.openrecordsmanager.api.types.ComponentTypes;
-import com.openrecordsmanager.api.user.UserActionContext;
 import com.openrecordsmanager.audit.AuditEmitterImpl;
 import com.openrecordsmanager.audit.AuditService;
 import com.openrecordsmanager.database.DataRepository;
+import com.openrecordsmanager.location.user.User;
 import com.openrecordsmanager.plugin.registry.ComponentCatalog;
 import com.openrecordsmanager.property.ObjectProperty;
 import com.openrecordsmanager.rest.exception.ResourceNotFoundException;
@@ -17,21 +19,21 @@ import org.jspecify.annotations.Nullable;
 import java.util.Optional;
 import java.util.UUID;
 
-class UserActionContextImpl implements UserActionContext {
+class LocationActionContextImpl implements LocationActionContext {
     private final DataRepository repository;
     private final ComponentCatalog catalog;
     private final ConfigStore config;
     private final AuditService auditService;
     private final User actor;
-    private final User target;
+    private final Location target;
 
-    UserActionContextImpl(
+    LocationActionContextImpl(
             DataRepository repository,
             ComponentCatalog catalog,
             ConfigStore config,
             AuditService auditService,
             User actor,
-            User target
+            Location target
     ) {
         this.repository = repository;
         this.catalog = catalog;
@@ -48,17 +50,30 @@ class UserActionContextImpl implements UserActionContext {
 
     @Override
     public String getActorUsername() {
-        return this.actor.getUsername();
+        return this.actor.getName();
     }
 
     @Override
-    public UUID getTargetUserId() {
+    public UUID getTargetLocationId() {
         return this.target.getId();
     }
 
     @Override
-    public String getTargetUsername() {
-        return this.target.getUsername();
+    public LocationKind getTargetKind() {
+        return this.target.getKind();
+    }
+
+    @Override
+    public Optional<String> getTargetUsername() {
+        if (this.target instanceof User user) {
+            return Optional.of(user.getName());
+        }
+        return Optional.empty();
+    }
+
+    @Override
+    public String getTargetName() {
+        return this.target.getDisplayName();
     }
 
     @Override
@@ -97,7 +112,7 @@ class UserActionContextImpl implements UserActionContext {
         T oldValue = this.target.getProperty(prop);
         this.target.setProperty(prop, value);
 
-        this.repository.userRepo.saveAndFlush(this.target);
+        this.repository.locationRepo.saveAndFlush(this.target);
 
         if (oldValue != value) {
             this.getAudit().addPropertyChangeEvent(prop.getId().toString(), oldValue, value);
@@ -106,6 +121,6 @@ class UserActionContextImpl implements UserActionContext {
 
     @Override
     public AuditEmitter getAudit() {
-        return new AuditEmitterImpl(this.auditService, AuditEntityType.USER, this.target.getId().toString());
+        return new AuditEmitterImpl(this.auditService, AuditEntityType.LOCATION, this.target.getId().toString());
     }
 }

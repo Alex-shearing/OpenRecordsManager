@@ -1,18 +1,18 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
-	import { AuthController } from '$lib/api';
-	import { getApiClient } from '$lib/api-client';
-	import ActionList from '$lib/components/ActionList.svelte';
-	import MonoId from '$lib/components/MonoId.svelte';
-	import PageContent from '$lib/components/layout/PageContent.svelte';
-	import PropertyDisplay from '$lib/components/PropertyDisplay.svelte';
-	import { t, tApiErrorResponse } from '$lib/i18n/catalog';
+	import { AuthController } from '#lib/api/index.js';
+	import { getApiClient } from '#lib/api-client.js';
+	import ActionList from '#lib/components/ActionList.svelte';
+	import MonoId from '#lib/components/MonoId.svelte';
+	import PageContent from '#lib/components/layout/PageContent.svelte';
+	import PropertyDisplay from '#lib/components/PropertyDisplay.svelte';
+	import { t, tApiErrorResponse } from '#lib/i18n/catalog.js';
 
 	let { data } = $props();
 
 	let loggingOut = $state(false);
 
-	const propertyOrder = ['builtin:username', 'builtin:surname', 'builtin:given_name'];
+	const propertyOrder = ['builtin:surname', 'builtin:given_name'];
 
 	async function handleLogout() {
 		loggingOut = true;
@@ -29,21 +29,21 @@
 	{:else if data.me}
 		<section class="card mb-8 p-4">
 			<h2 class="text-lg font-medium">{t('web.profile.account')}</h2>
-			<PropertyDisplay
-				properties={data.me.properties ?? {}}
-				definitions={data.properties}
-				order={propertyOrder}
-			>
+			<PropertyDisplay properties={data.me.properties} definitions={data.properties} order={propertyOrder}>
 				{#snippet before()}
 					<div>
 						<dt class="text-hint">{t('web.profile.user_id')}</dt>
 						<dd><MonoId value={data.me.id} /></dd>
 					</div>
+					<div>
+						<dt class="text-hint">{t('web.profile.name')}</dt>
+						<dd>{data.me.displayName}</dd>
+					</div>
 				{/snippet}
 			</PropertyDisplay>
 		</section>
 
-		<ActionList actions={data.actions} kind="user" targetId={data.me.id} />
+		<ActionList actions={data.actions} kind="location" targetId={data.me.id} />
 
 		<section class="card p-4">
 			<h2 class="text-lg font-medium">{t('web.profile.sign_out')}</h2>

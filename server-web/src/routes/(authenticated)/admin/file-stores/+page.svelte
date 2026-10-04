@@ -1,15 +1,15 @@
 <script lang="ts">
-	import { FileStoreController } from '$lib/api';
-	import type { FileStoreResponse, SimpleFileStoreResponse } from '$lib/api/types.gen';
-	import { auditHeaders, getApiClient } from '$lib/api-client';
-	import DialogActions from '$lib/components/DialogActions.svelte';
-	import MiddlewarePicker from '$lib/components/MiddlewarePicker.svelte';
-	import MonoId from '$lib/components/MonoId.svelte';
-	import SchemaForm from '$lib/components/SchemaForm.svelte';
-	import { type SchemaFormError } from '$lib/components/SchemaForm.svelte';
-	import TableCard from '$lib/components/TableCard.svelte';
-	import TargetDialog from '$lib/components/TargetDialog.svelte';
-	import { t, tApiErrorResponse } from '$lib/i18n/catalog';
+	import { FileStoreController } from '#lib/api/index.js';
+	import type { FileStoreResponse, SimpleFileStoreResponse } from '#lib/api/types.gen.js';
+	import { auditHeaders, getApiClient } from '#lib/api-client.js';
+	import DialogActions from '#lib/components/DialogActions.svelte';
+	import MiddlewarePicker from '#lib/components/MiddlewarePicker.svelte';
+	import MonoId from '#lib/components/MonoId.svelte';
+	import SchemaForm from '#lib/components/SchemaForm.svelte';
+	import { type SchemaFormError } from '#lib/components/SchemaForm.svelte';
+	import TableCard from '#lib/components/TableCard.svelte';
+	import TargetDialog from '#lib/components/TargetDialog.svelte';
+	import { t, tApiErrorResponse } from '#lib/i18n/catalog.js';
 	import { invalidateAll } from '$app/navigation';
 	import toast from 'svelte-hot-french-toast';
 

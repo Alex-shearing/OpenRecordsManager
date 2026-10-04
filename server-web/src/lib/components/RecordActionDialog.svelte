@@ -1,9 +1,9 @@
 <script lang="ts">
-	import type { ActionResponse } from '$lib/api/types.gen';
-	import { RecordController } from '$lib/api';
-	import { auditHeaders, getApiClient } from '$lib/api-client';
-	import { t } from '$lib/i18n/catalog';
-	import { recordActionDescription } from '$lib/i18n/labels';
+	import type { ActionResponse } from '#lib/api/types.gen.js';
+	import { RecordController } from '#lib/api/index.js';
+	import { auditHeaders, getApiClient } from '#lib/api-client.js';
+	import { t } from '#lib/i18n/catalog.js';
+	import { recordActionDescription } from '#lib/i18n/labels.js';
 	import AppDialog from './AppDialog.svelte';
 	import DialogActions from './DialogActions.svelte';
 	import SchemaForm from './SchemaForm.svelte';
@@ -48,7 +48,7 @@
 		submitting = true;
 		error = undefined;
 
-		const { error: apiError } = await RecordController.executeAction1({
+		const { error: apiError } = await RecordController.executeAction({
 			client: getApiClient(),
 			path: { id: recordId, action: action.id },
 			body: values,

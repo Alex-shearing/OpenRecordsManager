@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { page } from '$app/state';
-	import BrandingHeader from '$lib/components/BrandingHeader.svelte';
-	import PageContent from '$lib/components/layout/PageContent.svelte';
-	import { t } from '$lib/i18n/catalog';
+	import BrandingHeader from '#lib/components/BrandingHeader.svelte';
+	import PageContent from '#lib/components/layout/PageContent.svelte';
+	import { t } from '#lib/i18n/catalog.js';
 
 	let title = $derived.by(() => {
 		if (!page.data.online) {

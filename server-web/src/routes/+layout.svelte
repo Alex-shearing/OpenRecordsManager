@@ -1,9 +1,9 @@
 <script lang="ts">
 	import './layout.css';
-	import faviconAsset from '$lib/assets/favicon.ico';
+	import faviconAsset from '#lib/assets/favicon.ico';
 	import { afterNavigate } from '$app/navigation';
 	import { Toaster } from 'svelte-hot-french-toast';
-	import { t } from '$lib/i18n/catalog';
+	import { t } from '#lib/i18n/catalog.js';
 
 	let { children, data } = $props();
 

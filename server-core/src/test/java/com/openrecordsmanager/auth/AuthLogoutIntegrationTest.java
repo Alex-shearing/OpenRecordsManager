@@ -44,7 +44,7 @@ class AuthLogoutIntegrationTest {
 
     @Test
     void logoutBumpsEpochAndBlocksFurtherUse() throws Exception {
-        User user = this.repository.userRepo.findByUsername("admin").orElseThrow();
+        User user = this.repository.userRepo.findByName("admin").orElseThrow();
         TokenPair pair = this.testAuthTokens.tokenPairFor(user);
 
         this.mockMvc.perform(
@@ -55,7 +55,7 @@ class AuthLogoutIntegrationTest {
                 .andExpect(status().isOk());
 
         this.mockMvc.perform(
-                        get("/api/user/me")
+                        get("/api/location/me")
                                 .header("Authorization", "Bearer " + pair.accessToken())
                                 .accept(MediaType.APPLICATION_JSON)
                 )

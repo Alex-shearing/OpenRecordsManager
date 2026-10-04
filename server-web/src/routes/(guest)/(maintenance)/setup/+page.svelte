@@ -1,7 +1,7 @@
 <script lang="ts">
-	import { DatabaseController, type ApiErrorResponse } from '$lib/api';
-	import { getApiClient } from '$lib/api-client';
-	import { t, tApiErrorResponse } from '$lib/i18n/catalog';
+	import { DatabaseController, type ApiErrorResponse } from '#lib/api/index.js';
+	import { getApiClient } from '#lib/api-client.js';
+	import { t, tApiErrorResponse } from '#lib/i18n/catalog.js';
 
 	let { data } = $props();
 

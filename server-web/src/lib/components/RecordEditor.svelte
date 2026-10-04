@@ -1,22 +1,22 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
-	import { RecordController } from '$lib/api';
-	import type { ApiFieldError, RecordResponse, RecordTypeResponse } from '$lib/api/types.gen';
-	import { auditHeaders, getApiClient } from '$lib/api-client';
-	import AuditSaveCard from '$lib/components/AuditSaveCard.svelte';
-	import ObjectPropertyForm from '$lib/components/ObjectPropertyForm.svelte';
-	import type { SchemaFormError } from '$lib/components/SchemaForm.svelte';
-	import PageContent from '$lib/components/layout/PageContent.svelte';
-	import { t, tApiErrorResponse } from '$lib/i18n/catalog';
-	import { recordTypeName } from '$lib/i18n/labels';
+	import { RecordController } from '#lib/api/index.js';
+	import type { ApiFieldError, RecordResponse, RecordTypeResponse } from '#lib/api/types.gen.js';
+	import { auditHeaders, getApiClient } from '#lib/api-client.js';
+	import AuditSaveCard from '#lib/components/AuditSaveCard.svelte';
+	import ObjectPropertyForm from '#lib/components/ObjectPropertyForm.svelte';
+	import type { SchemaFormError } from '#lib/components/SchemaForm.svelte';
+	import PageContent from '#lib/components/layout/PageContent.svelte';
+	import { t, tApiErrorResponse } from '#lib/i18n/catalog.js';
+	import { recordTypeName } from '#lib/i18n/labels.js';
 	import {
 		compactPropertyValues,
 		filterCreateFields,
 		seedCreateValues,
 		toTypePropertyAssignments,
 		valuesFromExistingProperties,
-	} from '$lib/properties/createFields';
+	} from '#lib/properties/createFields.js';
 	import toast from 'svelte-hot-french-toast';
 
 	let {
@@ -127,7 +127,7 @@
 		submitting = true;
 		formError = undefined;
 
-		const { error } = await RecordController.update1({
+		const { error } = await RecordController.update({
 			client: getApiClient(),
 			path: { id: record.id },
 			body: { title, properties: compactPropertyValues(values) },

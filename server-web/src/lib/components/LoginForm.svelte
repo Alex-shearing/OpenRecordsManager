@@ -1,12 +1,12 @@
 <script lang="ts">
-	import { AuthController } from '$lib/api';
-	import type { SimpleAuthProviderResponse } from '$lib/api/types.gen';
+	import { AuthController } from '#lib/api/index.js';
+	import type { SimpleAuthProviderResponse } from '#lib/api/types.gen.js';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
 	import SchemaForm from './SchemaForm.svelte';
 	import type { SchemaFormError } from './SchemaForm.svelte';
-	import { getApiClient } from '$lib/api-client';
-	import { t } from '$lib/i18n/catalog';
+	import { getApiClient } from '#lib/api-client.js';
+	import { t } from '#lib/i18n/catalog.js';
 
 	let {
 		inputProviders,

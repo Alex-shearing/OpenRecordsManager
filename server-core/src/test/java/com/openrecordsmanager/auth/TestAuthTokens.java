@@ -22,7 +22,7 @@ public class TestAuthTokens {
     }
 
     public String accessTokenFor(String username) {
-        User user = this.repository.userRepo.findByUsername(username).orElseThrow();
+        User user = this.repository.userRepo.findByName(username).orElseThrow();
         return this.tokenPairFor(user).accessToken();
     }
 
@@ -31,12 +31,12 @@ public class TestAuthTokens {
     }
 
     public TokenPair tokenPairFor(String username) {
-        User user = this.repository.userRepo.findByUsername(username).orElseThrow();
+        User user = this.repository.userRepo.findByName(username).orElseThrow();
         return this.tokenPairFor(user);
     }
 
     public TokenPair degradedTokenPairFor(String username) {
-        User user = this.repository.userRepo.findByUsername(username).orElseThrow();
+        User user = this.repository.userRepo.findByName(username).orElseThrow();
         return this.jwtSessionService.issueTokenPair(user, SessionMode.DEGRADED_READ_ONLY);
     }
 }

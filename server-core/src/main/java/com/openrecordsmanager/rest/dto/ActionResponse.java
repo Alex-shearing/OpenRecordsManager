@@ -3,9 +3,9 @@ package com.openrecordsmanager.rest.dto;
 import com.openrecordsmanager.api.ResourceIdentifier;
 import com.openrecordsmanager.api.audit.AuditEntityType;
 import com.openrecordsmanager.api.audit.AuditOperation;
+import com.openrecordsmanager.api.location.LocationActionType;
 import com.openrecordsmanager.api.record.RecordActionType;
 import com.openrecordsmanager.api.types.ComponentTypes;
-import com.openrecordsmanager.api.user.UserActionType;
 import com.openrecordsmanager.audit.AuditPolicyService;
 import com.openrecordsmanager.plugin.registry.ComponentCatalog;
 import com.openrecordsmanager.schema.InputFormSchema;
@@ -17,18 +17,18 @@ public record ActionResponse(
         boolean requiresAuditComment
 ) {
 
-    public static ActionResponse ofUser(
+    public static ActionResponse ofLocation(
             ComponentCatalog catalog,
-            UserActionType<?> action,
+            LocationActionType<?> action,
             AuditPolicyService auditPolicyService
     ) {
-        ResourceIdentifier id = catalog.getRegistry(ComponentTypes.USER_ACTION).getId(action)
+        ResourceIdentifier id = catalog.getRegistry(ComponentTypes.LOCATION_ACTION).getId(action)
                 .orElseThrow();
 
         return new ActionResponse(
                 id,
                 InputFormSchema.from(action.getInputClass()),
-                auditPolicyService.requiresComment(AuditEntityType.USER, AuditOperation.ACTION)
+                auditPolicyService.requiresComment(AuditEntityType.LOCATION, AuditOperation.ACTION)
         );
     }
 

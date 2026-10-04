@@ -1,7 +1,7 @@
 <script lang="ts">
-	import LoginForm from '$lib/components/LoginForm.svelte';
+	import LoginForm from '#lib/components/LoginForm.svelte';
 	import { page } from '$app/state';
-	import { t, tApiErrorResponse } from '$lib/i18n/catalog';
+	import { t, tApiErrorResponse } from '#lib/i18n/catalog.js';
 
 	let { data } = $props();
 

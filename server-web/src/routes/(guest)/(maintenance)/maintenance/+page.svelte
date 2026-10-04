@@ -1,9 +1,9 @@
 <script lang="ts">
-	import { DatabaseController } from '$lib/api';
-	import { getApiClient } from '$lib/api-client';
+	import { DatabaseController } from '#lib/api/index.js';
+	import { getApiClient } from '#lib/api-client.js';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
-	import { t } from '$lib/i18n/catalog';
+	import { t } from '#lib/i18n/catalog.js';
 
 	let view = $state<'checking' | 'upgrade' | 'unavailable' | 'ready'>('checking');
 

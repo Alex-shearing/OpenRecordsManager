@@ -1,12 +1,13 @@
 package com.openrecordsmanager.plugin.authlocal;
 
-import com.openrecordsmanager.api.user.UserActionContext;
-import com.openrecordsmanager.api.user.UserActionType;
+import com.openrecordsmanager.api.location.LocationActionContext;
+import com.openrecordsmanager.api.location.LocationActionType;
+import com.openrecordsmanager.api.location.LocationKind;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import org.mindrot.jbcrypt.BCrypt;
 
-public class ResetLocalPasswordAction extends UserActionType<ResetLocalPasswordAction.Inputs> {
+public class ResetLocalPasswordAction extends LocationActionType<ResetLocalPasswordAction.Inputs> {
 
     public ResetLocalPasswordAction() {
         super(Inputs.class);
@@ -14,7 +15,7 @@ public class ResetLocalPasswordAction extends UserActionType<ResetLocalPasswordA
 
     public record Inputs(
             @Schema(
-                    title = "user_action.auth_local.reset_password.schema.newPassword.title",
+                    title = "location_action.auth_local.reset_password.schema.newPassword.title",
                     format = "password",
                     accessMode = Schema.AccessMode.WRITE_ONLY
             )
@@ -23,12 +24,13 @@ public class ResetLocalPasswordAction extends UserActionType<ResetLocalPasswordA
     }
 
     @Override
-    public boolean isAvailable(UserActionContext context) {
-        return context.isPropertyRegistered(AuthLocalPlugin.PASSWORD_HASH_PROPERTY);
+    public boolean isAvailable(LocationActionContext context) {
+        return context.getTargetKind() == LocationKind.USER
+                && context.isPropertyRegistered(AuthLocalPlugin.PASSWORD_HASH_PROPERTY);
     }
 
     @Override
-    public void execute(UserActionContext context, Inputs inputs) {
+    public void execute(LocationActionContext context, Inputs inputs) {
         String hash = BCrypt.hashpw(inputs.newPassword(), BCrypt.gensalt());
         context.setTargetProperty(AuthLocalPlugin.PASSWORD_HASH_PROPERTY, hash);
     }

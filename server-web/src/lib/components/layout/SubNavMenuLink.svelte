@@ -3,7 +3,7 @@
 	import { page } from '$app/state';
 	import type { Snippet } from 'svelte';
 	import { resolve } from '$app/paths';
-	import type { StaticRouteId } from '$lib/routing';
+	import type { StaticRouteId } from '#lib/routing.js';
 
 	let {
 		route,

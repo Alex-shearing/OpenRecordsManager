@@ -38,7 +38,7 @@ public abstract class Location extends ObjectPropertyHolder<Location, LocationPr
     private LocationType type;
 
     @BuiltinProperty(value = BuiltinPropertyIds.NAME, defaultSearch = true)
-    @Column(nullable = false)
+    @Column(nullable = false, unique = true)
     private String name;
 
     @BuiltinProperty(BuiltinPropertyIds.NOTES)
@@ -97,6 +97,13 @@ public abstract class Location extends ObjectPropertyHolder<Location, LocationPr
     public void setName(String name) {
         this.name = name;
         this.touchDateModified();
+    }
+
+    /**
+     * Human-facing label for this location.
+     */
+    public String getDisplayName() {
+        return this.getName();
     }
 
     public Instant getDateModified() {

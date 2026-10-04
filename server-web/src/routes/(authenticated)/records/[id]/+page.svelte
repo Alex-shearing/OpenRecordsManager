@@ -1,11 +1,11 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
-	import ActionList from '$lib/components/ActionList.svelte';
-	import MonoId from '$lib/components/MonoId.svelte';
-	import PageContent from '$lib/components/layout/PageContent.svelte';
-	import PropertyDisplay from '$lib/components/PropertyDisplay.svelte';
-	import { t, tApiErrorResponse } from '$lib/i18n/catalog';
-	import { recordTypeName } from '$lib/i18n/labels';
+	import ActionList from '#lib/components/ActionList.svelte';
+	import MonoId from '#lib/components/MonoId.svelte';
+	import PageContent from '#lib/components/layout/PageContent.svelte';
+	import PropertyDisplay from '#lib/components/PropertyDisplay.svelte';
+	import { t, tApiErrorResponse } from '#lib/i18n/catalog.js';
+	import { recordTypeName } from '#lib/i18n/labels.js';
 
 	let { data } = $props();
 
@@ -30,10 +30,7 @@
 	{:else}
 		<div class="mb-6 flex flex-wrap items-start justify-between gap-4">
 			<h1 class="text-2xl font-semibold">{pageTitle}</h1>
-			<a
-				href={resolve('/(authenticated)/records/edit/[id]', { id: data.record.id })}
-				class="btn-secondary"
-			>
+			<a href={resolve('/(authenticated)/records/edit/[id]', { id: data.record.id })} class="btn-secondary">
 				{t('web.common.edit')}
 			</a>
 		</div>

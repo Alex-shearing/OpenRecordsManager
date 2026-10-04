@@ -70,11 +70,6 @@ public final class BuiltinProperties {
             ObjectPropertyTemplate.builder(PropertyType.STRING).build()
     );
 
-    public static final ObjectPropertyTemplate<String> USERNAME = register(
-            BuiltinPropertyIds.USERNAME,
-            ObjectPropertyTemplate.builder(PropertyType.STRING).build()
-    );
-
     public static final ObjectPropertyTemplate<String> NAME = register(
             BuiltinPropertyIds.NAME,
             ObjectPropertyTemplate.builder(PropertyType.STRING).build()

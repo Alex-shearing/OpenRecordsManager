@@ -1,6 +1,6 @@
 <script lang="ts">
-	import PageContent from '$lib/components/layout/PageContent.svelte';
-	import { t } from '$lib/i18n/catalog';
+	import PageContent from '#lib/components/layout/PageContent.svelte';
+	import { t } from '#lib/i18n/catalog.js';
 	import type { Snippet } from 'svelte';
 
 	let { subnav, children }: { subnav: Snippet; children: Snippet } = $props();

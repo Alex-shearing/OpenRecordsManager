@@ -1,5 +1,5 @@
-import { AuditController } from '$lib/api';
-import { getApiClient } from '$lib/api-client';
+import { AuditController } from '#lib/api/index.js';
+import { getApiClient } from '#lib/api-client.js';
 
 export async function load() {
 	const client = getApiClient();

@@ -1,9 +1,9 @@
 <script lang="ts">
-	import { TemplateController, TemplateType } from '$lib/api';
-	import { getApiClient } from '$lib/api-client';
-	import MonoId from '$lib/components/MonoId.svelte';
-	import { type SchemaFormError } from '$lib/components/SchemaForm.svelte';
-	import { t, tApiErrorResponse } from '$lib/i18n/catalog';
+	import { TemplateController, TemplateType } from '#lib/api/index.js';
+	import { getApiClient } from '#lib/api-client.js';
+	import MonoId from '#lib/components/MonoId.svelte';
+	import { type SchemaFormError } from '#lib/components/SchemaForm.svelte';
+	import { t, tApiErrorResponse } from '#lib/i18n/catalog.js';
 	import toast from 'svelte-hot-french-toast';
 
 	let { data } = $props();

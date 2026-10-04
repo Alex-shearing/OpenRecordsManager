@@ -1,11 +1,11 @@
 <script lang="ts">
 	import { NavigationMenu } from 'bits-ui';
-	import SubNavLayout from '$lib/components/layout/SubNavLayout.svelte';
-	import SubNavList from '$lib/components/layout/SubNavList.svelte';
-	import SubNavLink from '$lib/components/layout/SubNavLink.svelte';
-	import SubNavMenu from '$lib/components/layout/SubNavMenu.svelte';
-	import SubNavMenuLink from '$lib/components/layout/SubNavMenuLink.svelte';
-	import { t } from '$lib/i18n/catalog';
+	import SubNavLayout from '#lib/components/layout/SubNavLayout.svelte';
+	import SubNavList from '#lib/components/layout/SubNavList.svelte';
+	import SubNavLink from '#lib/components/layout/SubNavLink.svelte';
+	import SubNavMenu from '#lib/components/layout/SubNavMenu.svelte';
+	import SubNavMenuLink from '#lib/components/layout/SubNavMenuLink.svelte';
+	import { t } from '#lib/i18n/catalog.js';
 
 	let { children } = $props();
 </script>

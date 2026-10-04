@@ -1,6 +1,6 @@
 <script lang="ts">
-	import type { SimpleObjectPropertyResponse } from '$lib/api/types.gen';
-	import { listElementName, objectPropertyName } from '$lib/i18n/labels';
+	import type { SimpleObjectPropertyResponse } from '#lib/api/types.gen.js';
+	import { listElementName, objectPropertyName } from '#lib/i18n/labels.js';
 	import type { Snippet } from 'svelte';
 
 	let {
@@ -27,9 +27,7 @@
 			return listElementName(value);
 		}
 		if (definition?.type === 'list_multiple' && Array.isArray(value)) {
-			return value
-				.map(item => (typeof item === 'string' ? listElementName(item) : formatValue(key, item)))
-				.join(', ');
+			return value.map(item => (typeof item === 'string' ? listElementName(item) : formatValue(key, item))).join(', ');
 		}
 
 		if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {

@@ -77,10 +77,6 @@ class BuiltinColumnResolverIntegrationTest {
         assertEquals(new QualifiedSqlColumn("location_property_value", "property_value"), user.propertyValue());
         assertEquals(new QualifiedSqlColumn("location", "type_id"), user.typeColumn());
         assertEquals(
-                new QualifiedSqlColumn("user_details", "username"),
-                user.builtinColumns().get(new ResourceIdentifier(BuiltinPlugin.BUILTIN_PLUGIN_NAME, BuiltinPropertyIds.USERNAME)).column()
-        );
-        assertEquals(
                 new QualifiedSqlColumn("user_details", "given_name"),
                 user.builtinColumns().get(new ResourceIdentifier(BuiltinPlugin.BUILTIN_PLUGIN_NAME, BuiltinPropertyIds.GIVEN_NAME)).column()
         );
@@ -91,7 +87,6 @@ class BuiltinColumnResolverIntegrationTest {
         assertEquals(
                 Set.of(
                         new ResourceIdentifier(BuiltinPlugin.BUILTIN_PLUGIN_NAME, BuiltinPropertyIds.NAME),
-                        new ResourceIdentifier(BuiltinPlugin.BUILTIN_PLUGIN_NAME, BuiltinPropertyIds.USERNAME),
                         new ResourceIdentifier(BuiltinPlugin.BUILTIN_PLUGIN_NAME, BuiltinPropertyIds.GIVEN_NAME),
                         new ResourceIdentifier(BuiltinPlugin.BUILTIN_PLUGIN_NAME, BuiltinPropertyIds.SURNAME),
                         new ResourceIdentifier(BuiltinPlugin.BUILTIN_PLUGIN_NAME, BuiltinPropertyIds.EMAIL)

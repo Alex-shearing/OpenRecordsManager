@@ -76,7 +76,7 @@ class ObjectSearchExecutorIntegrationTest {
                 Record.BUILTIN_PROPERTY_BINDINGS,
                 this.columnResolver
         );
-        this.admin = this.repository.userRepo.findByUsername("admin").orElseThrow();
+        this.admin = this.repository.userRepo.findByName("admin").orElseThrow();
         this.catalog.getRegistry(ComponentTypes.SEARCH_FIELD_PROVIDER).builder().build();
     }
 

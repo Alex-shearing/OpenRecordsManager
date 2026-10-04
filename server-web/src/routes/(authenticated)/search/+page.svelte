@@ -1,14 +1,14 @@
 <script lang="ts">
-	import { RecordController, UserController, type RecordResponse, type UserResponse } from '$lib/api';
-	import { getApiClient } from '$lib/api-client';
-	import MonoId from '$lib/components/MonoId.svelte';
-	import TableCard from '$lib/components/TableCard.svelte';
-	import PageContent from '$lib/components/layout/PageContent.svelte';
-	import { t, tApiErrorResponse } from '$lib/i18n/catalog';
+	import { LocationController, RecordController, type LocationResponse, type RecordResponse } from '#lib/api/index.js';
+	import { getApiClient } from '#lib/api-client.js';
+	import MonoId from '#lib/components/MonoId.svelte';
+	import TableCard from '#lib/components/TableCard.svelte';
+	import PageContent from '#lib/components/layout/PageContent.svelte';
+	import { t, tApiErrorResponse } from '#lib/i18n/catalog.js';
 
 	let { data } = $props();
 
-	type SearchItem = RecordResponse | UserResponse;
+	type SearchItem = RecordResponse | LocationResponse;
 
 	let appended = $state<{
 		key: string;
@@ -27,7 +27,7 @@
 	const summary = $derived(data.q ? t('web.search.summary_query', typeLabel, data.q) : t('web.search.summary'));
 
 	const recordItems = $derived(data.type === 'record' ? (items as RecordResponse[]) : []);
-	const userItems = $derived(data.type === 'user' ? (items as UserResponse[]) : []);
+	const userItems = $derived(data.type === 'user' ? (items as LocationResponse[]) : []);
 
 	function recordTitle(record: RecordResponse): string {
 		const title = record.properties?.['builtin:title'];
@@ -45,13 +45,13 @@
 			const client = getApiClient();
 			const result =
 				data.type === 'record'
-					? await RecordController.search1({
+					? await RecordController.search({
 							client,
 							body: { q: data.q, cursor: nextCursor },
 						})
-					: await UserController.search({
+					: await LocationController.searchLocations({
 							client,
-							body: { q: data.q, cursor: nextCursor },
+							body: { q: data.q, cursor: nextCursor, kind: 'user' },
 						});
 
 			const page = result.data?.success ? result.data.data : null;
@@ -112,12 +112,14 @@
 			getKey={item => item.id}
 		>
 			{#snippet header()}
+				<th class="px-5 py-3 font-medium">{t('web.search.col_name')}</th>
 				<th class="px-5 py-3 font-medium">{t('web.search.col_username')}</th>
 				<th class="px-5 py-3 font-medium">{t('web.search.col_enabled')}</th>
 				<th class="px-5 py-3 font-medium">{t('web.search.col_id')}</th>
 			{/snippet}
 			{#snippet row(user)}
-				<td class="px-5 py-4 font-medium">{user.username}</td>
+				<td class="px-5 py-4 font-medium">{user.displayName}</td>
+				<td class="px-5 py-4"><MonoId value={user.name ?? ''} muted /></td>
 				<td class="px-5 py-4">{user.enabled ? t('web.common.yes') : t('web.common.no')}</td>
 				<td class="px-5 py-4"><MonoId value={user.id} muted /></td>
 			{/snippet}

@@ -1,9 +1,9 @@
 <script lang="ts">
-	import { AuditController, AuditOperation } from '$lib/api';
-	import { getApiClient } from '$lib/api-client';
-	import AuditSaveCard from '$lib/components/AuditSaveCard.svelte';
-	import MonoId from '$lib/components/MonoId.svelte';
-	import { type SchemaFormError } from '$lib/components/SchemaForm.svelte';
+	import { AuditController, AuditOperation } from '#lib/api/index.js';
+	import { getApiClient } from '#lib/api-client.js';
+	import AuditSaveCard from '#lib/components/AuditSaveCard.svelte';
+	import MonoId from '#lib/components/MonoId.svelte';
+	import { type SchemaFormError } from '#lib/components/SchemaForm.svelte';
 	import {
 		buildPolicyDraft,
 		findChangedPolicies,
@@ -11,8 +11,8 @@
 		formatInstant,
 		groupPoliciesByEntity,
 		policyKey,
-	} from '$lib/audit/audit-utils';
-	import { t, tApiErrorResponse, tx } from '$lib/i18n/catalog';
+	} from '#lib/audit/audit-utils.js';
+	import { t, tApiErrorResponse, tx } from '#lib/i18n/catalog.js';
 	import { invalidateAll } from '$app/navigation';
 	import toast from 'svelte-hot-french-toast';
 

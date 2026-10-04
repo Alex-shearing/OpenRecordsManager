@@ -1,6 +1,6 @@
-import { LocationController, UserController } from '$lib/api';
-import type { ActionResponse } from '$lib/api/types.gen';
-import { getApiClient } from '$lib/api-client';
+import { LocationController } from '#lib/api/index.js';
+import type { ActionResponse } from '#lib/api/types.gen.js';
+import { getApiClient } from '#lib/api-client.js';
 
 export async function load({ params, parent }) {
 	const [layout, locationResult] = await Promise.all([
@@ -14,38 +14,19 @@ export async function load({ params, parent }) {
 	if (locationResult.error) {
 		return {
 			location: undefined,
-			user: undefined,
 			actions: [] as ActionResponse[],
 			loadError: locationResult.error ?? layout.error,
 		};
 	}
 
-	const location = locationResult.data.data;
-	let user = undefined;
-	let actions: ActionResponse[] = [];
-	let loadError = layout.error;
-
-	if (location.kind === 'user') {
-		const [userResult, actionsResult] = await Promise.all([
-			UserController.get({
-				client: getApiClient(),
-				path: { id: params.id },
-			}),
-			UserController.listActions({
-				client: getApiClient(),
-				path: { id: params.id },
-			}),
-		]);
-
-		loadError = userResult.error ?? layout.error;
-		user = userResult.data?.data;
-		actions = actionsResult.data?.success ? actionsResult.data.data : [];
-	}
+	const actionsResult = await LocationController.listLocationActions({
+		client: getApiClient(),
+		path: { id: params.id },
+	});
 
 	return {
-		location,
-		user,
-		actions,
-		loadError,
+		location: locationResult.data.data,
+		actions: actionsResult.data?.data ?? [],
+		loadError: actionsResult.error ?? layout.error,
 	};
 }

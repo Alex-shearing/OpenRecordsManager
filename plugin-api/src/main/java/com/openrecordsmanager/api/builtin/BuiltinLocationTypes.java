@@ -21,7 +21,6 @@ public final class BuiltinLocationTypes {
                     .property(BuiltinProperties.NOTES)
                     .property(BuiltinProperties.DATE_CREATED)
                     .property(BuiltinProperties.DATE_MODIFIED)
-                    .property(BuiltinProperties.USERNAME)
                     .property(BuiltinProperties.GIVEN_NAME)
                     .property(BuiltinProperties.SURNAME)
                     .property(BuiltinProperties.HONORIFIC)

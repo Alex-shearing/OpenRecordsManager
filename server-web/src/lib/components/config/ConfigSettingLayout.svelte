@@ -1,9 +1,9 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
-	import type { ConfigTypeResponse } from '$lib/api/types.gen';
-	import { formatDefaultValueForDisplay } from '$lib/config/config-utils';
-	import { t } from '$lib/i18n/catalog';
-	import { configDescription, configName } from '$lib/i18n/labels';
+	import type { ConfigTypeResponse } from '#lib/api/types.gen.js';
+	import { formatDefaultValueForDisplay } from '#lib/config/config-utils.js';
+	import { t } from '#lib/i18n/catalog.js';
+	import { configDescription, configName } from '#lib/i18n/labels.js';
 
 	let {
 		config,

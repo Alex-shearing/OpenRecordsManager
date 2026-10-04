@@ -8,7 +8,7 @@
 	import DotsSixVerticalIcon from 'phosphor-svelte/lib/DotsSixVerticalIcon';
 	import MinusIcon from 'phosphor-svelte/lib/MinusIcon';
 	import PlusIcon from 'phosphor-svelte/lib/PlusIcon';
-	import { t } from '$lib/i18n/catalog';
+	import { t } from '#lib/i18n/catalog.js';
 
 	type ListSide = 'selected' | 'available';
 

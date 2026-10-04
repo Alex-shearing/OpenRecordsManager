@@ -1,8 +1,8 @@
 <script lang="ts">
-	import type { SimpleMiddlewareResponse } from '$lib/api/types.gen';
-	import MonoId from '$lib/components/MonoId.svelte';
-	import TransferList from '$lib/components/TransferList.svelte';
-	import { t } from '$lib/i18n/catalog';
+	import type { SimpleMiddlewareResponse } from '#lib/api/types.gen.js';
+	import MonoId from '#lib/components/MonoId.svelte';
+	import TransferList from '#lib/components/TransferList.svelte';
+	import { t } from '#lib/i18n/catalog.js';
 
 	let {
 		middlewares,

@@ -1,5 +1,5 @@
-import { ConfigController } from '$lib/api';
-import { getApiClient } from '$lib/api-client';
+import { ConfigController } from '#lib/api/index.js';
+import { getApiClient } from '#lib/api-client.js';
 
 export async function load({ parent }) {
 	const [parentData, configResult] = await Promise.all([

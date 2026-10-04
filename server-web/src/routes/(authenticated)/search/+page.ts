@@ -1,5 +1,5 @@
-import { RecordController, UserController, type RecordResponse, type UserResponse } from '$lib/api';
-import { getApiClient } from '$lib/api-client';
+import { LocationController, RecordController, type LocationResponse, type RecordResponse } from '#lib/api/index.js';
+import { getApiClient } from '#lib/api-client.js';
 
 export type SearchType = 'record' | 'user';
 
@@ -20,7 +20,7 @@ export async function load({ parent, url }: { parent: () => Promise<unknown>; ur
 		return {
 			type,
 			q,
-			items: [] as Array<RecordResponse | UserResponse>,
+			items: [] as Array<RecordResponse | LocationResponse>,
 			nextCursor: null as string | null,
 			emptyKey: (!type && !q
 				? 'web.search.begin'
@@ -33,8 +33,8 @@ export async function load({ parent, url }: { parent: () => Promise<unknown>; ur
 	const client = getApiClient();
 	const result =
 		type === 'record'
-			? await RecordController.search1({ client, body: { q } })
-			: await UserController.search({ client, body: { q } });
+			? await RecordController.search({ client, body: { q } })
+			: await LocationController.searchLocations({ client, body: { q, kind: 'user' } });
 
 	const payload = result.data?.success ? result.data.data : null;
 

@@ -1,14 +1,14 @@
 <script lang="ts">
-	import { AuthController } from '$lib/api';
-	import type { AuthProviderResponse, SimpleAuthProviderResponse } from '$lib/api/types.gen';
-	import { auditHeaders, getApiClient } from '$lib/api-client';
-	import DialogActions from '$lib/components/DialogActions.svelte';
-	import MonoId from '$lib/components/MonoId.svelte';
-	import SchemaForm from '$lib/components/SchemaForm.svelte';
-	import { type SchemaFormError } from '$lib/components/SchemaForm.svelte';
-	import TableCard from '$lib/components/TableCard.svelte';
-	import TargetDialog from '$lib/components/TargetDialog.svelte';
-	import { t, tApiErrorResponse } from '$lib/i18n/catalog';
+	import { AuthController } from '#lib/api/index.js';
+	import type { AuthProviderResponse, SimpleAuthProviderResponse } from '#lib/api/types.gen.js';
+	import { auditHeaders, getApiClient } from '#lib/api-client.js';
+	import DialogActions from '#lib/components/DialogActions.svelte';
+	import MonoId from '#lib/components/MonoId.svelte';
+	import SchemaForm from '#lib/components/SchemaForm.svelte';
+	import { type SchemaFormError } from '#lib/components/SchemaForm.svelte';
+	import TableCard from '#lib/components/TableCard.svelte';
+	import TargetDialog from '#lib/components/TargetDialog.svelte';
+	import { t, tApiErrorResponse } from '#lib/i18n/catalog.js';
 	import { invalidateAll } from '$app/navigation';
 	import toast from 'svelte-hot-french-toast';
 

@@ -94,7 +94,7 @@ CREATE INDEX IF NOT EXISTS idx_ltp_property_id ON location_type_property (proper
 
 CREATE TABLE location (
     id BLOB NOT NULL PRIMARY KEY,
-    name VARCHAR(255) NOT NULL,
+    name VARCHAR(255) NOT NULL UNIQUE,
     notes VARCHAR(255),
     date_created TIMESTAMP NOT NULL,
     date_modified TIMESTAMP NOT NULL,
@@ -109,7 +109,6 @@ CREATE INDEX IF NOT EXISTS idx_location_type_id ON location (type_id);
 
 CREATE TABLE user_details (
     id BLOB NOT NULL PRIMARY KEY,
-    username VARCHAR(255) NOT NULL UNIQUE,
     auth_provider_id BLOB,
     given_name VARCHAR(255),
     surname VARCHAR(255),

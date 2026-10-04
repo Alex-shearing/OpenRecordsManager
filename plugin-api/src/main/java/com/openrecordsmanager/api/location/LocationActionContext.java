@@ -1,4 +1,4 @@
-package com.openrecordsmanager.api.user;
+package com.openrecordsmanager.api.location;
 
 import com.openrecordsmanager.api.audit.AuditEmitter;
 import com.openrecordsmanager.api.config.ConfigStore;
@@ -8,14 +8,21 @@ import org.jspecify.annotations.Nullable;
 import java.util.Optional;
 import java.util.UUID;
 
-public interface UserActionContext {
+public interface LocationActionContext {
     UUID getActorId();
 
     String getActorUsername();
 
-    UUID getTargetUserId();
+    UUID getTargetLocationId();
 
-    String getTargetUsername();
+    LocationKind getTargetKind();
+
+    /**
+     * Login/storage name when the target is a user location; empty otherwise.
+     */
+    Optional<String> getTargetUsername();
+
+    String getTargetName();
 
     ConfigStore getConfig();
 

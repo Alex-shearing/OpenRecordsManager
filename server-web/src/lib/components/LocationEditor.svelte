@@ -1,28 +1,27 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
-	import { GroupController, UserController } from '$lib/api';
+	import { LocationController } from '#lib/api/index.js';
 	import type {
 		ApiFieldError,
 		LocationResponse,
 		LocationTypeResponse,
 		SimpleAuthProviderResponse,
-		UserResponse,
-	} from '$lib/api/types.gen';
-	import { auditHeaders, getApiClient } from '$lib/api-client';
-	import AuditSaveCard from '$lib/components/AuditSaveCard.svelte';
-	import ObjectPropertyForm from '$lib/components/ObjectPropertyForm.svelte';
-	import type { SchemaFormError } from '$lib/components/SchemaForm.svelte';
-	import PageContent from '$lib/components/layout/PageContent.svelte';
-	import { t, tApiErrorResponse } from '$lib/i18n/catalog';
-	import { locationTypeName } from '$lib/i18n/labels';
+	} from '#lib/api/types.gen.js';
+	import { auditHeaders, getApiClient } from '#lib/api-client.js';
+	import AuditSaveCard from '#lib/components/AuditSaveCard.svelte';
+	import ObjectPropertyForm from '#lib/components/ObjectPropertyForm.svelte';
+	import type { SchemaFormError } from '#lib/components/SchemaForm.svelte';
+	import PageContent from '#lib/components/layout/PageContent.svelte';
+	import { t, tApiErrorResponse } from '#lib/i18n/catalog.js';
+	import { locationTypeName } from '#lib/i18n/labels.js';
 	import {
 		compactPropertyValues,
 		filterCreateFields,
 		seedCreateValues,
 		toTypePropertyAssignments,
 		valuesFromExistingProperties,
-	} from '$lib/properties/createFields';
+	} from '#lib/properties/createFields.js';
 	import toast from 'svelte-hot-french-toast';
 
 	let {
@@ -31,18 +30,14 @@
 		authProviders,
 		auditRequired,
 		location,
-		user,
 		loadError,
-		kind = $bindable<'user' | 'group' | undefined>(),
 	}: {
 		mode: 'create' | 'edit';
 		types: LocationTypeResponse[];
 		authProviders: SimpleAuthProviderResponse[];
 		auditRequired: boolean;
 		location?: LocationResponse;
-		user?: UserResponse;
 		loadError?: ApiFieldError;
-		kind?: 'user' | 'group' | undefined;
 	} = $props();
 
 	const formId = 'location-editor-form';
@@ -56,9 +51,7 @@
 	const isEdit = $derived(mode === 'edit');
 
 	const selectableTypes = $derived(
-		types
-			.filter(isSelectableType)
-			.toSorted((a, b) => locationTypeName(a.id).localeCompare(locationTypeName(b.id)))
+		types.filter(isSelectableType).toSorted((a, b) => locationTypeName(a.id).localeCompare(locationTypeName(b.id)))
 	);
 
 	function fieldsForType(forTypeId: string) {
@@ -83,17 +76,12 @@
 		if (mode === 'edit' && location) {
 			return location.type;
 		}
-		return types
-			.filter(isSelectableType)
-			.toSorted((a, b) => locationTypeName(a.id).localeCompare(locationTypeName(b.id)))
-			.at(0)?.id ?? '';
-	}
-
-	function initialUsername() {
-		if (mode === 'edit') {
-			return user?.username ?? location?.name ?? '';
-		}
-		return '';
+		return (
+			types
+				.filter(isSelectableType)
+				.toSorted((a, b) => locationTypeName(a.id).localeCompare(locationTypeName(b.id)))
+				.at(0)?.id ?? ''
+		);
 	}
 
 	function initialName() {
@@ -105,14 +93,14 @@
 
 	function initialAuthProviderId() {
 		if (mode === 'edit') {
-			return user?.authProvider ?? '';
+			return location?.authProvider ?? '';
 		}
 		return '';
 	}
 
 	function initialEnabled() {
 		if (mode === 'edit') {
-			return user?.enabled ?? true;
+			return location?.enabled ?? true;
 		}
 		return true;
 	}
@@ -127,21 +115,18 @@
 
 	const startingTypeId = initialTypeId();
 	let typeId = $state(startingTypeId);
-	let username = $state(initialUsername());
 	let name = $state(initialName());
 	let authProviderId = $state(initialAuthProviderId());
 	let enabled = $state(initialEnabled());
 	let values = $state<Record<string, unknown>>(initialValues(startingTypeId));
+	let kind = $state<'user' | 'group' | undefined>(resolveKind(startingTypeId));
 	let formError = $state<SchemaFormError>();
 	let auditComment = $state('');
 	let submitting = $state(false);
 
-	kind = resolveKind(startingTypeId);
-
 	function snapshot() {
 		return {
 			typeId,
-			username,
 			name,
 			authProviderId,
 			enabled,
@@ -153,14 +138,11 @@
 	let baseline = $state(snapshot());
 
 	const selectedType = $derived(
-		isEdit
-			? types.find(entry => entry.id === typeId)
-			: selectableTypes.find(entry => entry.id === typeId)
+		isEdit ? types.find(entry => entry.id === typeId) : selectableTypes.find(entry => entry.id === typeId)
 	);
 	const fields = $derived(fieldsForType(typeId));
 
 	function resetForType(nextTypeId: string) {
-		username = '';
 		name = '';
 		authProviderId = '';
 		enabled = true;
@@ -176,7 +158,6 @@
 		}
 
 		typeId = baseline.typeId;
-		username = baseline.username;
 		name = baseline.name;
 		authProviderId = baseline.authProviderId;
 		enabled = baseline.enabled;
@@ -196,10 +177,7 @@
 			formError = { error: 'web.locations.select_type' };
 			return;
 		}
-		if (kind === 'user' && !username) {
-			return;
-		}
-		if (kind === 'group' && !name) {
+		if (!name) {
 			return;
 		}
 
@@ -208,37 +186,11 @@
 		const properties = compactPropertyValues(values);
 
 		if (mode === 'create') {
-			if (kind === 'user') {
-				const { data, error } = await UserController.create({
-					client: getApiClient(),
-					body: {
-						type: typeId,
-						username,
-						authProvider: authProviderId || undefined,
-						properties,
-					},
-					headers: auditHeaders(auditComment),
-				});
-
-				submitting = false;
-
-				if (error) {
-					formError = error;
-					return;
-				}
-
-				toast.success(t('web.locations.created_user'));
-				const createdId = data?.data?.id;
-				if (createdId) {
-					await goto(resolve('/(authenticated)/locations/[id]', { id: createdId }));
-				}
-				return;
-			}
-
-			const { data, error } = await GroupController.createGroup({
+			const { data, error } = await LocationController.createLocation({
 				client: getApiClient(),
 				body: {
 					type: typeId,
+					authProvider: kind === 'user' ? authProviderId || undefined : undefined,
 					name,
 					properties,
 				},
@@ -252,7 +204,7 @@
 				return;
 			}
 
-			toast.success(t('web.locations.created_group'));
+			toast.success(kind === 'user' ? t('web.locations.created_user') : t('web.locations.created_group'));
 			const createdId = data?.data?.id;
 			if (createdId) {
 				await goto(resolve('/(authenticated)/locations/[id]', { id: createdId }));
@@ -265,38 +217,21 @@
 			return;
 		}
 
-		if (kind === 'user') {
-			const { error } = await UserController.update({
-				client: getApiClient(),
-				path: { id: location.id },
-				body: {
-					username,
-					authProvider: authProviderId || undefined,
-					enabled,
-					properties,
-				},
-				headers: auditHeaders(auditComment),
-			});
-
-			submitting = false;
-
-			if (error) {
-				formError = error;
-				return;
-			}
-
-			toast.success(t('web.locations.updated_user'));
-			await goto(resolve('/(authenticated)/locations/[id]', { id: location.id }));
-			return;
-		}
-
-		const { error } = await GroupController.updateGroup({
+		const { error } = await LocationController.updateLocation({
 			client: getApiClient(),
 			path: { id: location.id },
-			body: {
-				name,
-				properties,
-			},
+			body:
+				kind === 'user'
+					? {
+							name,
+							authProvider: authProviderId || undefined,
+							enabled,
+							properties,
+						}
+					: {
+							name,
+							properties,
+						},
 			headers: auditHeaders(auditComment),
 		});
 
@@ -307,7 +242,7 @@
 			return;
 		}
 
-		toast.success(t('web.locations.updated_group'));
+		toast.success(kind === 'user' ? t('web.locations.updated_user') : t('web.locations.updated_group'));
 		await goto(resolve('/(authenticated)/locations/[id]', { id: location.id }));
 	}
 </script>
@@ -340,12 +275,7 @@
 			{:else}
 				<label class="mb-4 flex flex-col gap-1">
 					<span class="text-label">{t('web.common.type')}</span>
-					<select
-						class="input w-full"
-						bind:value={typeId}
-						disabled={submitting}
-						onchange={() => resetForType(typeId)}
-					>
+					<select class="input w-full" bind:value={typeId} disabled={submitting} onchange={() => resetForType(typeId)}>
 						{#each selectableTypes as type (type.id)}
 							<option value={type.id}>
 								{locationTypeName(type.id)} ({type.kind === 'user'
@@ -360,7 +290,7 @@
 			{#if kind === 'user'}
 				<label class="mb-4 flex flex-col gap-1">
 					<span class="text-label">{t('web.locations.username')}</span>
-					<input class="input w-full" bind:value={username} required disabled={submitting} />
+					<input class="input w-full" bind:value={name} required disabled={submitting} />
 				</label>
 
 				<label class="mb-4 flex flex-col gap-1">
@@ -388,7 +318,7 @@
 
 			{#if selectedType || (isEdit && typeId)}
 				{#key typeId}
-					<ObjectPropertyForm {fields} bind:values={values} error={formError} {submitting} />
+					<ObjectPropertyForm {fields} bind:values error={formError} {submitting} />
 				{/key}
 			{/if}
 		</form>

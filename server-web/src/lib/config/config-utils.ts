@@ -1,6 +1,6 @@
-import type { ConfigTypeResponse } from '$lib/api/types.gen';
-import { t } from '$lib/i18n/catalog';
-import type { DistributivePick } from '$lib/util-types';
+import type { ConfigTypeResponse } from '#lib/api/types.gen.js';
+import { t } from '#lib/i18n/catalog.js';
+import type { DistributivePick } from '#lib/util-types.js';
 
 export type EnsureCurrentValue<T> = T extends any
 	? Omit<T, 'currentValue'> & { currentValue: NonNullable<T[keyof T & 'currentValue']> }

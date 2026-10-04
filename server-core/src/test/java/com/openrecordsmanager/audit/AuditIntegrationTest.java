@@ -157,7 +157,7 @@ class AuditIntegrationTest {
 
     @Test
     void auditSkipsDatabaseWhenPrimaryIsReadOnly() {
-        AuditEventPayload payload = samplePayload(AuditEntityType.USER, UUID.randomUUID().toString());
+        AuditEventPayload payload = samplePayload(AuditEntityType.LOCATION, UUID.randomUUID().toString());
 
         this.probe.markWriteFailed();
         this.auditService.persist(payload);

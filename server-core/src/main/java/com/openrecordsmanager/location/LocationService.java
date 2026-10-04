@@ -4,22 +4,37 @@ import com.openrecordsmanager.api.ResourceIdentifier;
 import com.openrecordsmanager.api.audit.AuditEntityType;
 import com.openrecordsmanager.api.audit.AuditOperation;
 import com.openrecordsmanager.api.errors.ApiException;
+import com.openrecordsmanager.api.location.LocationActionType;
+import com.openrecordsmanager.api.location.LocationKind;
 import com.openrecordsmanager.api.search.SearchFieldTarget;
 import com.openrecordsmanager.api.types.ComponentTypes;
+import com.openrecordsmanager.audit.AuditPolicyService;
+import com.openrecordsmanager.audit.AuditPropertyChange;
 import com.openrecordsmanager.audit.AuditService;
 import com.openrecordsmanager.audit.RequiresAuditComment;
+import com.openrecordsmanager.config.ConfigService;
 import com.openrecordsmanager.database.DataRepository;
 import com.openrecordsmanager.location.dto.LocationResponse;
 import com.openrecordsmanager.location.dto.LocationSearchRequest;
 import com.openrecordsmanager.location.dto.LocationSearchResponse;
+import com.openrecordsmanager.location.dto.NewLocationRequest;
+import com.openrecordsmanager.location.dto.UpdateLocationRequest;
+import com.openrecordsmanager.location.group.Group;
 import com.openrecordsmanager.location.relationship.LocationRelationship;
 import com.openrecordsmanager.location.relationship.LocationRelationshipType;
 import com.openrecordsmanager.location.relationship.RelationshipDirection;
 import com.openrecordsmanager.location.relationship.dto.LocationRelationshipResponse;
 import com.openrecordsmanager.location.relationship.dto.NewLocationRelationshipRequest;
+import com.openrecordsmanager.location.type.LocationType;
 import com.openrecordsmanager.location.user.User;
+import com.openrecordsmanager.location.user.UserService;
+import com.openrecordsmanager.plugin.registry.ComponentCatalog;
+import com.openrecordsmanager.property.ObjectPropertyApplier;
+import com.openrecordsmanager.rest.dto.ActionResponse;
+import com.openrecordsmanager.rest.exception.ActionNotAvailableException;
 import com.openrecordsmanager.rest.exception.ResourceAlreadyExistsException;
 import com.openrecordsmanager.rest.exception.ResourceNotFoundException;
+import com.openrecordsmanager.schema.JsonSchemaValidator;
 import com.openrecordsmanager.search.ObjectSearchExecutor;
 import com.openrecordsmanager.search.sql.BuiltinColumnResolver;
 import com.openrecordsmanager.search.sql.ObjectSearchSchema;
@@ -31,7 +46,9 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
@@ -39,31 +56,94 @@ public class LocationService {
 
     private final DataRepository repository;
     private final AuditService auditService;
+    private final AuditPolicyService auditPolicyService;
+    private final ConfigService config;
+    private final ComponentCatalog catalog;
     private final ObjectSearchExecutor searchExecutor;
-    private final ObjectSearchSchema searchSchema;
+    private final ObjectPropertyApplier propertyApplier;
+    private final ObjectSearchSchema locationSearchSchema;
+    private final ObjectSearchSchema userSearchSchema;
+    private final ObjectSearchSchema groupSearchSchema;
+    private final UserService userService;
 
     public LocationService(
             DataRepository repository,
             AuditService auditService,
+            AuditPolicyService auditPolicyService,
+            ConfigService config,
+            ComponentCatalog catalog,
             ObjectSearchExecutor searchExecutor,
-            BuiltinColumnResolver columnResolver
+            BuiltinColumnResolver columnResolver,
+            ObjectPropertyApplier propertyApplier,
+            UserService userService
     ) {
         this.repository = repository;
         this.auditService = auditService;
+        this.auditPolicyService = auditPolicyService;
+        this.config = config;
+        this.catalog = catalog;
         this.searchExecutor = searchExecutor;
-        this.searchSchema = ObjectSearchSchema.of(
+        this.propertyApplier = propertyApplier;
+        this.locationSearchSchema = ObjectSearchSchema.of(
                 SearchFieldTarget.LOCATION,
                 Location.class,
                 Location.BUILTIN_PROPERTY_BINDINGS,
                 columnResolver
         );
+        this.userSearchSchema = ObjectSearchSchema.of(
+                SearchFieldTarget.USER,
+                User.class,
+                User.BUILTIN_PROPERTY_BINDINGS,
+                columnResolver
+        );
+        this.groupSearchSchema = ObjectSearchSchema.of(
+                SearchFieldTarget.LOCATION,
+                Group.class,
+                Group.BUILTIN_PROPERTY_BINDINGS,
+                columnResolver
+        );
+        this.userService = userService;
     }
 
     @Transactional(readOnly = true)
     public LocationSearchResponse search(User actor, LocationSearchRequest request) {
+        LocationKind kind = request.kind();
+        if (kind == LocationKind.USER) {
+            return this.searchWith(
+                    this.userSearchSchema,
+                    actor,
+                    request,
+                    ids -> this.repository.userRepo.findAllById(ids).stream()
+                            .collect(Collectors.toMap(User::getId, Function.identity()))
+            );
+        }
+        if (kind == LocationKind.GROUP) {
+            return this.searchWith(
+                    this.groupSearchSchema,
+                    actor,
+                    request,
+                    ids -> this.repository.groupRepo.findAllById(ids).stream()
+                            .collect(Collectors.toMap(Group::getId, Function.identity()))
+            );
+        }
+        return this.searchWith(
+                this.locationSearchSchema,
+                actor,
+                request,
+                ids -> this.repository.locationRepo.findAllById(ids).stream()
+                        .collect(Collectors.toMap(Location::getId, Function.identity()))
+        );
+    }
+
+    private LocationSearchResponse searchWith(
+            ObjectSearchSchema schema,
+            User actor,
+            LocationSearchRequest request,
+            Function<List<UUID>, Map<UUID, ? extends Location>> loader
+    ) {
         int pageLimit = request.limitOrDefault();
         List<UUID> ids = this.searchExecutor.searchIds(
-                this.searchSchema,
+                schema,
                 actor,
                 request.q(),
                 request.filters(),
@@ -78,8 +158,7 @@ public class LocationService {
             ids = ids.subList(0, pageLimit);
         }
 
-        Map<UUID, Location> loaded = this.repository.locationRepo.findAllById(ids).stream()
-                .collect(Collectors.toMap(Location::getId, l -> l));
+        Map<UUID, ? extends Location> loaded = loader.apply(ids);
 
         List<LocationResponse> items = new ArrayList<>(ids.size());
         for (UUID id : ids) {
@@ -102,12 +181,167 @@ public class LocationService {
     }
 
     @Transactional(readOnly = true)
+    public LocationResponse me(User user) {
+        return this.get(user.getId());
+    }
+
+    @Transactional(readOnly = true)
     public LocationResponse get(UUID id) {
         Location location = this.repository.locationRepo.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("location", id));
 
         this.auditService.addReadEvent(AuditEntityType.LOCATION, id);
         return LocationResponse.of(location);
+    }
+
+    @Transactional
+    @RequiresAuditComment(operation = AuditOperation.CREATE, targetType = AuditEntityType.LOCATION)
+    public LocationResponse create(NewLocationRequest input) {
+        LocationType type = this.repository.locationTypeRepo.findById(input.type())
+                .orElseThrow(() -> new ResourceNotFoundException(ComponentTypes.LOCATION_TYPE, input.type()));
+
+        return switch (type.getKind()) {
+            case USER -> this.userService.create(type, input);
+            case GROUP -> this.createGroup(type, input);
+            case ANY -> throw ApiException.validationFailed("type", "invalid_location_type_kind", type.getKind().key());
+        };
+    }
+
+    private LocationResponse createGroup(LocationType type, NewLocationRequest input) {
+        String name = input.name();
+        if (name == null || name.isBlank()) {
+            throw ApiException.validationFailed("name", "required");
+        }
+        if (this.repository.locationRepo.findByName(name).isPresent()) {
+            throw new ResourceAlreadyExistsException("location", name);
+        }
+
+        List<AuditPropertyChange> changes = new ArrayList<>();
+        changes.add(AuditPropertyChange.newProperty("type", input.type()));
+        changes.add(AuditPropertyChange.newProperty("name", name));
+
+        Group group = new Group(name, type);
+        this.propertyApplier.applyOnCreate(group, input.properties(), true, changes);
+
+        this.repository.groupRepo.saveAndFlush(group);
+
+        this.auditService.addEvent(
+                AuditOperation.CREATE,
+                AuditEntityType.LOCATION,
+                group.getId().toString(),
+                changes,
+                null,
+                null
+        );
+
+        return LocationResponse.of(group);
+    }
+
+    @Transactional
+    @RequiresAuditComment(operation = AuditOperation.UPDATE, targetType = AuditEntityType.LOCATION)
+    public LocationResponse update(User actor, UUID id, UpdateLocationRequest input) {
+        Location location = this.repository.locationRepo.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("location", id));
+
+        return switch (location.getKind()) {
+            case USER -> this.userService.update(actor, (User) location, input);
+            case GROUP -> this.updateGroup((Group) location, input);
+            case ANY -> throw ApiException.validationFailed("id", "invalid_location_kind", location.getKind().key());
+        };
+    }
+
+    private LocationResponse updateGroup(Group group, UpdateLocationRequest input) {
+        List<AuditPropertyChange> changes = new ArrayList<>();
+
+        if (input.name() != null && !input.name().equals(group.getName())) {
+            if (this.repository.locationRepo.findByName(input.name()).isPresent()) {
+                throw new ResourceAlreadyExistsException("location", input.name());
+            }
+            String oldName = group.getName();
+            group.setName(input.name());
+            changes.add(AuditPropertyChange.of("name", oldName, input.name()));
+        }
+
+        if (input.properties() != null) {
+            this.propertyApplier.applyOnUpdate(group, input.properties(), true, changes);
+        }
+
+        this.repository.groupRepo.saveAndFlush(group);
+
+        this.auditService.addEvent(
+                AuditOperation.UPDATE,
+                AuditEntityType.LOCATION,
+                group.getId().toString(),
+                changes.isEmpty() ? null : changes,
+                null,
+                null
+        );
+
+        return LocationResponse.of(group);
+    }
+
+    @Transactional(readOnly = true)
+    public Set<ActionResponse> listActions(User actor, UUID id) {
+        Location target = this.repository.locationRepo.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("location", id));
+
+        LocationActionContextImpl context = new LocationActionContextImpl(
+                this.repository,
+                this.catalog,
+                this.config,
+                this.auditService,
+                actor,
+                target
+        );
+
+        Set<ActionResponse> actions = this.catalog.getRegistry(ComponentTypes.LOCATION_ACTION).stream()
+                .filter(action -> action.isAvailable(context))
+                .map(action -> ActionResponse.ofLocation(this.catalog, action, this.auditPolicyService))
+                .collect(Collectors.toSet());
+
+        this.auditService.addReadEvent(AuditEntityType.LOCATION, id);
+        return actions;
+    }
+
+    @Transactional
+    public void executeAction(User actor, UUID id, ResourceIdentifier actionId, Map<String, ?> inputs) {
+        LocationActionType<?> action = this.catalog.getRegistry(ComponentTypes.LOCATION_ACTION).get(actionId)
+                .orElseThrow(() -> new ResourceNotFoundException(ComponentTypes.LOCATION_ACTION, actionId));
+
+        Location target = this.repository.locationRepo.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("location", id));
+
+        LocationActionContextImpl context = new LocationActionContextImpl(
+                this.repository,
+                this.catalog,
+                this.config,
+                this.auditService,
+                actor,
+                target
+        );
+
+        if (!action.isAvailable(context)) {
+            throw new ActionNotAvailableException(actionId, "location", id);
+        }
+
+        this.auditPolicyService.validateCommentRequired(AuditEntityType.LOCATION, AuditOperation.ACTION);
+
+        parseAndExecute(action, context, inputs);
+
+        this.auditService.addActionRanEvent(
+                actionId,
+                AuditEntityType.LOCATION,
+                id,
+                Map.of("inputs", inputs.keySet())
+        );
+    }
+
+    private static <I extends Record> void parseAndExecute(
+            LocationActionType<I> action,
+            LocationActionContextImpl context,
+            Map<String, ?> inputs
+    ) {
+        action.execute(context, JsonSchemaValidator.toRecord(action.getInputClass(), inputs));
     }
 
     @Transactional(readOnly = true)

@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
-	import HeaderNavLink from '$lib/components/layout/HeaderNavLink.svelte';
-	import { t } from '$lib/i18n/catalog';
+	import HeaderNavLink from '#lib/components/layout/HeaderNavLink.svelte';
+	import { t } from '#lib/i18n/catalog.js';
 	import { NavigationMenu } from 'bits-ui';
 	import CaretDownIcon from 'phosphor-svelte/lib/CaretDownIcon';
 	import FilePlusIcon from 'phosphor-svelte/lib/FilePlusIcon';

@@ -1,16 +1,16 @@
 import { goto } from '$app/navigation';
-import { AuditController, ObjectPropertyController, UserController } from '$lib/api';
-import { getApiClient } from '$lib/api-client';
+import { AuditController, LocationController, ObjectPropertyController } from '#lib/api/index.js';
+import { getApiClient } from '#lib/api-client.js';
 
 export async function load({ url }) {
 	const client = getApiClient();
 	const [meR, propertiesR, auditPolicyR] = await Promise.all([
-		UserController.me({ client }),
+		LocationController.me({ client }),
 		ObjectPropertyController.objectPropertyRetrieveAll({ client }),
 		AuditController.listAuditPolicies({ client }),
 	]);
 
-	if (meR.error && meR.response.status === 401) {
+	if (meR.error && meR.response?.status === 401) {
 		const dest = new URL('/login', document.baseURI);
 		dest.searchParams.append('redirect', url.pathname.substring(1) + url.search);
 
@@ -19,7 +19,10 @@ export async function load({ url }) {
 
 	const me = meR.data?.data || {
 		id: '00000000-0000-0000-0000-000000000000',
-		username: 'Me',
+		name: 'Me',
+		displayName: 'Me',
+		type: '',
+		kind: 'user' as const,
 		properties: {},
 	};
 	const properties = propertiesR.data?.data || [];

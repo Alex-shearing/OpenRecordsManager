@@ -1,5 +1,6 @@
 package com.openrecordsmanager.location.user;
 
+import com.google.common.base.Strings;
 import com.openrecordsmanager.api.ResourceIdentifier;
 import com.openrecordsmanager.api.builtin.BuiltinPropertyIds;
 import com.openrecordsmanager.api.location.LocationKind;
@@ -16,6 +17,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 @Entity
 @Table(name = "user_details")
@@ -25,10 +27,6 @@ import java.util.Map;
 public class User extends Location implements UserDetails {
     public static final Map<ResourceIdentifier, BuiltinPropertyBinding<Location, ?>> BUILTIN_PROPERTY_BINDINGS =
             BuiltinPropertyBinding.scan(User.class);
-
-    @BuiltinProperty(value = BuiltinPropertyIds.USERNAME, defaultSearch = true)
-    @Column(unique = true, nullable = false)
-    private String username;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn
@@ -65,9 +63,8 @@ public class User extends Location implements UserDetails {
     protected User() {
     }
 
-    public User(String username, @Nullable AuthProvider authProvider, LocationType type) {
-        super(username, type);
-        this.username = username;
+    public User(String name, @Nullable AuthProvider authProvider, LocationType type) {
+        super(name, type);
         this.authProvider = authProvider;
         this.enabled = true;
     }
@@ -81,10 +78,22 @@ public class User extends Location implements UserDetails {
         return this.authProvider;
     }
 
-    public void setUsername(String username) {
-        this.username = username;
-        // Keep Location.name aligned with username for polymorphic location search/display.
-        this.setName(username);
+    /**
+     * {@code "surname, given name"} when names are present, otherwise the stored location name.
+     */
+    @Override
+    @Transient
+    public String getDisplayName() {
+        String surname = Strings.emptyToNull(this.surname);
+        String givenName = Strings.emptyToNull(this.givenName);
+
+        if (surname != null && givenName != null) {
+            return surname + ", " + givenName;
+        }
+        if (surname != null || givenName != null) {
+            return Objects.requireNonNullElse(surname, givenName);
+        }
+        return this.getName();
     }
 
     public void setAuthProvider(@Nullable AuthProvider authProvider) {
@@ -126,8 +135,12 @@ public class User extends Location implements UserDetails {
         return null;
     }
 
+    /**
+     * Spring Security login name; backed by {@link Location#getName()}.
+     */
     @Override
+    @Transient
     public String getUsername() {
-        return this.username;
+        return this.getName();
     }
 }

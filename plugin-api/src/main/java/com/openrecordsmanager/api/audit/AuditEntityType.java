@@ -14,8 +14,6 @@ public enum AuditEntityType {
     RECORD("record", null),
     RECORD_TYPE("record_type", ComponentTypes.RECORD_TYPE),
     LOCATION("location", null),
-    USER("user", null),
-    GROUP("group", null),
     LOCATION_RELATIONSHIP("location_relationship", null),
     LOCATION_RELATIONSHIP_TYPE("location_relationship_type", ComponentTypes.LOCATION_RELATIONSHIP_TYPE),
     LOCATION_TYPE("location_type", ComponentTypes.LOCATION_TYPE),

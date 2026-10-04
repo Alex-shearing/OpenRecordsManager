@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
-	import { t } from '$lib/i18n/catalog';
+	import { t } from '#lib/i18n/catalog.js';
 
 	let {
 		open = $bindable(false),
@@ -47,12 +47,7 @@
 	}
 </script>
 
-<dialog
-	bind:this={dialog}
-	{id}
-	class={['app-dialog', size === 'wide' && 'app-dialog-wide']}
-	onclose={handleClose}
->
+<dialog bind:this={dialog} {id} class={['app-dialog', size === 'wide' && 'app-dialog-wide']} onclose={handleClose}>
 	{#if title || description}
 		<div class="card-header flex items-start justify-between gap-4">
 			<div>

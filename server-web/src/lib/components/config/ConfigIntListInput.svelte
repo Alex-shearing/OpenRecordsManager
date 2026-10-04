@@ -1,6 +1,6 @@
 <script lang="ts">
 	import TrashIcon from 'phosphor-svelte/lib/TrashIcon';
-	import { t } from '$lib/i18n/catalog';
+	import { t } from '#lib/i18n/catalog.js';
 
 	let {
 		id,

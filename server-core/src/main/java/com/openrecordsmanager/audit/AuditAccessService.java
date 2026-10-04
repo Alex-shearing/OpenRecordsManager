@@ -23,7 +23,7 @@ public class AuditAccessService {
     public void assertCanViewTarget(User actor, AuditEntityType targetType, String targetId) {
         switch (targetType) {
             case RECORD -> this.assertCanViewRecord(actor, UUID.fromString(targetId));
-            case USER -> this.assertCanViewUser(actor, UUID.fromString(targetId));
+            case LOCATION -> this.assertCanViewLocation(UUID.fromString(targetId));
             default -> {
                 // Configuration entities are visible to authenticated users for now.
             }
@@ -36,8 +36,8 @@ public class AuditAccessService {
                 .orElseThrow(() -> new ResourceNotFoundException("record", recordId));
     }
 
-    private void assertCanViewUser(User actor, UUID userId) {
-        this.repository.userRepo.findById(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("user", userId));
+    private void assertCanViewLocation(UUID locationId) {
+        this.repository.locationRepo.findById(locationId)
+                .orElseThrow(() -> new ResourceNotFoundException("location", locationId));
     }
 }

@@ -50,7 +50,7 @@ class JwtSessionServiceTest {
 
     @Test
     void epochMismatchRejectsToken() {
-        User admin = this.repository.userRepo.findByUsername("admin").orElseThrow();
+        User admin = this.repository.userRepo.findByName("admin").orElseThrow();
         TokenPair pair = this.jwtSessionService.issueTokenPair(admin, SessionMode.NORMAL);
 
         admin.bumpSessionEpoch();

@@ -1,8 +1,8 @@
-import { env } from '$env/dynamic/public';
+import { PUBLIC_API_URL } from '$app/env/public';
 import { goto } from '$app/navigation';
 import { page } from '$app/state';
-import { createClient, createConfig, type Client } from '$lib/api/client';
-import { preferredLocale } from '$lib/i18n/locale';
+import { createClient, createConfig, type Client } from '#lib/api/client/index.js';
+import { preferredLocale } from '#lib/i18n/locale.js';
 
 const SCHEMA_UPGRADE_HEADER = 'X-ORM-Schema-Upgrade-Required';
 const CSRF_HEADER = 'X-CSRF-TOKEN';
@@ -10,7 +10,7 @@ const AUDIT_COMMENT_HEADER = 'X-ORM-Audit-Comment';
 
 // Load the API url from: Environment Var (only when running in DEV mode) > window.__ORM_UI__ (set in index.html) > use relative /api
 const baseUrl = (
-	env.PUBLIC_API_URL || (typeof window !== 'undefined' ? (window.__ORM_UI__?.apiBaseUrl ?? '') : '')
+	PUBLIC_API_URL || (typeof window !== 'undefined' ? (window.__ORM_UI__?.apiBaseUrl ?? '') : '')
 ).replace(/\/$/, '');
 
 let apiClient: Client | undefined;

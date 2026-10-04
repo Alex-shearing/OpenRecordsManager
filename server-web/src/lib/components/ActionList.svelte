@@ -1,14 +1,14 @@
 <script lang="ts">
-	import type { ActionResponse } from '$lib/api/types.gen';
-	import RecordActionDialog from '$lib/components/RecordActionDialog.svelte';
-	import UserActionDialog from '$lib/components/UserActionDialog.svelte';
-	import { t } from '$lib/i18n/catalog';
+	import type { ActionResponse } from '#lib/api/types.gen.js';
+	import LocationActionDialog from '#lib/components/LocationActionDialog.svelte';
+	import RecordActionDialog from '#lib/components/RecordActionDialog.svelte';
+	import { t } from '#lib/i18n/catalog.js';
 	import {
+		locationActionDescription,
+		locationActionName,
 		recordActionDescription,
 		recordActionName,
-		userActionDescription,
-		userActionName,
-	} from '$lib/i18n/labels';
+	} from '#lib/i18n/labels.js';
 
 	let {
 		actions,
@@ -16,7 +16,7 @@
 		targetId,
 	}: {
 		actions: ActionResponse[];
-		kind: 'user' | 'record';
+		kind: 'location' | 'record';
 		targetId: string;
 	} = $props();
 
@@ -46,12 +46,10 @@
 						onclick={() => openAction(action)}
 					>
 						<span class="font-medium">
-							{kind === 'user' ? userActionName(action.id) : recordActionName(action.id)}
+							{kind === 'location' ? locationActionName(action.id) : recordActionName(action.id)}
 						</span>
 						<span class="text-hint">
-							{kind === 'user'
-								? userActionDescription(action.id)
-								: recordActionDescription(action.id)}
+							{kind === 'location' ? locationActionDescription(action.id) : recordActionDescription(action.id)}
 						</span>
 					</button>
 				</li>
@@ -59,10 +57,10 @@
 		</ul>
 	</section>
 
-	{#if kind === 'user'}
-		<UserActionDialog
+	{#if kind === 'location'}
+		<LocationActionDialog
 			bind:open={actionOpen}
-			userId={targetId}
+			locationId={targetId}
 			action={selectedAction}
 			onclose={closeActionDialog}
 		/>

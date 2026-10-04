@@ -10,18 +10,15 @@ import com.openrecordsmanager.api.location.LocationKind;
 import com.openrecordsmanager.database.DataRepository;
 import com.openrecordsmanager.database.SqliteTestSupport;
 import com.openrecordsmanager.location.LocationService;
-import com.openrecordsmanager.location.group.GroupService;
-import com.openrecordsmanager.location.group.dto.GroupResponse;
-import com.openrecordsmanager.location.group.dto.NewGroupRequest;
-import com.openrecordsmanager.location.group.dto.UpdateGroupRequest;
+import com.openrecordsmanager.location.dto.LocationResponse;
+import com.openrecordsmanager.location.dto.NewLocationRequest;
+import com.openrecordsmanager.location.dto.UpdateLocationRequest;
 import com.openrecordsmanager.location.relationship.dto.LocationRelationshipResponse;
 import com.openrecordsmanager.location.relationship.dto.LocationRelationshipTypeResponse;
 import com.openrecordsmanager.location.relationship.dto.NewLocationRelationshipRequest;
 import com.openrecordsmanager.location.relationship.dto.NewLocationRelationshipTypeRequest;
 import com.openrecordsmanager.location.relationship.dto.UpdateLocationRelationshipTypeRequest;
-import com.openrecordsmanager.location.user.UserService;
-import com.openrecordsmanager.location.user.dto.NewUserRequest;
-import com.openrecordsmanager.location.user.dto.UserResponse;
+import com.openrecordsmanager.location.user.User;
 import com.openrecordsmanager.plugin.exception.BuiltinResourceImmutableException;
 import com.openrecordsmanager.rest.exception.ResourceAlreadyExistsException;
 import org.junit.jupiter.api.Test;
@@ -38,18 +35,17 @@ import static org.junit.jupiter.api.Assertions.*;
 @SpringBootTest
 class LocationRelationshipIntegrationTest {
 
+    private static final ResourceIdentifier USER_TYPE =
+            new ResourceIdentifier(BuiltinPlugin.BUILTIN_PLUGIN_NAME, BuiltinLocationTypeIds.USER);
+    private static final ResourceIdentifier GROUP_TYPE =
+            new ResourceIdentifier(BuiltinPlugin.BUILTIN_PLUGIN_NAME, BuiltinLocationTypeIds.GROUP);
+
     @DynamicPropertySource
     static void properties(DynamicPropertyRegistry registry) {
         SqliteTestSupport.registerPrimaryMemoryDatabase(registry, LocationRelationshipIntegrationTest.class);
         registry.add(BuiltinConfigs.PLUGINS_SKIP_SYNC.key(), () -> "true");
         registry.add(BuiltinConfigs.COOKIE_SECURE.key(), () -> "false");
     }
-
-    @Autowired
-    private UserService userService;
-
-    @Autowired
-    private GroupService groupService;
 
     @Autowired
     private LocationService locationService;
@@ -62,9 +58,9 @@ class LocationRelationshipIntegrationTest {
 
     @Test
     void memberOfAndReportsToSupportIncomingInverseQueries() {
-        UserResponse alice = this.userService.create(new NewUserRequest(new ResourceIdentifier(BuiltinPlugin.BUILTIN_PLUGIN_NAME, BuiltinLocationTypeIds.USER), "alice", null, Map.of()));
-        UserResponse bob = this.userService.create(new NewUserRequest(new ResourceIdentifier(BuiltinPlugin.BUILTIN_PLUGIN_NAME, BuiltinLocationTypeIds.USER), "bob", null, Map.of()));
-        GroupResponse engineering = this.groupService.create(new NewGroupRequest(new ResourceIdentifier(BuiltinPlugin.BUILTIN_PLUGIN_NAME, BuiltinLocationTypeIds.GROUP), "Engineering", Map.of()));
+        LocationResponse alice = this.locationService.create(new NewLocationRequest(USER_TYPE, null, "alice", Map.of()));
+        LocationResponse bob = this.locationService.create(new NewLocationRequest(USER_TYPE, null, "bob", Map.of()));
+        LocationResponse engineering = this.locationService.create(new NewLocationRequest(GROUP_TYPE, null, "Engineering", Map.of()));
 
         LocationRelationshipResponse membership = this.locationService.createRelationship(
                 alice.id(),
@@ -115,7 +111,7 @@ class LocationRelationshipIntegrationTest {
         assertThrows(ApiException.class, () -> this.locationService.createRelationship(
                 alice.id(),
                 new NewLocationRelationshipRequest(
-                        this.repository.userRepo.findByUsername("admin").orElseThrow().getId(),
+                        this.repository.userRepo.findByName("admin").orElseThrow().getId(),
                         new ResourceIdentifier(BuiltinPlugin.BUILTIN_PLUGIN_NAME, BuiltinRelationshipTypeIds.REPORTS_TO),
                         null
                 )
@@ -152,14 +148,16 @@ class LocationRelationshipIntegrationTest {
 
     @Test
     void customRelationshipTypesAndGroupCrud() {
-        UserResponse alice = this.userService.create(new NewUserRequest(new ResourceIdentifier(BuiltinPlugin.BUILTIN_PLUGIN_NAME, BuiltinLocationTypeIds.USER), "alice_sponsors", null, Map.of()));
-        GroupResponse engineering = this.groupService.create(new NewGroupRequest(new ResourceIdentifier(BuiltinPlugin.BUILTIN_PLUGIN_NAME, BuiltinLocationTypeIds.GROUP), "Sponsors", Map.of()));
-        GroupResponse renamed = this.groupService.update(
+        User admin = this.repository.userRepo.findByName("admin").orElseThrow();
+        LocationResponse alice = this.locationService.create(new NewLocationRequest(USER_TYPE, null, "alice_sponsors", Map.of()));
+        LocationResponse engineering = this.locationService.create(new NewLocationRequest(GROUP_TYPE, null, "Sponsors", Map.of()));
+        LocationResponse renamed = this.locationService.update(
+                admin,
                 engineering.id(),
-                new UpdateGroupRequest("Sponsors Renamed", null)
+                new UpdateLocationRequest(null, null, "Sponsors Renamed", null)
         );
         assertEquals("Sponsors Renamed", renamed.name());
-        assertEquals("Sponsors Renamed", this.groupService.get(engineering.id()).name());
+        assertEquals("Sponsors Renamed", this.locationService.get(engineering.id()).name());
 
         ResourceIdentifier sponsorsId = ResourceIdentifier.valueOf("test:sponsors");
         LocationRelationshipTypeResponse createdType = this.relationshipTypeService.create(

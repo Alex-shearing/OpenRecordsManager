@@ -74,7 +74,7 @@ class PluginServiceIntegrationTest {
 
     @BeforeEach
     void setUp() throws IOException {
-        this.admin = this.repository.userRepo.findByUsername("admin").orElseThrow();
+        this.admin = this.repository.userRepo.findByName("admin").orElseThrow();
         restorePluginJars();
         this.repository.pluginRepo.deleteAll();
         this.pluginManager.reload(this.catalog);

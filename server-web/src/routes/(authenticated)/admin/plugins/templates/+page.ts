@@ -1,6 +1,6 @@
-import { TemplateController, TemplateType } from '$lib/api';
-import { getApiClient } from '$lib/api-client';
-import { templateName } from '$lib/i18n/labels';
+import { TemplateController, TemplateType } from '#lib/api/index.js';
+import { getApiClient } from '#lib/api-client.js';
+import { templateName } from '#lib/i18n/labels.js';
 
 const TEMPLATE_TYPES: ReadonlyArray<string> = Object.values(TemplateType);
 

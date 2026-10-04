@@ -1,5 +1,6 @@
 package com.openrecordsmanager.location.dto;
 
+import com.openrecordsmanager.api.location.LocationKind;
 import com.openrecordsmanager.api.search.SearchClause;
 import com.openrecordsmanager.api.search.SearchMatchMode;
 import org.jspecify.annotations.Nullable;
@@ -12,7 +13,8 @@ public record LocationSearchRequest(
         @Nullable List<SearchClause> filters,
         @Nullable SearchMatchMode match,
         @Nullable Integer limit,
-        @Nullable UUID cursor
+        @Nullable UUID cursor,
+        @Nullable LocationKind kind
 ) {
     public SearchMatchMode matchOrDefault() {
         return this.match == null ? SearchMatchMode.ALL : this.match;

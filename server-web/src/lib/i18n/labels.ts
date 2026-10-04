@@ -1,4 +1,4 @@
-import { t } from './catalog';
+import { t } from './catalog.js';
 
 /** ResourceIdentifier {@code source:item} → key segment {@code source.item}. */
 function idSegment(id: string): string {
@@ -58,12 +58,12 @@ export function configDescription(key: string): string {
 	return t(`config.${key}.description`);
 }
 
-export function userActionName(id: string): string {
-	return t(`user_action.${idSegment(id)}.name`);
+export function locationActionName(id: string): string {
+	return t(`location_action.${idSegment(id)}.name`);
 }
 
-export function userActionDescription(id: string): string {
-	return t(`user_action.${idSegment(id)}.description`);
+export function locationActionDescription(id: string): string {
+	return t(`location_action.${idSegment(id)}.description`);
 }
 
 export function recordActionName(id: string): string {

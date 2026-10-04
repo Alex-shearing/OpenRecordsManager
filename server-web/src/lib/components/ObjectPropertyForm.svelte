@@ -1,14 +1,14 @@
 <script lang="ts">
-	import type { ListElementResponse } from '$lib/api/types.gen';
-	import { ListController } from '$lib/api';
-	import { getApiClient } from '$lib/api-client';
-	import type { SchemaFormError } from '$lib/components/SchemaForm.svelte';
-	import TransferList from '$lib/components/TransferList.svelte';
-	import ConfigIntListInput from '$lib/components/config/ConfigIntListInput.svelte';
-	import ConfigStringListInput from '$lib/components/config/ConfigStringListInput.svelte';
-	import { t, tApiErrorResponse } from '$lib/i18n/catalog';
-	import { listElementName, objectPropertyDescription, objectPropertyName } from '$lib/i18n/labels';
-	import type { TypePropertyAssignment } from '$lib/properties/createFields';
+	import type { ListElementResponse } from '#lib/api/types.gen.js';
+	import { ListController } from '#lib/api/index.js';
+	import { getApiClient } from '#lib/api-client.js';
+	import type { SchemaFormError } from '#lib/components/SchemaForm.svelte';
+	import TransferList from '#lib/components/TransferList.svelte';
+	import ConfigIntListInput from '#lib/components/config/ConfigIntListInput.svelte';
+	import ConfigStringListInput from '#lib/components/config/ConfigStringListInput.svelte';
+	import { t, tApiErrorResponse } from '#lib/i18n/catalog.js';
+	import { listElementName, objectPropertyDescription, objectPropertyName } from '#lib/i18n/labels.js';
+	import type { TypePropertyAssignment } from '#lib/properties/createFields.js';
 	import type { Snippet } from 'svelte';
 
 	let {
@@ -230,9 +230,7 @@
 				{#if property.type === 'list_multiple'}
 					{@const listTypeId = property.listType ?? ''}
 					{@const selectedKeys = asStringArray(getValue(id))}
-					{@const elements = listTypeId
-						? selectableListElements(listCache[listTypeId] ?? [], selectedKeys)
-						: []}
+					{@const elements = listTypeId ? selectableListElements(listCache[listTypeId] ?? [], selectedKeys) : []}
 					<div
 						id={inputId}
 						class="flex flex-col gap-2"
@@ -245,10 +243,7 @@
 						{:else}
 							<TransferList
 								items={elements}
-								bind:selected={
-									() => selectedKeys,
-									v => setValue(id, v)
-								}
+								bind:selected={() => selectedKeys, v => setValue(id, v)}
 								getKey={element => element.type}
 								getSearchText={element => `${listElementName(element.type)} ${element.type}`}
 								disabled={submitting}
@@ -264,19 +259,13 @@
 				{:else if property.type === 'string_list'}
 					<ConfigStringListInput
 						id={inputId}
-						bind:value={
-							() => asStringArray(getValue(id)),
-							v => setValue(id, v)
-						}
+						bind:value={() => asStringArray(getValue(id)), v => setValue(id, v)}
 						disabled={submitting}
 					/>
 				{:else}
 					<ConfigIntListInput
 						id={inputId}
-						bind:value={
-							() => asNumberArray(getValue(id)),
-							v => setValue(id, v)
-						}
+						bind:value={() => asNumberArray(getValue(id)), v => setValue(id, v)}
 						disabled={submitting}
 					/>
 				{/if}
@@ -336,19 +325,13 @@
 					{@const listTypeId = property.listType ?? ''}
 					{@const selectedKey = asString(getValue(id))}
 					{@const elements = listTypeId
-						? selectableListElements(
-								listCache[listTypeId] ?? [],
-								selectedKey ? [selectedKey] : []
-							)
+						? selectableListElements(listCache[listTypeId] ?? [], selectedKey ? [selectedKey] : [])
 						: []}
 					<select
 						id={inputId}
 						name={id}
 						class="input w-full"
-						bind:value={
-							() => selectedKey,
-							v => setValue(id, v || null)
-						}
+						bind:value={() => selectedKey, v => setValue(id, v || null)}
 						disabled={submitting || Boolean(listTypeId && listLoading[listTypeId])}
 						aria-invalid={invalid}
 						aria-describedby={describedBy}
@@ -368,8 +351,7 @@
 						aria-invalid={invalid}
 						aria-describedby={describedBy}
 						placeholder={'{}'}
-						oninput={event => onJsonInput(id, event.currentTarget.value)}
-					></textarea>
+						oninput={event => onJsonInput(id, event.currentTarget.value)}></textarea>
 				{:else}
 					<input
 						id={inputId}

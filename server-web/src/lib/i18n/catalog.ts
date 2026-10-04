@@ -1,4 +1,4 @@
-import type { ApiFieldError } from '$lib/api';
+import type { ApiFieldError } from '#lib/api/index.js';
 import { writable, get } from 'svelte/store';
 
 export type TranslationCatalog = {

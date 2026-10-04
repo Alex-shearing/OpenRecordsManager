@@ -70,14 +70,14 @@ class AuthProviderDisableIntegrationTest {
                 .andExpect(status().isOk());
 
         this.mockMvc.perform(
-                        get("/api/user/me")
+                        get("/api/location/me")
                                 .header("Authorization", "Bearer " + adminSession.accessToken())
                                 .accept(MediaType.APPLICATION_JSON)
                 )
                 .andExpect(status().isUnauthorized());
 
         this.mockMvc.perform(
-                        get("/api/user/me")
+                        get("/api/location/me")
                                 .header("Authorization", "Bearer " + adminToken)
                                 .accept(MediaType.APPLICATION_JSON)
                 )

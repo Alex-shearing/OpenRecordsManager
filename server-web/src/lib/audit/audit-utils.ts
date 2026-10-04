@@ -1,5 +1,5 @@
-import type { AuditPolicyResponse } from '$lib/api';
-import { t } from '$lib/i18n/catalog';
+import type { AuditPolicyResponse } from '#lib/api/index.js';
+import { t } from '#lib/i18n/catalog.js';
 
 export function formatEntityType(key: string) {
 	return key

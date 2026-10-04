@@ -60,7 +60,7 @@ class RecordSearchIntegrationTest {
 
     @BeforeEach
     void setUp() {
-        this.admin = this.repository.userRepo.findByUsername("admin").orElseThrow();
+        this.admin = this.repository.userRepo.findByName("admin").orElseThrow();
         this.searchType = this.ensureRecordType();
         this.customProperty = this.requireCustomProperty();
     }

@@ -1,4 +1,4 @@
-package com.openrecordsmanager.location.user.dto;
+package com.openrecordsmanager.location.dto;
 
 import com.openrecordsmanager.api.ResourceIdentifier;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -10,10 +10,10 @@ import tools.jackson.databind.JsonNode;
 import java.util.Map;
 import java.util.UUID;
 
-public record NewUserRequest(
+public record NewLocationRequest(
         @NotBlank ResourceIdentifier type,
-        @NotBlank String username,
         @Nullable UUID authProvider,
+        @Nullable String name,
         @NotNull
         @Schema(description = "Property id → JSON value", additionalProperties = Schema.AdditionalPropertiesValue.TRUE)
         Map<ResourceIdentifier, JsonNode> properties

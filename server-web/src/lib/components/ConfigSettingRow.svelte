@@ -1,12 +1,12 @@
 <script lang="ts">
-	import type { ConfigDraftValue } from '$lib/config/config-utils';
-	import type { ConfigTypeResponse } from '$lib/api/types.gen';
-	import ConfigBooleanInput from '$lib/components/config/ConfigBooleanInput.svelte';
-	import ConfigIntListInput from '$lib/components/config/ConfigIntListInput.svelte';
-	import ConfigNumberInput from '$lib/components/config/ConfigNumberInput.svelte';
-	import ConfigSettingLayout from '$lib/components/config/ConfigSettingLayout.svelte';
-	import ConfigStringInput from '$lib/components/config/ConfigStringInput.svelte';
-	import ConfigStringListInput from '$lib/components/config/ConfigStringListInput.svelte';
+	import type { ConfigDraftValue } from '#lib/config/config-utils.js';
+	import type { ConfigTypeResponse } from '#lib/api/types.gen.js';
+	import ConfigBooleanInput from '#lib/components/config/ConfigBooleanInput.svelte';
+	import ConfigIntListInput from '#lib/components/config/ConfigIntListInput.svelte';
+	import ConfigNumberInput from '#lib/components/config/ConfigNumberInput.svelte';
+	import ConfigSettingLayout from '#lib/components/config/ConfigSettingLayout.svelte';
+	import ConfigStringInput from '#lib/components/config/ConfigStringInput.svelte';
+	import ConfigStringListInput from '#lib/components/config/ConfigStringListInput.svelte';
 
 	let {
 		config,

@@ -1,5 +1,5 @@
-import { DatabaseController } from '$lib/api';
-import { getApiClient } from '$lib/api-client';
+import { DatabaseController } from '#lib/api/index.js';
+import { getApiClient } from '#lib/api-client.js';
 
 export async function load() {
 	return {

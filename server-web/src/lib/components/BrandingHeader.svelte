@@ -1,6 +1,6 @@
 <script lang="ts">
-	import type { WebBrandingResponse } from '$lib/api/types.gen';
-	import { t } from '$lib/i18n/catalog';
+	import type { WebBrandingResponse } from '#lib/api/types.gen.js';
+	import { t } from '#lib/i18n/catalog.js';
 	import type { Snippet } from 'svelte';
 
 	let {

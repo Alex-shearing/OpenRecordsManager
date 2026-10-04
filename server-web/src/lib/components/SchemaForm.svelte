@@ -1,5 +1,5 @@
 <script module lang="ts">
-	import type { ApiFieldError } from '$lib/api/types.gen';
+	import type { ApiFieldError } from '#lib/api/types.gen.js';
 
 	/** Form-level error: wire field error shape, optionally with nested field errors. */
 	export type SchemaFormError = ApiFieldError & {
@@ -10,8 +10,8 @@
 </script>
 
 <script lang="ts">
-	import type { InputFormSchema, InputFormSchemaField } from '$lib/api/types.gen';
-	import { t, tApiErrorResponse } from '$lib/i18n/catalog';
+	import type { InputFormSchema, InputFormSchemaField } from '#lib/api/types.gen.js';
+	import { t, tApiErrorResponse } from '#lib/i18n/catalog.js';
 	import type { Snippet } from 'svelte';
 
 	let {

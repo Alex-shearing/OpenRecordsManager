@@ -4,12 +4,14 @@ import com.openrecordsmanager.api.builtin.BuiltinConfigs;
 import com.openrecordsmanager.api.ResourceIdentifier;
 import com.openrecordsmanager.api.builtin.BuiltinPlugin;
 import com.openrecordsmanager.api.builtin.BuiltinPropertyIds;
+import com.openrecordsmanager.api.location.LocationKind;
 import com.openrecordsmanager.api.search.SearchClause;
 import com.openrecordsmanager.api.search.SearchOperator;
 import com.openrecordsmanager.database.DataRepository;
 import com.openrecordsmanager.database.SqliteTestSupport;
-import com.openrecordsmanager.location.user.dto.UserSearchRequest;
-import com.openrecordsmanager.location.user.dto.UserSearchResponse;
+import com.openrecordsmanager.location.LocationService;
+import com.openrecordsmanager.location.dto.LocationSearchRequest;
+import com.openrecordsmanager.location.dto.LocationSearchResponse;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -32,39 +34,40 @@ class UserSearchIntegrationTest {
     }
 
     @Autowired
-    private UserService userService;
+    private LocationService locationService;
 
     @Autowired
     private DataRepository repository;
 
     @Test
-    void searchByUsernameDefaultQ() {
-        User admin = this.repository.userRepo.findByUsername("admin").orElseThrow();
+    void searchByNameDefaultQ() {
+        User admin = this.repository.userRepo.findByName("admin").orElseThrow();
 
-        UserSearchResponse response = this.userService.search(
+        LocationSearchResponse response = this.locationService.search(
                 admin,
-                new UserSearchRequest("admin", null, null, null, null)
+                new LocationSearchRequest("admin", null, null, null, null, LocationKind.USER)
         );
 
         assertEquals(1, response.items().size());
-        assertEquals("admin", response.items().getFirst().username());
+        assertEquals("admin", response.items().getFirst().name());
     }
 
     @Test
     void searchByEmailFilter() {
-        User admin = this.repository.userRepo.findByUsername("admin").orElseThrow();
+        User admin = this.repository.userRepo.findByName("admin").orElseThrow();
 
-        UserSearchResponse response = this.userService.search(
+        LocationSearchResponse response = this.locationService.search(
                 admin,
-                new UserSearchRequest(
+                new LocationSearchRequest(
                         null,
                         List.of(new SearchClause(new ResourceIdentifier(BuiltinPlugin.BUILTIN_PLUGIN_NAME, BuiltinPropertyIds.EMAIL), SearchOperator.IS_NULL, null)),
                         null,
                         null,
-                        null
+                        null,
+                        LocationKind.USER
                 )
         );
 
-        assertTrue(response.items().stream().anyMatch(u -> u.username().equals("admin")));
+        assertTrue(response.items().stream().anyMatch(u -> "admin".equals(u.name())));
     }
 }

@@ -1,12 +1,12 @@
 <script lang="ts">
 	import { afterNavigate } from '$app/navigation';
 	import { page } from '$app/state';
-	import BrandingHeader from '$lib/components/BrandingHeader.svelte';
-	import HeaderNav from '$lib/components/HeaderNav.svelte';
-	import HeaderNavLink from '$lib/components/layout/HeaderNavLink.svelte';
-	import SearchBar from '$lib/components/SearchBar.svelte';
+	import BrandingHeader from '#lib/components/BrandingHeader.svelte';
+	import HeaderNav from '#lib/components/HeaderNav.svelte';
+	import HeaderNavLink from '#lib/components/layout/HeaderNavLink.svelte';
+	import SearchBar from '#lib/components/SearchBar.svelte';
 	import UserIcon from 'phosphor-svelte/lib/UserIcon';
-	import { t } from '$lib/i18n/catalog';
+	import { t } from '#lib/i18n/catalog.js';
 
 	let { children, data } = $props();
 
@@ -37,7 +37,7 @@
 					active={isProfileActive}
 					class="hidden sm:inline-flex"
 				>
-					{data.me.username}
+					{data.me.displayName}
 				</HeaderNavLink>
 			</nav>
 		{/snippet}

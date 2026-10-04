@@ -1,6 +1,6 @@
 package com.openrecordsmanager.rest.swagger;
 
-import com.openrecordsmanager.location.user.dto.UserResponse;
+import com.openrecordsmanager.location.dto.LocationResponse;
 import io.swagger.v3.core.converter.AnnotatedType;
 import io.swagger.v3.core.converter.ModelConverters;
 import io.swagger.v3.core.converter.ResolvedSchema;
@@ -44,13 +44,13 @@ class JsonNodeModelConverterTest {
     }
 
     @Test
-    void userResponsePropertiesMapIsFreeFormAdditionalProperties() {
+    void locationResponsePropertiesMapIsFreeFormAdditionalProperties() {
         ResolvedSchema resolved = ModelConverters.getInstance()
-                .resolveAsResolvedSchema(new AnnotatedType(UserResponse.class).resolveAsRef(false));
+                .resolveAsResolvedSchema(new AnnotatedType(LocationResponse.class).resolveAsRef(false));
 
-        Schema<?> userSchema = resolved.schema;
-        assertNotNull(userSchema);
-        Map<String, Schema> properties = userSchema.getProperties();
+        Schema<?> locationSchema = resolved.schema;
+        assertNotNull(locationSchema);
+        Map<String, Schema> properties = locationSchema.getProperties();
         assertNotNull(properties);
         Schema<?> props = properties.get("properties");
         assertNotNull(props);

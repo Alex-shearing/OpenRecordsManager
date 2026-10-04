@@ -6,8 +6,8 @@
 	import CheckIcon from 'phosphor-svelte/lib/CheckIcon';
 	import MagnifyingGlassIcon from 'phosphor-svelte/lib/MagnifyingGlassIcon';
 	import NotePencilIcon from 'phosphor-svelte/lib/NotePencilIcon';
-	import AppDialog from '$lib/components/AppDialog.svelte';
-	import { t } from '$lib/i18n/catalog';
+	import AppDialog from '#lib/components/AppDialog.svelte';
+	import { t } from '#lib/i18n/catalog.js';
 
 	const items = $derived([
 		{ label: t('web.search.record'), value: 'record', search: 'web.search.records_label' },
@@ -52,7 +52,7 @@
 			class="inline-flex w-36 min-w-0 shrink-0 items-center gap-1 border-r border-border px-3 py-2 text-sm font-medium text-foreground outline-hidden hover:bg-surface-hover focus-visible:bg-surface-hover focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary"
 		>
 			<span class="min-w-0 flex-1 truncate text-left">
-				<Select.Value />
+				{t(`web.search.${selected}`)}
 			</span>
 			<CaretUpDownIcon class="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
 		</Select.Trigger>

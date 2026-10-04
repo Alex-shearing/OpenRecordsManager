@@ -1,11 +1,11 @@
 <script lang="ts">
-	import { ConfigController } from '$lib/api';
-	import { auditHeaders, getApiClient } from '$lib/api-client';
-	import ConfigSettingRow from '$lib/components/ConfigSettingRow.svelte';
-	import AuditSaveCard from '$lib/components/AuditSaveCard.svelte';
-	import { type SchemaFormError } from '$lib/components/SchemaForm.svelte';
-	import { buildSavedValues, findChangedConfigs, groupConfigs } from '$lib/config/config-utils';
-	import { t, tApiErrorResponse } from '$lib/i18n/catalog';
+	import { ConfigController } from '#lib/api/index.js';
+	import { auditHeaders, getApiClient } from '#lib/api-client.js';
+	import ConfigSettingRow from '#lib/components/ConfigSettingRow.svelte';
+	import AuditSaveCard from '#lib/components/AuditSaveCard.svelte';
+	import { type SchemaFormError } from '#lib/components/SchemaForm.svelte';
+	import { buildSavedValues, findChangedConfigs, groupConfigs } from '#lib/config/config-utils.js';
+	import { t, tApiErrorResponse } from '#lib/i18n/catalog.js';
 	import { invalidateAll } from '$app/navigation';
 	import toast from 'svelte-hot-french-toast';
 

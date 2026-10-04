@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
-	import { t } from '$lib/i18n/catalog';
-	import type { StaticRouteId } from '$lib/routing';
+	import { t } from '#lib/i18n/catalog.js';
+	import type { StaticRouteId } from '#lib/routing.js';
 	import type { Component, Snippet } from 'svelte';
 	import type { IconComponentProps } from 'phosphor-svelte';
 

@@ -1,5 +1,5 @@
-import { AuthController } from '$lib/api';
-import { getApiClient } from '$lib/api-client';
+import { AuthController } from '#lib/api/index.js';
+import { getApiClient } from '#lib/api-client.js';
 
 export async function load({ parent }) {
 	const parentData = await parent();

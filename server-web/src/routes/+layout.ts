@@ -1,7 +1,7 @@
-import { TranslationController, WebController } from '$lib/api';
-import { createApiClient } from '$lib/api-client';
-import faviconAsset from '$lib/assets/favicon.ico';
-import { setCatalog } from '$lib/i18n/catalog';
+import { TranslationController, WebController } from '#lib/api/index.js';
+import { createApiClient } from '#lib/api-client.js';
+import faviconAsset from '#lib/assets/favicon.ico';
+import { setCatalog } from '#lib/i18n/catalog.js';
 
 export const ssr = false;
 export const prerender = false;

@@ -11,9 +11,10 @@ import com.openrecordsmanager.auth.dto.TokenPair;
 import com.openrecordsmanager.database.DataRepository;
 import com.openrecordsmanager.database.SqliteTestSupport;
 import com.openrecordsmanager.rest.exception.ResourceInUseException;
-import com.openrecordsmanager.location.user.dto.NewUserRequest;
-import com.openrecordsmanager.location.user.dto.UpdateUserRequest;
-import com.openrecordsmanager.location.user.dto.UserResponse;
+import com.openrecordsmanager.location.LocationService;
+import com.openrecordsmanager.location.dto.LocationResponse;
+import com.openrecordsmanager.location.dto.NewLocationRequest;
+import com.openrecordsmanager.location.dto.UpdateLocationRequest;
 import io.jsonwebtoken.Claims;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -39,7 +40,7 @@ class UserDisableIntegrationTest {
     }
 
     @Autowired
-    private UserService userService;
+    private LocationService locationService;
 
     @Autowired
     private DataRepository repository;
@@ -51,35 +52,40 @@ class UserDisableIntegrationTest {
 
     @BeforeEach
     void setUp() {
-        this.admin = this.repository.userRepo.findByUsername("admin").orElseThrow();
+        this.admin = this.repository.userRepo.findByName("admin").orElseThrow();
     }
 
     @Test
     void disableUserRevokesTokens() {
-        String username = "disable_user_" + UUID.randomUUID().toString().substring(0, 8);
+        String name = "disable_user_" + UUID.randomUUID().toString().substring(0, 8);
 
-        UserResponse created = AuditTestSupport.withAudit(this.admin, () -> this.userService.create(
-                new NewUserRequest(new ResourceIdentifier(BuiltinPlugin.BUILTIN_PLUGIN_NAME, BuiltinLocationTypeIds.USER), username, null, Map.of())
+        LocationResponse created = AuditTestSupport.withAudit(this.admin, () -> this.locationService.create(
+                new NewLocationRequest(
+                        new ResourceIdentifier(BuiltinPlugin.BUILTIN_PLUGIN_NAME, BuiltinLocationTypeIds.USER),
+                        null,
+                        name,
+                        Map.of()
+                )
         ));
         assertTrue(created.enabled());
 
         User user = this.repository.userRepo.findById(created.id()).orElseThrow();
         TokenPair userPair = this.jwtSessionService.issueTokenPair(user, SessionMode.NORMAL);
 
-        UserResponse disabled = AuditTestSupport.withAudit(this.admin, () -> this.userService.update(
+        LocationResponse disabled = AuditTestSupport.withAudit(this.admin, () -> this.locationService.update(
                 this.admin,
                 created.id(),
-                new UpdateUserRequest(null, null, false, null)
+                new UpdateLocationRequest(null, false, null, null)
         ));
         assertFalse(disabled.enabled());
 
         Claims claims = this.jwtSessionService.verifyAccessToken(userPair.accessToken());
         assertThrows(DisabledException.class, () -> this.jwtSessionService.resolveUser(claims));
 
-        UserResponse reenabled = AuditTestSupport.withAudit(this.admin, () -> this.userService.update(
+        LocationResponse reenabled = AuditTestSupport.withAudit(this.admin, () -> this.locationService.update(
                 this.admin,
                 created.id(),
-                new UpdateUserRequest(null, null, true, null)
+                new UpdateLocationRequest(null, true, null, null)
         ));
         assertTrue(reenabled.enabled());
     }
@@ -88,10 +94,10 @@ class UserDisableIntegrationTest {
     void cannotDisableOwnAccount() {
         assertThrows(
                 ResourceInUseException.class,
-                () -> AuditTestSupport.withAudit(this.admin, () -> this.userService.update(
+                () -> AuditTestSupport.withAudit(this.admin, () -> this.locationService.update(
                         this.admin,
                         this.admin.getId(),
-                        new UpdateUserRequest(null, null, false, null)
+                        new UpdateLocationRequest(null, false, null, null)
                 ))
         );
     }

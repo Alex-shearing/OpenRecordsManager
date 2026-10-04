@@ -308,7 +308,7 @@ public class AuthService implements UserAuthContext {
         @SuppressWarnings("unchecked")
         ObjectProperty<T> typedProp = (ObjectProperty<T>) prop.get();
 
-        return this.repository.userRepo.findByUsername(username)
+        return this.repository.userRepo.findByName(username)
                 .map(user -> user.getProperty(typedProp));
     }
 

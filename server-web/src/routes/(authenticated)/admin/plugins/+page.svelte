@@ -1,15 +1,15 @@
 <script lang="ts">
-	import { PluginController } from '$lib/api';
-	import type { SimplePluginResponse } from '$lib/api/types.gen';
-	import { auditHeaders, getApiClient } from '$lib/api-client';
-	import AuditSaveCard from '$lib/components/AuditSaveCard.svelte';
-	import DialogActions from '$lib/components/DialogActions.svelte';
-	import MonoId from '$lib/components/MonoId.svelte';
-	import TableCard from '$lib/components/TableCard.svelte';
-	import TargetDialog from '$lib/components/TargetDialog.svelte';
-	import { type SchemaFormError } from '$lib/components/SchemaForm.svelte';
-	import { t, tApiErrorResponse } from '$lib/i18n/catalog';
-	import { pluginDescription, pluginName } from '$lib/i18n/labels';
+	import { PluginController } from '#lib/api/index.js';
+	import type { SimplePluginResponse } from '#lib/api/types.gen.js';
+	import { auditHeaders, getApiClient } from '#lib/api-client.js';
+	import AuditSaveCard from '#lib/components/AuditSaveCard.svelte';
+	import DialogActions from '#lib/components/DialogActions.svelte';
+	import MonoId from '#lib/components/MonoId.svelte';
+	import TableCard from '#lib/components/TableCard.svelte';
+	import TargetDialog from '#lib/components/TargetDialog.svelte';
+	import { type SchemaFormError } from '#lib/components/SchemaForm.svelte';
+	import { t, tApiErrorResponse } from '#lib/i18n/catalog.js';
+	import { pluginDescription, pluginName } from '#lib/i18n/labels.js';
 	import { invalidateAll } from '$app/navigation';
 	import toast from 'svelte-hot-french-toast';
 

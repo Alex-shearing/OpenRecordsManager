@@ -45,7 +45,7 @@ class AuthProviderSettingsIntegrationTest {
 
     @BeforeEach
     void setUp() {
-        this.admin = this.repository.userRepo.findByUsername("admin").orElseThrow();
+        this.admin = this.repository.userRepo.findByName("admin").orElseThrow();
     }
 
     @Test

@@ -2,8 +2,8 @@ import type {
 	LocationTypePropertyResponse,
 	ObjectPropertyResponse,
 	RecordTypePropertyResponse,
-} from '$lib/api/types.gen';
-import { objectPropertyName } from '$lib/i18n/labels';
+} from '#lib/api/types.gen.js';
+import { objectPropertyName } from '#lib/i18n/labels.js';
 
 export type TypePropertyAssignment = {
 	property: ObjectPropertyResponse;
@@ -11,11 +11,11 @@ export type TypePropertyAssignment = {
 };
 
 const AUTO_MANAGED = new Set(['builtin:date_created', 'builtin:date_modified']);
-const LOCATION_IDENTITY = new Set(['builtin:username', 'builtin:name']);
+const LOCATION_IDENTITY = new Set(['builtin:name']);
 const RECORD_IDENTITY = new Set(['builtin:title']);
 
 export type CreateFieldFilter = {
-	/** Omit username/name when those are top-level location create fields. */
+	/** Omit name when it is a top-level location create field. */
 	omitLocationIdentity?: boolean;
 	/** Omit title when it is a top-level record create field. */
 	omitRecordIdentity?: boolean;

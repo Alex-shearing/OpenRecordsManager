@@ -3,47 +3,41 @@
 /// <reference lib="webworker" />
 /// <reference types="@sveltejs/kit" />
 
-import { base, build, files, prerendered, version } from '$service-worker';
+import { version } from '$app/env';
+import { assets, immutable, prerendered } from '$app/manifest';
+import { asset } from '$app/paths';
 
 const sw = self as unknown as ServiceWorkerGlobalScope;
+const CACHE_NAME = `cache-${version}`;
 
-const CACHE = `cache-${version}`;
+const SHELL = asset('index.html' as any);
 
-/** SPA shell + runtime env are not always listed in build/files/prerendered. */
-const SHELL = `${base}/index.html`;
-const RUNTIME_ENV = `${base}/_app/env.js`;
-
-const ASSETS = Array.from(
-	new Set([...build, ...files, ...prerendered, SHELL, RUNTIME_ENV, `${base}/`])
-);
+const ASSETS_TO_CACHE = [
+	...assets.map(a => a.path), // Static files from /static folder
+	...immutable.map(a => a.path), // Immutable JS/CSS chunks compiled by Vite
+	...prerendered.map(a => a.path), // Prerendered HTML pages/endpoints
+];
 
 sw.addEventListener('install', event => {
-	async function addFilesToCache() {
-		const cache = await caches.open(CACHE);
-		await Promise.all(
-			ASSETS.map(async asset => {
-				try {
-					await cache.add(asset);
-				} catch {
-					// Skip missing/unreachable assets so install still completes.
-				}
-			})
-		);
-	}
-
-	event.waitUntil(addFilesToCache());
+	event.waitUntil(
+		caches.open(CACHE_NAME).then(cache => {
+			return cache.addAll(ASSETS_TO_CACHE);
+		})
+	);
 });
 
 sw.addEventListener('activate', event => {
-	async function deleteOldCaches() {
-		for (const key of await caches.keys()) {
-			if (key !== CACHE) {
-				await caches.delete(key);
-			}
-		}
-	}
-
-	event.waitUntil(deleteOldCaches());
+	event.waitUntil(
+		caches.keys().then(keys => {
+			return Promise.all(
+				keys.map(key => {
+					if (key !== CACHE_NAME) {
+						return caches.delete(key);
+					}
+				})
+			);
+		})
+	);
 });
 
 sw.addEventListener('fetch', event => {
@@ -54,14 +48,14 @@ sw.addEventListener('fetch', event => {
 	const url = new URL(event.request.url);
 
 	// Never cache API traffic (auth cookies, CSRF, live data).
-	if (url.pathname.startsWith(`${base}/api`) || url.pathname.startsWith('/api')) {
+	if (url.pathname.startsWith('/api')) {
 		return;
 	}
 
 	async function respond(): Promise<Response> {
-		const cache = await caches.open(CACHE);
+		const cache = await caches.open(CACHE_NAME);
 
-		if (ASSETS.includes(url.pathname)) {
+		if (ASSETS_TO_CACHE.includes(url.pathname)) {
 			const cached = await cache.match(url.pathname);
 			if (cached) {
 				return cached;
@@ -78,10 +72,7 @@ sw.addEventListener('fetch', event => {
 			return response;
 		} catch {
 			if (event.request.mode === 'navigate') {
-				const shell =
-					(await cache.match(SHELL)) ??
-					(await cache.match(`${base}/`)) ??
-					(await cache.match(event.request));
+				const shell = (await cache.match(SHELL)) ?? (await cache.match('/')) ?? (await cache.match(event.request));
 				if (shell) {
 					return shell;
 				}

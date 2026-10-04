@@ -31,7 +31,7 @@
 - **ObjectPropertyHolder** — user or record value bag: builtin columns plus dynamic property values.
 - **RecordType** — schema for records: which properties apply, optional security filter, content rules.
 - **List / ListElement** — controlled vocabulary and its entries; referenced by list-typed object properties.
-- **RecordAction / UserAction** — plugin-provided operations on a record or user (availability + typed input).
+- **RecordAction / LocationAction** — plugin-provided operations on a record or location (availability + typed input).
 
 ## REST controllers
 
@@ -77,7 +77,7 @@ envelopes, and status mapping noise without improving coverage of that logic.
 
 **MockMvc rule:** use it only when the test would be meaningless without the servlet/security stack (e.g. token cookies
 cleared on logout, `503` + upgrade header from the schema gate, CSRF header requirements, degraded session mode on
-`/api/user/me`).
+`/api/location/me`).
 
 Do **not** keep a full-boot MockMvc test that stubs the service just to assert JSON wiring. That pays Spring Boot cost
 for almost nothing. Either test the service, or use a narrow web slice if you truly need controller serialization alone.
@@ -150,7 +150,7 @@ Service methods annotated with `@RequiresAuditComment` still run the aspect unde
 require a comment, wrap calls with [`AuditTestSupport`](server-core/src/test/java/com/openrecordsmanager/audit/AuditTestSupport.java):
 
 ```java
-UserResponse created = AuditTestSupport.withAudit(admin, () -> userService.create(...));
+LocationResponse created = AuditTestSupport.withAudit(admin, () -> locationService.create(...));
 ```
 
 Alternatively disable comment-required on the relevant audit policies in `@BeforeEach` when the test is not about audit

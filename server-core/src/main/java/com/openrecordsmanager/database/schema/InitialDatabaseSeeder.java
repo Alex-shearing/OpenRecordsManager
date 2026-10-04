@@ -17,8 +17,8 @@ import com.openrecordsmanager.database.DataRepository;
 import com.openrecordsmanager.database.DatabaseWritableProbe;
 import com.openrecordsmanager.location.relationship.LocationRelationshipType;
 import com.openrecordsmanager.location.type.LocationType;
+import com.openrecordsmanager.location.LocationService;
 import com.openrecordsmanager.location.user.User;
-import com.openrecordsmanager.location.user.UserService;
 import com.openrecordsmanager.plugin.ExpressionsService;
 import com.openrecordsmanager.plugin.registry.ComponentCatalog;
 import com.openrecordsmanager.plugin.registry.TemplateComponentRegistry;
@@ -47,7 +47,7 @@ public class InitialDatabaseSeeder {
 
     private final SchemaMigrationState state;
     private final AuthService authService;
-    private final UserService userService;
+    private final LocationService locationService;
     private final DataRepository repository;
     private final ComponentCatalog catalog;
     private final ExpressionsService expressions;
@@ -57,7 +57,7 @@ public class InitialDatabaseSeeder {
     public InitialDatabaseSeeder(
             SchemaMigrationState state,
             AuthService authService,
-            UserService userService,
+            LocationService locationService,
             DataRepository repository,
             ComponentCatalog catalog,
             ExpressionsService expressions,
@@ -66,7 +66,7 @@ public class InitialDatabaseSeeder {
     ) {
         this.state = state;
         this.authService = authService;
-        this.userService = userService;
+        this.locationService = locationService;
         this.repository = repository;
         this.catalog = catalog;
         this.expressions = expressions;
@@ -125,7 +125,7 @@ public class InitialDatabaseSeeder {
         User admin = new User("admin", provider, userType);
         this.repository.userRepo.saveAndFlush(admin);
 
-        this.userService.executeAction(
+        this.locationService.executeAction(
                 admin,
                 admin.getId(),
                 RESET_PASSWORD_ACTION,

@@ -1,5 +1,5 @@
 <script lang="ts">
-	import RecordEditor from '$lib/components/RecordEditor.svelte';
+	import RecordEditor from '#lib/components/RecordEditor.svelte';
 
 	let { data } = $props();
 </script>

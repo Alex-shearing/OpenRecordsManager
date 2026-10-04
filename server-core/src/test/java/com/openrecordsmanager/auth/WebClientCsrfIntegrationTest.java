@@ -61,7 +61,7 @@ class WebClientCsrfIntegrationTest {
                 .andExpect(status().isForbidden());
 
         MvcResult bootstrap = this.mockMvc.perform(
-                        get("/api/user/me")
+                        get("/api/location/me")
                                 .header("X-Client-Platform", "Web-Client")
                                 .cookie(authCookie)
                                 .accept(MediaType.APPLICATION_JSON)
@@ -96,7 +96,7 @@ class WebClientCsrfIntegrationTest {
         var authCookie = new Cookie(this.authService.getCookieName(), accessToken);
 
         MvcResult bootstrap = this.mockMvc.perform(
-                        get("/api/user/me")
+                        get("/api/location/me")
                                 .header("X-Client-Platform", "Web-Client")
                                 .cookie(authCookie)
                                 .accept(MediaType.APPLICATION_JSON)
@@ -130,7 +130,7 @@ class WebClientCsrfIntegrationTest {
         var authCookie = new Cookie(this.authService.getCookieName(), accessToken);
 
         MvcResult first = this.mockMvc.perform(
-                        get("/api/user/me")
+                        get("/api/location/me")
                                 .header("X-Client-Platform", "Web-Client")
                                 .cookie(authCookie)
                                 .accept(MediaType.APPLICATION_JSON)
@@ -146,7 +146,7 @@ class WebClientCsrfIntegrationTest {
         assertEquals(firstHeader, firstCookie.getValue());
 
         MvcResult second = this.mockMvc.perform(
-                        get("/api/user/me")
+                        get("/api/location/me")
                                 .header("X-Client-Platform", "Web-Client")
                                 .cookie(authCookie, firstCookie)
                                 .accept(MediaType.APPLICATION_JSON)

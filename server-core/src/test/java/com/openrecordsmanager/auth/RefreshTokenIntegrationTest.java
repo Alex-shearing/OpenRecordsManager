@@ -76,12 +76,12 @@ class RefreshTokenIntegrationTest {
         String refreshToken = JsonPath.read(body, "$.data.refreshToken");
 
         this.mockMvc.perform(
-                        get("/api/user/me")
+                        get("/api/location/me")
                                 .header("Authorization", "Bearer " + accessToken)
                                 .accept(MediaType.APPLICATION_JSON)
                 )
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.username").value("admin"));
+                .andExpect(jsonPath("$.data.name").value("admin"));
 
         MvcResult refreshResult = this.mockMvc.perform(
                         post("/api/auth/refresh")
@@ -97,7 +97,7 @@ class RefreshTokenIntegrationTest {
         assertNotEquals(accessToken, refreshedAccess);
 
         this.mockMvc.perform(
-                        get("/api/user/me")
+                        get("/api/location/me")
                                 .header("Authorization", "Bearer " + refreshedAccess)
                                 .accept(MediaType.APPLICATION_JSON)
                 )
@@ -109,7 +109,7 @@ class RefreshTokenIntegrationTest {
         TokenPair pair = this.testAuthTokens.tokenPairFor("admin");
 
         this.mockMvc.perform(
-                        get("/api/user/me")
+                        get("/api/location/me")
                                 .header("Authorization", "Bearer " + pair.refreshToken())
                                 .accept(MediaType.APPLICATION_JSON)
                 )
@@ -118,7 +118,7 @@ class RefreshTokenIntegrationTest {
 
     @Test
     void refreshAfterEpochBumpIsRejected() throws Exception {
-        User admin = this.repository.userRepo.findByUsername("admin").orElseThrow();
+        User admin = this.repository.userRepo.findByName("admin").orElseThrow();
         TokenPair pair = this.testAuthTokens.tokenPairFor(admin);
 
         admin.bumpSessionEpoch();

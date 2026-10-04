@@ -1,15 +1,15 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
-	import ActionList from '$lib/components/ActionList.svelte';
-	import MonoId from '$lib/components/MonoId.svelte';
-	import PageContent from '$lib/components/layout/PageContent.svelte';
-	import PropertyDisplay from '$lib/components/PropertyDisplay.svelte';
-	import { t, tApiErrorResponse } from '$lib/i18n/catalog';
-	import { locationTypeName } from '$lib/i18n/labels';
+	import ActionList from '#lib/components/ActionList.svelte';
+	import MonoId from '#lib/components/MonoId.svelte';
+	import PageContent from '#lib/components/layout/PageContent.svelte';
+	import PropertyDisplay from '#lib/components/PropertyDisplay.svelte';
+	import { t, tApiErrorResponse } from '#lib/i18n/catalog.js';
+	import { locationTypeName } from '#lib/i18n/labels.js';
 
 	let { data } = $props();
 
-	const pageTitle = $derived(data.user?.username ?? data.location?.name ?? t('web.locations.view_title'));
+	const pageTitle = $derived(data.location?.displayName ?? t('web.locations.view_title'));
 
 	function authProviderName(providerId: string | undefined) {
 		if (!providerId) return undefined;
@@ -48,20 +48,20 @@
 							{/if}
 						</dd>
 					</div>
-					{#if data.location.kind === 'user' && data.user}
+					{#if data.location.kind === 'user'}
 						<div>
 							<dt class="text-hint">{t('web.locations.username')}</dt>
-							<dd>{data.user.username}</dd>
+							<dd>{data.location.name}</dd>
 						</div>
 						<div>
 							<dt class="text-hint">{t('web.locations.auth_provider')}</dt>
 							<dd>
-								{authProviderName(data.user.authProvider) ?? t('web.locations.auth_provider_none')}
+								{authProviderName(data.location.authProvider) ?? t('web.locations.auth_provider_none')}
 							</dd>
 						</div>
 						<div>
 							<dt class="text-hint">{t('web.locations.enabled')}</dt>
-							<dd>{data.user.enabled ? t('web.common.yes') : t('web.common.no')}</dd>
+							<dd>{data.location.enabled ? t('web.common.yes') : t('web.common.no')}</dd>
 						</div>
 					{:else if data.location.kind === 'group'}
 						<div>
@@ -73,8 +73,6 @@
 			</PropertyDisplay>
 		</section>
 
-		{#if data.location.kind === 'user'}
-			<ActionList actions={data.actions} kind="user" targetId={data.location.id} />
-		{/if}
+		<ActionList actions={data.actions} kind="location" targetId={data.location.id} />
 	{/if}
 </PageContent>

@@ -1,5 +1,5 @@
-import { AuthController, LocationTypeController } from '$lib/api';
-import { getApiClient } from '$lib/api-client';
+import { AuthController, LocationTypeController } from '#lib/api/index.js';
+import { getApiClient } from '#lib/api-client.js';
 
 export async function load({ parent }) {
 	const client = getApiClient();
@@ -15,22 +15,12 @@ export async function load({ parent }) {
 		types: typesResult.data?.data ?? [],
 		authProviders: providersResult.data?.data ?? [],
 		auditCommentRequired: {
-			user: {
-				create: parentData.auditPolicy.some(
-					policy => policy.entityType === 'user' && policy.operation === 'CREATE' && policy.requiresComment
-				),
-				update: parentData.auditPolicy.some(
-					policy => policy.entityType === 'user' && policy.operation === 'UPDATE' && policy.requiresComment
-				),
-			},
-			group: {
-				create: parentData.auditPolicy.some(
-					policy => policy.entityType === 'group' && policy.operation === 'CREATE' && policy.requiresComment
-				),
-				update: parentData.auditPolicy.some(
-					policy => policy.entityType === 'group' && policy.operation === 'UPDATE' && policy.requiresComment
-				),
-			},
+			create: parentData.auditPolicy.some(
+				policy => policy.entityType === 'location' && policy.operation === 'CREATE' && policy.requiresComment
+			),
+			update: parentData.auditPolicy.some(
+				policy => policy.entityType === 'location' && policy.operation === 'UPDATE' && policy.requiresComment
+			),
 		},
 	};
 }

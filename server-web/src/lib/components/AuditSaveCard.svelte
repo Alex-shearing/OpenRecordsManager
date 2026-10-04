@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { fly } from 'svelte/transition';
 	import CircleNotchIcon from 'phosphor-svelte/lib/CircleNotchIcon';
-	import { t, tApiErrorResponse } from '$lib/i18n/catalog';
+	import { t, tApiErrorResponse } from '#lib/i18n/catalog.js';
 	import { type SchemaFormError } from './SchemaForm.svelte';
 
 	let {

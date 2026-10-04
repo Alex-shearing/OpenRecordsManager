@@ -33,26 +33,6 @@ export type ApiSuccessEnvelope = {
     timestamp: string;
 };
 
-export type UpdateUserRequest = {
-    username?: string;
-    authProvider?: string;
-    enabled?: boolean;
-    properties?: {
-        [key: string]: unknown;
-    };
-};
-
-export type UserResponse = {
-    id: string;
-    type: string;
-    username: string;
-    authProvider?: string;
-    enabled: boolean;
-    properties: {
-        [key: string]: unknown;
-    };
-};
-
 export type TranslationOverrideRequest = {
     messageKey: string;
     locale: string;
@@ -123,6 +103,28 @@ export type ObjectPropertyResponse = {
     dateModified: string;
 };
 
+export type UpdateLocationRequest = {
+    authProvider?: string;
+    enabled?: boolean;
+    name?: string;
+    properties?: {
+        [key: string]: unknown;
+    };
+};
+
+export type LocationResponse = {
+    id: string;
+    type: string;
+    name: string;
+    displayName: string;
+    kind: 'user' | 'group' | 'any';
+    authProvider?: string;
+    enabled?: boolean;
+    properties: {
+        [key: string]: unknown;
+    };
+};
+
 export type UpdateLocationRelationshipTypeRequest = {
     sourceKind?: 'user' | 'group' | 'any';
     targetKind?: 'user' | 'group' | 'any';
@@ -162,22 +164,6 @@ export type UpdateListElementRequest = {
     index: number;
     activeTo?: string;
     aliases: Array<string>;
-};
-
-export type UpdateGroupRequest = {
-    name?: string;
-    properties?: {
-        [key: string]: unknown;
-    };
-};
-
-export type GroupResponse = {
-    id: string;
-    type: string;
-    name: string;
-    properties: {
-        [key: string]: unknown;
-    };
 };
 
 export type UpdateFileStoreRequest = {
@@ -267,45 +253,11 @@ export const AuditOperation = {
 export type AuditOperation = typeof AuditOperation[keyof typeof AuditOperation];
 
 export type AuditPolicyResponse = {
-    entityType: 'record' | 'record_type' | 'location' | 'user' | 'group' | 'location_relationship' | 'location_relationship_type' | 'location_type' | 'config' | 'list' | 'list_element' | 'object_property' | 'file_store' | 'auth_provider' | 'record_revision' | 'file_store_middleware' | 'template' | 'plugin';
+    entityType: 'record' | 'record_type' | 'location' | 'location_relationship' | 'location_relationship_type' | 'location_type' | 'config' | 'list' | 'list_element' | 'object_property' | 'file_store' | 'auth_provider' | 'record_revision' | 'file_store_middleware' | 'template' | 'plugin';
     operation: AuditOperation;
     enabled: boolean;
     requiresComment: boolean;
     dateModified: string;
-};
-
-export type NewUserRequest = {
-    type: string;
-    username: string;
-    authProvider?: string;
-    /**
-     * Property id → JSON value
-     */
-    properties: {
-        [key: string]: unknown;
-    };
-};
-
-export type SearchClause = {
-    field?: string;
-    op?: 'EQ' | 'NEQ' | 'GT' | 'GTE' | 'LT' | 'LTE' | 'LIKE' | 'IN' | 'NOT_IN' | 'IS_NULL' | 'IS_NOT_NULL' | 'BETWEEN';
-    /**
-     * Arbitrary JSON value (string, number, boolean, object, array, or null)
-     */
-    value?: unknown;
-};
-
-export type UserSearchRequest = {
-    q?: string;
-    filters?: Array<SearchClause>;
-    match?: 'ALL' | 'ANY';
-    limit?: number;
-    cursor?: string;
-};
-
-export type UserSearchResponse = {
-    items?: Array<UserResponse>;
-    nextCursor?: string;
 };
 
 export const TemplateType = {
@@ -339,6 +291,15 @@ export type RecordSearchRequest = {
     cursor?: string;
 };
 
+export type SearchClause = {
+    field?: string;
+    op?: 'EQ' | 'NEQ' | 'GT' | 'GTE' | 'LT' | 'LTE' | 'LIKE' | 'IN' | 'NOT_IN' | 'IS_NULL' | 'IS_NOT_NULL' | 'BETWEEN';
+    /**
+     * Arbitrary JSON value (string, number, boolean, object, array, or null)
+     */
+    value?: unknown;
+};
+
 export type RecordSearchResponse = {
     items?: Array<RecordResponse>;
     nextCursor?: string;
@@ -363,6 +324,18 @@ export type PropertyTypeObject = {
     name?: string;
 };
 
+export type NewLocationRequest = {
+    type: string;
+    authProvider?: string;
+    name?: string;
+    /**
+     * Property id → JSON value
+     */
+    properties: {
+        [key: string]: unknown;
+    };
+};
+
 export type NewLocationRelationshipRequest = {
     targetId: string;
     typeId: string;
@@ -384,16 +357,7 @@ export type LocationSearchRequest = {
     match?: 'ALL' | 'ANY';
     limit?: number;
     cursor?: string;
-};
-
-export type LocationResponse = {
-    id: string;
-    type: string;
-    name: string;
-    kind: 'user' | 'group' | 'any';
-    properties: {
-        [key: string]: unknown;
-    };
+    kind?: 'user' | 'group' | 'any';
 };
 
 export type LocationSearchResponse = {
@@ -420,27 +384,6 @@ export type NewListElementRequest = {
     index?: number;
     activeTo?: string;
     aliases: Array<string>;
-};
-
-export type NewGroupRequest = {
-    type: string;
-    name: string;
-    properties: {
-        [key: string]: unknown;
-    };
-};
-
-export type GroupSearchRequest = {
-    q?: string;
-    filters?: Array<SearchClause>;
-    match?: 'ALL' | 'ANY';
-    limit?: number;
-    cursor?: string;
-};
-
-export type GroupSearchResponse = {
-    items?: Array<GroupResponse>;
-    nextCursor?: string;
 };
 
 export type NewFileStoreRequest = {
@@ -482,6 +425,25 @@ export type WebBrandingResponse = {
     supportUrl: string;
 };
 
+export type TranslationCatalogResponse = {
+    locale: string;
+    messages: {
+        [key: string]: string;
+    };
+};
+
+export type ComponentReferenceTemplateComponent = {
+    type?: ComponentTypeTemplateComponent;
+};
+
+export type ComponentTypeTemplateComponent = {
+    name?: string;
+};
+
+export type TemplateComponent = {
+    dependencies?: Array<ComponentReferenceTemplateComponent>;
+};
+
 export type ActionResponse = {
     id: string;
     inputSchema: InputFormSchema;
@@ -508,25 +470,6 @@ export type InputFormSchemaField = {
     pattern?: string;
     contentEncoding?: string;
     enum?: Array<string>;
-};
-
-export type TranslationCatalogResponse = {
-    locale: string;
-    messages: {
-        [key: string]: string;
-    };
-};
-
-export type ComponentReferenceTemplateComponent = {
-    type?: ComponentTypeTemplateComponent;
-};
-
-export type ComponentTypeTemplateComponent = {
-    name?: string;
-};
-
-export type TemplateComponent = {
-    dependencies?: Array<ComponentReferenceTemplateComponent>;
 };
 
 export type RecordTypePropertyResponse = {
@@ -745,7 +688,7 @@ export type AuditEventResponse = {
     actorId?: string;
     actorUsername?: string;
     operation?: 'CREATE' | 'READ' | 'UPDATE' | 'DELETE' | 'ACTION';
-    targetType?: 'record' | 'record_type' | 'location' | 'user' | 'group' | 'location_relationship' | 'location_relationship_type' | 'location_type' | 'config' | 'list' | 'list_element' | 'object_property' | 'file_store' | 'auth_provider' | 'record_revision' | 'file_store_middleware' | 'template' | 'plugin';
+    targetType?: 'record' | 'record_type' | 'location' | 'location_relationship' | 'location_relationship_type' | 'location_type' | 'config' | 'list' | 'list_element' | 'object_property' | 'file_store' | 'auth_provider' | 'record_revision' | 'file_store_middleware' | 'template' | 'plugin';
     targetId?: string;
     actionId?: string;
     summary?: string;
@@ -770,104 +713,10 @@ export type AuditPropertyChange = {
 };
 
 export type AuditRelationship = {
-    type?: 'record' | 'record_type' | 'location' | 'user' | 'group' | 'location_relationship' | 'location_relationship_type' | 'location_type' | 'config' | 'list' | 'list_element' | 'object_property' | 'file_store' | 'auth_provider' | 'record_revision' | 'file_store_middleware' | 'template' | 'plugin';
+    type?: 'record' | 'record_type' | 'location' | 'location_relationship' | 'location_relationship_type' | 'location_type' | 'config' | 'list' | 'list_element' | 'object_property' | 'file_store' | 'auth_provider' | 'record_revision' | 'file_store_middleware' | 'template' | 'plugin';
     id?: string;
     role?: string;
 };
-
-export type GetData = {
-    body?: never;
-    path: {
-        id: string;
-    };
-    query?: never;
-    url: '/api/user/{id}';
-};
-
-export type GetErrors = {
-    /**
-     * Unauthorized
-     */
-    401: ApiErrorResponse;
-    /**
-     * Forbidden
-     */
-    403: ApiErrorResponse;
-    /**
-     * Not Found
-     */
-    404: ApiErrorResponse;
-    /**
-     * Audit comment required
-     */
-    422: ApiErrorResponse;
-    /**
-     * Internal Server error
-     */
-    500: ApiErrorResponse;
-};
-
-export type GetError = GetErrors[keyof GetErrors];
-
-export type GetResponses = {
-    /**
-     * OK
-     */
-    200: ApiSuccessEnvelope & {
-        data: UserResponse;
-    };
-};
-
-export type GetResponse = GetResponses[keyof GetResponses];
-
-export type UpdateData = {
-    body: UpdateUserRequest;
-    path: {
-        id: string;
-    };
-    query?: never;
-    url: '/api/user/{id}';
-};
-
-export type UpdateErrors = {
-    /**
-     * Unauthorized
-     */
-    401: ApiErrorResponse;
-    /**
-     * Forbidden
-     */
-    403: ApiErrorResponse;
-    /**
-     * Not Found
-     */
-    404: ApiErrorResponse;
-    /**
-     * Resource in use
-     */
-    409: ApiErrorResponse;
-    /**
-     * Audit comment required
-     */
-    422: ApiErrorResponse;
-    /**
-     * Internal Server error
-     */
-    500: ApiErrorResponse;
-};
-
-export type UpdateError = UpdateErrors[keyof UpdateErrors];
-
-export type UpdateResponses = {
-    /**
-     * OK
-     */
-    200: ApiSuccessEnvelope & {
-        data: UserResponse;
-    };
-};
-
-export type UpdateResponse = UpdateResponses[keyof UpdateResponses];
 
 export type ListTranslationOverridesData = {
     body?: never;
@@ -946,7 +795,7 @@ export type UpsertTranslationOverrideResponses = {
 
 export type UpsertTranslationOverrideResponse = UpsertTranslationOverrideResponses[keyof UpsertTranslationOverrideResponses];
 
-export type Get1Data = {
+export type GetData = {
     body?: never;
     path: {
         id: string;
@@ -955,7 +804,7 @@ export type Get1Data = {
     url: '/api/records/{id}';
 };
 
-export type Get1Errors = {
+export type GetErrors = {
     /**
      * Unauthorized
      */
@@ -978,9 +827,9 @@ export type Get1Errors = {
     500: ApiErrorResponse;
 };
 
-export type Get1Error = Get1Errors[keyof Get1Errors];
+export type GetError = GetErrors[keyof GetErrors];
 
-export type Get1Responses = {
+export type GetResponses = {
     /**
      * OK
      */
@@ -989,9 +838,9 @@ export type Get1Responses = {
     };
 };
 
-export type Get1Response = Get1Responses[keyof Get1Responses];
+export type GetResponse = GetResponses[keyof GetResponses];
 
-export type Update1Data = {
+export type UpdateData = {
     body: UpdateRecordRequest;
     path: {
         id: string;
@@ -1000,7 +849,7 @@ export type Update1Data = {
     url: '/api/records/{id}';
 };
 
-export type Update1Errors = {
+export type UpdateErrors = {
     /**
      * Unauthorized
      */
@@ -1023,9 +872,9 @@ export type Update1Errors = {
     500: ApiErrorResponse;
 };
 
-export type Update1Error = Update1Errors[keyof Update1Errors];
+export type UpdateError = UpdateErrors[keyof UpdateErrors];
 
-export type Update1Responses = {
+export type UpdateResponses = {
     /**
      * OK
      */
@@ -1034,7 +883,7 @@ export type Update1Responses = {
     };
 };
 
-export type Update1Response = Update1Responses[keyof Update1Responses];
+export type UpdateResponse = UpdateResponses[keyof UpdateResponses];
 
 export type GetRevisionData = {
     body?: never;
@@ -1404,6 +1253,100 @@ export type ObjectPropertyUpdateResponses = {
 };
 
 export type ObjectPropertyUpdateResponse = ObjectPropertyUpdateResponses[keyof ObjectPropertyUpdateResponses];
+
+export type GetLocationData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/location/{id}';
+};
+
+export type GetLocationErrors = {
+    /**
+     * Unauthorized
+     */
+    401: ApiErrorResponse;
+    /**
+     * Forbidden
+     */
+    403: ApiErrorResponse;
+    /**
+     * Not Found
+     */
+    404: ApiErrorResponse;
+    /**
+     * Audit comment required
+     */
+    422: ApiErrorResponse;
+    /**
+     * Internal Server error
+     */
+    500: ApiErrorResponse;
+};
+
+export type GetLocationError = GetLocationErrors[keyof GetLocationErrors];
+
+export type GetLocationResponses = {
+    /**
+     * OK
+     */
+    200: ApiSuccessEnvelope & {
+        data: LocationResponse;
+    };
+};
+
+export type GetLocationResponse = GetLocationResponses[keyof GetLocationResponses];
+
+export type UpdateLocationData = {
+    body: UpdateLocationRequest;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/location/{id}';
+};
+
+export type UpdateLocationErrors = {
+    /**
+     * Unauthorized
+     */
+    401: ApiErrorResponse;
+    /**
+     * Forbidden
+     */
+    403: ApiErrorResponse;
+    /**
+     * Not Found
+     */
+    404: ApiErrorResponse;
+    /**
+     * Resource in use
+     */
+    409: ApiErrorResponse;
+    /**
+     * Audit comment required
+     */
+    422: ApiErrorResponse;
+    /**
+     * Internal Server error
+     */
+    500: ApiErrorResponse;
+};
+
+export type UpdateLocationError = UpdateLocationErrors[keyof UpdateLocationErrors];
+
+export type UpdateLocationResponses = {
+    /**
+     * OK
+     */
+    200: ApiSuccessEnvelope & {
+        data: LocationResponse;
+    };
+};
+
+export type UpdateLocationResponse = UpdateLocationResponses[keyof UpdateLocationResponses];
 
 export type GetLocationRelationshipTypeData = {
     body?: never;
@@ -1816,96 +1759,6 @@ export type UpdateListElementResponses = {
 };
 
 export type UpdateListElementResponse = UpdateListElementResponses[keyof UpdateListElementResponses];
-
-export type GetGroupData = {
-    body?: never;
-    path: {
-        id: string;
-    };
-    query?: never;
-    url: '/api/group/{id}';
-};
-
-export type GetGroupErrors = {
-    /**
-     * Unauthorized
-     */
-    401: ApiErrorResponse;
-    /**
-     * Forbidden
-     */
-    403: ApiErrorResponse;
-    /**
-     * Not Found
-     */
-    404: ApiErrorResponse;
-    /**
-     * Audit comment required
-     */
-    422: ApiErrorResponse;
-    /**
-     * Internal Server error
-     */
-    500: ApiErrorResponse;
-};
-
-export type GetGroupError = GetGroupErrors[keyof GetGroupErrors];
-
-export type GetGroupResponses = {
-    /**
-     * OK
-     */
-    200: ApiSuccessEnvelope & {
-        data: GroupResponse;
-    };
-};
-
-export type GetGroupResponse = GetGroupResponses[keyof GetGroupResponses];
-
-export type UpdateGroupData = {
-    body: UpdateGroupRequest;
-    path: {
-        id: string;
-    };
-    query?: never;
-    url: '/api/group/{id}';
-};
-
-export type UpdateGroupErrors = {
-    /**
-     * Unauthorized
-     */
-    401: ApiErrorResponse;
-    /**
-     * Forbidden
-     */
-    403: ApiErrorResponse;
-    /**
-     * Not Found
-     */
-    404: ApiErrorResponse;
-    /**
-     * Audit comment required
-     */
-    422: ApiErrorResponse;
-    /**
-     * Internal Server error
-     */
-    500: ApiErrorResponse;
-};
-
-export type UpdateGroupError = UpdateGroupErrors[keyof UpdateGroupErrors];
-
-export type UpdateGroupResponses = {
-    /**
-     * OK
-     */
-    200: ApiSuccessEnvelope & {
-        data: GroupResponse;
-    };
-};
-
-export type UpdateGroupResponse = UpdateGroupResponses[keyof UpdateGroupResponses];
 
 export type FileStoreDeleteData = {
     body?: never;
@@ -2462,134 +2315,6 @@ export type UpdateAuditPolicyResponses = {
 
 export type UpdateAuditPolicyResponse = UpdateAuditPolicyResponses[keyof UpdateAuditPolicyResponses];
 
-export type CreateData = {
-    body: NewUserRequest;
-    path?: never;
-    query?: never;
-    url: '/api/user';
-};
-
-export type CreateErrors = {
-    /**
-     * Unauthorized
-     */
-    401: ApiErrorResponse;
-    /**
-     * Forbidden
-     */
-    403: ApiErrorResponse;
-    /**
-     * Resource in use
-     */
-    409: ApiErrorResponse;
-    /**
-     * Audit comment required
-     */
-    422: ApiErrorResponse;
-    /**
-     * Internal Server error
-     */
-    500: ApiErrorResponse;
-};
-
-export type CreateError = CreateErrors[keyof CreateErrors];
-
-export type CreateResponses = {
-    /**
-     * OK
-     */
-    200: ApiSuccessEnvelope & {
-        data: UserResponse;
-    };
-};
-
-export type CreateResponse = CreateResponses[keyof CreateResponses];
-
-export type ExecuteActionData = {
-    body: {
-        [key: string]: unknown;
-    };
-    path: {
-        id: string;
-        action: string;
-    };
-    query?: never;
-    url: '/api/user/{id}/actions/{action}';
-};
-
-export type ExecuteActionErrors = {
-    /**
-     * Unauthorized
-     */
-    401: ApiErrorResponse;
-    /**
-     * Forbidden
-     */
-    403: ApiErrorResponse;
-    /**
-     * Not Found
-     */
-    404: ApiErrorResponse;
-    /**
-     * Audit comment required
-     */
-    422: ApiErrorResponse;
-    /**
-     * Internal Server error
-     */
-    500: ApiErrorResponse;
-};
-
-export type ExecuteActionError = ExecuteActionErrors[keyof ExecuteActionErrors];
-
-export type ExecuteActionResponses = {
-    /**
-     * OK
-     */
-    200: ApiSuccessEnvelope;
-};
-
-export type ExecuteActionResponse = ExecuteActionResponses[keyof ExecuteActionResponses];
-
-export type SearchData = {
-    body: UserSearchRequest;
-    path?: never;
-    query?: never;
-    url: '/api/user/search';
-};
-
-export type SearchErrors = {
-    /**
-     * Unauthorized
-     */
-    401: ApiErrorResponse;
-    /**
-     * Forbidden
-     */
-    403: ApiErrorResponse;
-    /**
-     * Audit comment required
-     */
-    422: ApiErrorResponse;
-    /**
-     * Internal Server error
-     */
-    500: ApiErrorResponse;
-};
-
-export type SearchError = SearchErrors[keyof SearchErrors];
-
-export type SearchResponses = {
-    /**
-     * OK
-     */
-    200: ApiSuccessEnvelope & {
-        data: UserSearchResponse;
-    };
-};
-
-export type SearchResponse = SearchResponses[keyof SearchResponses];
-
 export type RegisterTemplateData = {
     body?: never;
     path: {
@@ -2679,7 +2404,7 @@ export type NewRecordResponses = {
 
 export type NewRecordResponse = NewRecordResponses[keyof NewRecordResponses];
 
-export type ExecuteAction1Data = {
+export type ExecuteActionData = {
     body: {
         [key: string]: unknown;
     };
@@ -2691,7 +2416,7 @@ export type ExecuteAction1Data = {
     url: '/api/records/{id}/actions/{action}';
 };
 
-export type ExecuteAction1Errors = {
+export type ExecuteActionErrors = {
     /**
      * Unauthorized
      */
@@ -2714,25 +2439,25 @@ export type ExecuteAction1Errors = {
     500: ApiErrorResponse;
 };
 
-export type ExecuteAction1Error = ExecuteAction1Errors[keyof ExecuteAction1Errors];
+export type ExecuteActionError = ExecuteActionErrors[keyof ExecuteActionErrors];
 
-export type ExecuteAction1Responses = {
+export type ExecuteActionResponses = {
     /**
      * OK
      */
     200: ApiSuccessEnvelope;
 };
 
-export type ExecuteAction1Response = ExecuteAction1Responses[keyof ExecuteAction1Responses];
+export type ExecuteActionResponse = ExecuteActionResponses[keyof ExecuteActionResponses];
 
-export type Search1Data = {
+export type SearchData = {
     body: RecordSearchRequest;
     path?: never;
     query?: never;
     url: '/api/records/search';
 };
 
-export type Search1Errors = {
+export type SearchErrors = {
     /**
      * Unauthorized
      */
@@ -2751,9 +2476,9 @@ export type Search1Errors = {
     500: ApiErrorResponse;
 };
 
-export type Search1Error = Search1Errors[keyof Search1Errors];
+export type SearchError = SearchErrors[keyof SearchErrors];
 
-export type Search1Responses = {
+export type SearchResponses = {
     /**
      * OK
      */
@@ -2762,7 +2487,7 @@ export type Search1Responses = {
     };
 };
 
-export type Search1Response = Search1Responses[keyof Search1Responses];
+export type SearchResponse = SearchResponses[keyof SearchResponses];
 
 export type ListPluginsData = {
     body?: never;
@@ -2938,6 +2663,49 @@ export type ObjectPropertyCreateResponses = {
 
 export type ObjectPropertyCreateResponse = ObjectPropertyCreateResponses[keyof ObjectPropertyCreateResponses];
 
+export type CreateLocationData = {
+    body: NewLocationRequest;
+    path?: never;
+    query?: never;
+    url: '/api/location';
+};
+
+export type CreateLocationErrors = {
+    /**
+     * Unauthorized
+     */
+    401: ApiErrorResponse;
+    /**
+     * Forbidden
+     */
+    403: ApiErrorResponse;
+    /**
+     * Resource in use
+     */
+    409: ApiErrorResponse;
+    /**
+     * Audit comment required
+     */
+    422: ApiErrorResponse;
+    /**
+     * Internal Server error
+     */
+    500: ApiErrorResponse;
+};
+
+export type CreateLocationError = CreateLocationErrors[keyof CreateLocationErrors];
+
+export type CreateLocationResponses = {
+    /**
+     * OK
+     */
+    200: ApiSuccessEnvelope & {
+        data: LocationResponse;
+    };
+};
+
+export type CreateLocationResponse = CreateLocationResponses[keyof CreateLocationResponses];
+
 export type ListLocationRelationshipsData = {
     body?: never;
     path: {
@@ -3034,6 +2802,52 @@ export type CreateLocationRelationshipResponses = {
 };
 
 export type CreateLocationRelationshipResponse = CreateLocationRelationshipResponses[keyof CreateLocationRelationshipResponses];
+
+export type ExecuteLocationActionData = {
+    body: {
+        [key: string]: unknown;
+    };
+    path: {
+        id: string;
+        action: string;
+    };
+    query?: never;
+    url: '/api/location/{id}/actions/{action}';
+};
+
+export type ExecuteLocationActionErrors = {
+    /**
+     * Unauthorized
+     */
+    401: ApiErrorResponse;
+    /**
+     * Forbidden
+     */
+    403: ApiErrorResponse;
+    /**
+     * Not Found
+     */
+    404: ApiErrorResponse;
+    /**
+     * Audit comment required
+     */
+    422: ApiErrorResponse;
+    /**
+     * Internal Server error
+     */
+    500: ApiErrorResponse;
+};
+
+export type ExecuteLocationActionError = ExecuteLocationActionErrors[keyof ExecuteLocationActionErrors];
+
+export type ExecuteLocationActionResponses = {
+    /**
+     * OK
+     */
+    200: ApiSuccessEnvelope;
+};
+
+export type ExecuteLocationActionResponse = ExecuteLocationActionResponses[keyof ExecuteLocationActionResponses];
 
 export type SearchLocationsData = {
     body: LocationSearchRequest;
@@ -3237,84 +3051,6 @@ export type CreateListResponses = {
 };
 
 export type CreateListResponse = CreateListResponses[keyof CreateListResponses];
-
-export type CreateGroupData = {
-    body: NewGroupRequest;
-    path?: never;
-    query?: never;
-    url: '/api/group';
-};
-
-export type CreateGroupErrors = {
-    /**
-     * Unauthorized
-     */
-    401: ApiErrorResponse;
-    /**
-     * Forbidden
-     */
-    403: ApiErrorResponse;
-    /**
-     * Audit comment required
-     */
-    422: ApiErrorResponse;
-    /**
-     * Internal Server error
-     */
-    500: ApiErrorResponse;
-};
-
-export type CreateGroupError = CreateGroupErrors[keyof CreateGroupErrors];
-
-export type CreateGroupResponses = {
-    /**
-     * OK
-     */
-    200: ApiSuccessEnvelope & {
-        data: GroupResponse;
-    };
-};
-
-export type CreateGroupResponse = CreateGroupResponses[keyof CreateGroupResponses];
-
-export type SearchGroupsData = {
-    body: GroupSearchRequest;
-    path?: never;
-    query?: never;
-    url: '/api/group/search';
-};
-
-export type SearchGroupsErrors = {
-    /**
-     * Unauthorized
-     */
-    401: ApiErrorResponse;
-    /**
-     * Forbidden
-     */
-    403: ApiErrorResponse;
-    /**
-     * Audit comment required
-     */
-    422: ApiErrorResponse;
-    /**
-     * Internal Server error
-     */
-    500: ApiErrorResponse;
-};
-
-export type SearchGroupsError = SearchGroupsErrors[keyof SearchGroupsErrors];
-
-export type SearchGroupsResponses = {
-    /**
-     * OK
-     */
-    200: ApiSuccessEnvelope & {
-        data: GroupSearchResponse;
-    };
-};
-
-export type SearchGroupsResponse = SearchGroupsResponses[keyof SearchGroupsResponses];
 
 export type FileStoreRetrieveAllData = {
     body?: never;
@@ -3693,90 +3429,6 @@ export type BrandingResponses = {
 
 export type BrandingResponse = BrandingResponses[keyof BrandingResponses];
 
-export type ListActionsData = {
-    body?: never;
-    path: {
-        id: string;
-    };
-    query?: never;
-    url: '/api/user/{id}/actions';
-};
-
-export type ListActionsErrors = {
-    /**
-     * Unauthorized
-     */
-    401: ApiErrorResponse;
-    /**
-     * Forbidden
-     */
-    403: ApiErrorResponse;
-    /**
-     * Not Found
-     */
-    404: ApiErrorResponse;
-    /**
-     * Audit comment required
-     */
-    422: ApiErrorResponse;
-    /**
-     * Internal Server error
-     */
-    500: ApiErrorResponse;
-};
-
-export type ListActionsError = ListActionsErrors[keyof ListActionsErrors];
-
-export type ListActionsResponses = {
-    /**
-     * OK
-     */
-    200: ApiSuccessEnvelope & {
-        data: Array<ActionResponse>;
-    };
-};
-
-export type ListActionsResponse = ListActionsResponses[keyof ListActionsResponses];
-
-export type MeData = {
-    body?: never;
-    path?: never;
-    query?: never;
-    url: '/api/user/me';
-};
-
-export type MeErrors = {
-    /**
-     * Unauthorized
-     */
-    401: ApiErrorResponse;
-    /**
-     * Forbidden
-     */
-    403: ApiErrorResponse;
-    /**
-     * Audit comment required
-     */
-    422: ApiErrorResponse;
-    /**
-     * Internal Server error
-     */
-    500: ApiErrorResponse;
-};
-
-export type MeError = MeErrors[keyof MeErrors];
-
-export type MeResponses = {
-    /**
-     * OK
-     */
-    200: ApiSuccessEnvelope & {
-        data: UserResponse;
-    };
-};
-
-export type MeResponse = MeResponses[keyof MeResponses];
-
 export type DeleteTranslationOverrideData = {
     body?: never;
     path: {
@@ -3977,7 +3629,7 @@ export type GetTemplateResponses = {
 
 export type GetTemplateResponse = GetTemplateResponses[keyof GetTemplateResponses];
 
-export type ListActions1Data = {
+export type ListActionsData = {
     body?: never;
     path: {
         id: string;
@@ -3986,7 +3638,7 @@ export type ListActions1Data = {
     url: '/api/records/{id}/actions';
 };
 
-export type ListActions1Errors = {
+export type ListActionsErrors = {
     /**
      * Unauthorized
      */
@@ -4009,9 +3661,9 @@ export type ListActions1Errors = {
     500: ApiErrorResponse;
 };
 
-export type ListActions1Error = ListActions1Errors[keyof ListActions1Errors];
+export type ListActionsError = ListActionsErrors[keyof ListActionsErrors];
 
-export type ListActions1Responses = {
+export type ListActionsResponses = {
     /**
      * OK
      */
@@ -4020,7 +3672,7 @@ export type ListActions1Responses = {
     };
 };
 
-export type ListActions1Response = ListActions1Responses[keyof ListActions1Responses];
+export type ListActionsResponse = ListActionsResponses[keyof ListActionsResponses];
 
 export type GetRecordTypesData = {
     body?: never;
@@ -4195,16 +3847,16 @@ export type GetLocationTypeResponses = {
 
 export type GetLocationTypeResponse = GetLocationTypeResponses[keyof GetLocationTypeResponses];
 
-export type GetLocationData = {
+export type ListLocationActionsData = {
     body?: never;
     path: {
         id: string;
     };
     query?: never;
-    url: '/api/location/{id}';
+    url: '/api/location/{id}/actions';
 };
 
-export type GetLocationErrors = {
+export type ListLocationActionsErrors = {
     /**
      * Unauthorized
      */
@@ -4227,9 +3879,48 @@ export type GetLocationErrors = {
     500: ApiErrorResponse;
 };
 
-export type GetLocationError = GetLocationErrors[keyof GetLocationErrors];
+export type ListLocationActionsError = ListLocationActionsErrors[keyof ListLocationActionsErrors];
 
-export type GetLocationResponses = {
+export type ListLocationActionsResponses = {
+    /**
+     * OK
+     */
+    200: ApiSuccessEnvelope & {
+        data: Array<ActionResponse>;
+    };
+};
+
+export type ListLocationActionsResponse = ListLocationActionsResponses[keyof ListLocationActionsResponses];
+
+export type MeData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/location/me';
+};
+
+export type MeErrors = {
+    /**
+     * Unauthorized
+     */
+    401: ApiErrorResponse;
+    /**
+     * Forbidden
+     */
+    403: ApiErrorResponse;
+    /**
+     * Audit comment required
+     */
+    422: ApiErrorResponse;
+    /**
+     * Internal Server error
+     */
+    500: ApiErrorResponse;
+};
+
+export type MeError = MeErrors[keyof MeErrors];
+
+export type MeResponses = {
     /**
      * OK
      */
@@ -4238,7 +3929,7 @@ export type GetLocationResponses = {
     };
 };
 
-export type GetLocationResponse = GetLocationResponses[keyof GetLocationResponses];
+export type MeResponse = MeResponses[keyof MeResponses];
 
 export type SearchListElementData = {
     body?: never;
