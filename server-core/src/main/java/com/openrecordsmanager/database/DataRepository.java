@@ -12,6 +12,7 @@ import com.openrecordsmanager.location.LocationRepository;
 import com.openrecordsmanager.location.group.GroupRepository;
 import com.openrecordsmanager.location.relationship.LocationRelationshipRepository;
 import com.openrecordsmanager.location.relationship.LocationRelationshipTypeRepository;
+import com.openrecordsmanager.location.type.LocationTypeRepository;
 import com.openrecordsmanager.location.user.UserRepository;
 import com.openrecordsmanager.plugin.PluginRepository;
 import com.openrecordsmanager.property.ObjectPropertyRepository;
@@ -36,6 +37,7 @@ public class DataRepository {
     public final UserRepository userRepo;
     public final GroupRepository groupRepo;
     public final LocationRepository locationRepo;
+    public final LocationTypeRepository locationTypeRepo;
     public final LocationRelationshipTypeRepository locationRelationshipTypeRepo;
     public final LocationRelationshipRepository locationRelationshipRepo;
 
@@ -55,6 +57,7 @@ public class DataRepository {
             UserRepository userRepo,
             GroupRepository groupRepo,
             LocationRepository locationRepo,
+            LocationTypeRepository locationTypeRepo,
             LocationRelationshipTypeRepository locationRelationshipTypeRepo,
             LocationRelationshipRepository locationRelationshipRepo
     ) {
@@ -73,6 +76,7 @@ public class DataRepository {
         this.userRepo = userRepo;
         this.groupRepo = groupRepo;
         this.locationRepo = locationRepo;
+        this.locationTypeRepo = locationTypeRepo;
         this.locationRelationshipTypeRepo = locationRelationshipTypeRepo;
         this.locationRelationshipRepo = locationRelationshipRepo;
     }

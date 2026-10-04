@@ -75,7 +75,7 @@ class BuiltinColumnResolverIntegrationTest {
         assertEquals(new QualifiedSqlColumn("location_property_value", "location_id"), user.holderFk());
         assertEquals(new QualifiedSqlColumn("location_property_value", "property_id"), user.propertyId());
         assertEquals(new QualifiedSqlColumn("location_property_value", "property_value"), user.propertyValue());
-        assertNull(user.typeColumn());
+        assertEquals(new QualifiedSqlColumn("location", "type_id"), user.typeColumn());
         assertEquals(
                 new QualifiedSqlColumn("user_details", "username"),
                 user.builtinColumns().get(new ResourceIdentifier(BuiltinPlugin.BUILTIN_PLUGIN_NAME, BuiltinPropertyIds.USERNAME)).column()

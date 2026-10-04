@@ -25,6 +25,8 @@ final class VendorSchemaMigrationTestSupport {
             "list_element_alias",
             "record_type",
             "record_type_property",
+            "location_type",
+            "location_type_property",
             "location",
             "user_details",
             "group_details",

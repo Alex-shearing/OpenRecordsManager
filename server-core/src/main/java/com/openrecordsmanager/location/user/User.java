@@ -5,6 +5,7 @@ import com.openrecordsmanager.api.builtin.BuiltinPropertyIds;
 import com.openrecordsmanager.api.location.LocationKind;
 import com.openrecordsmanager.auth.entity.AuthProvider;
 import com.openrecordsmanager.location.Location;
+import com.openrecordsmanager.location.type.LocationType;
 import com.openrecordsmanager.property.BuiltinProperty;
 import com.openrecordsmanager.property.BuiltinPropertyBinding;
 import jakarta.persistence.*;
@@ -64,8 +65,8 @@ public class User extends Location implements UserDetails {
     protected User() {
     }
 
-    public User(String username, @Nullable AuthProvider authProvider) {
-        super(username);
+    public User(String username, @Nullable AuthProvider authProvider, LocationType type) {
+        super(username, type);
         this.username = username;
         this.authProvider = authProvider;
         this.enabled = true;

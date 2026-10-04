@@ -75,17 +75,37 @@ CREATE TABLE record_type_property (
 
 CREATE INDEX idx_rtp_property_id ON record_type_property (property_id);
 
+CREATE TABLE location_type (
+    id VARCHAR(255) NOT NULL PRIMARY KEY,
+    kind VARCHAR(32) NOT NULL,
+    date_created DATETIME(6) NOT NULL,
+    date_modified DATETIME(6) NOT NULL
+);
+
+CREATE TABLE location_type_property (
+    location_type VARCHAR(255) NOT NULL,
+    property_id VARCHAR(255) NOT NULL,
+    default_value JSON,
+    CONSTRAINT fk_ltp_location_type FOREIGN KEY (location_type) REFERENCES location_type (id),
+    CONSTRAINT fk_ltp_property FOREIGN KEY (property_id) REFERENCES object_property (id)
+);
+
+CREATE INDEX idx_ltp_property_id ON location_type_property (property_id);
+
 CREATE TABLE location (
     id UUID NOT NULL PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
     notes VARCHAR(255),
     date_created DATETIME(6) NOT NULL,
     date_modified DATETIME(6) NOT NULL,
-    location_kind VARCHAR(32) NOT NULL
+    location_kind VARCHAR(32) NOT NULL,
+    type_id VARCHAR(255) NOT NULL,
+    CONSTRAINT fk_location_type FOREIGN KEY (type_id) REFERENCES location_type (id)
 );
 
 CREATE INDEX idx_location_kind ON location (location_kind);
 CREATE INDEX idx_location_name ON location (name);
+CREATE INDEX idx_location_type_id ON location (type_id);
 
 CREATE TABLE user_details (
     id UUID NOT NULL PRIMARY KEY,

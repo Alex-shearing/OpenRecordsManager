@@ -1,6 +1,9 @@
 package com.openrecordsmanager.location.user;
 
+import com.openrecordsmanager.api.ResourceIdentifier;
 import com.openrecordsmanager.api.builtin.BuiltinConfigs;
+import com.openrecordsmanager.api.builtin.BuiltinLocationTypeIds;
+import com.openrecordsmanager.api.builtin.BuiltinPlugin;
 import com.openrecordsmanager.audit.AuditTestSupport;
 import com.openrecordsmanager.auth.JwtSessionService;
 import com.openrecordsmanager.auth.dto.SessionMode;
@@ -56,7 +59,7 @@ class UserDisableIntegrationTest {
         String username = "disable_user_" + UUID.randomUUID().toString().substring(0, 8);
 
         UserResponse created = AuditTestSupport.withAudit(this.admin, () -> this.userService.create(
-                new NewUserRequest(username, null, Map.of())
+                new NewUserRequest(new ResourceIdentifier(BuiltinPlugin.BUILTIN_PLUGIN_NAME, BuiltinLocationTypeIds.USER), username, null, Map.of())
         ));
         assertTrue(created.enabled());
 

@@ -2,6 +2,7 @@ package com.openrecordsmanager.plugin;
 
 import com.openrecordsmanager.api.ResourceIdentifier;
 import com.openrecordsmanager.api.builtin.BuiltinConfigs;
+import com.openrecordsmanager.api.location.LocationKind;
 import com.openrecordsmanager.api.template.list.IListElement;
 import com.openrecordsmanager.api.template.property.PropertyType;
 import com.openrecordsmanager.api.template.recordtype.SecurityFilterUsage;
@@ -9,6 +10,8 @@ import com.openrecordsmanager.database.DataRepository;
 import com.openrecordsmanager.database.SqliteTestSupport;
 import com.openrecordsmanager.list.ListElement;
 import com.openrecordsmanager.list.ListType;
+import com.openrecordsmanager.location.type.LocationType;
+import com.openrecordsmanager.location.type.LocationTypeProperty;
 import com.openrecordsmanager.location.user.User;
 import com.openrecordsmanager.property.ObjectProperty;
 import com.openrecordsmanager.record.Record;
@@ -74,20 +77,14 @@ class ExpressionsServiceTest {
                 )
         );
 
-        this.testUser = new User("test", null);
-
         ObjectProperty<Long> numberProperty = new ObjectProperty<>(
                 ResourceIdentifier.valueOf("test:number_property"),
                 PropertyType.NUMBER
         );
-        this.testUser.setProperty(numberProperty, 10L);
-
         ObjectProperty<String> stringProperty = new ObjectProperty<>(
                 ResourceIdentifier.valueOf("test:string_property"),
                 PropertyType.STRING
         );
-        this.testUser.setProperty(stringProperty, "test value");
-
         ObjectProperty<IListElement> listProperty = new ObjectProperty<>(
                 ResourceIdentifier.valueOf("test:list_property"),
                 PropertyType.LIST_ITEM,
@@ -97,8 +94,6 @@ class ExpressionsServiceTest {
                 null,
                 false
         );
-        this.testUser.setProperty(listProperty, this.listItem2);
-
         ObjectProperty<Collection<IListElement>> listMultiple = new ObjectProperty<>(
                 ResourceIdentifier.valueOf("test:list_multiple_property"),
                 PropertyType.LIST_MULTIPLE,
@@ -108,6 +103,20 @@ class ExpressionsServiceTest {
                 null,
                 false
         );
+        LocationType userType = new LocationType(
+                ResourceIdentifier.valueOf("test:expr_user_type"),
+                LocationKind.USER,
+                Set.of(
+                        new LocationTypeProperty<>(numberProperty, null),
+                        new LocationTypeProperty<>(stringProperty, null),
+                        new LocationTypeProperty<>(listProperty, null),
+                        new LocationTypeProperty<>(listMultiple, null)
+                )
+        );
+        this.testUser = new User("test", null, userType);
+        this.testUser.setProperty(numberProperty, 10L);
+        this.testUser.setProperty(stringProperty, "test value");
+        this.testUser.setProperty(listProperty, this.listItem2);
         this.testUser.setProperty(listMultiple, List.of(this.listItem1, this.listItem3));
     }
 

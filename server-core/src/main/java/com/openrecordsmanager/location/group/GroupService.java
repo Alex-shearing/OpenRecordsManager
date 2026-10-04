@@ -2,12 +2,16 @@ package com.openrecordsmanager.location.group;
 
 import com.openrecordsmanager.api.audit.AuditEntityType;
 import com.openrecordsmanager.api.audit.AuditOperation;
+import com.openrecordsmanager.api.errors.ApiException;
+import com.openrecordsmanager.api.location.LocationKind;
 import com.openrecordsmanager.api.search.SearchFieldTarget;
+import com.openrecordsmanager.api.types.ComponentTypes;
 import com.openrecordsmanager.audit.AuditPropertyChange;
 import com.openrecordsmanager.audit.AuditService;
 import com.openrecordsmanager.audit.RequiresAuditComment;
 import com.openrecordsmanager.database.DataRepository;
 import com.openrecordsmanager.location.group.dto.*;
+import com.openrecordsmanager.location.type.LocationType;
 import com.openrecordsmanager.location.user.User;
 import com.openrecordsmanager.property.ObjectPropertyApplier;
 import com.openrecordsmanager.rest.exception.ResourceNotFoundException;
@@ -102,10 +106,17 @@ public class GroupService {
     @Transactional
     @RequiresAuditComment(operation = AuditOperation.CREATE, targetType = AuditEntityType.GROUP)
     public GroupResponse create(NewGroupRequest input) {
+        LocationType type = this.repository.locationTypeRepo.findById(input.type())
+                .orElseThrow(() -> new ResourceNotFoundException(ComponentTypes.LOCATION_TYPE, input.type()));
+        if (type.getKind() != LocationKind.GROUP) {
+            throw ApiException.validationFailed("type", "invalid_location_type_kind", type.getKind().key());
+        }
+
         List<AuditPropertyChange> changes = new ArrayList<>();
+        changes.add(AuditPropertyChange.newProperty("type", input.type()));
         changes.add(AuditPropertyChange.newProperty("name", input.name()));
 
-        Group group = new Group(input.name());
+        Group group = new Group(input.name(), type);
         this.propertyApplier.applyOnCreate(group, input.properties(), true, changes);
 
         this.repository.groupRepo.saveAndFlush(group);

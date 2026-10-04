@@ -2,6 +2,9 @@ package com.openrecordsmanager.location.user;
 
 import com.openrecordsmanager.api.ResourceIdentifier;
 import com.openrecordsmanager.api.builtin.BuiltinConfigs;
+import com.openrecordsmanager.api.builtin.BuiltinLocationTypeIds;
+import com.openrecordsmanager.api.builtin.BuiltinPlugin;
+import com.openrecordsmanager.api.location.LocationKind;
 import com.openrecordsmanager.api.template.list.IListElement;
 import com.openrecordsmanager.api.template.property.PropertyType;
 import com.openrecordsmanager.audit.AuditTestSupport;
@@ -9,6 +12,8 @@ import com.openrecordsmanager.database.DataRepository;
 import com.openrecordsmanager.database.SqliteTestSupport;
 import com.openrecordsmanager.list.ListElement;
 import com.openrecordsmanager.list.ListType;
+import com.openrecordsmanager.location.type.LocationType;
+import com.openrecordsmanager.location.type.LocationTypeProperty;
 import com.openrecordsmanager.property.ObjectProperty;
 import com.openrecordsmanager.rest.exception.ResourceInUseException;
 import com.openrecordsmanager.rest.exception.ResourceNotFoundException;
@@ -25,6 +30,7 @@ import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.JsonNodeFactory;
 
 import java.util.Collection;
+import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -37,6 +43,9 @@ class UserCrudIntegrationTest {
     private static final ResourceIdentifier LIST_ID = ResourceIdentifier.valueOf("test:user_list_prop_list");
     private static final ResourceIdentifier ELEMENT_SECRET = ResourceIdentifier.valueOf("test:user_list_secret");
     private static final ResourceIdentifier ELEMENT_TOP_SECRET = ResourceIdentifier.valueOf("test:user_list_top_secret");
+    private static final ResourceIdentifier USER_TYPE =
+            new ResourceIdentifier(BuiltinPlugin.BUILTIN_PLUGIN_NAME, BuiltinLocationTypeIds.USER);
+    private static final ResourceIdentifier LIST_USER_TYPE = ResourceIdentifier.valueOf("test:list_prop_user_type");
     private static final ResourceIdentifier LIST_ITEM_PROP = ResourceIdentifier.valueOf("test:user_list_item_prop");
     private static final ResourceIdentifier LIST_MULTI_PROP = ResourceIdentifier.valueOf("test:user_list_multi_prop");
 
@@ -99,6 +108,25 @@ class UserCrudIntegrationTest {
             );
             this.repository.objectPropertyRepo.saveAndFlush(multiProp);
         }
+
+        if (this.repository.locationTypeRepo.findById(LIST_USER_TYPE).isEmpty()) {
+            LocationType builtinUser = this.repository.locationTypeRepo.findById(USER_TYPE).orElseThrow();
+            Set<LocationTypeProperty<?>> properties = new LinkedHashSet<>();
+            for (LocationTypeProperty<?> property : builtinUser.getProperties()) {
+                properties.add(new LocationTypeProperty<>(property.getProperty(), null));
+            }
+            properties.add(new LocationTypeProperty<>(
+                    this.repository.objectPropertyRepo.findById(LIST_ITEM_PROP).orElseThrow(),
+                    null
+            ));
+            properties.add(new LocationTypeProperty<>(
+                    this.repository.objectPropertyRepo.findById(LIST_MULTI_PROP).orElseThrow(),
+                    null
+            ));
+            this.repository.locationTypeRepo.saveAndFlush(
+                    new LocationType(LIST_USER_TYPE, LocationKind.USER, properties)
+            );
+        }
     }
 
     @Test
@@ -106,10 +134,11 @@ class UserCrudIntegrationTest {
         String username = "integration_user_" + UUID.randomUUID().toString().substring(0, 8);
 
         UserResponse created = AuditTestSupport.withAudit(this.admin, () -> this.userService.create(
-                new NewUserRequest(username, null, Map.of())
+                new NewUserRequest(USER_TYPE, username, null, Map.of())
         ));
 
         assertEquals(username, created.username());
+        assertEquals(USER_TYPE, created.type());
         assertNotNull(created.id());
 
         UserResponse loaded = this.userService.get(created.id());
@@ -139,7 +168,7 @@ class UserCrudIntegrationTest {
         );
 
         UserResponse created = AuditTestSupport.withAudit(this.admin, () -> this.userService.create(
-                new NewUserRequest(username, null, createProps)
+                new NewUserRequest(LIST_USER_TYPE, username, null, createProps)
         ));
 
         assertEquals(ELEMENT_SECRET.toString(), created.properties().get(LIST_ITEM_PROP.toString()).asString());
@@ -171,7 +200,7 @@ class UserCrudIntegrationTest {
     @Test
     void createDuplicateUsernameThrowsConflict() {
         String username = "duplicate_user_" + UUID.randomUUID().toString().substring(0, 8);
-        NewUserRequest request = new NewUserRequest(username, null, Map.of());
+        NewUserRequest request = new NewUserRequest(USER_TYPE, username, null, Map.of());
 
         AuditTestSupport.withAudit(this.admin, () -> this.userService.create(request));
 

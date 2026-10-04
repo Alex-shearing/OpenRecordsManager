@@ -2,12 +2,16 @@ package com.openrecordsmanager.location.user;
 
 import com.openrecordsmanager.api.ResourceIdentifier;
 import com.openrecordsmanager.api.builtin.BuiltinConfigs;
+import com.openrecordsmanager.api.builtin.BuiltinLocationTypeIds;
 import com.openrecordsmanager.api.builtin.BuiltinPlugin;
 import com.openrecordsmanager.api.builtin.BuiltinPropertyIds;
+import com.openrecordsmanager.api.location.LocationKind;
 import com.openrecordsmanager.api.template.property.PropertyType;
 import com.openrecordsmanager.api.template.recordtype.SecurityFilterUsage;
 import com.openrecordsmanager.database.DataRepository;
 import com.openrecordsmanager.database.SqliteTestSupport;
+import com.openrecordsmanager.location.type.LocationType;
+import com.openrecordsmanager.location.type.LocationTypeProperty;
 import com.openrecordsmanager.property.ObjectProperty;
 import com.openrecordsmanager.record.Record;
 import com.openrecordsmanager.record.type.RecordType;
@@ -20,6 +24,7 @@ import org.springframework.test.context.DynamicPropertySource;
 import tools.jackson.databind.node.JsonNodeFactory;
 
 import java.time.Instant;
+import java.util.LinkedHashSet;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -35,6 +40,8 @@ class BuiltinColumnPropertiesTest {
             new ResourceIdentifier(BuiltinPlugin.BUILTIN_PLUGIN_NAME, BuiltinPropertyIds.GIVEN_NAME);
     private static final ResourceIdentifier DATE_CREATED =
             new ResourceIdentifier(BuiltinPlugin.BUILTIN_PLUGIN_NAME, BuiltinPropertyIds.DATE_CREATED);
+    private static final ResourceIdentifier USER_TYPE =
+            new ResourceIdentifier(BuiltinPlugin.BUILTIN_PLUGIN_NAME, BuiltinLocationTypeIds.USER);
 
     @DynamicPropertySource
     static void properties(DynamicPropertyRegistry registry) {
@@ -73,8 +80,11 @@ class BuiltinColumnPropertiesTest {
     @Test
     void userStoresBuiltinPropertiesInColumnsNotEavMap() {
         ObjectProperty<String> givenNameProperty = requireProperty(GIVEN_NAME);
+        LocationType userType = this.repository.locationTypeRepo
+                .findById(USER_TYPE)
+                .orElseThrow();
 
-        User user = new User("test_user", null);
+        User user = new User("test_user", null, userType);
         user.setProperty(givenNameProperty, "Ada");
 
         assertEquals("Ada", user.getProperty(givenNameProperty));
@@ -89,8 +99,21 @@ class BuiltinColumnPropertiesTest {
                 ResourceIdentifier.valueOf("test:custom_property"),
                 PropertyType.STRING
         );
+        LocationType builtinUser = this.repository.locationTypeRepo
+                .findById(USER_TYPE)
+                .orElseThrow();
+        Set<LocationTypeProperty<?>> properties = new LinkedHashSet<>();
+        for (LocationTypeProperty<?> property : builtinUser.getProperties()) {
+            properties.add(new LocationTypeProperty<>(property.getProperty(), null));
+        }
+        properties.add(new LocationTypeProperty<>(customProperty, null));
+        LocationType userType = new LocationType(
+                ResourceIdentifier.valueOf("test:custom_user_type"),
+                LocationKind.USER,
+                properties
+        );
 
-        User user = new User("test_user", null);
+        User user = new User("test_user", null, userType);
         Instant createdModified = user.getDateModified();
 
         user.setProperty(givenNameProperty, "Ada");

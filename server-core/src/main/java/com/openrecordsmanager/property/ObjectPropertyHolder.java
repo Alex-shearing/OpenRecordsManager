@@ -34,7 +34,7 @@ public abstract class ObjectPropertyHolder<SELF extends ObjectPropertyHolder<SEL
     /**
      * API wire map (list values as id strings).
      */
-    public final Map<String, @Nullable JsonNode> toWireMap() {
+    public final Map<String, JsonNode> toWireMap() {
         return new WirePropertyMap(this);
     }
 

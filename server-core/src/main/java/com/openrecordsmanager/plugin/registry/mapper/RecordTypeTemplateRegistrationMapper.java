@@ -2,7 +2,7 @@ package com.openrecordsmanager.plugin.registry.mapper;
 
 import com.openrecordsmanager.api.ResourceIdentifier;
 import com.openrecordsmanager.api.template.property.PropertyType;
-import com.openrecordsmanager.api.template.recordtype.PropertyAssignment;
+import com.openrecordsmanager.api.template.PropertyAssignment;
 import com.openrecordsmanager.api.template.recordtype.RecordTypeTemplate;
 import com.openrecordsmanager.api.types.ComponentType;
 import com.openrecordsmanager.api.types.ComponentTypes;

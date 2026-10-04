@@ -8,6 +8,7 @@ import tools.jackson.databind.JsonNode;
 import java.util.Map;
 
 public record NewGroupRequest(
+        @NotBlank ResourceIdentifier type,
         @NotBlank String name,
         @NotNull Map<ResourceIdentifier, JsonNode> properties
 ) {

@@ -14,6 +14,11 @@
 
 System for assigning permissions to explicit locations
 
-## User types
+## Improve Initial Database setup
 
-Implement same as record types
+Make user navigate to /setup and force to set an admin password rather than using a known default password
+
+## Investigate deployment strategy
+
+Maybe go back to the old reverse-proxy with two separate processes strategy. This would also allow an nginx
+reverse-proxy to enable HTTP/3.

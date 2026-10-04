@@ -90,13 +90,35 @@ GO
 CREATE INDEX idx_rtp_property_id ON record_type_property (property_id);
 GO
 
+CREATE TABLE location_type (
+    id NVARCHAR(255) NOT NULL PRIMARY KEY,
+    kind NVARCHAR(32) NOT NULL,
+    date_created DATETIMEOFFSET NOT NULL,
+    date_modified DATETIMEOFFSET NOT NULL
+);
+GO
+
+CREATE TABLE location_type_property (
+    location_type NVARCHAR(255) NOT NULL,
+    property_id NVARCHAR(255) NOT NULL,
+    default_value VARCHAR(MAX) NULL,
+    CONSTRAINT fk_ltp_location_type FOREIGN KEY (location_type) REFERENCES location_type (id),
+    CONSTRAINT fk_ltp_property FOREIGN KEY (property_id) REFERENCES object_property (id)
+);
+GO
+
+CREATE INDEX idx_ltp_property_id ON location_type_property (property_id);
+GO
+
 CREATE TABLE location (
     id UNIQUEIDENTIFIER NOT NULL PRIMARY KEY,
     name NVARCHAR(255) NOT NULL,
     notes NVARCHAR(255) NULL,
     date_created DATETIMEOFFSET NOT NULL,
     date_modified DATETIMEOFFSET NOT NULL,
-    location_kind NVARCHAR(32) NOT NULL
+    location_kind NVARCHAR(32) NOT NULL,
+    type_id NVARCHAR(255) NOT NULL,
+    CONSTRAINT fk_location_type FOREIGN KEY (type_id) REFERENCES location_type (id)
 );
 GO
 
@@ -104,6 +126,9 @@ CREATE INDEX idx_location_kind ON location (location_kind);
 GO
 
 CREATE INDEX idx_location_name ON location (name);
+GO
+
+CREATE INDEX idx_location_type_id ON location (type_id);
 GO
 
 CREATE TABLE user_details (

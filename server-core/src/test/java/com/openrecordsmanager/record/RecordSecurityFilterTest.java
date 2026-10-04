@@ -1,8 +1,11 @@
 package com.openrecordsmanager.record;
 
 import com.openrecordsmanager.api.ResourceIdentifier;
+import com.openrecordsmanager.api.location.LocationKind;
 import com.openrecordsmanager.api.template.property.PropertyType;
 import com.openrecordsmanager.api.template.recordtype.SecurityFilterUsage;
+import com.openrecordsmanager.location.type.LocationType;
+import com.openrecordsmanager.location.type.LocationTypeProperty;
 import com.openrecordsmanager.location.user.User;
 import com.openrecordsmanager.plugin.ExpressionsService;
 import com.openrecordsmanager.property.ObjectProperty;
@@ -14,6 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import java.util.HashSet;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
@@ -26,20 +30,27 @@ class RecordSecurityFilterTest {
 
     @BeforeEach
     void setUp() {
-        this.testUser = new User("test_user", null);
-
         // Number property
         ObjectProperty<Long> numberProperty = new ObjectProperty<>(
                 ResourceIdentifier.valueOf("test:number_property"),
                 PropertyType.NUMBER
         );
-        this.testUser.setProperty(numberProperty, 10L);
 
         // String property
         ObjectProperty<String> stringProperty = new ObjectProperty<>(
                 ResourceIdentifier.valueOf("test:string_property"),
                 PropertyType.STRING
         );
+        LocationType userType = new LocationType(
+                ResourceIdentifier.valueOf("test:filter_user_type"),
+                LocationKind.USER,
+                Set.of(
+                        new LocationTypeProperty<>(numberProperty, null),
+                        new LocationTypeProperty<>(stringProperty, null)
+                )
+        );
+        this.testUser = new User("test_user", null, userType);
+        this.testUser.setProperty(numberProperty, 10L);
         this.testUser.setProperty(stringProperty, "test value");
     }
 

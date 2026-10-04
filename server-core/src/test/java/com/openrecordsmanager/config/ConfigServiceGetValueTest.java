@@ -16,6 +16,7 @@ import com.openrecordsmanager.location.LocationRepository;
 import com.openrecordsmanager.location.group.GroupRepository;
 import com.openrecordsmanager.location.relationship.LocationRelationshipRepository;
 import com.openrecordsmanager.location.relationship.LocationRelationshipTypeRepository;
+import com.openrecordsmanager.location.type.LocationTypeRepository;
 import com.openrecordsmanager.location.user.UserRepository;
 import com.openrecordsmanager.plugin.PluginRepository;
 import com.openrecordsmanager.plugin.registry.ComponentCatalog;
@@ -93,6 +94,7 @@ class ConfigServiceGetValueTest {
                 mock(UserRepository.class),
                 mock(GroupRepository.class),
                 mock(LocationRepository.class),
+                mock(LocationTypeRepository.class),
                 mock(LocationRelationshipTypeRepository.class),
                 mock(LocationRelationshipRepository.class)
         );

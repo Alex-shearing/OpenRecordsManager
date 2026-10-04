@@ -2,7 +2,10 @@ package com.openrecordsmanager.database.schema;
 
 import com.openrecordsmanager.api.ComponentReference;
 import com.openrecordsmanager.api.ResourceIdentifier;
+import com.openrecordsmanager.api.builtin.BuiltinLocationTypeIds;
+import com.openrecordsmanager.api.builtin.BuiltinPlugin;
 import com.openrecordsmanager.api.template.location.LocationRelationshipTypeTemplate;
+import com.openrecordsmanager.api.template.location.LocationTypeTemplate;
 import com.openrecordsmanager.api.template.property.ObjectPropertyTemplate;
 import com.openrecordsmanager.api.types.ComponentTypes;
 import com.openrecordsmanager.audit.AuditContext;
@@ -13,6 +16,7 @@ import com.openrecordsmanager.auth.entity.AuthProvider;
 import com.openrecordsmanager.database.DataRepository;
 import com.openrecordsmanager.database.DatabaseWritableProbe;
 import com.openrecordsmanager.location.relationship.LocationRelationshipType;
+import com.openrecordsmanager.location.type.LocationType;
 import com.openrecordsmanager.location.user.User;
 import com.openrecordsmanager.location.user.UserService;
 import com.openrecordsmanager.plugin.ExpressionsService;
@@ -84,6 +88,7 @@ public class InitialDatabaseSeeder {
         AuditContext.disableCapture();
         try {
             this.seedBuiltinProperties();
+            this.seedBuiltinLocationTypes();
             this.seedBuiltinRelationshipTypes();
 
             if (!this.state.consumeInitialSeedPending()) {
@@ -113,7 +118,11 @@ public class InitialDatabaseSeeder {
         AuthProvider provider = this.repository.authProviderRepo.findById(created.id())
                 .orElseThrow(() -> new IllegalStateException("Failed to load seeded auth provider"));
 
-        User admin = new User("admin", provider);
+        LocationType userType = this.repository.locationTypeRepo
+                .findById(new ResourceIdentifier(BuiltinPlugin.BUILTIN_PLUGIN_NAME, BuiltinLocationTypeIds.USER))
+                .orElseThrow(() -> new IllegalStateException("Builtin location type 'user' is not registered"));
+
+        User admin = new User("admin", provider, userType);
         this.repository.userRepo.saveAndFlush(admin);
 
         this.userService.executeAction(
@@ -141,6 +150,26 @@ public class InitialDatabaseSeeder {
                     this.expressions,
                     this.auditService,
                     ComponentReference.of(ComponentTypes.OBJECT_PROPERTY, id),
+                    true
+            );
+        }
+    }
+
+    public void seedBuiltinLocationTypes() {
+        TemplateComponentRegistry<LocationTypeTemplate, LocationType> registry =
+                this.catalog.getTemplateRegistry(ComponentCatalog.LOCATION_TYPE_MAPPER);
+
+        for (ResourceIdentifier id : registry.getIds()) {
+            if (!id.isBuiltin()) {
+                continue;
+            }
+
+            registry.register(
+                    this.repository,
+                    this.catalog,
+                    this.expressions,
+                    this.auditService,
+                    ComponentReference.of(ComponentTypes.LOCATION_TYPE, id),
                     true
             );
         }

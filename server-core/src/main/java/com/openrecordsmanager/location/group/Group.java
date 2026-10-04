@@ -3,6 +3,7 @@ package com.openrecordsmanager.location.group;
 import com.openrecordsmanager.api.ResourceIdentifier;
 import com.openrecordsmanager.api.location.LocationKind;
 import com.openrecordsmanager.location.Location;
+import com.openrecordsmanager.location.type.LocationType;
 import com.openrecordsmanager.property.BuiltinPropertyBinding;
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
@@ -23,8 +24,8 @@ public class Group extends Location {
     protected Group() {
     }
 
-    public Group(String name) {
-        super(name);
+    public Group(String name, LocationType type) {
+        super(name, type);
     }
 
     @Override

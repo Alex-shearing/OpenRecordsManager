@@ -124,13 +124,25 @@ public class BuiltinColumnResolver {
             );
         }
 
-        return new QualifiedSqlColumn(
-                tableName(persister, entityClass),
-                singleColumnName(association.getForeignKeyDescriptor().getKeyPart(), entityClass, TYPE_ATTRIBUTE)
-        );
+        ValuedModelPart keyPart = association.getForeignKeyDescriptor().getKeyPart();
+        String column = singleColumnName(keyPart, entityClass, TYPE_ATTRIBUTE);
+
+        // Find the table that physically owns the FK. With JOINED inheritance the
+        // persister's root table is the concrete subclass (e.g. user_details), but type
+        // lives on the parent table (location).
+        String table = tableName(persister, entityClass);
+        if (keyPart.getJdbcTypeCount() == 1) {
+            String containing = keyPart.getSelectable(0).getContainingTableExpression();
+            if (containing != null && !containing.isBlank()) {
+                table = containing;
+            }
+        }
+        return new QualifiedSqlColumn(table, column);
     }
 
-    /** Physical table for the holder's {@code properties} EAV map. */
+    /**
+     * Physical table for the holder's {@code properties} EAV map.
+     */
     private static String propertyValueTable(
             PluralAttributeMapping properties,
             Class<?> entityClass
@@ -144,7 +156,9 @@ public class BuiltinColumnResolver {
         return tableName;
     }
 
-    /** FK from the EAV table back to the holder ({@code record_id} / {@code location_id}). */
+    /**
+     * FK from the EAV table back to the holder ({@code record_id} / {@code location_id}).
+     */
     private static QualifiedSqlColumn holderFk(
             PluralAttributeMapping properties,
             Class<?> entityClass,
@@ -156,7 +170,9 @@ public class BuiltinColumnResolver {
         );
     }
 
-    /** Map-key column on the EAV table ({@code property_id}). */
+    /**
+     * Map-key column on the EAV table ({@code property_id}).
+     */
     private static QualifiedSqlColumn propertyId(
             PluralAttributeMapping properties,
             Class<?> entityClass,
@@ -174,7 +190,9 @@ public class BuiltinColumnResolver {
         );
     }
 
-    /** JSON value column on the EAV table ({@code property_value}). */
+    /**
+     * JSON value column on the EAV table ({@code property_value}).
+     */
     private static QualifiedSqlColumn propertyValue(
             PluralAttributeMapping properties,
             Class<?> entityClass,

@@ -11,6 +11,7 @@ import com.openrecordsmanager.api.search.SearchFieldProvider;
 import com.openrecordsmanager.api.template.list.ListElementTemplate;
 import com.openrecordsmanager.api.template.list.ListTemplate;
 import com.openrecordsmanager.api.template.location.LocationRelationshipTypeTemplate;
+import com.openrecordsmanager.api.template.location.LocationTypeTemplate;
 import com.openrecordsmanager.api.template.property.ObjectPropertyTemplate;
 import com.openrecordsmanager.api.template.recordtype.RecordTypeTemplate;
 import com.openrecordsmanager.api.user.UserActionType;
@@ -34,6 +35,7 @@ public class ComponentTypes {
     public static final ComponentType<ListElementTemplate> LIST_ELEMENT = ComponentType.of("list_element", ListElementTemplate.class);
     public static final ComponentType<ObjectPropertyTemplate<?>> OBJECT_PROPERTY = ComponentType.of("object_property", ObjectPropertyTemplate.class);
     public static final ComponentType<RecordTypeTemplate> RECORD_TYPE = ComponentType.of("record_type", RecordTypeTemplate.class);
+    public static final ComponentType<LocationTypeTemplate> LOCATION_TYPE = ComponentType.of("location_type", LocationTypeTemplate.class);
     public static final ComponentType<LocationRelationshipTypeTemplate> LOCATION_RELATIONSHIP_TYPE =
             ComponentType.of("location_relationship_type", LocationRelationshipTypeTemplate.class);
 
@@ -43,6 +45,7 @@ public class ComponentTypes {
             LIST_ELEMENT,
             OBJECT_PROPERTY,
             RECORD_TYPE,
+            LOCATION_TYPE,
             LOCATION_RELATIONSHIP_TYPE,
             INPUT_AUTH_PROVIDER,
             REDIRECT_AUTH_PROVIDER,

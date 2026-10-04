@@ -1,4 +1,4 @@
-package com.openrecordsmanager.api.template.recordtype;
+package com.openrecordsmanager.api.template;
 
 import com.openrecordsmanager.api.ComponentReference;
 import com.openrecordsmanager.api.template.property.ObjectPropertyTemplate;

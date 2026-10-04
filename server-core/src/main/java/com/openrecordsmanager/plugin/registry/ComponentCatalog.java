@@ -32,6 +32,8 @@ public class ComponentCatalog implements ComponentAccess {
     public static final ListElementTemplateRegistrationMapper LIST_ELEMENT_MAPPER = new ListElementTemplateRegistrationMapper();
     public static final ObjectPropertyTemplateRegistrationMapper OBJECT_PROPERTY_MAPPER = new ObjectPropertyTemplateRegistrationMapper();
     public static final RecordTypeTemplateRegistrationMapper RECORD_TYPE_MAPPER = new RecordTypeTemplateRegistrationMapper();
+    public static final LocationTypeTemplateRegistrationMapper LOCATION_TYPE_MAPPER =
+            new LocationTypeTemplateRegistrationMapper();
     public static final LocationRelationshipTypeTemplateRegistrationMapper LOCATION_RELATIONSHIP_TYPE_MAPPER =
             new LocationRelationshipTypeTemplateRegistrationMapper();
 
@@ -40,6 +42,7 @@ public class ComponentCatalog implements ComponentAccess {
             LIST_ELEMENT_MAPPER,
             OBJECT_PROPERTY_MAPPER,
             RECORD_TYPE_MAPPER,
+            LOCATION_TYPE_MAPPER,
             LOCATION_RELATIONSHIP_TYPE_MAPPER
     );
 

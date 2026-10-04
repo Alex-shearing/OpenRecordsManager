@@ -3,14 +3,23 @@ package com.openrecordsmanager.location;
 import com.openrecordsmanager.api.ResourceIdentifier;
 import com.openrecordsmanager.api.builtin.BuiltinPropertyIds;
 import com.openrecordsmanager.api.location.LocationKind;
-import com.openrecordsmanager.property.*;
+import com.openrecordsmanager.location.type.LocationType;
+import com.openrecordsmanager.location.type.LocationTypeProperty;
+import com.openrecordsmanager.property.BuiltinProperty;
+import com.openrecordsmanager.property.BuiltinPropertyBinding;
+import com.openrecordsmanager.property.ObjectProperty;
+import com.openrecordsmanager.property.ObjectPropertyHolder;
 import jakarta.persistence.*;
 import org.hibernate.id.uuid.UuidVersion7Strategy;
 import org.jspecify.annotations.Nullable;
 import tools.jackson.databind.JsonNode;
 
 import java.time.Instant;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Entity
 @Table(name = "location")
@@ -23,6 +32,10 @@ public abstract class Location extends ObjectPropertyHolder<Location, LocationPr
 
     @Id
     private UUID id;
+
+    @ManyToOne(optional = false, fetch = FetchType.EAGER)
+    @JoinColumn(name = "type_id", nullable = false)
+    private LocationType type;
 
     @BuiltinProperty(value = BuiltinPropertyIds.NAME, defaultSearch = true)
     @Column(nullable = false)
@@ -48,12 +61,20 @@ public abstract class Location extends ObjectPropertyHolder<Location, LocationPr
     )
     @MapKeyJoinColumn(name = "property_id")
     private Map<ObjectProperty<?>, LocationPropertyValue> properties = new HashMap<>();
-    
+
     protected Location() {
     }
 
-    protected Location(String name) {
+    protected Location(String name, LocationType type) {
+        if (type.getKind() != this.getKind()) {
+            throw new IllegalArgumentException(
+                    "Location type " + type.getId() + " kind " + type.getKind()
+                            + " does not match " + this.getKind()
+            );
+        }
         this.id = UuidVersion7Strategy.INSTANCE.generateUuid(null);
+        this.type = type;
+        type.getProperties().forEach(p -> this.setPropertyFromJson(p.getProperty(), p.getDefault()));
         this.name = name;
         this.dateCreated = Instant.now();
         this.dateModified = Instant.now();
@@ -63,6 +84,10 @@ public abstract class Location extends ObjectPropertyHolder<Location, LocationPr
 
     public UUID getId() {
         return this.id;
+    }
+
+    public LocationType getType() {
+        return this.type;
     }
 
     public String getName() {
@@ -84,18 +109,15 @@ public abstract class Location extends ObjectPropertyHolder<Location, LocationPr
 
     @Override
     public boolean canSetProperty(ObjectProperty<?> property) {
-        return true;
+        // Type schema properties, plus user-hidden plugin/system properties
+        return this.type.hasProperty(property) || property.isUserHidden();
     }
 
     @Override
     public Set<ObjectProperty<?>> getPropertyKeys() {
-        ObjectPropertyLookup lookup = ObjectPropertyLookup.requireInstalled();
-        Set<ObjectProperty<?>> keys = new LinkedHashSet<>();
-        for (ResourceIdentifier id : this.getBuiltinPropertyBindings().keySet()) {
-            keys.add(lookup.require(id));
-        }
-        keys.addAll(this.properties.keySet());
-        return keys;
+        return this.type.getProperties().stream()
+                .map(LocationTypeProperty::getProperty)
+                .collect(Collectors.toSet());
     }
 
     @Override

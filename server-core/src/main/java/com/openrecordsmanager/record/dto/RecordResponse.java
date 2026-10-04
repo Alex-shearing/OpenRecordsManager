@@ -4,6 +4,7 @@ import com.openrecordsmanager.api.ResourceIdentifier;
 import com.openrecordsmanager.record.Record;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import org.jspecify.annotations.Nullable;
 import tools.jackson.databind.JsonNode;
 
 import java.util.List;
@@ -13,7 +14,7 @@ import java.util.UUID;
 public record RecordResponse(
         @NotBlank UUID id,
         @NotBlank ResourceIdentifier type,
-        @NotNull Map<String, JsonNode> properties,
+        @NotNull Map<String, @Nullable JsonNode> properties,
         @NotNull List<String> revisions
 ) {
 

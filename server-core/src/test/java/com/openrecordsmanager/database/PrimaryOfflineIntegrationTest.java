@@ -102,11 +102,25 @@ class PrimaryOfflineIntegrationTest {
                 provider.executeUpdate();
             }
 
+            try (PreparedStatement locationType = connection.prepareStatement(
+                    """
+                            INSERT INTO location_type
+                            (id, kind, date_created, date_modified)
+                            VALUES (?, ?, ?, ?)
+                            """
+            )) {
+                locationType.setString(1, "builtin:user");
+                locationType.setString(2, "USER");
+                locationType.setTimestamp(3, now);
+                locationType.setTimestamp(4, now);
+                locationType.executeUpdate();
+            }
+
             try (PreparedStatement location = connection.prepareStatement(
                     """
                             INSERT INTO location
-                            (id, name, notes, date_created, date_modified, location_kind)
-                            VALUES (?, ?, NULL, ?, ?, ?)
+                            (id, name, notes, date_created, date_modified, location_kind, type_id)
+                            VALUES (?, ?, NULL, ?, ?, ?, ?)
                             """
             )) {
                 location.setBytes(1, uuidBytes(USER_ID));
@@ -114,6 +128,7 @@ class PrimaryOfflineIntegrationTest {
                 location.setTimestamp(3, now);
                 location.setTimestamp(4, now);
                 location.setString(5, "USER");
+                location.setString(6, "builtin:user");
                 location.executeUpdate();
             }
 

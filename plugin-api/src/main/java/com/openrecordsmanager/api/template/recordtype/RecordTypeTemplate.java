@@ -2,6 +2,7 @@ package com.openrecordsmanager.api.template.recordtype;
 
 import com.openrecordsmanager.api.ComponentReference;
 import com.openrecordsmanager.api.template.ExpressionBuilder;
+import com.openrecordsmanager.api.template.PropertyAssignment;
 import com.openrecordsmanager.api.template.TemplateComponent;
 import com.openrecordsmanager.api.template.property.ObjectPropertyTemplate;
 import org.jspecify.annotations.Nullable;

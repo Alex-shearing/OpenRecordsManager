@@ -2,6 +2,7 @@ package com.openrecordsmanager.location.relationship;
 
 import com.openrecordsmanager.api.ResourceIdentifier;
 import com.openrecordsmanager.api.builtin.BuiltinConfigs;
+import com.openrecordsmanager.api.builtin.BuiltinLocationTypeIds;
 import com.openrecordsmanager.api.builtin.BuiltinPlugin;
 import com.openrecordsmanager.api.builtin.BuiltinRelationshipTypeIds;
 import com.openrecordsmanager.api.errors.ApiException;
@@ -61,9 +62,9 @@ class LocationRelationshipIntegrationTest {
 
     @Test
     void memberOfAndReportsToSupportIncomingInverseQueries() {
-        UserResponse alice = this.userService.create(new NewUserRequest("alice", null, Map.of()));
-        UserResponse bob = this.userService.create(new NewUserRequest("bob", null, Map.of()));
-        GroupResponse engineering = this.groupService.create(new NewGroupRequest("Engineering", Map.of()));
+        UserResponse alice = this.userService.create(new NewUserRequest(new ResourceIdentifier(BuiltinPlugin.BUILTIN_PLUGIN_NAME, BuiltinLocationTypeIds.USER), "alice", null, Map.of()));
+        UserResponse bob = this.userService.create(new NewUserRequest(new ResourceIdentifier(BuiltinPlugin.BUILTIN_PLUGIN_NAME, BuiltinLocationTypeIds.USER), "bob", null, Map.of()));
+        GroupResponse engineering = this.groupService.create(new NewGroupRequest(new ResourceIdentifier(BuiltinPlugin.BUILTIN_PLUGIN_NAME, BuiltinLocationTypeIds.GROUP), "Engineering", Map.of()));
 
         LocationRelationshipResponse membership = this.locationService.createRelationship(
                 alice.id(),
@@ -151,8 +152,8 @@ class LocationRelationshipIntegrationTest {
 
     @Test
     void customRelationshipTypesAndGroupCrud() {
-        UserResponse alice = this.userService.create(new NewUserRequest("alice_sponsors", null, Map.of()));
-        GroupResponse engineering = this.groupService.create(new NewGroupRequest("Sponsors", Map.of()));
+        UserResponse alice = this.userService.create(new NewUserRequest(new ResourceIdentifier(BuiltinPlugin.BUILTIN_PLUGIN_NAME, BuiltinLocationTypeIds.USER), "alice_sponsors", null, Map.of()));
+        GroupResponse engineering = this.groupService.create(new NewGroupRequest(new ResourceIdentifier(BuiltinPlugin.BUILTIN_PLUGIN_NAME, BuiltinLocationTypeIds.GROUP), "Sponsors", Map.of()));
         GroupResponse renamed = this.groupService.update(
                 engineering.id(),
                 new UpdateGroupRequest("Sponsors Renamed", null)

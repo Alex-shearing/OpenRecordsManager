@@ -3,6 +3,8 @@ package com.openrecordsmanager.location.user;
 import com.openrecordsmanager.api.ResourceIdentifier;
 import com.openrecordsmanager.api.audit.AuditEntityType;
 import com.openrecordsmanager.api.audit.AuditOperation;
+import com.openrecordsmanager.api.errors.ApiException;
+import com.openrecordsmanager.api.location.LocationKind;
 import com.openrecordsmanager.api.search.SearchFieldTarget;
 import com.openrecordsmanager.api.types.ComponentTypes;
 import com.openrecordsmanager.api.user.UserActionType;
@@ -13,6 +15,7 @@ import com.openrecordsmanager.audit.RequiresAuditComment;
 import com.openrecordsmanager.auth.entity.AuthProvider;
 import com.openrecordsmanager.config.ConfigService;
 import com.openrecordsmanager.database.DataRepository;
+import com.openrecordsmanager.location.type.LocationType;
 import com.openrecordsmanager.plugin.registry.ComponentCatalog;
 import com.openrecordsmanager.property.ObjectPropertyApplier;
 import com.openrecordsmanager.rest.dto.ActionResponse;
@@ -132,11 +135,18 @@ public class UserService {
                     .orElseThrow(() -> new ResourceNotFoundException("authentication provider", input.authProvider()));
         }
 
+        LocationType type = this.repository.locationTypeRepo.findById(input.type())
+                .orElseThrow(() -> new ResourceNotFoundException(ComponentTypes.LOCATION_TYPE, input.type()));
+        if (type.getKind() != LocationKind.USER) {
+            throw ApiException.validationFailed("type", "invalid_location_type_kind", type.getKind().key());
+        }
+
         List<AuditPropertyChange> changes = new ArrayList<>();
+        changes.add(AuditPropertyChange.newProperty("type", input.type()));
         changes.add(AuditPropertyChange.newProperty("username", input.username()));
         changes.add(AuditPropertyChange.newProperty("authProvider", input.authProvider()));
 
-        User user = new User(input.username(), authProvider);
+        User user = new User(input.username(), authProvider, type);
         this.propertyApplier.applyOnCreate(user, input.properties(), true, changes);
 
         this.repository.userRepo.saveAndFlush(user);

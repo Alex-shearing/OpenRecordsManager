@@ -11,6 +11,7 @@ import java.util.Map;
 import java.util.UUID;
 
 public record NewUserRequest(
+        @NotBlank ResourceIdentifier type,
         @NotBlank String username,
         @Nullable UUID authProvider,
         @NotNull

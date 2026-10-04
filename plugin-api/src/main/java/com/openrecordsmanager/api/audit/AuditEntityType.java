@@ -12,12 +12,13 @@ import org.jspecify.annotations.Nullable;
  */
 public enum AuditEntityType {
     RECORD("record", null),
+    RECORD_TYPE("record_type", ComponentTypes.RECORD_TYPE),
+    LOCATION("location", null),
     USER("user", null),
     GROUP("group", null),
-    LOCATION("location", null),
     LOCATION_RELATIONSHIP("location_relationship", null),
     LOCATION_RELATIONSHIP_TYPE("location_relationship_type", ComponentTypes.LOCATION_RELATIONSHIP_TYPE),
-    RECORD_TYPE("record_type", ComponentTypes.RECORD_TYPE),
+    LOCATION_TYPE("location_type", ComponentTypes.LOCATION_TYPE),
     CONFIG("config", ComponentTypes.CONFIG),
     LIST("list", ComponentTypes.LIST),
     LIST_ELEMENT("list_element", ComponentTypes.LIST_ELEMENT),
