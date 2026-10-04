@@ -2,11 +2,13 @@ package com.openrecordsmanager.location.type;
 
 import com.openrecordsmanager.api.ResourceIdentifier;
 import com.openrecordsmanager.api.audit.AuditEntityType;
+import com.openrecordsmanager.api.location.LocationKind;
 import com.openrecordsmanager.api.types.ComponentTypes;
 import com.openrecordsmanager.audit.AuditService;
 import com.openrecordsmanager.database.DataRepository;
 import com.openrecordsmanager.location.type.dto.LocationTypeResponse;
 import com.openrecordsmanager.rest.exception.ResourceNotFoundException;
+import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,10 +26,13 @@ public class LocationTypeService {
     }
 
     @Transactional(readOnly = true)
-    public List<ResourceIdentifier> getAllIds() {
-        List<ResourceIdentifier> ids = this.repository.locationTypeRepo.findAllIds();
-        this.auditService.recordCollectionRead(AuditEntityType.LOCATION_TYPE, ids.size());
-        return ids;
+    public List<LocationTypeResponse> getAll(@Nullable LocationKind kind) {
+        List<LocationTypeResponse> types = this.repository.locationTypeRepo.findAll().stream()
+                .filter(type -> kind == null || type.getKind() == kind)
+                .map(LocationTypeResponse::of)
+                .toList();
+        this.auditService.recordCollectionRead(AuditEntityType.LOCATION_TYPE, types.size());
+        return types;
     }
 
     @Transactional(readOnly = true)

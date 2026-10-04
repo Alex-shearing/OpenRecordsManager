@@ -24,10 +24,12 @@ public class RecordTypeService {
     }
 
     @Transactional(readOnly = true)
-    public List<ResourceIdentifier> getAllIds() {
-        List<ResourceIdentifier> ids = this.repository.recordTypeRepo.findAllIds();
-        this.auditService.recordCollectionRead(AuditEntityType.RECORD_TYPE, ids.size());
-        return ids;
+    public List<RecordTypeResponse> getAll() {
+        List<RecordTypeResponse> types = this.repository.recordTypeRepo.findAll().stream()
+                .map(RecordTypeResponse::of)
+                .toList();
+        this.auditService.recordCollectionRead(AuditEntityType.RECORD_TYPE, types.size());
+        return types;
     }
 
     @Transactional(readOnly = true)

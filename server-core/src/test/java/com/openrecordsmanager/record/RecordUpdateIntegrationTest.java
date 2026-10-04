@@ -159,17 +159,14 @@ class RecordUpdateIntegrationTest {
     @Test
     void createAndUpdateRecordTitle() {
         RecordResponse created = AuditTestSupport.withAudit(this.admin, () -> this.recordService.create(
-                new NewRecordRequest(TEST_RECORD_TYPE, Map.of())
+                new NewRecordRequest(TEST_RECORD_TYPE, "Initial title", Map.of())
         ));
-        assertEquals("tba", created.properties().get(TITLE.toString()).asString());
+        assertEquals("Initial title", created.properties().get(TITLE.toString()).asString());
 
         RecordResponse updated = AuditTestSupport.withAudit(this.admin, () -> this.recordService.update(
                 this.admin,
                 created.id(),
-                new UpdateRecordRequest(
-                        null,
-                        Map.of(TITLE, JsonNodeFactory.instance.stringNode("Updated title"))
-                )
+                new UpdateRecordRequest(null, "Updated title", null)
         ));
         assertEquals("Updated title", updated.properties().get(TITLE.toString()).asString());
 
@@ -185,7 +182,7 @@ class RecordUpdateIntegrationTest {
         );
 
         RecordResponse created = AuditTestSupport.withAudit(this.admin, () -> this.recordService.create(
-                new NewRecordRequest(LIST_RECORD_TYPE, createProps)
+                new NewRecordRequest(LIST_RECORD_TYPE, "List record", createProps)
         ));
         assertEquals(ELEMENT_A.toString(), created.properties().get(LIST_ITEM_PROP.toString()).asString());
         assertEquals(ELEMENT_B.toString(), created.properties().get(LIST_MULTI_PROP.toString()).get(0).asString());
@@ -200,7 +197,7 @@ class RecordUpdateIntegrationTest {
         RecordResponse updated = AuditTestSupport.withAudit(this.admin, () -> this.recordService.update(
                 this.admin,
                 created.id(),
-                new UpdateRecordRequest(null, updateProps)
+                new UpdateRecordRequest(null, null, updateProps)
         ));
         assertEquals(ELEMENT_B.toString(), updated.properties().get(LIST_ITEM_PROP.toString()).asString());
         assertEquals(ELEMENT_A.toString(), updated.properties().get(LIST_MULTI_PROP.toString()).get(0).asString());

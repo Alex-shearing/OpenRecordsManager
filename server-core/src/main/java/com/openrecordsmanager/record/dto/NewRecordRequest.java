@@ -10,6 +10,7 @@ import java.util.Map;
 
 public record NewRecordRequest(
         @NotBlank ResourceIdentifier type,
+        @NotBlank String title,
         @NotNull
         @Schema(description = "Property id → JSON value", additionalProperties = Schema.AdditionalPropertiesValue.TRUE)
         Map<ResourceIdentifier, JsonNode> properties

@@ -8,6 +8,7 @@ import java.util.Map;
 
 public record UpdateRecordRequest(
         @Nullable ResourceIdentifier type,
+        @Nullable String title,
         @Nullable Map<ResourceIdentifier, JsonNode> properties
 ) {
 }

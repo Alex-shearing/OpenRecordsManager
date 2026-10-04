@@ -154,12 +154,11 @@ public class RecordService {
         RecordType type = this.repository.recordTypeRepo.findById(input.type())
                 .orElseThrow(() -> new ResourceNotFoundException(ComponentTypes.RECORD_TYPE, input.type()));
 
-        String recordTitle = "tba";
-
         List<AuditPropertyChange> changes = new ArrayList<>();
         changes.add(AuditPropertyChange.newProperty("type", input.type()));
+        changes.add(AuditPropertyChange.newProperty("title", input.title()));
 
-        Record record = new Record(recordTitle, type);
+        Record record = new Record(input.title(), type);
         this.propertyApplier.applyOnCreate(record, input.properties(), false, changes);
 
         this.repository.recordRepo.saveAndFlush(record);
@@ -192,6 +191,12 @@ public class RecordService {
             ResourceIdentifier oldType = record.getType().getId();
             record.setType(newType);
             changes.add(AuditPropertyChange.of("type", oldType, input.type()));
+        }
+
+        if (input.title() != null && !input.title().equals(record.getTitle())) {
+            String oldTitle = record.getTitle();
+            record.setTitle(input.title());
+            changes.add(AuditPropertyChange.of("title", oldTitle, input.title()));
         }
 
         if (input.properties() != null) {

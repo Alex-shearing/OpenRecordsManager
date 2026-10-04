@@ -28,8 +28,8 @@ public class RecordTypeController {
 
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "List all record types")
-    public List<ResourceIdentifier> getRecordTypes() {
-        return this.service.getAllIds();
+    public List<RecordTypeResponse> getRecordTypes() {
+        return this.service.getAll();
     }
 
     @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)

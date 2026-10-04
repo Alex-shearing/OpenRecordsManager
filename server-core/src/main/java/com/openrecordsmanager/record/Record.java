@@ -104,6 +104,11 @@ public class Record extends ObjectPropertyHolder<Record, RecordPropertyValue> {
         return this.title;
     }
 
+    public void setTitle(String title) {
+        this.title = title;
+        this.touchDateModified();
+    }
+
     public @Nullable String getNotes() {
         return this.notes;
     }

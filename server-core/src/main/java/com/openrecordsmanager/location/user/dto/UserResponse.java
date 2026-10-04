@@ -14,6 +14,7 @@ public record UserResponse(
         @NotBlank UUID id,
         @NotBlank ResourceIdentifier type,
         @NotBlank String username,
+        @Nullable UUID authProvider,
         @NotNull boolean enabled,
         @NotNull Map<String, @Nullable JsonNode> properties
 ) {
@@ -22,6 +23,7 @@ public record UserResponse(
                 user.getId(),
                 user.getType().getId(),
                 user.getUsername(),
+                user.getAuthProvider() != null ? user.getAuthProvider().getId() : null,
                 user.isEnabled(),
                 user.toWireMap()
         );
