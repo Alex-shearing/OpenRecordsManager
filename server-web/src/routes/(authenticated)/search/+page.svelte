@@ -119,7 +119,7 @@
 	}
 </script>
 
-<PageContent>
+<PageContent variant="wide">
 	<h1 class="mb-2 text-2xl font-semibold">{t('web.search.title')}</h1>
 	<p class="mb-6 text-hint">
 		{data.q ? t(`web.search.summary_query.${data.type ?? DEFAULT_SEARCH_TYPE}`, data.q) : t('web.search.summary')}
