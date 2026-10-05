@@ -10,7 +10,6 @@ public final class BuiltinPropertyIds {
     public static final String DATE_REGISTERED = "date_registered";
     public static final String DATE_CREATED = "date_created";
     public static final String KEYWORDS = "keywords";
-    public static final String MIME_TYPES = "mime_types";
     public static final String TITLE = "title";
     public static final String DATE_MODIFIED = "date_modified";
     public static final String GIVEN_NAME = "given_name";

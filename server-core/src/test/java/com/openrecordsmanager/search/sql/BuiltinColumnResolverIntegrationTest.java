@@ -55,11 +55,6 @@ class BuiltinColumnResolverIntegrationTest {
                 record.builtinColumns().get(new ResourceIdentifier(BuiltinPlugin.BUILTIN_PLUGIN_NAME, BuiltinPropertyIds.TITLE)).column()
         );
         assertEquals(
-                new QualifiedSqlColumn("record", "mime_types"),
-                record.builtinColumns().get(new ResourceIdentifier(BuiltinPlugin.BUILTIN_PLUGIN_NAME, BuiltinPropertyIds.MIME_TYPES)).column()
-        );
-        assertTrue(record.builtinColumns().get(new ResourceIdentifier(BuiltinPlugin.BUILTIN_PLUGIN_NAME, BuiltinPropertyIds.MIME_TYPES)).jsonStored());
-        assertEquals(
                 Set.of(
                         new ResourceIdentifier(BuiltinPlugin.BUILTIN_PLUGIN_NAME, BuiltinPropertyIds.TITLE),
                         new ResourceIdentifier(BuiltinPlugin.BUILTIN_PLUGIN_NAME, BuiltinPropertyIds.KEYWORDS),

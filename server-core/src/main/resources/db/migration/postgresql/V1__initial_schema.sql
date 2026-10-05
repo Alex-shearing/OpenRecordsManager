@@ -226,7 +226,6 @@ CREATE TABLE "record" (
     date_registered TIMESTAMPTZ,
     date_modified TIMESTAMPTZ NOT NULL,
     keywords TEXT,
-    mime_types JSON,
     CONSTRAINT fk_record_type FOREIGN KEY (type_id) REFERENCES record_type (id)
 );
 

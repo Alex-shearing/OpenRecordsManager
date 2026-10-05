@@ -226,7 +226,6 @@ CREATE TABLE record (
     date_registered TIMESTAMP,
     date_modified TIMESTAMP NOT NULL,
     keywords CLOB,
-    mime_types CLOB,
     CONSTRAINT fk_record_type FOREIGN KEY (type_id) REFERENCES record_type (id)
 );
 

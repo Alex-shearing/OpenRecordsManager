@@ -227,7 +227,6 @@ CREATE TABLE `record` (
     date_registered DATETIME(6),
     date_modified DATETIME(6) NOT NULL,
     keywords LONGTEXT,
-    mime_types JSON,
     CONSTRAINT fk_record_type FOREIGN KEY (type_id) REFERENCES record_type (id)
 );
 

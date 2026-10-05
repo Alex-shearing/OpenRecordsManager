@@ -6,7 +6,6 @@ import com.openrecordsmanager.api.template.property.PropertyType;
 import java.time.Instant;
 import java.util.Collections;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -39,11 +38,6 @@ public final class BuiltinProperties {
     public static final ObjectPropertyTemplate<String> KEYWORDS = register(
             BuiltinPropertyIds.KEYWORDS,
             ObjectPropertyTemplate.builder(PropertyType.STRING).build()
-    );
-
-    public static final ObjectPropertyTemplate<List<String>> MIME_TYPES = register(
-            BuiltinPropertyIds.MIME_TYPES,
-            ObjectPropertyTemplate.builder(PropertyType.STRING_LIST).build()
     );
 
     public static final ObjectPropertyTemplate<String> TITLE = register(

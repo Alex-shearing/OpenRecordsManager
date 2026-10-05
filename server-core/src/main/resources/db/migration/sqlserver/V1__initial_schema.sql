@@ -274,7 +274,6 @@ CREATE TABLE record (
     date_registered DATETIMEOFFSET NULL,
     date_modified DATETIMEOFFSET NOT NULL,
     keywords VARCHAR(MAX) NULL,
-    mime_types VARCHAR(MAX) NULL,
     CONSTRAINT fk_record_type FOREIGN KEY (type_id) REFERENCES record_type (id)
 );
 GO

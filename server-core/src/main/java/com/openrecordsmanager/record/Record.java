@@ -67,12 +67,6 @@ public class Record extends ObjectPropertyHolder<Record, RecordPropertyValue> {
     @Column(nullable = false)
     private Instant dateModified;
 
-    @BuiltinProperty(BuiltinPropertyIds.MIME_TYPES)
-    @Column
-    @JdbcTypeCode(SqlTypes.JSON)
-    @Nullable
-    private List<String> mimeTypes;
-
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "record", fetch = FetchType.LAZY)
     private List<RecordRevision> revisions = new ArrayList<>();
 
@@ -134,10 +128,6 @@ public class Record extends ObjectPropertyHolder<Record, RecordPropertyValue> {
 
     public @Nullable String getKeywords() {
         return this.keywords;
-    }
-
-    public @Nullable List<String> getMimeTypes() {
-        return this.mimeTypes;
     }
 
     public RecordType getType() {
