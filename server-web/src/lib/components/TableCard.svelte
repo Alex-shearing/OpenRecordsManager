@@ -63,17 +63,10 @@
 	}
 
 	/** Locks measured widths when `widths` is omitted; applies provided widths when present. */
-	function applyColumnWidths(
-		table: HTMLTableElement,
-		cells: HTMLTableCellElement[],
-		widths?: number[]
-	) {
+	function applyColumnWidths(table: HTMLTableElement, cells: HTMLTableCellElement[], widths?: number[]) {
 		let total = 0;
 		cells.forEach((th, i) => {
-			const width = Math.max(
-				MIN_COL_WIDTH,
-				widths ? widths[i]! : th.getBoundingClientRect().width
-			);
+			const width = Math.max(MIN_COL_WIDTH, widths ? widths[i]! : th.getBoundingClientRect().width);
 			th.style.width = `${width}px`;
 			th.style.minWidth = `${MIN_COL_WIDTH}px`;
 			total += width;
@@ -185,10 +178,7 @@
 		<p class="p-5 text-hint">{empty}</p>
 	{:else}
 		<div class="overflow-x-auto">
-			<table
-				class="table-resizable min-w-full text-sm"
-				{@attach resizableColumns(storageKey ?? title)}
-			>
+			<table class="table-resizable min-w-full text-sm" {@attach resizableColumns(storageKey ?? title)}>
 				<thead class="border-b border-border text-left text-label">
 					<tr>
 						{@render header()}
@@ -201,17 +191,15 @@
 					{#each items as item (getKey(item))}
 						{@const href = getHref?.(item)}
 						<tr
-							class={
-								href
-									? 'relative cursor-pointer transition-colors hover:bg-surface-hover focus-within:bg-surface-hover'
-									: undefined
-							}
+							class={href
+								? 'relative cursor-pointer transition-colors hover:bg-surface-hover focus-within:bg-surface-hover'
+								: undefined}
 						>
 							{@render row(item)}
 							{#if href}
 								<td class="w-0 p-0">
 									<a
-										href={href}
+										{href}
 										class="absolute inset-0 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary"
 										aria-label={String(getKey(item))}
 									></a>

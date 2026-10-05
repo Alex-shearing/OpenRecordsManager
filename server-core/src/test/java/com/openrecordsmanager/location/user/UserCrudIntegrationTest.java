@@ -12,14 +12,15 @@ import com.openrecordsmanager.database.DataRepository;
 import com.openrecordsmanager.database.SqliteTestSupport;
 import com.openrecordsmanager.list.ListElement;
 import com.openrecordsmanager.list.ListType;
+import com.openrecordsmanager.location.LocationService;
+import com.openrecordsmanager.location.dto.LocationResponse;
+import com.openrecordsmanager.location.dto.NewLocationRequest;
+import com.openrecordsmanager.location.dto.UpdateLocationRequest;
 import com.openrecordsmanager.location.type.LocationType;
 import com.openrecordsmanager.location.type.LocationTypeProperty;
 import com.openrecordsmanager.property.ObjectProperty;
-import com.openrecordsmanager.rest.exception.ResourceInUseException;
+import com.openrecordsmanager.rest.exception.ResourceAlreadyExistsException;
 import com.openrecordsmanager.rest.exception.ResourceNotFoundException;
-import com.openrecordsmanager.location.user.dto.NewUserRequest;
-import com.openrecordsmanager.location.user.dto.UpdateUserRequest;
-import com.openrecordsmanager.location.user.dto.UserResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -57,7 +58,7 @@ class UserCrudIntegrationTest {
     }
 
     @Autowired
-    private UserService userService;
+    private LocationService locationService;
 
     @Autowired
     private DataRepository repository;
@@ -66,7 +67,7 @@ class UserCrudIntegrationTest {
 
     @BeforeEach
     void setUpListProperties() {
-        this.admin = this.repository.userRepo.findByUsername("admin").orElseThrow();
+        this.admin = this.repository.userRepo.findByName("admin").orElseThrow();
 
         ListType listType = this.repository.listTypeRepo.findById(LIST_ID).orElseGet(() ->
                 this.repository.listTypeRepo.saveAndFlush(new ListType(LIST_ID))
@@ -131,44 +132,44 @@ class UserCrudIntegrationTest {
 
     @Test
     void createGetAndUpdateUser() {
-        String username = "integration_user_" + UUID.randomUUID().toString().substring(0, 8);
+        String name = "integration_user_" + UUID.randomUUID().toString().substring(0, 8);
 
-        UserResponse created = AuditTestSupport.withAudit(this.admin, () -> this.userService.create(
-                new NewUserRequest(USER_TYPE, username, null, Map.of())
+        LocationResponse created = AuditTestSupport.withAudit(this.admin, () -> this.locationService.create(
+                new NewLocationRequest(USER_TYPE, null, name, Map.of())
         ));
 
-        assertEquals(username, created.username());
+        assertEquals(name, created.name());
         assertEquals(USER_TYPE, created.type());
         assertNotNull(created.id());
 
-        UserResponse loaded = this.userService.get(created.id());
-        assertEquals(username, loaded.username());
+        LocationResponse loaded = this.locationService.get(created.id());
+        assertEquals(name, loaded.name());
 
-        String updatedUsername = username + "_updated";
-        UserResponse updated = AuditTestSupport.withAudit(this.admin, () -> this.userService.update(
+        String updatedName = name + "_updated";
+        LocationResponse updated = AuditTestSupport.withAudit(this.admin, () -> this.locationService.update(
                 this.admin,
                 created.id(),
-                new UpdateUserRequest(updatedUsername, null, null, null)
+                new UpdateLocationRequest(null, null, updatedName, null)
         ));
 
-        assertEquals(updatedUsername, updated.username());
+        assertEquals(updatedName, updated.name());
         assertEquals(
-                updatedUsername,
+                updatedName,
                 this.repository.userRepo.findById(created.id()).orElseThrow().getName()
         );
     }
 
     @Test
     void setAndGetListItemProperties() {
-        String username = "list_prop_user_" + UUID.randomUUID().toString().substring(0, 8);
+        String name = "list_prop_user_" + UUID.randomUUID().toString().substring(0, 8);
 
         Map<ResourceIdentifier, JsonNode> createProps = Map.of(
                 LIST_ITEM_PROP, JsonNodeFactory.instance.stringNode(ELEMENT_SECRET.toString()),
                 LIST_MULTI_PROP, JsonNodeFactory.instance.arrayNode().add(ELEMENT_TOP_SECRET.toString())
         );
 
-        UserResponse created = AuditTestSupport.withAudit(this.admin, () -> this.userService.create(
-                new NewUserRequest(LIST_USER_TYPE, username, null, createProps)
+        LocationResponse created = AuditTestSupport.withAudit(this.admin, () -> this.locationService.create(
+                new NewLocationRequest(LIST_USER_TYPE, null, name, createProps)
         ));
 
         assertEquals(ELEMENT_SECRET.toString(), created.properties().get(LIST_ITEM_PROP.toString()).asString());
@@ -181,17 +182,17 @@ class UserCrudIntegrationTest {
                         .add(ELEMENT_TOP_SECRET.toString())
         );
 
-        UserResponse updated = AuditTestSupport.withAudit(this.admin, () -> this.userService.update(
+        LocationResponse updated = AuditTestSupport.withAudit(this.admin, () -> this.locationService.update(
                 this.admin,
                 created.id(),
-                new UpdateUserRequest(null, null, null, updateProps)
+                new UpdateLocationRequest(null, null, null, updateProps)
         ));
 
         assertEquals(ELEMENT_TOP_SECRET.toString(), updated.properties().get(LIST_ITEM_PROP.toString()).asString());
         assertEquals(ELEMENT_SECRET.toString(), updated.properties().get(LIST_MULTI_PROP.toString()).get(0).asString());
         assertEquals(ELEMENT_TOP_SECRET.toString(), updated.properties().get(LIST_MULTI_PROP.toString()).get(1).asString());
 
-        UserResponse loaded = this.userService.get(created.id());
+        LocationResponse loaded = this.locationService.get(created.id());
         assertEquals(ELEMENT_TOP_SECRET.toString(), loaded.properties().get(LIST_ITEM_PROP.toString()).asString());
         assertEquals(ELEMENT_SECRET.toString(), loaded.properties().get(LIST_MULTI_PROP.toString()).get(0).asString());
         assertEquals(ELEMENT_TOP_SECRET.toString(), loaded.properties().get(LIST_MULTI_PROP.toString()).get(1).asString());
@@ -199,17 +200,18 @@ class UserCrudIntegrationTest {
 
     @Test
     void createDuplicateUsernameThrowsConflict() {
-        String username = "duplicate_user_" + UUID.randomUUID().toString().substring(0, 8);
-        NewUserRequest request = new NewUserRequest(USER_TYPE, username, null, Map.of());
+        String name = "duplicate_user_" + UUID.randomUUID().toString().substring(0, 8);
+        NewLocationRequest request = new NewLocationRequest(USER_TYPE, null, name, Map.of());
 
-        AuditTestSupport.withAudit(this.admin, () -> this.userService.create(request));
+        AuditTestSupport.withAudit(this.admin, () -> this.locationService.create(request));
 
-        assertThrows(ResourceInUseException.class, () -> AuditTestSupport.withAudit(this.admin, () -> this.userService.create(request)));
+        assertThrows(ResourceAlreadyExistsException.class, () ->
+                AuditTestSupport.withAudit(this.admin, () -> this.locationService.create(request)));
     }
 
     @Test
     void getUnknownUserThrowsNotFound() {
-        assertThrows(ResourceNotFoundException.class, () -> this.userService.get(UUID.randomUUID()));
+        assertThrows(ResourceNotFoundException.class, () -> this.locationService.get(UUID.randomUUID()));
     }
 
 }
