@@ -164,7 +164,7 @@ public class RecordService {
         changes.add(AuditPropertyChange.newProperty("title", input.title()));
 
         Record record = new Record(input.title(), type);
-        this.propertyApplier.applyOnCreate(record, input.properties(), false, changes);
+        this.propertyApplier.applyOnCreate(record, input.properties(), true, changes);
 
         this.repository.recordRepo.saveAndFlush(record);
 
@@ -205,7 +205,7 @@ public class RecordService {
         }
 
         if (input.properties() != null) {
-            this.propertyApplier.applyOnUpdate(record, input.properties(), false, changes);
+            this.propertyApplier.applyOnUpdate(record, input.properties(), true, changes);
         }
 
         this.repository.recordRepo.saveAndFlush(record);

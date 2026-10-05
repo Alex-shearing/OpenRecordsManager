@@ -17,7 +17,6 @@ public record ObjectPropertyResponse(
         @Nullable String validator,
         @Nullable String securityFilter,
         @Nullable JsonNode defaultValue,
-        @NotNull boolean userHidden,
         @NotNull Instant dateCreated,
         @NotNull Instant dateModified
 ) {
@@ -30,7 +29,6 @@ public record ObjectPropertyResponse(
                 property.getValidator(),
                 property.getSecurityFilter(),
                 property.getDefaultValue(),
-                property.isUserHidden(),
                 property.getDateCreated(),
                 property.getDateModified()
         );

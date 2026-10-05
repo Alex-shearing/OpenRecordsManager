@@ -22,6 +22,7 @@ public record LocationTypeResponse(
                 locationType.getId(),
                 locationType.getKind(),
                 locationType.getProperties().stream()
+                        .filter(property -> !property.getProperty().isUserHidden())
                         .map(LocationTypePropertyResponse::of)
                         .collect(Collectors.toSet()),
                 locationType.getDateCreated(),

@@ -1,5 +1,6 @@
-import { PluginController } from '#lib/api/index.js';
+import { AuditEntityType, AuditOperation, PluginController } from '#lib/api/index.js';
 import { getApiClient } from '#lib/api-client.js';
+import { isAuditCommentRequired } from '#lib/audit/audit-utils.js';
 
 export async function load({ parent }) {
 	const parentData = await parent();
@@ -14,15 +15,9 @@ export async function load({ parent }) {
 		error: result.error,
 		plugins: result.data?.success ? result.data.data : [],
 		auditCommentRequired: {
-			create: auditPolicy.some(
-				policy => policy.entityType === 'plugin' && policy.operation === 'CREATE' && policy.requiresComment
-			),
-			update: auditPolicy.some(
-				policy => policy.entityType === 'plugin' && policy.operation === 'UPDATE' && policy.requiresComment
-			),
-			delete: auditPolicy.some(
-				policy => policy.entityType === 'plugin' && policy.operation === 'DELETE' && policy.requiresComment
-			),
+			create: isAuditCommentRequired(auditPolicy, AuditEntityType.PLUGIN, AuditOperation.CREATE),
+			update: isAuditCommentRequired(auditPolicy, AuditEntityType.PLUGIN, AuditOperation.UPDATE),
+			delete: isAuditCommentRequired(auditPolicy, AuditEntityType.PLUGIN, AuditOperation.DELETE),
 		},
 	};
 }

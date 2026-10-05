@@ -1,10 +1,12 @@
 package com.openrecordsmanager.api.template.recordtype;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import tools.jackson.core.JacksonException;
 import tools.jackson.core.JsonParser;
 import tools.jackson.databind.DeserializationContext;
 import tools.jackson.databind.deser.std.StdDeserializer;
 
+@Schema(name = "SecurityFilterUsage", enumAsRef = true)
 public enum SecurityFilterUsage {
     /**
      * Hides the fact the record exists at all from a user who does not pass the security filter.

@@ -2,6 +2,9 @@
 	import { FileStoreController } from '#lib/api/index.js';
 	import type { FileStoreResponse, SimpleFileStoreResponse } from '#lib/api/types.gen.js';
 	import { auditHeaders, getApiClient } from '#lib/api-client.js';
+	import AdminFormError from '#lib/components/AdminFormError.svelte';
+	import AdminPageIntro from '#lib/components/AdminPageIntro.svelte';
+	import AuditCommentField from '#lib/components/AuditCommentField.svelte';
 	import DialogActions from '#lib/components/DialogActions.svelte';
 	import MiddlewarePicker from '#lib/components/MiddlewarePicker.svelte';
 	import MonoId from '#lib/components/MonoId.svelte';
@@ -168,12 +171,9 @@
 	}
 </script>
 
-<h1 class="mb-2 text-2xl font-semibold">{t('web.file_stores.title')}</h1>
-<p class="mb-6 text-hint">{t('web.file_stores.intro')}</p>
+<AdminPageIntro title={t('web.file_stores.title')} intro={t('web.file_stores.intro')} error={data.error} />
 
-{#if data.error}
-	<p class="text-destructive">{tApiErrorResponse(data.error)}</p>
-{:else}
+{#if !data.error}
 	<TableCard
 		title={t('web.file_stores.table_title')}
 		items={sortedStores}
@@ -257,15 +257,11 @@
 								disabled={submitting}
 							/>
 
-							<label class="flex flex-col gap-1">
-								<span class="text-label">{t('web.common.audit_comment')}</span>
-								<textarea
-									bind:value={createAuditComment}
-									required={data.auditCommentRequired.create}
-									disabled={submitting}
-									rows={3}
-									class="input w-full"></textarea>
-							</label>
+							<AuditCommentField
+								bind:value={createAuditComment}
+								required={data.auditCommentRequired.create}
+								disabled={submitting}
+							/>
 						{/snippet}
 					</SchemaForm>
 				{/key}
@@ -330,15 +326,11 @@
 				{/if}
 			</div>
 
-			<label class="flex flex-col gap-1">
-				<span class="text-label">{t('web.common.audit_comment')}</span>
-				<textarea
-					bind:value={editAuditComment}
-					required={data.auditCommentRequired.update}
-					disabled={submitting}
-					rows={3}
-					class="input w-full"></textarea>
-			</label>
+			<AuditCommentField
+				bind:value={editAuditComment}
+				required={data.auditCommentRequired.update}
+				disabled={submitting}
+			/>
 		</form>
 	{/snippet}
 	{#snippet footer()}
@@ -364,18 +356,12 @@
 	{/snippet}
 	{#snippet body()}
 		<form id="file-store-delete-form" class="flex flex-col gap-4" onsubmit={handleDelete}>
-			<label class="flex flex-col gap-1">
-				<span class="text-label">{t('web.common.audit_comment')}</span>
-				<textarea
-					bind:value={deleteAuditComment}
-					required={data.auditCommentRequired.delete}
-					disabled={submitting}
-					rows={3}
-					class="input w-full"></textarea>
-			</label>
-			{#if deleteError}
-				<p class="text-sm text-destructive" role="alert">{tApiErrorResponse(deleteError)}</p>
-			{/if}
+			<AuditCommentField
+				bind:value={deleteAuditComment}
+				required={data.auditCommentRequired.delete}
+				disabled={submitting}
+			/>
+			<AdminFormError error={deleteError} />
 		</form>
 	{/snippet}
 	{#snippet footer()}

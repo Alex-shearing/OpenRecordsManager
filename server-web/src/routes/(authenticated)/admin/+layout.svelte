@@ -18,6 +18,24 @@
 				<SubNavLink href="/admin/audit" match="exact">{t('web.admin.audit')}</SubNavLink>
 				<SubNavLink href="/admin/auth-providers" match="exact">{t('web.admin.login_providers')}</SubNavLink>
 
+				<SubNavMenu label={t('web.admin.types')} hrefPrefix="/admin/types">
+					<SubNavMenuLink route="/(authenticated)/admin/types/records">
+						{t('web.admin.record_types')}
+					</SubNavMenuLink>
+					<SubNavMenuLink route="/(authenticated)/admin/types/locations">
+						{t('web.admin.location_types')}
+					</SubNavMenuLink>
+					<SubNavMenuLink route="/(authenticated)/admin/types/properties">
+						{t('web.admin.object_properties')}
+					</SubNavMenuLink>
+					<SubNavMenuLink route="/(authenticated)/admin/types/lists">
+						{t('web.admin.lists')}
+					</SubNavMenuLink>
+					<SubNavMenuLink route="/(authenticated)/admin/types/relationships">
+						{t('web.admin.relationship_types')}
+					</SubNavMenuLink>
+				</SubNavMenu>
+
 				<SubNavMenu label={t('web.admin.manage_plugins')} hrefPrefix="/admin/plugins">
 					<SubNavMenuLink route="/(authenticated)/admin/plugins">{t('web.admin.plugins')}</SubNavMenuLink>
 					<SubNavMenuLink route="/(authenticated)/admin/plugins/templates">{t('web.admin.templates')}</SubNavMenuLink>

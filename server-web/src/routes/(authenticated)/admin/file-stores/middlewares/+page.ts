@@ -1,5 +1,6 @@
-import { FileStoreController } from '#lib/api/index.js';
+import { AuditEntityType, AuditOperation, FileStoreController } from '#lib/api/index.js';
 import { getApiClient } from '#lib/api-client.js';
+import { isAuditCommentRequired } from '#lib/audit/audit-utils.js';
 
 export async function load({ parent }) {
 	const parentData = await parent();
@@ -15,17 +16,20 @@ export async function load({ parent }) {
 		middlewares: middlewaresResult.data?.success ? middlewaresResult.data.data : [],
 		types: typesResult.data?.success ? typesResult.data.data : [],
 		auditCommentRequired: {
-			create: parentData.auditPolicy.some(
-				policy =>
-					policy.entityType === 'file_store_middleware' && policy.operation === 'CREATE' && policy.requiresComment
+			create: isAuditCommentRequired(
+				parentData.auditPolicy,
+				AuditEntityType.FILE_STORE_MIDDLEWARE,
+				AuditOperation.CREATE
 			),
-			update: parentData.auditPolicy.some(
-				policy =>
-					policy.entityType === 'file_store_middleware' && policy.operation === 'UPDATE' && policy.requiresComment
+			update: isAuditCommentRequired(
+				parentData.auditPolicy,
+				AuditEntityType.FILE_STORE_MIDDLEWARE,
+				AuditOperation.UPDATE
 			),
-			delete: parentData.auditPolicy.some(
-				policy =>
-					policy.entityType === 'file_store_middleware' && policy.operation === 'DELETE' && policy.requiresComment
+			delete: isAuditCommentRequired(
+				parentData.auditPolicy,
+				AuditEntityType.FILE_STORE_MIDDLEWARE,
+				AuditOperation.DELETE
 			),
 		},
 	};

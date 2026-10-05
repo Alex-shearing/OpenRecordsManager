@@ -1,5 +1,6 @@
-import { AuthController } from '#lib/api/index.js';
+import { AuditEntityType, AuditOperation, AuthController } from '#lib/api/index.js';
 import { getApiClient } from '#lib/api-client.js';
+import { isAuditCommentRequired } from '#lib/audit/audit-utils.js';
 
 export async function load({ parent }) {
 	const parentData = await parent();
@@ -15,11 +16,15 @@ export async function load({ parent }) {
 		providers: providersResult.data?.success ? providersResult.data.data : [],
 		types: typesResult.data?.success ? typesResult.data.data : [],
 		auditCommentRequired: {
-			create: parentData.auditPolicy.some(
-				policy => policy.entityType === 'auth_provider' && policy.operation === 'CREATE' && policy.requiresComment
+			create: isAuditCommentRequired(
+				parentData.auditPolicy,
+				AuditEntityType.AUTH_PROVIDER,
+				AuditOperation.CREATE
 			),
-			update: parentData.auditPolicy.some(
-				policy => policy.entityType === 'auth_provider' && policy.operation === 'UPDATE' && policy.requiresComment
+			update: isAuditCommentRequired(
+				parentData.auditPolicy,
+				AuditEntityType.AUTH_PROVIDER,
+				AuditOperation.UPDATE
 			),
 		},
 	};

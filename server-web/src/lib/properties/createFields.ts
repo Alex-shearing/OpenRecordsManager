@@ -37,9 +37,6 @@ export function filterCreateFields(
 	return assignments
 		.filter(assignment => {
 			const id = assignment.property.id;
-			if (assignment.property.userHidden) {
-				return false;
-			}
 			if (AUTO_MANAGED.has(id)) {
 				return false;
 			}

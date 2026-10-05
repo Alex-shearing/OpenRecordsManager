@@ -1,9 +1,11 @@
 <script lang="ts">
 	import { TemplateController, TemplateType } from '#lib/api/index.js';
 	import { getApiClient } from '#lib/api-client.js';
+	import AdminFormError from '#lib/components/AdminFormError.svelte';
+	import AdminPageIntro from '#lib/components/AdminPageIntro.svelte';
 	import MonoId from '#lib/components/MonoId.svelte';
 	import { type SchemaFormError } from '#lib/components/SchemaForm.svelte';
-	import { t, tApiErrorResponse } from '#lib/i18n/catalog.js';
+	import { t } from '#lib/i18n/catalog.js';
 	import toast from 'svelte-hot-french-toast';
 
 	let { data } = $props();
@@ -70,12 +72,9 @@
 	}
 </script>
 
-<h1 class="mb-2 text-2xl font-semibold">{t('web.templates.title')}</h1>
-<p class="mb-6 text-hint">{t('web.templates.intro')}</p>
+<AdminPageIntro title={t('web.templates.title')} intro={t('web.templates.intro')} error={data.error} />
 
-{#if data.error}
-	<p class="text-destructive">{tApiErrorResponse(data.error)}</p>
-{:else}
+{#if !data.error}
 	<form method="GET" class="mb-4" data-sveltekit-keepfocus data-sveltekit-noscroll data-sveltekit-replacestate>
 		<label class="flex flex-col gap-1">
 			<span class="text-label">{t('web.templates.filter_type')}</span>
@@ -148,9 +147,7 @@
 				</div>
 			</section>
 
-			{#if formError}
-				<p class="mt-6 text-sm text-destructive" role="alert">{tApiErrorResponse(formError)}</p>
-			{/if}
+			<AdminFormError error={formError} class="mt-6" />
 		</form>
 	{/if}
 {/if}

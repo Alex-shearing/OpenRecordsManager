@@ -105,6 +105,26 @@ public class RecordType implements RegisteredComponent {
         this.dateModified = Instant.now();
     }
 
+    public void setSecurityFilter(@Nullable String securityFilter) {
+        this.securityFilter = securityFilter;
+        touchDateModified();
+    }
+
+    public void setSecurityFilterUsage(SecurityFilterUsage securityFilterUsage) {
+        this.securityFilterUsage = securityFilterUsage;
+        touchDateModified();
+    }
+
+    public void setContentTypes(@Nullable Set<String> contentTypes) {
+        this.contentTypes = contentTypes != null ? new HashSet<>(contentTypes) : new HashSet<>();
+        touchDateModified();
+    }
+
+    public void setProperties(Set<RecordTypeProperty<?>> properties) {
+        this.properties = properties;
+        touchDateModified();
+    }
+
     public boolean supportsFile() {
         return !this.contentTypes.isEmpty();
     }

@@ -55,6 +55,7 @@ public class ObjectPropertyService {
     @Transactional(readOnly = true)
     public Set<SimpleObjectPropertyResponse> getAll() {
         Set<SimpleObjectPropertyResponse> results = this.repository.objectPropertyRepo.findAll().stream()
+                .filter(property -> !property.isUserHidden())
                 .map(SimpleObjectPropertyResponse::of)
                 .collect(Collectors.toSet());
         this.auditService.recordCollectionRead(AuditEntityType.OBJECT_PROPERTY, results.size());
@@ -64,6 +65,7 @@ public class ObjectPropertyService {
     @Transactional(readOnly = true)
     public ObjectPropertyResponse get(ResourceIdentifier id) throws ResourceNotFoundException {
         ObjectProperty<?> property = this.repository.objectPropertyRepo.findById(id)
+                .filter(p -> !p.isUserHidden())
                 .orElseThrow(() -> new ResourceNotFoundException(ComponentTypes.OBJECT_PROPERTY, id));
 
         this.auditService.addReadEvent(AuditEntityType.OBJECT_PROPERTY, id);
@@ -87,8 +89,7 @@ public class ObjectPropertyService {
                 input.listType(),
                 input.validator(),
                 input.securityFilter(),
-                input.defaultValue(),
-                input.userHidden()
+                input.defaultValue()
         );
 
         ComponentReference.Reference<?> ref = property.getReference();
@@ -108,6 +109,7 @@ public class ObjectPropertyService {
     @RequiresAuditComment(operation = AuditOperation.UPDATE, targetType = AuditEntityType.OBJECT_PROPERTY)
     public ObjectPropertyResponse update(ResourceIdentifier id, UpdateObjectPropertyRequest input) throws ResourceNotFoundException {
         ObjectProperty<?> property = this.repository.objectPropertyRepo.findById(id)
+                .filter(p -> !p.isUserHidden())
                 .orElseThrow(() -> new ResourceNotFoundException(ComponentTypes.OBJECT_PROPERTY, id));
 
         if (id.isBuiltin()) {
@@ -139,6 +141,7 @@ public class ObjectPropertyService {
     @RequiresAuditComment(operation = AuditOperation.DELETE, targetType = AuditEntityType.OBJECT_PROPERTY)
     public void delete(ResourceIdentifier id) throws ResourceNotFoundException, ResourceInUseException {
         ObjectProperty<?> property = this.repository.objectPropertyRepo.findById(id)
+                .filter(p -> !p.isUserHidden())
                 .orElseThrow(() -> new ResourceNotFoundException(ComponentTypes.OBJECT_PROPERTY, id));
 
         if (id.isBuiltin()) {
@@ -156,17 +159,32 @@ public class ObjectPropertyService {
         this.auditService.addEvent(AuditOperation.DELETE, AuditEntityType.OBJECT_PROPERTY, id);
     }
 
-    private ObjectProperty<?> buildProperty(
+    private <T> ObjectProperty<T> buildProperty(
             ResourceIdentifier id,
-            PropertyType<?> type,
+            PropertyType<T> type,
             @Nullable ResourceIdentifier listTypeId,
             @Nullable String validator,
             @Nullable String securityFilter,
-            @Nullable JsonNode defaultValue,
-            boolean userHidden
+            @Nullable JsonNode defaultValue
     ) {
         ListType listType = resolveListType(type, listTypeId);
-        return createTypedProperty(id, type, listType, validator, securityFilter, defaultValue, userHidden);
+        if (defaultValue != null && !defaultValue.isNull() && type.parse(defaultValue) == null) {
+            throw ApiException.validationFailed(
+                    "defaultValue",
+                    ConfigValueParseFailedException.CODE,
+                    type.getName(),
+                    defaultValue.toString()
+            );
+        }
+        return new ObjectProperty<>(
+                id,
+                type,
+                listType,
+                validator,
+                securityFilter,
+                defaultValue,
+                false
+        );
     }
 
     private @Nullable ListType resolveListType(PropertyType<?> type, @Nullable ResourceIdentifier listTypeId) {
@@ -185,34 +203,6 @@ public class ObjectPropertyService {
                 .orElseThrow(() -> new ResourceNotFoundException(ComponentTypes.LIST, listTypeId));
     }
 
-    private static <T> ObjectProperty<T> createTypedProperty(
-            ResourceIdentifier id,
-            PropertyType<T> type,
-            @Nullable ListType listType,
-            @Nullable String validator,
-            @Nullable String securityFilter,
-            @Nullable JsonNode defaultValue,
-            boolean userHidden
-    ) {
-        if (defaultValue != null && !defaultValue.isNull() && type.parse(defaultValue) == null) {
-            throw ApiException.validationFailed(
-                    "defaultValue",
-                    ConfigValueParseFailedException.CODE,
-                    type.getName(),
-                    defaultValue.toString()
-            );
-        }
-        return new ObjectProperty<>(
-                id,
-                type,
-                listType,
-                validator,
-                securityFilter,
-                defaultValue,
-                userHidden
-        );
-    }
-
     private static <T> void applyUpdate(ObjectProperty<T> property, UpdateObjectPropertyRequest input) {
         property.setValidator(input.validator());
         property.setSecurityFilter(input.securityFilter());
@@ -226,6 +216,5 @@ public class ObjectPropertyService {
             );
         }
         property.setDefaultValue(defaultValue);
-        property.setUserHidden(input.userHidden());
     }
 }

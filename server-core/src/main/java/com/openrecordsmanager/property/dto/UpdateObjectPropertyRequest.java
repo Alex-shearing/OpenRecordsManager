@@ -9,7 +9,6 @@ public record UpdateObjectPropertyRequest(
         @NotBlank String description,
         @Nullable String validator,
         @Nullable String securityFilter,
-        @Nullable JsonNode defaultValue,
-        @NotBlank boolean userHidden
+        @Nullable JsonNode defaultValue
 ) {
 }

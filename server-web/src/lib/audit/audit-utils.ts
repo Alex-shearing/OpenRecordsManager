@@ -1,6 +1,21 @@
-import type { AuditPolicyResponse } from '#lib/api/index.js';
+import {
+	type AuditEntityType,
+	type AuditOperation,
+	type AuditPolicyResponse,
+} from '#lib/api/index.js';
 import { t } from '#lib/i18n/catalog.js';
 import { formatDateTime } from '#lib/properties/formatValue.js';
+
+export function isAuditCommentRequired(
+	policies: AuditPolicyResponse[],
+	entityType: AuditEntityType,
+	operation: AuditOperation
+): boolean {
+	return policies.some(
+		policy =>
+			policy.entityType === entityType && policy.operation === operation && policy.requiresComment
+	);
+}
 
 export function formatEntityType(key: string) {
 	return key

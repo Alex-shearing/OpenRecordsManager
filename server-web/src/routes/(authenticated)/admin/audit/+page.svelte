@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { AuditController, AuditOperation } from '#lib/api/index.js';
 	import { getApiClient } from '#lib/api-client.js';
+	import AdminPageIntro from '#lib/components/AdminPageIntro.svelte';
 	import AuditSaveCard from '#lib/components/AuditSaveCard.svelte';
 	import MonoId from '#lib/components/MonoId.svelte';
 	import { type SchemaFormError } from '#lib/components/SchemaForm.svelte';
@@ -12,7 +13,7 @@
 		groupPoliciesByEntity,
 		policyKey,
 	} from '#lib/audit/audit-utils.js';
-	import { t, tApiErrorResponse, tx } from '#lib/i18n/catalog.js';
+	import { t, tx } from '#lib/i18n/catalog.js';
 	import { invalidateAll } from '$app/navigation';
 	import toast from 'svelte-hot-french-toast';
 
@@ -89,12 +90,9 @@
 	}
 </script>
 
-<h1 class="mb-2 text-2xl font-semibold">{t('web.audit.title')}</h1>
-<p class="mb-6 text-hint">{t('web.audit.intro')}</p>
+<AdminPageIntro title={t('web.audit.title')} intro={t('web.audit.intro')} error={data.error} />
 
-{#if data.error}
-	<p class="text-destructive">{tApiErrorResponse(data.error)}</p>
-{:else}
+{#if !data.error}
 	<section class="card mb-6">
 		<div class="card-header">
 			<h2 class="text-lg font-medium">{t('web.audit.local_server')}</h2>

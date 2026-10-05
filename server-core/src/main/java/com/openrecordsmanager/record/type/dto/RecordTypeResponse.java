@@ -27,6 +27,7 @@ public record RecordTypeResponse(
                 recordType.getSecurityFilterUsage(),
                 recordType.getContentTypes(),
                 recordType.getProperties().stream()
+                        .filter(property -> !property.getProperty().isUserHidden())
                         .map(RecordTypePropertyResponse::of)
                         .collect(Collectors.toSet()),
                 recordType.getDateCreated(),

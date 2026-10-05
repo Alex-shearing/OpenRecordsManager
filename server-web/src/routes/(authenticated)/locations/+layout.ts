@@ -1,5 +1,11 @@
-import { AuthController, LocationTypeController } from '#lib/api/index.js';
+import {
+	AuditEntityType,
+	AuditOperation,
+	AuthController,
+	LocationTypeController,
+} from '#lib/api/index.js';
 import { getApiClient } from '#lib/api-client.js';
+import { isAuditCommentRequired } from '#lib/audit/audit-utils.js';
 
 export async function load({ parent }) {
 	const client = getApiClient();
@@ -15,11 +21,15 @@ export async function load({ parent }) {
 		types: typesResult.data?.data ?? [],
 		authProviders: providersResult.data?.data ?? [],
 		auditCommentRequired: {
-			create: parentData.auditPolicy.some(
-				policy => policy.entityType === 'location' && policy.operation === 'CREATE' && policy.requiresComment
+			create: isAuditCommentRequired(
+				parentData.auditPolicy,
+				AuditEntityType.LOCATION,
+				AuditOperation.CREATE
 			),
-			update: parentData.auditPolicy.some(
-				policy => policy.entityType === 'location' && policy.operation === 'UPDATE' && policy.requiresComment
+			update: isAuditCommentRequired(
+				parentData.auditPolicy,
+				AuditEntityType.LOCATION,
+				AuditOperation.UPDATE
 			),
 		},
 	};

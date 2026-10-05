@@ -1,11 +1,12 @@
 <script lang="ts">
 	import { ConfigController } from '#lib/api/index.js';
 	import { auditHeaders, getApiClient } from '#lib/api-client.js';
+	import AdminPageIntro from '#lib/components/AdminPageIntro.svelte';
 	import ConfigSettingRow from '#lib/components/ConfigSettingRow.svelte';
 	import AuditSaveCard from '#lib/components/AuditSaveCard.svelte';
 	import { type SchemaFormError } from '#lib/components/SchemaForm.svelte';
 	import { buildSavedValues, findChangedConfigs, groupConfigs } from '#lib/config/config-utils.js';
-	import { t, tApiErrorResponse } from '#lib/i18n/catalog.js';
+	import { t } from '#lib/i18n/catalog.js';
 	import { invalidateAll } from '$app/navigation';
 	import toast from 'svelte-hot-french-toast';
 
@@ -62,36 +63,35 @@
 	}
 </script>
 
-<h1 class="mb-2 text-2xl font-semibold">{t('web.config.title')}</h1>
-<p class="mb-6 text-hint">{t('web.config.intro')}</p>
+<AdminPageIntro title={t('web.config.title')} intro={t('web.config.intro')} error={data.error} />
 
-{#if data.error}
-	<p class="text-destructive">{tApiErrorResponse(data.error)}</p>
-{:else if data.configs.length === 0}
-	<p class="text-hint">{t('web.config.empty')}</p>
-{:else}
-	<form id="config-save-form" class="flex flex-col gap-6" onsubmit={handleSave}>
-		{#each sections as section (section.group.id)}
-			<section class="card scroll-mt-28" id={section.group.id}>
-				<div class="card-header">
-					<h2 class="text-lg font-medium">{t(section.group.titleKey)}</h2>
-				</div>
-				<div class="divide-y divide-border">
-					{#each section.items as config (config.key)}
-						<ConfigSettingRow {config} bind:value={draftValues[config.key]} disabled={submitting} />
-					{/each}
-				</div>
-			</section>
-		{/each}
+{#if !data.error}
+	{#if data.configs.length === 0}
+		<p class="text-hint">{t('web.config.empty')}</p>
+	{:else}
+		<form id="config-save-form" class="flex flex-col gap-6" onsubmit={handleSave}>
+			{#each sections as section (section.group.id)}
+				<section class="card scroll-mt-28" id={section.group.id}>
+					<div class="card-header">
+						<h2 class="text-lg font-medium">{t(section.group.titleKey)}</h2>
+					</div>
+					<div class="divide-y divide-border">
+						{#each section.items as config (config.key)}
+							<ConfigSettingRow {config} bind:value={draftValues[config.key]} disabled={submitting} />
+						{/each}
+					</div>
+				</section>
+			{/each}
 
-		<AuditSaveCard
-			form="config-save-form"
-			bind:auditComment
-			required={data.requiresAuditComment}
-			error={formError}
-			{submitting}
-			dirty={isDirty}
-			onreset={handleReset}
-		/>
-	</form>
+			<AuditSaveCard
+				form="config-save-form"
+				bind:auditComment
+				required={data.requiresAuditComment}
+				error={formError}
+				{submitting}
+				dirty={isDirty}
+				onreset={handleReset}
+			/>
+		</form>
+	{/if}
 {/if}

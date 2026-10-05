@@ -3,6 +3,7 @@ package com.openrecordsmanager.rest.swagger;
 import com.openrecordsmanager.auth.AuthService;
 import com.openrecordsmanager.rest.dto.ApiResponseV1;
 import io.swagger.v3.core.converter.ModelConverter;
+import io.swagger.v3.core.jackson.ModelResolver;
 import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.Operation;
@@ -39,6 +40,8 @@ public class SwaggerConfiguration {
     static {
         // Prefer free-form JSON over JsonNode bean introspection (also covers early schema caching).
         SpringDocUtils.getConfig().replaceWithSchema(JsonNode.class, JsonNodeModelConverter.freeFormJsonSchema());
+        // Emit enums as named component schemas so openapi-ts generates reusable JS enums.
+        ModelResolver.enumsAsRef = true;
     }
 
     @Bean

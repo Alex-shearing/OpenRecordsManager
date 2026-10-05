@@ -2,13 +2,14 @@
 	import { PluginController } from '#lib/api/index.js';
 	import type { SimplePluginResponse } from '#lib/api/types.gen.js';
 	import { auditHeaders, getApiClient } from '#lib/api-client.js';
+	import AdminPageIntro from '#lib/components/AdminPageIntro.svelte';
 	import AuditSaveCard from '#lib/components/AuditSaveCard.svelte';
 	import DialogActions from '#lib/components/DialogActions.svelte';
 	import MonoId from '#lib/components/MonoId.svelte';
 	import TableCard from '#lib/components/TableCard.svelte';
 	import TargetDialog from '#lib/components/TargetDialog.svelte';
 	import { type SchemaFormError } from '#lib/components/SchemaForm.svelte';
-	import { t, tApiErrorResponse } from '#lib/i18n/catalog.js';
+	import { t } from '#lib/i18n/catalog.js';
 	import { pluginDescription, pluginName } from '#lib/i18n/labels.js';
 	import { invalidateAll } from '$app/navigation';
 	import toast from 'svelte-hot-french-toast';
@@ -164,12 +165,9 @@
 	}
 </script>
 
-<h1 class="mb-2 text-2xl font-semibold">{t('web.plugins.title')}</h1>
-<p class="mb-6 text-hint">{t('web.plugins.intro')}</p>
+<AdminPageIntro title={t('web.plugins.title')} intro={t('web.plugins.intro')} error={data.error} />
 
-{#if data.error}
-	<p class="text-destructive">{tApiErrorResponse(data.error)}</p>
-{:else}
+{#if !data.error}
 	<form id="plugins-save-form" onsubmit={handleSave}>
 		<TableCard
 			title={t('web.plugins.installed')}

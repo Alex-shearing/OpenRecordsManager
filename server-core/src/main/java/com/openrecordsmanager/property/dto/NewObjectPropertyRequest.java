@@ -15,7 +15,6 @@ public record NewObjectPropertyRequest(
         @Nullable ResourceIdentifier listType,
         @Nullable String validator,
         @Nullable String securityFilter,
-        @Nullable JsonNode defaultValue,
-        @NotBlank boolean userHidden
+        @Nullable JsonNode defaultValue
 ) {
 }

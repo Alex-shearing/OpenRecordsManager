@@ -1,5 +1,6 @@
-import { ConfigController } from '#lib/api/index.js';
+import { AuditEntityType, AuditOperation, ConfigController } from '#lib/api/index.js';
 import { getApiClient } from '#lib/api-client.js';
+import { isAuditCommentRequired } from '#lib/audit/audit-utils.js';
 
 export async function load({ parent }) {
 	const [parentData, configResult] = await Promise.all([
@@ -8,13 +9,14 @@ export async function load({ parent }) {
 	]);
 
 	const configs = configResult.data?.success ? configResult.data.data : [];
-	const requiresAuditComment = parentData.auditPolicy.some(
-		policy => policy.entityType === 'config' && policy.operation === 'UPDATE' && policy.requiresComment
-	);
 
 	return {
 		error: configResult.error,
 		configs,
-		requiresAuditComment,
+		requiresAuditComment: isAuditCommentRequired(
+			parentData.auditPolicy,
+			AuditEntityType.CONFIG,
+			AuditOperation.UPDATE
+		),
 	};
 }

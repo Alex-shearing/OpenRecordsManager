@@ -64,6 +64,61 @@ export type RecordResponse = {
     canAccessRevisions: boolean;
 };
 
+export const SecurityFilterUsage = {
+    HIDE_RECORD: 'HIDE_RECORD',
+    HIDE_FILES: 'HIDE_FILES',
+    SHOW_ALL: 'SHOW_ALL'
+} as const;
+
+export type SecurityFilterUsage = typeof SecurityFilterUsage[keyof typeof SecurityFilterUsage];
+
+export type TypePropertyAssignment = {
+    property: string;
+    /**
+     * Arbitrary JSON value (string, number, boolean, object, array, or null)
+     */
+    default?: unknown;
+};
+
+export type UpdateRecordTypeRequest = {
+    contentTypes?: Array<string>;
+    securityFilter?: string;
+    securityFilterUsage: SecurityFilterUsage;
+    properties: Array<TypePropertyAssignment>;
+};
+
+export type ObjectPropertyResponse = {
+    id: string;
+    type: string;
+    listType?: string;
+    validator?: string;
+    securityFilter?: string;
+    /**
+     * Arbitrary JSON value (string, number, boolean, object, array, or null)
+     */
+    defaultValue?: unknown;
+    dateCreated: string;
+    dateModified: string;
+};
+
+export type RecordTypePropertyResponse = {
+    property: ObjectPropertyResponse;
+    /**
+     * Arbitrary JSON value (string, number, boolean, object, array, or null)
+     */
+    default?: unknown;
+};
+
+export type RecordTypeResponse = {
+    id: string;
+    securityFilter?: string;
+    securityFilterUsage: SecurityFilterUsage;
+    contentTypes?: Array<string>;
+    properties: Array<RecordTypePropertyResponse>;
+    dateCreated: string;
+    dateModified: string;
+};
+
 export type UpdatePluginRequest = {
     enabled?: boolean;
 };
@@ -86,20 +141,33 @@ export type UpdateObjectPropertyRequest = {
      * Arbitrary JSON value (string, number, boolean, object, array, or null)
      */
     defaultValue?: unknown;
-    userHidden: boolean;
 };
 
-export type ObjectPropertyResponse = {
-    id: string;
-    type: string;
-    listType?: string;
-    validator?: string;
-    securityFilter?: string;
+export const LocationKind = {
+    USER: 'user',
+    GROUP: 'group',
+    ANY: 'any'
+} as const;
+
+export type LocationKind = typeof LocationKind[keyof typeof LocationKind];
+
+export type UpdateLocationTypeRequest = {
+    kind: LocationKind;
+    properties: Array<TypePropertyAssignment>;
+};
+
+export type LocationTypePropertyResponse = {
+    property: ObjectPropertyResponse;
     /**
      * Arbitrary JSON value (string, number, boolean, object, array, or null)
      */
-    defaultValue?: unknown;
-    userHidden: boolean;
+    default?: unknown;
+};
+
+export type LocationTypeResponse = {
+    id: string;
+    kind: LocationKind;
+    properties: Array<LocationTypePropertyResponse>;
     dateCreated: string;
     dateModified: string;
 };
@@ -118,7 +186,7 @@ export type LocationResponse = {
     type: string;
     name: string;
     displayName: string;
-    kind: 'user' | 'group' | 'any';
+    kind: LocationKind;
     authProvider?: string;
     enabled?: boolean;
     properties: {
@@ -127,15 +195,15 @@ export type LocationResponse = {
 };
 
 export type UpdateLocationRelationshipTypeRequest = {
-    sourceKind?: 'user' | 'group' | 'any';
-    targetKind?: 'user' | 'group' | 'any';
+    sourceKind?: LocationKind;
+    targetKind?: LocationKind;
     uniquePerSource?: boolean;
 };
 
 export type LocationRelationshipTypeResponse = {
     id: string;
-    sourceKind: 'user' | 'group' | 'any';
-    targetKind: 'user' | 'group' | 'any';
+    sourceKind: LocationKind;
+    targetKind: LocationKind;
     uniquePerSource: boolean;
 };
 
@@ -238,11 +306,6 @@ export type UpdateAuthProviderRequest = {
     };
 };
 
-export type UpdateAuditPolicyRequest = {
-    enabled: boolean;
-    requiresComment: boolean;
-};
-
 export const AuditOperation = {
     CREATE: 'CREATE',
     READ: 'READ',
@@ -253,8 +316,34 @@ export const AuditOperation = {
 
 export type AuditOperation = typeof AuditOperation[keyof typeof AuditOperation];
 
+export type UpdateAuditPolicyRequest = {
+    enabled: boolean;
+    requiresComment: boolean;
+};
+
+export const AuditEntityType = {
+    RECORD: 'record',
+    RECORD_TYPE: 'record_type',
+    LOCATION: 'location',
+    LOCATION_RELATIONSHIP: 'location_relationship',
+    LOCATION_RELATIONSHIP_TYPE: 'location_relationship_type',
+    LOCATION_TYPE: 'location_type',
+    CONFIG: 'config',
+    LIST: 'list',
+    LIST_ELEMENT: 'list_element',
+    OBJECT_PROPERTY: 'object_property',
+    FILE_STORE: 'file_store',
+    AUTH_PROVIDER: 'auth_provider',
+    RECORD_REVISION: 'record_revision',
+    FILE_STORE_MIDDLEWARE: 'file_store_middleware',
+    TEMPLATE: 'template',
+    PLUGIN: 'plugin'
+} as const;
+
+export type AuditEntityType = typeof AuditEntityType[keyof typeof AuditEntityType];
+
 export type AuditPolicyResponse = {
-    entityType: 'record' | 'record_type' | 'location' | 'location_relationship' | 'location_relationship_type' | 'location_type' | 'config' | 'list' | 'list_element' | 'object_property' | 'file_store' | 'auth_provider' | 'record_revision' | 'file_store_middleware' | 'template' | 'plugin';
+    entityType: AuditEntityType;
     operation: AuditOperation;
     enabled: boolean;
     requiresComment: boolean;
@@ -286,7 +375,7 @@ export type NewRecordRequest = {
 export type ObjectSearchRequest = {
     q?: string;
     filters?: Array<SearchClause>;
-    match?: 'ALL' | 'ANY';
+    match?: SearchMatchMode;
     type?: string;
     limit?: number;
     cursor?: string;
@@ -294,17 +383,50 @@ export type ObjectSearchRequest = {
 
 export type SearchClause = {
     field?: string;
-    op?: 'EQ' | 'NEQ' | 'GT' | 'GTE' | 'LT' | 'LTE' | 'LIKE' | 'IN' | 'NOT_IN' | 'IS_NULL' | 'IS_NOT_NULL' | 'BETWEEN';
+    op?: SearchOperator;
     /**
      * Arbitrary JSON value (string, number, boolean, object, array, or null)
      */
     value?: unknown;
 };
 
+export const SearchMatchMode = { ALL: 'ALL', ANY: 'ANY' } as const;
+
+export type SearchMatchMode = typeof SearchMatchMode[keyof typeof SearchMatchMode];
+
+export const SearchOperator = {
+    EQ: 'EQ',
+    NEQ: 'NEQ',
+    GT: 'GT',
+    GTE: 'GTE',
+    LT: 'LT',
+    LTE: 'LTE',
+    LIKE: 'LIKE',
+    IN: 'IN',
+    NOT_IN: 'NOT_IN',
+    IS_NULL: 'IS_NULL',
+    IS_NOT_NULL: 'IS_NOT_NULL',
+    BETWEEN: 'BETWEEN'
+} as const;
+
+export type SearchOperator = typeof SearchOperator[keyof typeof SearchOperator];
+
 export type RecordSearchResponse = {
     items?: Array<RecordResponse>;
     nextCursor?: string;
 };
+
+export type NewRecordTypeRequest = {
+    id: string;
+    contentTypes?: Array<string>;
+    securityFilter?: string;
+    securityFilterUsage: SecurityFilterUsage;
+    properties: Array<TypePropertyAssignment>;
+};
+
+export const PluginTypeRequest = { ZIP: 'zip', JAR: 'jar' } as const;
+
+export type PluginTypeRequest = typeof PluginTypeRequest[keyof typeof PluginTypeRequest];
 
 export type NewObjectPropertyRequest = {
     id: string;
@@ -318,11 +440,16 @@ export type NewObjectPropertyRequest = {
      * Arbitrary JSON value (string, number, boolean, object, array, or null)
      */
     defaultValue?: unknown;
-    userHidden: boolean;
 };
 
 export type PropertyTypeObject = {
     name?: string;
+};
+
+export type NewLocationTypeRequest = {
+    id: string;
+    kind: LocationKind;
+    properties: Array<TypePropertyAssignment>;
 };
 
 export type NewLocationRequest = {
@@ -359,8 +486,8 @@ export type LocationSearchResponse = {
 
 export type NewLocationRelationshipTypeRequest = {
     id: string;
-    sourceKind: 'user' | 'group' | 'any';
-    targetKind: 'user' | 'group' | 'any';
+    sourceKind: LocationKind;
+    targetKind: LocationKind;
     uniquePerSource?: boolean;
 };
 
@@ -396,19 +523,27 @@ export type NewFileStoreMiddlewareRequest = {
 };
 
 export type SetupStatusResponse = {
-    state: 'READY' | 'UPGRADE_REQUIRED';
+    state: Status;
     currentVersion?: string;
     pendingMigrations: Array<string>;
     migrationsApplied: number;
 };
+
+export const Status = { READY: 'READY', UPGRADE_REQUIRED: 'UPGRADE_REQUIRED' } as const;
+
+export type Status = typeof Status[keyof typeof Status];
 
 export type LoginResponse = {
     accessToken: string;
     accessExpires: string;
     refreshToken: string;
     refreshExpires: string;
-    sessionMode: 'NORMAL' | 'DEGRADED_READ_ONLY';
+    sessionMode: SessionMode;
 };
+
+export const SessionMode = { NORMAL: 'NORMAL', DEGRADED_READ_ONLY: 'DEGRADED_READ_ONLY' } as const;
+
+export type SessionMode = typeof SessionMode[keyof typeof SessionMode];
 
 export type WebBrandingResponse = {
     logoUrl: string;
@@ -464,24 +599,6 @@ export type InputFormSchemaField = {
     enum?: Array<string>;
 };
 
-export type RecordTypePropertyResponse = {
-    property: ObjectPropertyResponse;
-    /**
-     * Arbitrary JSON value (string, number, boolean, object, array, or null)
-     */
-    default?: unknown;
-};
-
-export type RecordTypeResponse = {
-    id: string;
-    securityFilter?: string;
-    securityFilterUsage: 'HIDE_RECORD' | 'HIDE_FILES' | 'SHOW_ALL';
-    contentTypes?: Array<string>;
-    properties: Array<RecordTypePropertyResponse>;
-    dateCreated: string;
-    dateModified: string;
-};
-
 export type SimplePluginResponse = {
     id: string;
     version: string;
@@ -495,21 +612,9 @@ export type SimpleObjectPropertyResponse = {
     type: string;
 };
 
-export type LocationTypePropertyResponse = {
-    property: ObjectPropertyResponse;
-    /**
-     * Arbitrary JSON value (string, number, boolean, object, array, or null)
-     */
-    default?: unknown;
-};
+export const RelationshipDirection = { OUTGOING: 'outgoing', INCOMING: 'incoming' } as const;
 
-export type LocationTypeResponse = {
-    id: string;
-    kind: 'user' | 'group' | 'any';
-    properties: Array<LocationTypePropertyResponse>;
-    dateCreated: string;
-    dateModified: string;
-};
+export type RelationshipDirection = typeof RelationshipDirection[keyof typeof RelationshipDirection];
 
 export type FileStoreResponse = {
     id: string;
@@ -679,8 +784,8 @@ export type AuditEventResponse = {
     occurredAt?: string;
     actorId?: string;
     actorUsername?: string;
-    operation?: 'CREATE' | 'READ' | 'UPDATE' | 'DELETE' | 'ACTION';
-    targetType?: 'record' | 'record_type' | 'location' | 'location_relationship' | 'location_relationship_type' | 'location_type' | 'config' | 'list' | 'list_element' | 'object_property' | 'file_store' | 'auth_provider' | 'record_revision' | 'file_store_middleware' | 'template' | 'plugin';
+    operation?: AuditOperation;
+    targetType?: AuditEntityType;
     targetId?: string;
     actionId?: string;
     summary?: string;
@@ -705,7 +810,7 @@ export type AuditPropertyChange = {
 };
 
 export type AuditRelationship = {
-    type?: 'record' | 'record_type' | 'location' | 'location_relationship' | 'location_relationship_type' | 'location_type' | 'config' | 'list' | 'list_element' | 'object_property' | 'file_store' | 'auth_provider' | 'record_revision' | 'file_store_middleware' | 'template' | 'plugin';
+    type?: AuditEntityType;
     id?: string;
     role?: string;
 };
@@ -976,6 +1081,96 @@ export type CreateRecordRevisionResponses = {
 
 export type CreateRecordRevisionResponse = CreateRecordRevisionResponses[keyof CreateRecordRevisionResponses];
 
+export type GetRecordTypeData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/record_types/{id}';
+};
+
+export type GetRecordTypeErrors = {
+    /**
+     * Unauthorized
+     */
+    401: ApiErrorResponse;
+    /**
+     * Forbidden
+     */
+    403: ApiErrorResponse;
+    /**
+     * Not Found
+     */
+    404: ApiErrorResponse;
+    /**
+     * Audit comment required
+     */
+    422: ApiErrorResponse;
+    /**
+     * Internal Server error
+     */
+    500: ApiErrorResponse;
+};
+
+export type GetRecordTypeError = GetRecordTypeErrors[keyof GetRecordTypeErrors];
+
+export type GetRecordTypeResponses = {
+    /**
+     * OK
+     */
+    200: ApiSuccessEnvelope & {
+        data: RecordTypeResponse;
+    };
+};
+
+export type GetRecordTypeResponse = GetRecordTypeResponses[keyof GetRecordTypeResponses];
+
+export type UpdateRecordTypeData = {
+    body: UpdateRecordTypeRequest;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/record_types/{id}';
+};
+
+export type UpdateRecordTypeErrors = {
+    /**
+     * Unauthorized
+     */
+    401: ApiErrorResponse;
+    /**
+     * Forbidden
+     */
+    403: ApiErrorResponse;
+    /**
+     * Not Found
+     */
+    404: ApiErrorResponse;
+    /**
+     * Audit comment required
+     */
+    422: ApiErrorResponse;
+    /**
+     * Internal Server error
+     */
+    500: ApiErrorResponse;
+};
+
+export type UpdateRecordTypeError = UpdateRecordTypeErrors[keyof UpdateRecordTypeErrors];
+
+export type UpdateRecordTypeResponses = {
+    /**
+     * OK
+     */
+    200: ApiSuccessEnvelope & {
+        data: RecordTypeResponse;
+    };
+};
+
+export type UpdateRecordTypeResponse = UpdateRecordTypeResponses[keyof UpdateRecordTypeResponses];
+
 export type DeletePluginData = {
     body?: never;
     path: {
@@ -1245,6 +1440,96 @@ export type ObjectPropertyUpdateResponses = {
 };
 
 export type ObjectPropertyUpdateResponse = ObjectPropertyUpdateResponses[keyof ObjectPropertyUpdateResponses];
+
+export type GetLocationTypeData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/location_types/{id}';
+};
+
+export type GetLocationTypeErrors = {
+    /**
+     * Unauthorized
+     */
+    401: ApiErrorResponse;
+    /**
+     * Forbidden
+     */
+    403: ApiErrorResponse;
+    /**
+     * Not Found
+     */
+    404: ApiErrorResponse;
+    /**
+     * Audit comment required
+     */
+    422: ApiErrorResponse;
+    /**
+     * Internal Server error
+     */
+    500: ApiErrorResponse;
+};
+
+export type GetLocationTypeError = GetLocationTypeErrors[keyof GetLocationTypeErrors];
+
+export type GetLocationTypeResponses = {
+    /**
+     * OK
+     */
+    200: ApiSuccessEnvelope & {
+        data: LocationTypeResponse;
+    };
+};
+
+export type GetLocationTypeResponse = GetLocationTypeResponses[keyof GetLocationTypeResponses];
+
+export type UpdateLocationTypeData = {
+    body: UpdateLocationTypeRequest;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/location_types/{id}';
+};
+
+export type UpdateLocationTypeErrors = {
+    /**
+     * Unauthorized
+     */
+    401: ApiErrorResponse;
+    /**
+     * Forbidden
+     */
+    403: ApiErrorResponse;
+    /**
+     * Not Found
+     */
+    404: ApiErrorResponse;
+    /**
+     * Audit comment required
+     */
+    422: ApiErrorResponse;
+    /**
+     * Internal Server error
+     */
+    500: ApiErrorResponse;
+};
+
+export type UpdateLocationTypeError = UpdateLocationTypeErrors[keyof UpdateLocationTypeErrors];
+
+export type UpdateLocationTypeResponses = {
+    /**
+     * OK
+     */
+    200: ApiSuccessEnvelope & {
+        data: LocationTypeResponse;
+    };
+};
+
+export type UpdateLocationTypeResponse = UpdateLocationTypeResponses[keyof UpdateLocationTypeResponses];
 
 export type GetLocationData = {
     body?: never;
@@ -2266,7 +2551,7 @@ export type UpdateAuditPolicyData = {
     path?: never;
     query: {
         entityType: string;
-        operation: 'CREATE' | 'READ' | 'UPDATE' | 'DELETE' | 'ACTION';
+        operation: AuditOperation;
     };
     url: '/api/audit/policies';
 };
@@ -2481,6 +2766,88 @@ export type SearchRecordsResponses = {
 
 export type SearchRecordsResponse = SearchRecordsResponses[keyof SearchRecordsResponses];
 
+export type GetRecordTypesData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/record_types';
+};
+
+export type GetRecordTypesErrors = {
+    /**
+     * Unauthorized
+     */
+    401: ApiErrorResponse;
+    /**
+     * Forbidden
+     */
+    403: ApiErrorResponse;
+    /**
+     * Audit comment required
+     */
+    422: ApiErrorResponse;
+    /**
+     * Internal Server error
+     */
+    500: ApiErrorResponse;
+};
+
+export type GetRecordTypesError = GetRecordTypesErrors[keyof GetRecordTypesErrors];
+
+export type GetRecordTypesResponses = {
+    /**
+     * OK
+     */
+    200: ApiSuccessEnvelope & {
+        data: Array<RecordTypeResponse>;
+    };
+};
+
+export type GetRecordTypesResponse = GetRecordTypesResponses[keyof GetRecordTypesResponses];
+
+export type CreateRecordTypeData = {
+    body: NewRecordTypeRequest;
+    path?: never;
+    query?: never;
+    url: '/api/record_types';
+};
+
+export type CreateRecordTypeErrors = {
+    /**
+     * Unauthorized
+     */
+    401: ApiErrorResponse;
+    /**
+     * Forbidden
+     */
+    403: ApiErrorResponse;
+    /**
+     * Resource in use
+     */
+    409: ApiErrorResponse;
+    /**
+     * Audit comment required
+     */
+    422: ApiErrorResponse;
+    /**
+     * Internal Server error
+     */
+    500: ApiErrorResponse;
+};
+
+export type CreateRecordTypeError = CreateRecordTypeErrors[keyof CreateRecordTypeErrors];
+
+export type CreateRecordTypeResponses = {
+    /**
+     * OK
+     */
+    200: ApiSuccessEnvelope & {
+        data: RecordTypeResponse;
+    };
+};
+
+export type CreateRecordTypeResponse = CreateRecordTypeResponses[keyof CreateRecordTypeResponses];
+
 export type ListPluginsData = {
     body?: never;
     path?: never;
@@ -2528,7 +2895,7 @@ export type UploadPluginData = {
     };
     path?: never;
     query: {
-        type: 'zip' | 'jar';
+        type: PluginTypeRequest;
     };
     url: '/api/plugins';
 };
@@ -2655,6 +3022,93 @@ export type ObjectPropertyCreateResponses = {
 
 export type ObjectPropertyCreateResponse = ObjectPropertyCreateResponses[keyof ObjectPropertyCreateResponses];
 
+export type ListLocationTypesData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * Optional location kind filter
+         */
+        kind?: LocationKind;
+    };
+    url: '/api/location_types';
+};
+
+export type ListLocationTypesErrors = {
+    /**
+     * Unauthorized
+     */
+    401: ApiErrorResponse;
+    /**
+     * Forbidden
+     */
+    403: ApiErrorResponse;
+    /**
+     * Audit comment required
+     */
+    422: ApiErrorResponse;
+    /**
+     * Internal Server error
+     */
+    500: ApiErrorResponse;
+};
+
+export type ListLocationTypesError = ListLocationTypesErrors[keyof ListLocationTypesErrors];
+
+export type ListLocationTypesResponses = {
+    /**
+     * OK
+     */
+    200: ApiSuccessEnvelope & {
+        data: Array<LocationTypeResponse>;
+    };
+};
+
+export type ListLocationTypesResponse = ListLocationTypesResponses[keyof ListLocationTypesResponses];
+
+export type CreateLocationTypeData = {
+    body: NewLocationTypeRequest;
+    path?: never;
+    query?: never;
+    url: '/api/location_types';
+};
+
+export type CreateLocationTypeErrors = {
+    /**
+     * Unauthorized
+     */
+    401: ApiErrorResponse;
+    /**
+     * Forbidden
+     */
+    403: ApiErrorResponse;
+    /**
+     * Resource in use
+     */
+    409: ApiErrorResponse;
+    /**
+     * Audit comment required
+     */
+    422: ApiErrorResponse;
+    /**
+     * Internal Server error
+     */
+    500: ApiErrorResponse;
+};
+
+export type CreateLocationTypeError = CreateLocationTypeErrors[keyof CreateLocationTypeErrors];
+
+export type CreateLocationTypeResponses = {
+    /**
+     * OK
+     */
+    200: ApiSuccessEnvelope & {
+        data: LocationTypeResponse;
+    };
+};
+
+export type CreateLocationTypeResponse = CreateLocationTypeResponses[keyof CreateLocationTypeResponses];
+
 export type CreateLocationData = {
     body: NewLocationRequest;
     path?: never;
@@ -2704,7 +3158,7 @@ export type ListLocationRelationshipsData = {
         id: string;
     };
     query?: {
-        direction?: 'outgoing' | 'incoming';
+        direction?: RelationshipDirection;
         type?: string;
     };
     url: '/api/location/{id}/relationships';
@@ -2845,7 +3299,7 @@ export type SearchLocationsData = {
     body: ObjectSearchRequest;
     path?: never;
     query?: {
-        kind?: 'user' | 'group' | 'any';
+        kind?: LocationKind;
     };
     url: '/api/location/search';
 };
@@ -3667,179 +4121,6 @@ export type ListRecordActionsResponses = {
 };
 
 export type ListRecordActionsResponse = ListRecordActionsResponses[keyof ListRecordActionsResponses];
-
-export type GetRecordTypesData = {
-    body?: never;
-    path?: never;
-    query?: never;
-    url: '/api/record_types';
-};
-
-export type GetRecordTypesErrors = {
-    /**
-     * Unauthorized
-     */
-    401: ApiErrorResponse;
-    /**
-     * Forbidden
-     */
-    403: ApiErrorResponse;
-    /**
-     * Audit comment required
-     */
-    422: ApiErrorResponse;
-    /**
-     * Internal Server error
-     */
-    500: ApiErrorResponse;
-};
-
-export type GetRecordTypesError = GetRecordTypesErrors[keyof GetRecordTypesErrors];
-
-export type GetRecordTypesResponses = {
-    /**
-     * OK
-     */
-    200: ApiSuccessEnvelope & {
-        data: Array<RecordTypeResponse>;
-    };
-};
-
-export type GetRecordTypesResponse = GetRecordTypesResponses[keyof GetRecordTypesResponses];
-
-export type GetRecordTypeData = {
-    body?: never;
-    path: {
-        id: string;
-    };
-    query?: never;
-    url: '/api/record_types/{id}';
-};
-
-export type GetRecordTypeErrors = {
-    /**
-     * Unauthorized
-     */
-    401: ApiErrorResponse;
-    /**
-     * Forbidden
-     */
-    403: ApiErrorResponse;
-    /**
-     * Not Found
-     */
-    404: ApiErrorResponse;
-    /**
-     * Audit comment required
-     */
-    422: ApiErrorResponse;
-    /**
-     * Internal Server error
-     */
-    500: ApiErrorResponse;
-};
-
-export type GetRecordTypeError = GetRecordTypeErrors[keyof GetRecordTypeErrors];
-
-export type GetRecordTypeResponses = {
-    /**
-     * OK
-     */
-    200: ApiSuccessEnvelope & {
-        data: RecordTypeResponse;
-    };
-};
-
-export type GetRecordTypeResponse = GetRecordTypeResponses[keyof GetRecordTypeResponses];
-
-export type ListLocationTypesData = {
-    body?: never;
-    path?: never;
-    query?: {
-        /**
-         * Optional location kind filter
-         */
-        kind?: 'user' | 'group' | 'any';
-    };
-    url: '/api/location_types';
-};
-
-export type ListLocationTypesErrors = {
-    /**
-     * Unauthorized
-     */
-    401: ApiErrorResponse;
-    /**
-     * Forbidden
-     */
-    403: ApiErrorResponse;
-    /**
-     * Audit comment required
-     */
-    422: ApiErrorResponse;
-    /**
-     * Internal Server error
-     */
-    500: ApiErrorResponse;
-};
-
-export type ListLocationTypesError = ListLocationTypesErrors[keyof ListLocationTypesErrors];
-
-export type ListLocationTypesResponses = {
-    /**
-     * OK
-     */
-    200: ApiSuccessEnvelope & {
-        data: Array<LocationTypeResponse>;
-    };
-};
-
-export type ListLocationTypesResponse = ListLocationTypesResponses[keyof ListLocationTypesResponses];
-
-export type GetLocationTypeData = {
-    body?: never;
-    path: {
-        id: string;
-    };
-    query?: never;
-    url: '/api/location_types/{id}';
-};
-
-export type GetLocationTypeErrors = {
-    /**
-     * Unauthorized
-     */
-    401: ApiErrorResponse;
-    /**
-     * Forbidden
-     */
-    403: ApiErrorResponse;
-    /**
-     * Not Found
-     */
-    404: ApiErrorResponse;
-    /**
-     * Audit comment required
-     */
-    422: ApiErrorResponse;
-    /**
-     * Internal Server error
-     */
-    500: ApiErrorResponse;
-};
-
-export type GetLocationTypeError = GetLocationTypeErrors[keyof GetLocationTypeErrors];
-
-export type GetLocationTypeResponses = {
-    /**
-     * OK
-     */
-    200: ApiSuccessEnvelope & {
-        data: LocationTypeResponse;
-    };
-};
-
-export type GetLocationTypeResponse = GetLocationTypeResponses[keyof GetLocationTypeResponses];
 
 export type ListLocationActionsData = {
     body?: never;

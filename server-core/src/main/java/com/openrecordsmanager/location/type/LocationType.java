@@ -83,6 +83,19 @@ public class LocationType implements RegisteredComponent {
         this.dateModified = Instant.now();
     }
 
+    public void setKind(LocationKind kind) {
+        if (kind == LocationKind.ANY) {
+            throw new IllegalArgumentException("Location type kind must be USER or GROUP");
+        }
+        this.kind = kind;
+        touchDateModified();
+    }
+
+    public void setProperties(Set<LocationTypeProperty<?>> properties) {
+        this.properties = properties;
+        touchDateModified();
+    }
+
     public boolean hasProperty(ObjectProperty<?> property) {
         return this.properties.stream()
                 .anyMatch(prop -> Objects.equals(prop.getProperty(), property));
