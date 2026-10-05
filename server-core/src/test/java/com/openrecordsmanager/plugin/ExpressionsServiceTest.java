@@ -3,6 +3,7 @@ package com.openrecordsmanager.plugin;
 import com.openrecordsmanager.api.ResourceIdentifier;
 import com.openrecordsmanager.api.builtin.BuiltinConfigs;
 import com.openrecordsmanager.api.location.LocationKind;
+import com.openrecordsmanager.api.template.ExpressionBuilder;
 import com.openrecordsmanager.api.template.list.IListElement;
 import com.openrecordsmanager.api.template.property.PropertyType;
 import com.openrecordsmanager.api.template.recordtype.SecurityFilterUsage;
@@ -118,6 +119,12 @@ class ExpressionsServiceTest {
         this.testUser.setProperty(stringProperty, "test value");
         this.testUser.setProperty(listProperty, this.listItem2);
         this.testUser.setProperty(listMultiple, List.of(this.listItem1, this.listItem3));
+    }
+
+    @Test
+    void buildExpression_preservesCelStringKeysWithColons() {
+        String filter = "principal['defaults_aus_gov:user_security_classification'] >= value";
+        Assertions.assertEquals(filter, this.expressions.buildExpression(ExpressionBuilder.from(filter)));
     }
 
     @Test
