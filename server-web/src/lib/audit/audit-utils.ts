@@ -1,5 +1,6 @@
 import type { AuditPolicyResponse } from '#lib/api/index.js';
 import { t } from '#lib/i18n/catalog.js';
+import { formatDateTime } from '#lib/properties/formatValue.js';
 
 export function formatEntityType(key: string) {
 	return key
@@ -65,6 +66,5 @@ export function formatInstant(value: string | undefined) {
 	if (!value) {
 		return t('web.common.em_dash');
 	}
-	const date = new Date(value);
-	return Number.isNaN(date.getTime()) ? value : date.toLocaleString();
+	return formatDateTime(value) ?? value;
 }

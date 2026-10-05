@@ -153,8 +153,11 @@ public abstract class ObjectPropertyHolder<SELF extends ObjectPropertyHolder<SEL
     }
 
     private static final class WirePropertyMap extends AbstractMap<String, JsonNode> {
-        private static final ResourceIdentifier BUILTIN_ID =
-                new ResourceIdentifier(BuiltinPlugin.BUILTIN_PLUGIN_NAME, BuiltinPropertyIds.ID);
+        private static final List<ResourceIdentifier> ALWAYS_ON_WIRE = List.of(
+                new ResourceIdentifier(BuiltinPlugin.BUILTIN_PLUGIN_NAME, BuiltinPropertyIds.ID),
+                new ResourceIdentifier(BuiltinPlugin.BUILTIN_PLUGIN_NAME, BuiltinPropertyIds.DATE_CREATED),
+                new ResourceIdentifier(BuiltinPlugin.BUILTIN_PLUGIN_NAME, BuiltinPropertyIds.DATE_MODIFIED)
+        );
 
         private final ObjectPropertyHolder<?, ?> holder;
 
@@ -169,7 +172,7 @@ public abstract class ObjectPropertyHolder<SELF extends ObjectPropertyHolder<SEL
             }
             return findProperty(keyString)
                     .map(property -> encode(property, this.holder.getProperty(property)))
-                    .orElseGet(() -> BUILTIN_ID.toString().equals(keyString) ? encodeBuiltinId() : null);
+                    .orElseGet(() -> encodeAlwaysOnBuiltin(keyString));
         }
 
         @Override
@@ -182,10 +185,11 @@ public abstract class ObjectPropertyHolder<SELF extends ObjectPropertyHolder<SEL
                     ))
                     .collect(Collectors.toSet());
 
-            // Always include identity, even when the type schema omits builtin:id.
-            JsonNode idValue = encodeBuiltinId();
-            if (idValue != null && entries.stream().noneMatch(entry -> BUILTIN_ID.toString().equals(entry.getKey()))) {
-                entries.add(new AbstractMap.SimpleEntry<>(BUILTIN_ID.toString(), idValue));
+            for (ResourceIdentifier id : ALWAYS_ON_WIRE) {
+                JsonNode value = encodeAlwaysOnBuiltin(id.toString());
+                if (value != null && entries.stream().noneMatch(entry -> id.toString().equals(entry.getKey()))) {
+                    entries.add(new AbstractMap.SimpleEntry<>(id.toString(), value));
+                }
             }
             return entries;
         }
@@ -197,12 +201,15 @@ public abstract class ObjectPropertyHolder<SELF extends ObjectPropertyHolder<SEL
                     .findFirst();
         }
 
-        private @Nullable JsonNode encodeBuiltinId() {
-            if (!this.holder.hasBuiltin(BUILTIN_ID)) {
-                return null;
+        private @Nullable JsonNode encodeAlwaysOnBuiltin(String keyString) {
+            for (ResourceIdentifier id : ALWAYS_ON_WIRE) {
+                if (!id.toString().equals(keyString) || !this.holder.hasBuiltin(id)) {
+                    continue;
+                }
+                Object value = this.holder.readBuiltin(id);
+                return value == null ? NullNode.getInstance() : PropertyType.toTree(value);
             }
-            Object value = this.holder.readBuiltin(BUILTIN_ID);
-            return value == null ? NullNode.getInstance() : PropertyType.toTree(value);
+            return null;
         }
 
         private static JsonNode encode(ObjectProperty<?> property, @Nullable Object domainValue) {

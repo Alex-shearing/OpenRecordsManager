@@ -16,6 +16,7 @@
 	import { objectPropertyName } from '#lib/i18n/labels.js';
 	import { formatObjectPropertyValue } from '#lib/properties/formatValue.js';
 	import { DEFAULT_SEARCH_TYPE, locationKindQuery, setStoredSearchColumns } from '#lib/search.js';
+	import { resolve } from '$app/paths';
 	import ColumnsIcon from 'phosphor-svelte/lib/ColumnsIcon';
 	import { SvelteMap } from 'svelte/reactivity';
 
@@ -35,9 +36,7 @@
 	const searchKey = $derived(`${data.type ?? ''}:${data.q ?? ''}`);
 	const items = $derived(additionalResults?.key === searchKey ? additionalResults.items : data.items);
 	const nextCursor = $derived(additionalResults?.key === searchKey ? additionalResults.nextCursor : data.nextCursor);
-	const columns = $derived(
-		columnLayout?.key === searchKey ? columnLayout.columns : (data.columns ?? []),
-	);
+	const columns = $derived(columnLayout?.key === searchKey ? columnLayout.columns : (data.columns ?? []));
 	const loadMoreError = $derived(additionalResults?.key === searchKey ? additionalResults.error : '');
 	const emptyKey = $derived(
 		!data.type && !data.q
@@ -136,6 +135,10 @@
 			{items}
 			empty={t(`web.search.empty.${data.type}`)}
 			getKey={item => item.id}
+			getHref={item =>
+				data.type === 'record'
+					? resolve('/(authenticated)/records/[id]', { id: item.id })
+					: resolve('/(authenticated)/locations/[id]', { id: item.id })}
 		>
 			{#snippet actions()}
 				<button
@@ -155,13 +158,9 @@
 			{/snippet}
 			{#snippet row(item)}
 				{#each columns as column, i (column)}
-					<td class="px-5 py-4" class:font-medium={i === 0}
-						>{formatObjectPropertyValue(
-							definitionById.get(column),
-							item.properties?.[column],
-							t('web.common.em_dash')
-						)}</td
-					>
+					<td class="px-5 py-4" class:font-medium={i === 0}>
+						{formatObjectPropertyValue(definitionById.get(column), item.properties?.[column], t('web.common.em_dash'))}
+					</td>
 				{/each}
 			{/snippet}
 		</TableCard>

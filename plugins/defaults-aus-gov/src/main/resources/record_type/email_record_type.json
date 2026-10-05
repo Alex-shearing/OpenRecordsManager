@@ -10,6 +10,7 @@
     "object_property/builtin:id": null,
     "object_property/builtin:title": null,
     "object_property/builtin:date_created": null,
+    "object_property/builtin:date_modified": null,
     "object_property/builtin:date_registered": null,
     "object_property/builtin:notes": "This is an email",
     "object_property/defaults_aus_gov:record_security_classification": null,

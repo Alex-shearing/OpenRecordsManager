@@ -31,12 +31,16 @@ import org.springframework.transaction.support.TransactionTemplate;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.JsonNodeFactory;
 
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @SpringBootTest
 class RecordUpdateIntegrationTest {
@@ -157,11 +161,21 @@ class RecordUpdateIntegrationTest {
     }
 
     @Test
-    void createAndUpdateRecordTitle() {
+    void createAndUpdateRecordTitle() throws InterruptedException {
+        String dateModifiedKey = new ResourceIdentifier(
+                BuiltinPlugin.BUILTIN_PLUGIN_NAME,
+                BuiltinPropertyIds.DATE_MODIFIED
+        ).toString();
+
         RecordResponse created = AuditTestSupport.withAudit(this.admin, () -> this.recordService.create(
                 new NewRecordRequest(TEST_RECORD_TYPE, "Initial title", Map.of())
         ));
         assertEquals("Initial title", created.properties().get(TITLE.toString()).asString());
+        assertNotNull(created.properties().get(dateModifiedKey));
+        Instant createdModified = Instant.parse(created.properties().get(dateModifiedKey).asString());
+
+        // Instant.now() may share the same millisecond; ensure a later timestamp.
+        Thread.sleep(5);
 
         RecordResponse updated = AuditTestSupport.withAudit(this.admin, () -> this.recordService.update(
                 this.admin,
@@ -169,9 +183,19 @@ class RecordUpdateIntegrationTest {
                 new UpdateRecordRequest(null, "Updated title", null)
         ));
         assertEquals("Updated title", updated.properties().get(TITLE.toString()).asString());
+        assertNotNull(updated.properties().get(dateModifiedKey));
+        Instant updatedModified = Instant.parse(updated.properties().get(dateModifiedKey).asString());
+        assertTrue(
+                updatedModified.isAfter(createdModified),
+                () -> "date_modified should advance after update: before=" + createdModified
+                        + " after=" + updatedModified
+        );
 
         RecordResponse loaded = this.recordService.get(this.admin, created.id());
         assertEquals("Updated title", loaded.properties().get(TITLE.toString()).asString());
+        Instant loadedModified = Instant.parse(loaded.properties().get(dateModifiedKey).asString());
+        // SQLite TIMESTAMP storage is millisecond precision.
+        assertEquals(updatedModified.truncatedTo(ChronoUnit.MILLIS), loadedModified.truncatedTo(ChronoUnit.MILLIS));
     }
 
     @Test
