@@ -19,6 +19,10 @@ export async function load({ parent }) {
 			update: parentData.auditPolicy.some(
 				policy => policy.entityType === 'record' && policy.operation === 'UPDATE' && policy.requiresComment
 			),
+			createRevision: parentData.auditPolicy.some(
+				policy =>
+					policy.entityType === 'record_revision' && policy.operation === 'CREATE' && policy.requiresComment
+			),
 		},
 	};
 }

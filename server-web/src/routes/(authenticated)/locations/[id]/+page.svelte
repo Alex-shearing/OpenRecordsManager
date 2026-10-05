@@ -3,7 +3,7 @@
 	import ActionList from '#lib/components/ActionList.svelte';
 	import MonoId from '#lib/components/MonoId.svelte';
 	import PageContent from '#lib/components/layout/PageContent.svelte';
-	import PropertyDisplay from '#lib/components/PropertyDisplay.svelte';
+	import PropertyDisplayCard from '#lib/components/PropertyDisplayCard.svelte';
 	import { t, tApiErrorResponse } from '#lib/i18n/catalog.js';
 	import { locationTypeName } from '#lib/i18n/labels.js';
 
@@ -30,48 +30,46 @@
 			</a>
 		</div>
 
-		<section class="card mb-8 p-4">
-			<PropertyDisplay properties={data.location.properties} definitions={data.properties}>
-				{#snippet before()}
+		<PropertyDisplayCard properties={data.location.properties} definitions={data.properties}>
+			{#snippet before()}
+				<div>
+					<dt class="text-hint">{t('web.locations.id')}</dt>
+					<dd><MonoId value={data.location.id} /></dd>
+				</div>
+				<div>
+					<dt class="text-hint">{t('web.common.type')}</dt>
+					<dd>
+						{locationTypeName(data.location.type)}
+						{#if data.location.kind === 'user'}
+							({t('web.locations.kind_user')})
+						{:else if data.location.kind === 'group'}
+							({t('web.locations.kind_group')})
+						{/if}
+					</dd>
+				</div>
+				{#if data.location.kind === 'user'}
 					<div>
-						<dt class="text-hint">{t('web.locations.id')}</dt>
-						<dd><MonoId value={data.location.id} /></dd>
+						<dt class="text-hint">{t('web.locations.username')}</dt>
+						<dd>{data.location.name}</dd>
 					</div>
 					<div>
-						<dt class="text-hint">{t('web.common.type')}</dt>
+						<dt class="text-hint">{t('web.locations.auth_provider')}</dt>
 						<dd>
-							{locationTypeName(data.location.type)}
-							{#if data.location.kind === 'user'}
-								({t('web.locations.kind_user')})
-							{:else if data.location.kind === 'group'}
-								({t('web.locations.kind_group')})
-							{/if}
+							{authProviderName(data.location.authProvider) ?? t('web.locations.auth_provider_none')}
 						</dd>
 					</div>
-					{#if data.location.kind === 'user'}
-						<div>
-							<dt class="text-hint">{t('web.locations.username')}</dt>
-							<dd>{data.location.name}</dd>
-						</div>
-						<div>
-							<dt class="text-hint">{t('web.locations.auth_provider')}</dt>
-							<dd>
-								{authProviderName(data.location.authProvider) ?? t('web.locations.auth_provider_none')}
-							</dd>
-						</div>
-						<div>
-							<dt class="text-hint">{t('web.locations.enabled')}</dt>
-							<dd>{data.location.enabled ? t('web.common.yes') : t('web.common.no')}</dd>
-						</div>
-					{:else if data.location.kind === 'group'}
-						<div>
-							<dt class="text-hint">{t('web.locations.name')}</dt>
-							<dd>{data.location.name}</dd>
-						</div>
-					{/if}
-				{/snippet}
-			</PropertyDisplay>
-		</section>
+					<div>
+						<dt class="text-hint">{t('web.locations.enabled')}</dt>
+						<dd>{data.location.enabled ? t('web.common.yes') : t('web.common.no')}</dd>
+					</div>
+				{:else if data.location.kind === 'group'}
+					<div>
+						<dt class="text-hint">{t('web.locations.name')}</dt>
+						<dd>{data.location.name}</dd>
+					</div>
+				{/if}
+			{/snippet}
+		</PropertyDisplayCard>
 
 		<ActionList actions={data.actions} kind="location" targetId={data.location.id} />
 	{/if}

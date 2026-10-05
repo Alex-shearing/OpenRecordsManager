@@ -1,5 +1,19 @@
 <script lang="ts" generics="T">
 	import type { Snippet } from 'svelte';
+	import type { ClassValue, HTMLAttributes } from 'svelte/elements';
+
+	type Props = Omit<HTMLAttributes<HTMLElement>, 'children'> & {
+		title: string;
+		items: T[];
+		empty: string;
+		getKey: (item: T) => string | number;
+		getHref?: (item: T) => string;
+		header: Snippet;
+		row: Snippet<[T]>;
+		actions?: Snippet;
+		overlay?: Snippet;
+		class?: ClassValue;
+	};
 
 	let {
 		title,
@@ -10,21 +24,13 @@
 		header,
 		row,
 		actions,
+		overlay,
 		class: className = '',
-	}: {
-		title: string;
-		items: T[];
-		empty: string;
-		getKey: (item: T) => string | number;
-		getHref?: (item: T) => string;
-		header: Snippet;
-		row: Snippet<[T]>;
-		actions?: Snippet;
-		class?: string;
-	} = $props();
+		...rest
+	}: Props = $props();
 </script>
 
-<section class={['card', className]}>
+<section {...rest} class={['card', className]}>
 	<div class="card-header flex items-center justify-between gap-3">
 		<h2 class="text-lg font-medium">{title}</h2>
 		{#if actions}
@@ -70,5 +76,9 @@
 				</tbody>
 			</table>
 		</div>
+	{/if}
+
+	{#if overlay}
+		{@render overlay()}
 	{/if}
 </section>

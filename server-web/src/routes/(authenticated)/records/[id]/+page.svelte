@@ -3,7 +3,8 @@
 	import ActionList from '#lib/components/ActionList.svelte';
 	import MonoId from '#lib/components/MonoId.svelte';
 	import PageContent from '#lib/components/layout/PageContent.svelte';
-	import PropertyDisplay from '#lib/components/PropertyDisplay.svelte';
+	import PropertyDisplayCard from '#lib/components/PropertyDisplayCard.svelte';
+	import RecordRevisionsCard from '#lib/components/RecordRevisionsCard.svelte';
 	import { t, tApiErrorResponse } from '#lib/i18n/catalog.js';
 	import { recordTypeName } from '#lib/i18n/labels.js';
 
@@ -28,28 +29,33 @@
 	{:else if !data.record}
 		<p class="text-destructive">{t('web.records.not_found')}</p>
 	{:else}
+		{@const record = data.record}
 		<div class="mb-6 flex flex-wrap items-start justify-between gap-4">
 			<h1 class="text-2xl font-semibold">{pageTitle}</h1>
-			<a href={resolve('/(authenticated)/records/edit/[id]', { id: data.record.id })} class="btn-secondary">
+			<a href={resolve('/(authenticated)/records/edit/[id]', { id: record.id })} class="btn-secondary">
 				{t('web.common.edit')}
 			</a>
 		</div>
 
-		<section class="card mb-8 p-4">
-			<PropertyDisplay properties={data.record.properties} definitions={data.properties}>
-				{#snippet before()}
-					<div>
-						<dt class="text-hint">{t('web.records.id')}</dt>
-						<dd><MonoId value={data.record.id} /></dd>
-					</div>
-					<div>
-						<dt class="text-hint">{t('web.common.type')}</dt>
-						<dd>{recordTypeName(data.record.type)}</dd>
-					</div>
-				{/snippet}
-			</PropertyDisplay>
-		</section>
+		<PropertyDisplayCard properties={record.properties} definitions={data.properties}>
+			{#snippet before()}
+				<div>
+					<dt class="text-hint">{t('web.records.id')}</dt>
+					<dd><MonoId value={record.id} /></dd>
+				</div>
+				<div>
+					<dt class="text-hint">{t('web.common.type')}</dt>
+					<dd>{recordTypeName(record.type)}</dd>
+				</div>
+			{/snippet}
+		</PropertyDisplayCard>
 
-		<ActionList actions={data.actions} kind="record" targetId={data.record.id} />
+		<RecordRevisionsCard
+			{record}
+			types={data.types}
+			auditCommentRequired={data.auditCommentRequired.createRevision}
+		/>
+
+		<ActionList actions={data.actions} kind="record" targetId={record.id} />
 	{/if}
 </PageContent>

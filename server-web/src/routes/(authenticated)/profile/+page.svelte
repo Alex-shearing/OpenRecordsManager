@@ -5,7 +5,7 @@
 	import ActionList from '#lib/components/ActionList.svelte';
 	import MonoId from '#lib/components/MonoId.svelte';
 	import PageContent from '#lib/components/layout/PageContent.svelte';
-	import PropertyDisplay from '#lib/components/PropertyDisplay.svelte';
+	import PropertyDisplayCard from '#lib/components/PropertyDisplayCard.svelte';
 	import { t, tApiErrorResponse } from '#lib/i18n/catalog.js';
 
 	let { data } = $props();
@@ -27,21 +27,23 @@
 	{#if data.error}
 		<p class="text-destructive">{tApiErrorResponse(data.error)}</p>
 	{:else if data.me}
-		<section class="card mb-8 p-4">
-			<h2 class="text-lg font-medium">{t('web.profile.account')}</h2>
-			<PropertyDisplay properties={data.me.properties} definitions={data.properties} order={propertyOrder}>
-				{#snippet before()}
-					<div>
-						<dt class="text-hint">{t('web.profile.user_id')}</dt>
-						<dd><MonoId value={data.me.id} /></dd>
-					</div>
-					<div>
-						<dt class="text-hint">{t('web.profile.name')}</dt>
-						<dd>{data.me.displayName}</dd>
-					</div>
-				{/snippet}
-			</PropertyDisplay>
-		</section>
+		<PropertyDisplayCard
+			title={t('web.profile.account')}
+			properties={data.me.properties}
+			definitions={data.properties}
+			order={propertyOrder}
+		>
+			{#snippet before()}
+				<div>
+					<dt class="text-hint">{t('web.profile.user_id')}</dt>
+					<dd><MonoId value={data.me.id} /></dd>
+				</div>
+				<div>
+					<dt class="text-hint">{t('web.profile.name')}</dt>
+					<dd>{data.me.displayName}</dd>
+				</div>
+			{/snippet}
+		</PropertyDisplayCard>
 
 		<ActionList actions={data.actions} kind="location" targetId={data.me.id} />
 

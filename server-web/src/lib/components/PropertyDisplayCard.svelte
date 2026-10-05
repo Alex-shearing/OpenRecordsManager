@@ -8,12 +8,16 @@
 		properties,
 		definitions = [],
 		order = [],
+		title,
 		before,
+		class: className = 'mb-8',
 	}: {
 		properties: Record<string, unknown>;
 		definitions?: SimpleObjectPropertyResponse[];
 		order?: string[];
+		title?: string;
 		before?: Snippet;
+		class?: string;
 	} = $props();
 
 	const definitionById = $derived(new Map(definitions.map(entry => [entry.id, entry])));
@@ -32,12 +36,17 @@
 	);
 </script>
 
-<dl class="mt-4 grid gap-3 sm:grid-cols-2">
-	{@render before?.()}
-	{#each sortedEntries as [key, value] (key)}
-		<div>
-			<dt class="text-hint">{objectPropertyName(key)}</dt>
-			<dd>{formatObjectPropertyValue(definitionById.get(key), value)}</dd>
-		</div>
-	{/each}
-</dl>
+<section class={['card p-4', className]}>
+	{#if title}
+		<h2 class="text-lg font-medium">{title}</h2>
+	{/if}
+	<dl class="mt-4 grid gap-3 sm:grid-cols-2">
+		{@render before?.()}
+		{#each sortedEntries as [key, value] (key)}
+			<div>
+				<dt class="text-hint">{objectPropertyName(key)}</dt>
+				<dd>{formatObjectPropertyValue(definitionById.get(key), value)}</dd>
+			</div>
+		{/each}
+	</dl>
+</section>
