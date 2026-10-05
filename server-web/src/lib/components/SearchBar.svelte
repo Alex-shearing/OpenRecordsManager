@@ -8,16 +8,11 @@
 	import NotePencilIcon from 'phosphor-svelte/lib/NotePencilIcon';
 	import AppDialog from '#lib/components/AppDialog.svelte';
 	import { t } from '#lib/i18n/catalog.js';
+	import { DEFAULT_SEARCH_TYPE, SEARCH_TYPES, type SearchType } from '#lib/search.js';
 
-	const items = $derived([
-		{ label: t('web.search.record'), value: 'record', search: 'web.search.records_label' },
-		{ label: t('web.search.user'), value: 'user', search: 'web.search.users_label' },
-	]);
-
-	let selected = $state('record');
+	let selected = $state<SearchType>(DEFAULT_SEARCH_TYPE);
 	let searchInput = $state<HTMLInputElement | null>(null);
 	let advancedSearchOpen = $state(false);
-	let searchText = $derived(items.find(item => item.value === selected)?.search ?? 'web.search.records_label');
 
 	function handleWindowKeydown(event: KeyboardEvent) {
 		if (event.key.toLowerCase() !== '/') {
@@ -46,10 +41,10 @@
 <svelte:window onkeydown={handleWindowKeydown} />
 
 <form action="/search" method="GET" class="card flex items-stretch overflow-hidden p-0 w-full sm:w-1/2">
-	<Select.Root type="single" {items} bind:value={selected} name="type">
+	<Select.Root type="single" bind:value={selected} name="type">
 		<Select.Trigger
 			aria-label={t('web.search.select_type')}
-			class="inline-flex w-36 min-w-0 shrink-0 items-center gap-1 border-r border-border px-3 py-2 text-sm font-medium text-foreground outline-hidden hover:bg-surface-hover focus-visible:bg-surface-hover focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary"
+			class="inline-flex w-40 min-w-0 shrink-0 items-center gap-1 border-r border-border px-3 py-2 text-sm font-medium text-foreground outline-hidden hover:bg-surface-hover focus-visible:bg-surface-hover focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary"
 		>
 			<span class="min-w-0 flex-1 truncate text-left">
 				{t(`web.search.${selected}`)}
@@ -62,14 +57,15 @@
 					<CaretUpIcon class="size-3" aria-label={t('web.search.select_type')} />
 				</Select.ScrollUpButton>
 				<Select.Viewport>
-					{#each items as item (item.value)}
+					{#each SEARCH_TYPES as item (item)}
+						{@const label = t(`web.search.${item}`)}
 						<Select.Item
 							class="flex w-full items-center justify-between rounded px-2 py-1.5 text-sm text-foreground outline-none data-highlighted:bg-surface-muted"
-							value={item.value}
-							label={item.label}
+							value={item}
+							{label}
 						>
 							{#snippet children({ selected })}
-								{item.label}
+								{label}
 								{#if selected}
 									<CheckIcon class="size-4 text-primary" aria-label={t('web.search.selected')} />
 								{/if}
@@ -93,7 +89,7 @@
 			type="search"
 			name="q"
 			aria-keyshortcuts="/"
-			placeholder={t('web.search.placeholder', t(searchText))}
+			placeholder={t(`web.search.placeholder.${selected}`)}
 			class={`
 				min-w-0 flex-1 border-0 bg-transparent py-2 text-sm text-foreground 
 				placeholder:text-muted-foreground appearance-none shadow-none! ring-0! outline-hidden focus:border-0
@@ -113,9 +109,9 @@
 		<NotePencilIcon class="size-4" aria-hidden="true" />
 	</button>
 
-	<button type="submit" class="btn-primary shrink-0 rounded-none border-l border-border"
-		>{t('web.search.button')}</button
-	>
+	<button type="submit" class="btn-primary shrink-0 rounded-none border-l border-border">
+		{t('web.search.button')}
+	</button>
 </form>
 
 <AppDialog bind:open={advancedSearchOpen} title="web.search.advanced">

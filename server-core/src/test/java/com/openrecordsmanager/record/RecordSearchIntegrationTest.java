@@ -12,8 +12,8 @@ import com.openrecordsmanager.database.DataRepository;
 import com.openrecordsmanager.database.SqliteTestSupport;
 import com.openrecordsmanager.location.user.User;
 import com.openrecordsmanager.property.ObjectProperty;
-import com.openrecordsmanager.record.dto.RecordSearchRequest;
 import com.openrecordsmanager.record.dto.RecordSearchResponse;
+import com.openrecordsmanager.search.dto.ObjectSearchRequest;
 import com.openrecordsmanager.record.type.RecordType;
 import com.openrecordsmanager.record.type.RecordTypeProperty;
 import org.junit.jupiter.api.BeforeEach;
@@ -72,7 +72,7 @@ class RecordSearchIntegrationTest {
 
         RecordSearchResponse response = this.recordService.search(
                 this.admin,
-                new RecordSearchRequest("Alpha Search", null, null, SEARCH_RECORD_TYPE, null, null)
+                new ObjectSearchRequest("Alpha Search", null, null, SEARCH_RECORD_TYPE, null, null)
         );
 
         assertEquals(1, response.items().size());
@@ -88,7 +88,7 @@ class RecordSearchIntegrationTest {
 
         RecordSearchResponse response = this.recordService.search(
                 this.admin,
-                new RecordSearchRequest(
+                new ObjectSearchRequest(
                         null,
                         List.of(new SearchClause(
                                 new ResourceIdentifier(BuiltinPlugin.BUILTIN_PLUGIN_NAME, BuiltinPropertyIds.TITLE),
@@ -121,7 +121,7 @@ class RecordSearchIntegrationTest {
 
         RecordSearchResponse response = this.recordService.search(
                 this.admin,
-                new RecordSearchRequest(
+                new ObjectSearchRequest(
                         null,
                         List.of(new SearchClause(
                                 CUSTOM_PROP,

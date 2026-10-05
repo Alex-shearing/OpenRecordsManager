@@ -10,8 +10,8 @@ import com.openrecordsmanager.api.search.SearchOperator;
 import com.openrecordsmanager.database.DataRepository;
 import com.openrecordsmanager.database.SqliteTestSupport;
 import com.openrecordsmanager.location.LocationService;
-import com.openrecordsmanager.location.dto.LocationSearchRequest;
 import com.openrecordsmanager.location.dto.LocationSearchResponse;
+import com.openrecordsmanager.search.dto.ObjectSearchRequest;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -45,7 +45,8 @@ class UserSearchIntegrationTest {
 
         LocationSearchResponse response = this.locationService.search(
                 admin,
-                new LocationSearchRequest("admin", null, null, null, null, LocationKind.USER)
+                LocationKind.USER,
+                new ObjectSearchRequest("admin", null, null, null, null, null)
         );
 
         assertEquals(1, response.items().size());
@@ -58,13 +59,14 @@ class UserSearchIntegrationTest {
 
         LocationSearchResponse response = this.locationService.search(
                 admin,
-                new LocationSearchRequest(
+                LocationKind.USER,
+                new ObjectSearchRequest(
                         null,
                         List.of(new SearchClause(new ResourceIdentifier(BuiltinPlugin.BUILTIN_PLUGIN_NAME, BuiltinPropertyIds.EMAIL), SearchOperator.IS_NULL, null)),
                         null,
                         null,
                         null,
-                        LocationKind.USER
+                        null
                 )
         );
 

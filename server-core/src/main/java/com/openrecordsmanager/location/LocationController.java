@@ -1,8 +1,8 @@
 package com.openrecordsmanager.location;
 
 import com.openrecordsmanager.api.ResourceIdentifier;
+import com.openrecordsmanager.api.location.LocationKind;
 import com.openrecordsmanager.location.dto.LocationResponse;
-import com.openrecordsmanager.location.dto.LocationSearchRequest;
 import com.openrecordsmanager.location.dto.LocationSearchResponse;
 import com.openrecordsmanager.location.dto.NewLocationRequest;
 import com.openrecordsmanager.location.dto.UpdateLocationRequest;
@@ -14,6 +14,7 @@ import com.openrecordsmanager.rest.dto.ActionResponse;
 import com.openrecordsmanager.rest.swagger.ConflictApiResponse;
 import com.openrecordsmanager.rest.swagger.DefaultApiResponses;
 import com.openrecordsmanager.rest.swagger.NotFoundApiResponse;
+import com.openrecordsmanager.search.dto.ObjectSearchRequest;
 import io.swagger.v3.oas.annotations.Operation;
 import org.jspecify.annotations.Nullable;
 import org.springframework.http.MediaType;
@@ -40,8 +41,12 @@ public class LocationController {
 
     @PostMapping(value = "/search", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Search locations by property criteria")
-    public LocationSearchResponse searchLocations(@AuthenticationPrincipal User user, @RequestBody LocationSearchRequest input) {
-        return this.service.search(user, input);
+    public LocationSearchResponse searchLocations(
+            @AuthenticationPrincipal User user,
+            @RequestParam(required = false) @Nullable LocationKind kind,
+            @RequestBody ObjectSearchRequest input
+    ) {
+        return this.service.search(user, kind, input);
     }
 
     @GetMapping(value = "/me", produces = MediaType.APPLICATION_JSON_VALUE)

@@ -282,7 +282,7 @@ export type NewRecordRequest = {
     };
 };
 
-export type RecordSearchRequest = {
+export type ObjectSearchRequest = {
     q?: string;
     filters?: Array<SearchClause>;
     match?: 'ALL' | 'ANY';
@@ -349,15 +349,6 @@ export type LocationRelationshipResponse = {
     typeId: string;
     dateCreated: string;
     activeTo?: string;
-};
-
-export type LocationSearchRequest = {
-    q?: string;
-    filters?: Array<SearchClause>;
-    match?: 'ALL' | 'ANY';
-    limit?: number;
-    cursor?: string;
-    kind?: 'user' | 'group' | 'any';
 };
 
 export type LocationSearchResponse = {
@@ -2451,7 +2442,7 @@ export type ExecuteActionResponses = {
 export type ExecuteActionResponse = ExecuteActionResponses[keyof ExecuteActionResponses];
 
 export type SearchData = {
-    body: RecordSearchRequest;
+    body: ObjectSearchRequest;
     path?: never;
     query?: never;
     url: '/api/records/search';
@@ -2850,9 +2841,14 @@ export type ExecuteLocationActionResponses = {
 export type ExecuteLocationActionResponse = ExecuteLocationActionResponses[keyof ExecuteLocationActionResponses];
 
 export type SearchLocationsData = {
-    body: LocationSearchRequest;
+    body: ObjectSearchRequest;
     path?: never;
-    query?: never;
+    query?: {
+        /**
+         * Optional location kind filter
+         */
+        kind?: 'user' | 'group' | 'any';
+    };
     url: '/api/location/search';
 };
 

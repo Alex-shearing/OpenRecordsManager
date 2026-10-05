@@ -1,4 +1,4 @@
-package com.openrecordsmanager.record.dto;
+package com.openrecordsmanager.search.dto;
 
 import com.openrecordsmanager.api.ResourceIdentifier;
 import com.openrecordsmanager.api.search.SearchClause;
@@ -8,7 +8,7 @@ import org.jspecify.annotations.Nullable;
 import java.util.List;
 import java.util.UUID;
 
-public record RecordSearchRequest(
+public record ObjectSearchRequest(
         @Nullable String q,
         @Nullable List<SearchClause> filters,
         @Nullable SearchMatchMode match,

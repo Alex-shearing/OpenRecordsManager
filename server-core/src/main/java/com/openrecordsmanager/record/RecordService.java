@@ -26,6 +26,7 @@ import com.openrecordsmanager.rest.exception.ForbiddenException;
 import com.openrecordsmanager.rest.exception.ResourceNotFoundException;
 import com.openrecordsmanager.schema.JsonSchemaValidator;
 import com.openrecordsmanager.search.ObjectSearchExecutor;
+import com.openrecordsmanager.search.dto.ObjectSearchRequest;
 import com.openrecordsmanager.search.sql.BuiltinColumnResolver;
 import com.openrecordsmanager.search.sql.ObjectSearchSchema;
 import org.springframework.stereotype.Service;
@@ -79,7 +80,7 @@ public class RecordService {
     }
 
     @Transactional(readOnly = true)
-    public RecordSearchResponse search(User actor, RecordSearchRequest request) {
+    public RecordSearchResponse search(User actor, ObjectSearchRequest request) {
         int pageLimit = request.limitOrDefault();
         int fetchLimit = pageLimit * SECURITY_OVERFETCH_FACTOR;
         UUID cursor = request.cursor();

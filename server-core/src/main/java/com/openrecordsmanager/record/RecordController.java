@@ -1,11 +1,12 @@
 package com.openrecordsmanager.record;
 
 import com.openrecordsmanager.api.ResourceIdentifier;
+import com.openrecordsmanager.location.user.User;
 import com.openrecordsmanager.record.dto.*;
 import com.openrecordsmanager.rest.dto.ActionResponse;
 import com.openrecordsmanager.rest.swagger.DefaultApiResponses;
 import com.openrecordsmanager.rest.swagger.NotFoundApiResponse;
-import com.openrecordsmanager.location.user.User;
+import com.openrecordsmanager.search.dto.ObjectSearchRequest;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.constraints.Pattern;
 import org.jspecify.annotations.Nullable;
@@ -40,7 +41,7 @@ public class RecordController {
 
     @PostMapping(value = "/search", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Search records by property criteria")
-    public RecordSearchResponse search(@AuthenticationPrincipal User user, @RequestBody RecordSearchRequest input) {
+    public RecordSearchResponse search(@AuthenticationPrincipal User user, @RequestBody ObjectSearchRequest input) {
         return this.service.search(user, input);
     }
 

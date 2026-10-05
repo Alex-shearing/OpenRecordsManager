@@ -1,49 +1,36 @@
 import { LocationController, RecordController, type LocationResponse, type RecordResponse } from '#lib/api/index.js';
 import { getApiClient } from '#lib/api-client.js';
+import { isSearchType, locationKindQuery } from '#lib/search.js';
 
-export type SearchType = 'record' | 'user';
-
-function isSearchType(value: string | null): value is SearchType {
-	return value === 'record' || value === 'user';
-}
-
-export type SearchEmptyKey = 'web.search.begin' | 'web.search.enter_query' | 'web.search.unsupported_type';
-
-export async function load({ parent, url }: { parent: () => Promise<unknown>; url: URL }) {
+export async function load({ parent, url }) {
 	await parent();
 
 	const typeParam = url.searchParams.get('type');
 	const q = url.searchParams.get('q')?.trim() ?? '';
-	const type = isSearchType(typeParam) ? typeParam : null;
+	const type = isSearchType(typeParam) ? typeParam : undefined;
 
 	if (!type || !q) {
 		return {
 			type,
 			q,
 			items: [] as Array<RecordResponse | LocationResponse>,
-			nextCursor: null as string | null,
-			emptyKey: (!type && !q
-				? 'web.search.begin'
-				: !q
-					? 'web.search.enter_query'
-					: 'web.search.unsupported_type') as SearchEmptyKey | null,
 		};
 	}
 
-	const client = getApiClient();
 	const result =
 		type === 'record'
-			? await RecordController.search({ client, body: { q } })
-			: await LocationController.searchLocations({ client, body: { q, kind: 'user' } });
-
-	const payload = result.data?.success ? result.data.data : null;
+			? await RecordController.search({ client: getApiClient(), body: { q } })
+			: await LocationController.searchLocations({
+					client: getApiClient(),
+					body: { q },
+					query: locationKindQuery(type),
+				});
 
 	return {
 		type,
 		q,
-		items: payload?.items ?? [],
-		nextCursor: payload?.nextCursor,
+		items: result.data?.data?.items ?? [],
+		nextCursor: result.data?.data?.nextCursor,
 		error: result.error,
-		emptyKey: null as SearchEmptyKey | null,
 	};
 }
