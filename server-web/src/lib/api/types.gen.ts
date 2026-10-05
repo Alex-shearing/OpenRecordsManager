@@ -289,7 +289,6 @@ export type ObjectSearchRequest = {
     type?: string;
     limit?: number;
     cursor?: string;
-    columns?: Array<string>;
 };
 
 export type SearchClause = {
@@ -304,7 +303,6 @@ export type SearchClause = {
 export type RecordSearchResponse = {
     items?: Array<RecordResponse>;
     nextCursor?: string;
-    columns?: Array<string>;
 };
 
 export type NewObjectPropertyRequest = {
@@ -356,7 +354,6 @@ export type LocationRelationshipResponse = {
 export type LocationSearchResponse = {
     items?: Array<LocationResponse>;
     nextCursor?: string;
-    columns?: Array<string>;
 };
 
 export type NewLocationRelationshipTypeRequest = {
@@ -2847,9 +2844,6 @@ export type SearchLocationsData = {
     body: ObjectSearchRequest;
     path?: never;
     query?: {
-        /**
-         * Optional location kind filter
-         */
         kind?: 'user' | 'group' | 'any';
     };
     url: '/api/location/search';

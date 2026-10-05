@@ -25,7 +25,6 @@ import com.openrecordsmanager.rest.exception.ActionNotAvailableException;
 import com.openrecordsmanager.rest.exception.ForbiddenException;
 import com.openrecordsmanager.rest.exception.ResourceNotFoundException;
 import com.openrecordsmanager.schema.JsonSchemaValidator;
-import com.openrecordsmanager.search.ObjectSearchColumns;
 import com.openrecordsmanager.search.ObjectSearchExecutor;
 import com.openrecordsmanager.search.dto.ObjectSearchRequest;
 import com.openrecordsmanager.search.sql.BuiltinColumnResolver;
@@ -127,7 +126,6 @@ public class RecordService {
         }
 
         UUID nextCursor = items.size() == pageLimit ? items.getLast().id() : null;
-        List<ResourceIdentifier> columns = ObjectSearchColumns.resolve(request, this.searchSchema);
 
         String scope = request.type() != null ? request.type().toString() : AuditService.COLLECTION_TARGET_ID;
         this.auditService.recordSearchRead(
@@ -137,7 +135,7 @@ public class RecordService {
                 items.size()
         );
 
-        return new RecordSearchResponse(List.copyOf(items), nextCursor, columns);
+        return new RecordSearchResponse(List.copyOf(items), nextCursor);
     }
 
     @Transactional(readOnly = true)

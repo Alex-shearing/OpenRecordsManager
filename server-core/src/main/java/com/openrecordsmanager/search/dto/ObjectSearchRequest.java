@@ -8,14 +8,16 @@ import org.jspecify.annotations.Nullable;
 import java.util.List;
 import java.util.UUID;
 
+/**
+ * Shared property-search request body for object holders (records, locations, etc.).
+ */
 public record ObjectSearchRequest(
         @Nullable String q,
         @Nullable List<SearchClause> filters,
         @Nullable SearchMatchMode match,
         @Nullable ResourceIdentifier type,
         @Nullable Integer limit,
-        @Nullable UUID cursor,
-        @Nullable List<ResourceIdentifier> columns
+        @Nullable UUID cursor
 ) {
     public SearchMatchMode matchOrDefault() {
         return this.match == null ? SearchMatchMode.ALL : this.match;

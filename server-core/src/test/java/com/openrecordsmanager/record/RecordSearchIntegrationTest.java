@@ -29,7 +29,6 @@ import java.util.List;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @SpringBootTest
 class RecordSearchIntegrationTest {
@@ -73,7 +72,7 @@ class RecordSearchIntegrationTest {
 
         RecordSearchResponse response = this.recordService.search(
                 this.admin,
-                new ObjectSearchRequest("Alpha Search", null, null, SEARCH_RECORD_TYPE, null, null, null)
+                new ObjectSearchRequest("Alpha Search", null, null, SEARCH_RECORD_TYPE, null, null)
         );
 
         assertEquals(1, response.items().size());
@@ -81,9 +80,6 @@ class RecordSearchIntegrationTest {
                 "Alpha Search Target",
                 response.items().getFirst().properties().get(new ResourceIdentifier(BuiltinPlugin.BUILTIN_PLUGIN_NAME, BuiltinPropertyIds.TITLE).toString()).asString()
         );
-        assertTrue(response.columns().contains(
-                new ResourceIdentifier(BuiltinPlugin.BUILTIN_PLUGIN_NAME, BuiltinPropertyIds.TITLE)
-        ));
     }
 
     @Test
@@ -99,7 +95,6 @@ class RecordSearchIntegrationTest {
                                 SearchOperator.EQ,
                                 JsonNodeFactory.instance.stringNode("Exact Filter Title")
                         )),
-                        null,
                         null,
                         null,
                         null,
@@ -133,7 +128,6 @@ class RecordSearchIntegrationTest {
                                 SearchOperator.EQ,
                                 JsonNodeFactory.instance.stringNode("needle-value")
                         )),
-                        null,
                         null,
                         null,
                         null,

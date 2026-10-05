@@ -57,13 +57,18 @@
 
 	const selectedItems = $derived(selected.map(key => byKey.get(key)).filter((entry): entry is T => entry != null));
 
+	function defaultComparion(a: T, b: T) {
+		const aText = getSearchText?.(a) ?? getKey(a);
+		const bText = getSearchText?.(b) ?? getKey(b);
+		const textCmp = aText.localeCompare(bText);
+		return textCmp !== 0 ? textCmp : getKey(a).localeCompare(getKey(b));
+	}
+
 	const availableItems = $derived.by(() => {
 		const selectedSet = new Set(selected);
 		const remaining = items.filter(entry => !selectedSet.has(getKey(entry)));
-		if (compareAvailable) {
-			return [...remaining].sort(compareAvailable);
-		}
-		return remaining;
+		const compare = compareAvailable ?? defaultComparion;
+		return [...remaining].sort(compare);
 	});
 
 	let availableQuery = $state('');

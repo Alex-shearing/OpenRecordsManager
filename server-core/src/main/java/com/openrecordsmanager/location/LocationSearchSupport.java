@@ -1,12 +1,10 @@
 package com.openrecordsmanager.location;
 
-import com.openrecordsmanager.api.ResourceIdentifier;
 import com.openrecordsmanager.api.audit.AuditEntityType;
 import com.openrecordsmanager.audit.AuditService;
 import com.openrecordsmanager.location.dto.LocationResponse;
 import com.openrecordsmanager.location.dto.LocationSearchResponse;
 import com.openrecordsmanager.location.user.User;
-import com.openrecordsmanager.search.ObjectSearchColumns;
 import com.openrecordsmanager.search.ObjectSearchExecutor;
 import com.openrecordsmanager.search.dto.ObjectSearchRequest;
 import com.openrecordsmanager.search.sql.ObjectSearchSchema;
@@ -63,7 +61,6 @@ public class LocationSearchSupport {
         }
 
         UUID nextCursor = hasMore && !items.isEmpty() ? items.getLast().id() : null;
-        List<ResourceIdentifier> columns = ObjectSearchColumns.resolve(request, schema);
 
         String scope = request.type() != null ? request.type().toString() : AuditService.COLLECTION_TARGET_ID;
         this.auditService.recordSearchRead(
@@ -73,6 +70,6 @@ public class LocationSearchSupport {
                 items.size()
         );
 
-        return new LocationSearchResponse(List.copyOf(items), nextCursor, columns);
+        return new LocationSearchResponse(List.copyOf(items), nextCursor);
     }
 }

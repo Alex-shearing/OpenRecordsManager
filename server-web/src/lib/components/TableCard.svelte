@@ -8,6 +8,7 @@
 		getKey,
 		header,
 		row,
+		actions,
 		class: className = '',
 	}: {
 		title: string;
@@ -16,13 +17,17 @@
 		getKey: (item: T) => string | number;
 		header: Snippet;
 		row: Snippet<[T]>;
+		actions?: Snippet;
 		class?: string;
 	} = $props();
 </script>
 
 <section class={['card', className]}>
-	<div class="card-header">
+	<div class="card-header flex items-center justify-between gap-3">
 		<h2 class="text-lg font-medium">{title}</h2>
+		{#if actions}
+			<div class="shrink-0">{@render actions()}</div>
+		{/if}
 	</div>
 
 	{#if items.length === 0}

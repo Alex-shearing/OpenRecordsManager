@@ -1,6 +1,6 @@
 import { LocationController, RecordController, type LocationResponse, type RecordResponse } from '#lib/api/index.js';
 import { getApiClient } from '#lib/api-client.js';
-import { isSearchType, locationKindQuery } from '#lib/search.js';
+import { isSearchType, locationKindQuery, resolveSearchColumns } from '#lib/search.js';
 
 export async function load({ parent, url }) {
 	await parent();
@@ -14,6 +14,7 @@ export async function load({ parent, url }) {
 			type,
 			q,
 			items: [] as Array<RecordResponse | LocationResponse>,
+			columns: [] as string[],
 		};
 	}
 
@@ -31,6 +32,7 @@ export async function load({ parent, url }) {
 		q,
 		items: result.data?.data?.items ?? [],
 		nextCursor: result.data?.data?.nextCursor,
+		columns: resolveSearchColumns(type),
 		error: result.error,
 	};
 }
