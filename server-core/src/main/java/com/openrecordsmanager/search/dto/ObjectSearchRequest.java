@@ -14,7 +14,8 @@ public record ObjectSearchRequest(
         @Nullable SearchMatchMode match,
         @Nullable ResourceIdentifier type,
         @Nullable Integer limit,
-        @Nullable UUID cursor
+        @Nullable UUID cursor,
+        @Nullable List<ResourceIdentifier> columns
 ) {
     public SearchMatchMode matchOrDefault() {
         return this.match == null ? SearchMatchMode.ALL : this.match;

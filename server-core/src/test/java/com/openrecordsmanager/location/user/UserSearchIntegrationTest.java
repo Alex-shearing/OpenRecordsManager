@@ -46,11 +46,14 @@ class UserSearchIntegrationTest {
         LocationSearchResponse response = this.locationService.search(
                 admin,
                 LocationKind.USER,
-                new ObjectSearchRequest("admin", null, null, null, null, null)
+                new ObjectSearchRequest("admin", null, null, null, null, null, null)
         );
 
         assertEquals(1, response.items().size());
         assertEquals("admin", response.items().getFirst().name());
+        assertTrue(response.columns().contains(
+                new ResourceIdentifier(BuiltinPlugin.BUILTIN_PLUGIN_NAME, BuiltinPropertyIds.NAME)
+        ));
     }
 
     @Test
@@ -63,6 +66,7 @@ class UserSearchIntegrationTest {
                 new ObjectSearchRequest(
                         null,
                         List.of(new SearchClause(new ResourceIdentifier(BuiltinPlugin.BUILTIN_PLUGIN_NAME, BuiltinPropertyIds.EMAIL), SearchOperator.IS_NULL, null)),
+                        null,
                         null,
                         null,
                         null,
