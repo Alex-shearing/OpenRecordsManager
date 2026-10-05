@@ -10,7 +10,7 @@ export type TypePropertyAssignment = {
 	default?: unknown;
 };
 
-const AUTO_MANAGED = new Set(['builtin:date_created', 'builtin:date_modified']);
+const AUTO_MANAGED = new Set(['builtin:id', 'builtin:date_created', 'builtin:date_modified']);
 const LOCATION_IDENTITY = new Set(['builtin:name']);
 const RECORD_IDENTITY = new Set(['builtin:title']);
 

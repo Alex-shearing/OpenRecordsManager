@@ -1,6 +1,8 @@
 package com.openrecordsmanager.property;
 
 import com.openrecordsmanager.api.ResourceIdentifier;
+import com.openrecordsmanager.api.builtin.BuiltinPlugin;
+import com.openrecordsmanager.api.builtin.BuiltinPropertyIds;
 import com.openrecordsmanager.api.template.property.PropertyType;
 import org.jspecify.annotations.Nullable;
 import tools.jackson.databind.JsonNode;
@@ -43,6 +45,15 @@ public abstract class ObjectPropertyHolder<SELF extends ObjectPropertyHolder<SEL
      */
     public final Map<String, @Nullable Object> toDomainMap() {
         return new DomainPropertyMap(this);
+    }
+
+    final boolean hasBuiltin(ResourceIdentifier id) {
+        return this.getBuiltinPropertyBindings().containsKey(id);
+    }
+
+    final @Nullable Object readBuiltin(ResourceIdentifier id) {
+        BuiltinPropertyBinding<SELF, ?> binding = this.getBuiltinPropertyBindings().get(id);
+        return binding == null ? null : binding.get(this.self());
     }
 
     public <K> @Nullable K getProperty(ObjectProperty<K> property) {
@@ -142,6 +153,9 @@ public abstract class ObjectPropertyHolder<SELF extends ObjectPropertyHolder<SEL
     }
 
     private static final class WirePropertyMap extends AbstractMap<String, JsonNode> {
+        private static final ResourceIdentifier BUILTIN_ID =
+                new ResourceIdentifier(BuiltinPlugin.BUILTIN_PLUGIN_NAME, BuiltinPropertyIds.ID);
+
         private final ObjectPropertyHolder<?, ?> holder;
 
         private WirePropertyMap(ObjectPropertyHolder<?, ?> holder) {
@@ -155,18 +169,25 @@ public abstract class ObjectPropertyHolder<SELF extends ObjectPropertyHolder<SEL
             }
             return findProperty(keyString)
                     .map(property -> encode(property, this.holder.getProperty(property)))
-                    .orElse(null);
+                    .orElseGet(() -> BUILTIN_ID.toString().equals(keyString) ? encodeBuiltinId() : null);
         }
 
         @Override
         public Set<Entry<String, JsonNode>> entrySet() {
-            return this.holder.getPropertyKeys().stream()
+            Set<Entry<String, JsonNode>> entries = this.holder.getPropertyKeys().stream()
                     .filter(entry -> !entry.isUserHidden())
                     .map(entry -> new AbstractMap.SimpleEntry<>(
                             entry.getId().toString(),
                             encode(entry, this.holder.getProperty(entry))
                     ))
                     .collect(Collectors.toSet());
+
+            // Always include identity, even when the type schema omits builtin:id.
+            JsonNode idValue = encodeBuiltinId();
+            if (idValue != null && entries.stream().noneMatch(entry -> BUILTIN_ID.toString().equals(entry.getKey()))) {
+                entries.add(new AbstractMap.SimpleEntry<>(BUILTIN_ID.toString(), idValue));
+            }
+            return entries;
         }
 
         private Optional<ObjectProperty<?>> findProperty(String keyString) {
@@ -174,6 +195,14 @@ public abstract class ObjectPropertyHolder<SELF extends ObjectPropertyHolder<SEL
                     .filter(property -> !property.isUserHidden())
                     .filter(property -> property.getId().toString().equals(keyString))
                     .findFirst();
+        }
+
+        private @Nullable JsonNode encodeBuiltinId() {
+            if (!this.holder.hasBuiltin(BUILTIN_ID)) {
+                return null;
+            }
+            Object value = this.holder.readBuiltin(BUILTIN_ID);
+            return value == null ? NullNode.getInstance() : PropertyType.toTree(value);
         }
 
         private static JsonNode encode(ObjectProperty<?> property, @Nullable Object domainValue) {

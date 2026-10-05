@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 @SpringBootTest
 class RecordSearchIntegrationTest {
@@ -79,6 +80,12 @@ class RecordSearchIntegrationTest {
         assertEquals(
                 "Alpha Search Target",
                 response.items().getFirst().properties().get(new ResourceIdentifier(BuiltinPlugin.BUILTIN_PLUGIN_NAME, BuiltinPropertyIds.TITLE).toString()).asString()
+        );
+        String idKey = new ResourceIdentifier(BuiltinPlugin.BUILTIN_PLUGIN_NAME, BuiltinPropertyIds.ID).toString();
+        assertNotNull(response.items().getFirst().properties().get(idKey));
+        assertEquals(
+                response.items().getFirst().id().toString(),
+                response.items().getFirst().properties().get(idKey).asString()
         );
     }
 

@@ -31,6 +31,7 @@ public class Record extends ObjectPropertyHolder<Record, RecordPropertyValue> {
             BuiltinPropertyBinding.scan(Record.class);
 
     @Id
+    @BuiltinProperty(value = BuiltinPropertyIds.ID, readOnly = true)
     private UUID id;
 
     @BuiltinProperty(value = BuiltinPropertyIds.TITLE, defaultSearch = true)
@@ -88,9 +89,11 @@ public class Record extends ObjectPropertyHolder<Record, RecordPropertyValue> {
     }
 
     public Record(String title, RecordType type) {
-        this.id = UuidVersion7Strategy.INSTANCE.generateUuid(null);
         this.type = type;
+        // Defaults before id/timestamps so readOnly builtins short-circuit on null→null.
         type.getProperties().forEach(p -> this.setPropertyFromJson(p.getProperty(), p.getDefault()));
+
+        this.id = UuidVersion7Strategy.INSTANCE.generateUuid(null);
         this.title = title;
         this.dateCreated = Instant.now();
         this.dateModified = Instant.now();

@@ -5,6 +5,7 @@ package com.openrecordsmanager.api.builtin;
  */
 public final class BuiltinPropertyIds {
 
+    public static final String ID = "id";
     public static final String NOTES = "notes";
     public static final String DATE_REGISTERED = "date_registered";
     public static final String DATE_CREATED = "date_created";

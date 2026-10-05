@@ -17,10 +17,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
 
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @SpringBootTest
@@ -39,6 +42,9 @@ class UserSearchIntegrationTest {
     @Autowired
     private DataRepository repository;
 
+    @Autowired
+    private ObjectMapper objectMapper;
+
     @Test
     void searchByNameDefaultQ() {
         User admin = this.repository.userRepo.findByName("admin").orElseThrow();
@@ -51,6 +57,16 @@ class UserSearchIntegrationTest {
 
         assertEquals(1, response.items().size());
         assertEquals("admin", response.items().getFirst().name());
+        String idKey = new ResourceIdentifier(BuiltinPlugin.BUILTIN_PLUGIN_NAME, BuiltinPropertyIds.ID).toString();
+        assertNotNull(
+                response.items().getFirst().properties().get(idKey),
+                "search response should include builtin:id in properties"
+        );
+        assertEquals(admin.getId().toString(), response.items().getFirst().properties().get(idKey).asString());
+
+        JsonNode json = this.objectMapper.valueToTree(response.items().getFirst());
+        assertTrue(json.path("properties").has(idKey), () -> "JSON missing builtin:id: " + json);
+        assertEquals(admin.getId().toString(), json.path("properties").path(idKey).asString());
     }
 
     @Test

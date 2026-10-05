@@ -121,6 +121,7 @@ class PrimaryOfflineIntegrationTest {
                     "INSERT INTO location_type_property (location_type, property_id, default_value) VALUES (?, ?, NULL)"
             )) {
                 for (String propertyId : new String[]{
+                        BuiltinPropertyIds.ID,
                         BuiltinPropertyIds.NAME,
                         BuiltinPropertyIds.NOTES,
                         BuiltinPropertyIds.DATE_CREATED,

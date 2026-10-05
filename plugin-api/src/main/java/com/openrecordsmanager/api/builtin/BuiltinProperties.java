@@ -8,12 +8,18 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 public final class BuiltinProperties {
 
     private static final Map<String, ObjectPropertyTemplate<?>> TEMPLATES = new LinkedHashMap<>();
     public static final Map<String, ObjectPropertyTemplate<?>> BUILTIN_PROPERTIES =
             Collections.unmodifiableMap(TEMPLATES);
+
+    public static final ObjectPropertyTemplate<UUID> ID = register(
+            BuiltinPropertyIds.ID,
+            ObjectPropertyTemplate.builder(PropertyType.UUID).build()
+    );
 
     public static final ObjectPropertyTemplate<String> NOTES = register(
             BuiltinPropertyIds.NOTES,

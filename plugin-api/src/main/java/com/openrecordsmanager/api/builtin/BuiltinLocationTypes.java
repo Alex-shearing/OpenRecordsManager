@@ -17,6 +17,7 @@ public final class BuiltinLocationTypes {
             BuiltinLocationTypeIds.USER,
             LocationTypeTemplate.builder()
                     .kind(LocationKind.USER)
+                    .property(BuiltinProperties.ID)
                     .property(BuiltinProperties.NAME)
                     .property(BuiltinProperties.NOTES)
                     .property(BuiltinProperties.DATE_CREATED)
@@ -32,6 +33,7 @@ public final class BuiltinLocationTypes {
             BuiltinLocationTypeIds.GROUP,
             LocationTypeTemplate.builder()
                     .kind(LocationKind.GROUP)
+                    .property(BuiltinProperties.ID)
                     .property(BuiltinProperties.NAME)
                     .property(BuiltinProperties.NOTES)
                     .property(BuiltinProperties.DATE_CREATED)

@@ -34,6 +34,13 @@ public class BuiltinColumnResolver {
 
     ResolvedColumn resolveColumn(Class<?> entityClass, String javaAttribute) {
         EntityPersister persister = entityPersister(entityClass);
+
+        // Hibernate keeps the identifier outside AttributeMapping; resolve it via identifier metadata.
+        if (javaAttribute.equals(persister.getIdentifierPropertyName())) {
+            QualifiedSqlColumn id = idColumn(persister, entityClass);
+            return new ResolvedColumn(id, id);
+        }
+
         SelectableMapping selectable = requirePhysicalSelectable(
                 requireAttribute(persister, entityClass, javaAttribute),
                 entityClass,

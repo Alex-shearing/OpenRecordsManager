@@ -31,6 +31,7 @@ public abstract class Location extends ObjectPropertyHolder<Location, LocationPr
             BuiltinPropertyBinding.scan(Location.class);
 
     @Id
+    @BuiltinProperty(value = BuiltinPropertyIds.ID, readOnly = true)
     private UUID id;
 
     @ManyToOne(optional = false, fetch = FetchType.EAGER)
@@ -72,9 +73,11 @@ public abstract class Location extends ObjectPropertyHolder<Location, LocationPr
                             + " does not match " + this.getKind()
             );
         }
-        this.id = UuidVersion7Strategy.INSTANCE.generateUuid(null);
         this.type = type;
+        // Defaults before id/timestamps so readOnly builtins short-circuit on null→null.
         type.getProperties().forEach(p -> this.setPropertyFromJson(p.getProperty(), p.getDefault()));
+
+        this.id = UuidVersion7Strategy.INSTANCE.generateUuid(null);
         this.name = name;
         this.dateCreated = Instant.now();
         this.dateModified = Instant.now();

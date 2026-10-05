@@ -7,6 +7,7 @@
   ],
   "securityFilterUsage": "HIDE_FILES",
   "properties": {
+    "object_property/builtin:id": null,
     "object_property/builtin:title": null,
     "object_property/builtin:date_created": null,
     "object_property/builtin:date_registered": null,
