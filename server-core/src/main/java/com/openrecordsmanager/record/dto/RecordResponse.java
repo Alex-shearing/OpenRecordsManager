@@ -15,15 +15,17 @@ public record RecordResponse(
         @NotBlank UUID id,
         @NotBlank ResourceIdentifier type,
         @NotNull Map<String, @Nullable JsonNode> properties,
-        @NotNull List<String> revisions
+        @NotNull List<String> revisions,
+        @NotNull boolean canAccessRevisions
 ) {
 
-    public static RecordResponse of(Record record) {
+    public static RecordResponse of(Record record, boolean canAccessRevisions) {
         return new RecordResponse(
                 record.getId(),
                 record.getType().getId(),
                 record.toWireMap(),
-                record.getRevisionList()
+                record.getRevisionList(),
+                canAccessRevisions
         );
     }
 }

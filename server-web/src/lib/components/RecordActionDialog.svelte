@@ -48,7 +48,7 @@
 		submitting = true;
 		error = undefined;
 
-		const { error: apiError } = await RecordController.executeAction({
+		const { error: apiError } = await RecordController.executeRecordAction({
 			client: getApiClient(),
 			path: { id: recordId, action: action.id },
 			body: values,

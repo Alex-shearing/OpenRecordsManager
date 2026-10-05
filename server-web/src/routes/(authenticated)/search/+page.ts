@@ -20,7 +20,7 @@ export async function load({ parent, url }) {
 
 	const result =
 		type === 'record'
-			? await RecordController.search({ client: getApiClient(), body: { q } })
+			? await RecordController.searchRecords({ client: getApiClient(), body: { q } })
 			: await LocationController.searchLocations({
 					client: getApiClient(),
 					body: { q },

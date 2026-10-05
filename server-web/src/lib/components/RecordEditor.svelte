@@ -100,7 +100,7 @@
 			submitting = true;
 			formError = undefined;
 
-			const { data, error } = await RecordController.newRecord({
+			const { data, error } = await RecordController.createRecord({
 				client: getApiClient(),
 				body: { type: typeId, title, properties: compactPropertyValues(values) },
 				headers: auditHeaders(auditComment),
@@ -127,7 +127,7 @@
 		submitting = true;
 		formError = undefined;
 
-		const { error } = await RecordController.update({
+		const { error } = await RecordController.updateRecord({
 			client: getApiClient(),
 			path: { id: record.id },
 			body: { title, properties: compactPropertyValues(values) },

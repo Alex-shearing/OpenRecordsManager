@@ -110,10 +110,11 @@ public class RecordService {
                 if (record == null) {
                     continue;
                 }
-                if (!record.securityFilter(this.expressions, actor).canSeeMetadata()) {
+                SecurityFilterUsage filter = record.securityFilter(this.expressions, actor);
+                if (!filter.canSeeMetadata()) {
                     continue;
                 }
-                items.add(RecordResponse.of(record));
+                items.add(RecordResponse.of(record, filter.canSeeFiles()));
                 if (items.size() >= pageLimit) {
                     break;
                 }
@@ -141,12 +142,15 @@ public class RecordService {
     @Transactional(readOnly = true)
     public RecordResponse get(User actor, UUID id) {
         Record record = this.repository.recordRepo.findById(id)
-                .filter(r -> r.securityFilter(this.expressions, actor).canSeeMetadata())
                 .orElseThrow(() -> new ResourceNotFoundException("record", id));
+        SecurityFilterUsage filter = record.securityFilter(this.expressions, actor);
+        if (!filter.canSeeMetadata()) {
+            throw new ResourceNotFoundException("record", id);
+        }
 
         this.auditService.addReadEvent(AuditEntityType.RECORD, id);
 
-        return RecordResponse.of(record);
+        return RecordResponse.of(record, filter.canSeeFiles());
     }
 
     @Transactional
@@ -173,7 +177,7 @@ public class RecordService {
                 null
         );
 
-        return RecordResponse.of(record);
+        return RecordResponse.of(record, true);
     }
 
     @Transactional
@@ -215,7 +219,7 @@ public class RecordService {
                 null
         );
 
-        return RecordResponse.of(record);
+        return RecordResponse.of(record, record.securityFilter(this.expressions, actor).canSeeFiles());
     }
 
     @Transactional
@@ -267,7 +271,7 @@ public class RecordService {
                 null
         );
 
-        return RecordResponse.of(record);
+        return RecordResponse.of(record, filter.canSeeFiles());
     }
 
     @Transactional(readOnly = true)

@@ -41,28 +41,28 @@ public class RecordController {
 
     @PostMapping(value = "/search", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Search records by property criteria")
-    public RecordSearchResponse search(@AuthenticationPrincipal User user, @RequestBody ObjectSearchRequest input) {
+    public RecordSearchResponse searchRecords(@AuthenticationPrincipal User user, @RequestBody ObjectSearchRequest input) {
         return this.service.search(user, input);
     }
 
     @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Get record details")
     @NotFoundApiResponse
-    public RecordResponse get(@AuthenticationPrincipal User user, @PathVariable("id") UUID id) {
+    public RecordResponse getRecord(@AuthenticationPrincipal User user, @PathVariable("id") UUID id) {
         return this.service.get(user, id);
     }
 
     @GetMapping(value = "/{id}/actions", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "List available actions for a record")
     @NotFoundApiResponse
-    public Set<ActionResponse> listActions(@AuthenticationPrincipal User user, @PathVariable("id") UUID id) {
+    public Set<ActionResponse> listRecordActions(@AuthenticationPrincipal User user, @PathVariable("id") UUID id) {
         return this.service.listActions(user, id);
     }
 
     @PostMapping(value = "/{id}/actions/{action}", consumes = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Execute an action on a record")
     @NotFoundApiResponse
-    public void executeAction(
+    public void executeRecordAction(
             @AuthenticationPrincipal User user,
             @PathVariable("id") UUID id,
             @PathVariable("action") ResourceIdentifier action,
@@ -74,14 +74,14 @@ public class RecordController {
     @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Create a new record")
     @NotFoundApiResponse
-    public RecordResponse newRecord(@RequestBody NewRecordRequest input) {
+    public RecordResponse createRecord(@RequestBody NewRecordRequest input) {
         return this.service.create(input);
     }
 
     @PutMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Update a record")
     @NotFoundApiResponse
-    public RecordResponse update(
+    public RecordResponse updateRecord(
             @AuthenticationPrincipal User user,
             @PathVariable("id") UUID id,
             @RequestBody UpdateRecordRequest input
@@ -96,7 +96,7 @@ public class RecordController {
     )
     @Operation(summary = "Upload new record revision")
     @NotFoundApiResponse
-    public RecordResponse createRevision(
+    public RecordResponse createRecordRevisionStream(
             @AuthenticationPrincipal User user,
             @PathVariable("id") UUID id,
             @Pattern(regexp = "^[0-9]+(\\.[0-9]+)*$", message = "Version path parameter must be numbers and decimals only")
@@ -124,7 +124,7 @@ public class RecordController {
     )
     @Operation(summary = "Upload new record revision")
     @NotFoundApiResponse
-    public RecordResponse createRevision2(
+    public RecordResponse createRecordRevision(
             @AuthenticationPrincipal User user,
             @PathVariable("id") UUID id,
             @Pattern(regexp = "^[0-9]+(\\.[0-9]+)*$", message = "Version path parameter must be numbers and decimals only")
@@ -146,7 +146,7 @@ public class RecordController {
     @GetMapping(value = "/{id}/{version}", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
     @Operation(summary = "Get record revision file")
     @NotFoundApiResponse
-    public ResponseEntity<Resource> getRevision(
+    public ResponseEntity<Resource> getRecordRevision(
             @AuthenticationPrincipal User user,
             @PathVariable("id") UUID id,
             @Pattern(regexp = "^[0-9]+(\\.[0-9]+)*$", message = "Version path parameter must be numbers and decimals only")

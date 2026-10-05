@@ -35,7 +35,8 @@
 	const revisionDropActive = $derived(revisionDropDepth > 0);
 
 	const recordType = $derived(types.find(entry => entry.id === record.type));
-	const canUploadRevision = $derived(!recordType || (recordType.contentTypes?.length ?? 0) > 0);
+	const typeSupportsFiles = $derived(!recordType || (recordType.contentTypes?.length ?? 0) > 0);
+	const canUploadRevision = $derived(record.canAccessRevisions && typeSupportsFiles);
 
 	function revisionDownloadUrl(recordId: string, revisionVersion: string) {
 		const base = getApiClient().getConfig().baseUrl || '';
@@ -148,7 +149,7 @@
 		submitting = true;
 		formError = undefined;
 
-		const { error } = await RecordController.createRevision2({
+		const { error } = await RecordController.createRecordRevision({
 			client: getApiClient(),
 			path: { id: record.id, version: trimmedVersion },
 			body: { stream: file },
@@ -185,7 +186,11 @@
 			type="button"
 			class="btn-primary"
 			disabled={!canUploadRevision}
-			title={!canUploadRevision ? t('web.records.revision_no_file_support') : undefined}
+			title={!record.canAccessRevisions
+				? t('web.records.revision_no_access')
+				: !typeSupportsFiles
+					? t('web.records.revision_no_file_support')
+					: undefined}
 			onclick={() => openUploadDialog()}
 		>
 			{t('web.records.revision_upload')}
@@ -196,13 +201,17 @@
 	{/snippet}
 	{#snippet row(rev)}
 		<td class="px-5 py-4">
-			<a
-				href={revisionDownloadUrl(record.id, rev)}
-				class="text-primary underline-offset-2 hover:underline"
-				data-sveltekit-reload
-			>
+			{#if record.canAccessRevisions}
+				<a
+					href={revisionDownloadUrl(record.id, rev)}
+					class="text-primary underline-offset-2 hover:underline"
+					data-sveltekit-reload
+				>
+					<MonoId value={rev} />
+				</a>
+			{:else}
 				<MonoId value={rev} />
-			</a>
+			{/if}
 		</td>
 	{/snippet}
 	{#snippet overlay()}

@@ -61,6 +61,7 @@ export type RecordResponse = {
         [key: string]: unknown;
     };
     revisions: Array<string>;
+    canAccessRevisions: boolean;
 };
 
 export type UpdatePluginRequest = {
@@ -786,7 +787,7 @@ export type UpsertTranslationOverrideResponses = {
 
 export type UpsertTranslationOverrideResponse = UpsertTranslationOverrideResponses[keyof UpsertTranslationOverrideResponses];
 
-export type GetData = {
+export type GetRecordData = {
     body?: never;
     path: {
         id: string;
@@ -795,7 +796,7 @@ export type GetData = {
     url: '/api/records/{id}';
 };
 
-export type GetErrors = {
+export type GetRecordErrors = {
     /**
      * Unauthorized
      */
@@ -818,9 +819,9 @@ export type GetErrors = {
     500: ApiErrorResponse;
 };
 
-export type GetError = GetErrors[keyof GetErrors];
+export type GetRecordError = GetRecordErrors[keyof GetRecordErrors];
 
-export type GetResponses = {
+export type GetRecordResponses = {
     /**
      * OK
      */
@@ -829,9 +830,9 @@ export type GetResponses = {
     };
 };
 
-export type GetResponse = GetResponses[keyof GetResponses];
+export type GetRecordResponse = GetRecordResponses[keyof GetRecordResponses];
 
-export type UpdateData = {
+export type UpdateRecordData = {
     body: UpdateRecordRequest;
     path: {
         id: string;
@@ -840,7 +841,7 @@ export type UpdateData = {
     url: '/api/records/{id}';
 };
 
-export type UpdateErrors = {
+export type UpdateRecordErrors = {
     /**
      * Unauthorized
      */
@@ -863,9 +864,9 @@ export type UpdateErrors = {
     500: ApiErrorResponse;
 };
 
-export type UpdateError = UpdateErrors[keyof UpdateErrors];
+export type UpdateRecordError = UpdateRecordErrors[keyof UpdateRecordErrors];
 
-export type UpdateResponses = {
+export type UpdateRecordResponses = {
     /**
      * OK
      */
@@ -874,9 +875,9 @@ export type UpdateResponses = {
     };
 };
 
-export type UpdateResponse = UpdateResponses[keyof UpdateResponses];
+export type UpdateRecordResponse = UpdateRecordResponses[keyof UpdateRecordResponses];
 
-export type GetRevisionData = {
+export type GetRecordRevisionData = {
     body?: never;
     path: {
         id: string;
@@ -886,7 +887,7 @@ export type GetRevisionData = {
     url: '/api/records/{id}/{version}';
 };
 
-export type GetRevisionErrors = {
+export type GetRecordRevisionErrors = {
     /**
      * Unauthorized
      */
@@ -909,18 +910,18 @@ export type GetRevisionErrors = {
     500: ApiErrorResponse;
 };
 
-export type GetRevisionError = GetRevisionErrors[keyof GetRevisionErrors];
+export type GetRecordRevisionError = GetRecordRevisionErrors[keyof GetRecordRevisionErrors];
 
-export type GetRevisionResponses = {
+export type GetRecordRevisionResponses = {
     /**
      * OK
      */
     200: Blob | File;
 };
 
-export type GetRevisionResponse = GetRevisionResponses[keyof GetRevisionResponses];
+export type GetRecordRevisionResponse = GetRecordRevisionResponses[keyof GetRecordRevisionResponses];
 
-export type CreateRevision2Data = {
+export type CreateRecordRevisionData = {
     body?: {
         stream: Blob | File;
     };
@@ -937,7 +938,7 @@ export type CreateRevision2Data = {
     url: '/api/records/{id}/{version}';
 };
 
-export type CreateRevision2Errors = {
+export type CreateRecordRevisionErrors = {
     /**
      * Unauthorized
      */
@@ -960,9 +961,9 @@ export type CreateRevision2Errors = {
     500: ApiErrorResponse;
 };
 
-export type CreateRevision2Error = CreateRevision2Errors[keyof CreateRevision2Errors];
+export type CreateRecordRevisionError = CreateRecordRevisionErrors[keyof CreateRecordRevisionErrors];
 
-export type CreateRevision2Responses = {
+export type CreateRecordRevisionResponses = {
     /**
      * OK
      */
@@ -973,7 +974,7 @@ export type CreateRevision2Responses = {
     };
 };
 
-export type CreateRevision2Response = CreateRevision2Responses[keyof CreateRevision2Responses];
+export type CreateRecordRevisionResponse = CreateRecordRevisionResponses[keyof CreateRecordRevisionResponses];
 
 export type DeletePluginData = {
     body?: never;
@@ -2352,14 +2353,14 @@ export type RegisterTemplateResponses = {
 
 export type RegisterTemplateResponse = RegisterTemplateResponses[keyof RegisterTemplateResponses];
 
-export type NewRecordData = {
+export type CreateRecordData = {
     body: NewRecordRequest;
     path?: never;
     query?: never;
     url: '/api/records';
 };
 
-export type NewRecordErrors = {
+export type CreateRecordErrors = {
     /**
      * Unauthorized
      */
@@ -2382,9 +2383,9 @@ export type NewRecordErrors = {
     500: ApiErrorResponse;
 };
 
-export type NewRecordError = NewRecordErrors[keyof NewRecordErrors];
+export type CreateRecordError = CreateRecordErrors[keyof CreateRecordErrors];
 
-export type NewRecordResponses = {
+export type CreateRecordResponses = {
     /**
      * OK
      */
@@ -2393,9 +2394,9 @@ export type NewRecordResponses = {
     };
 };
 
-export type NewRecordResponse = NewRecordResponses[keyof NewRecordResponses];
+export type CreateRecordResponse = CreateRecordResponses[keyof CreateRecordResponses];
 
-export type ExecuteActionData = {
+export type ExecuteRecordActionData = {
     body: {
         [key: string]: unknown;
     };
@@ -2407,7 +2408,7 @@ export type ExecuteActionData = {
     url: '/api/records/{id}/actions/{action}';
 };
 
-export type ExecuteActionErrors = {
+export type ExecuteRecordActionErrors = {
     /**
      * Unauthorized
      */
@@ -2430,25 +2431,25 @@ export type ExecuteActionErrors = {
     500: ApiErrorResponse;
 };
 
-export type ExecuteActionError = ExecuteActionErrors[keyof ExecuteActionErrors];
+export type ExecuteRecordActionError = ExecuteRecordActionErrors[keyof ExecuteRecordActionErrors];
 
-export type ExecuteActionResponses = {
+export type ExecuteRecordActionResponses = {
     /**
      * OK
      */
     200: ApiSuccessEnvelope;
 };
 
-export type ExecuteActionResponse = ExecuteActionResponses[keyof ExecuteActionResponses];
+export type ExecuteRecordActionResponse = ExecuteRecordActionResponses[keyof ExecuteRecordActionResponses];
 
-export type SearchData = {
+export type SearchRecordsData = {
     body: ObjectSearchRequest;
     path?: never;
     query?: never;
     url: '/api/records/search';
 };
 
-export type SearchErrors = {
+export type SearchRecordsErrors = {
     /**
      * Unauthorized
      */
@@ -2467,9 +2468,9 @@ export type SearchErrors = {
     500: ApiErrorResponse;
 };
 
-export type SearchError = SearchErrors[keyof SearchErrors];
+export type SearchRecordsError = SearchRecordsErrors[keyof SearchRecordsErrors];
 
-export type SearchResponses = {
+export type SearchRecordsResponses = {
     /**
      * OK
      */
@@ -2478,7 +2479,7 @@ export type SearchResponses = {
     };
 };
 
-export type SearchResponse = SearchResponses[keyof SearchResponses];
+export type SearchRecordsResponse = SearchRecordsResponses[keyof SearchRecordsResponses];
 
 export type ListPluginsData = {
     body?: never;
@@ -3622,7 +3623,7 @@ export type GetTemplateResponses = {
 
 export type GetTemplateResponse = GetTemplateResponses[keyof GetTemplateResponses];
 
-export type ListActionsData = {
+export type ListRecordActionsData = {
     body?: never;
     path: {
         id: string;
@@ -3631,7 +3632,7 @@ export type ListActionsData = {
     url: '/api/records/{id}/actions';
 };
 
-export type ListActionsErrors = {
+export type ListRecordActionsErrors = {
     /**
      * Unauthorized
      */
@@ -3654,9 +3655,9 @@ export type ListActionsErrors = {
     500: ApiErrorResponse;
 };
 
-export type ListActionsError = ListActionsErrors[keyof ListActionsErrors];
+export type ListRecordActionsError = ListRecordActionsErrors[keyof ListRecordActionsErrors];
 
-export type ListActionsResponses = {
+export type ListRecordActionsResponses = {
     /**
      * OK
      */
@@ -3665,7 +3666,7 @@ export type ListActionsResponses = {
     };
 };
 
-export type ListActionsResponse = ListActionsResponses[keyof ListActionsResponses];
+export type ListRecordActionsResponse = ListRecordActionsResponses[keyof ListRecordActionsResponses];
 
 export type GetRecordTypesData = {
     body?: never;

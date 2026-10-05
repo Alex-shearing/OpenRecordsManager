@@ -4,7 +4,7 @@ import { getApiClient } from '#lib/api-client.js';
 export async function load({ params, parent }) {
 	const [layout, result] = await Promise.all([
 		parent(),
-		RecordController.get({
+		RecordController.getRecord({
 			client: getApiClient(),
 			path: { id: params.id },
 		}),

@@ -82,7 +82,7 @@
 			};
 			const result =
 				data.type === 'record'
-					? await RecordController.search(search)
+					? await RecordController.searchRecords(search)
 					: await LocationController.searchLocations({
 							...search,
 							query: locationKindQuery(data.type),
