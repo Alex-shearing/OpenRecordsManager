@@ -41,15 +41,18 @@ public class ObjectPropertyService {
     private final DataRepository repository;
     private final AuditService auditService;
     private final TranslationOverrideService overrideService;
+    private final PropertyValueCodec propertyValueCodec;
 
     public ObjectPropertyService(
             DataRepository repository,
             AuditService auditService,
-            TranslationOverrideService overrideService
+            TranslationOverrideService overrideService,
+            PropertyValueCodec propertyValueCodec
     ) {
         this.repository = repository;
         this.auditService = auditService;
         this.overrideService = overrideService;
+        this.propertyValueCodec = propertyValueCodec;
     }
 
     @Transactional(readOnly = true)
@@ -168,15 +171,7 @@ public class ObjectPropertyService {
             @Nullable JsonNode defaultValue
     ) {
         ListType listType = resolveListType(type, listTypeId);
-        if (defaultValue != null && !defaultValue.isNull() && type.parse(defaultValue) == null) {
-            throw ApiException.validationFailed(
-                    "defaultValue",
-                    ConfigValueParseFailedException.CODE,
-                    type.getName(),
-                    defaultValue.toString()
-            );
-        }
-        return new ObjectProperty<>(
+        ObjectProperty<T> property = new ObjectProperty<>(
                 id,
                 type,
                 listType,
@@ -185,6 +180,26 @@ public class ObjectPropertyService {
                 defaultValue,
                 false
         );
+        validateDefaultValue(property, defaultValue);
+        return property;
+    }
+
+    private <T> void validateDefaultValue(ObjectProperty<T> property, @Nullable JsonNode defaultValue) {
+        if (defaultValue == null || defaultValue.isNull()) {
+            return;
+        }
+        if (property.getType().allowsList()) {
+            this.propertyValueCodec.parse(property, defaultValue);
+            return;
+        }
+        if (property.getType().parse(defaultValue) == null) {
+            throw ApiException.validationFailed(
+                    "defaultValue",
+                    ConfigValueParseFailedException.CODE,
+                    property.getType().getName(),
+                    defaultValue.toString()
+            );
+        }
     }
 
     private @Nullable ListType resolveListType(PropertyType<?> type, @Nullable ResourceIdentifier listTypeId) {
@@ -203,18 +218,11 @@ public class ObjectPropertyService {
                 .orElseThrow(() -> new ResourceNotFoundException(ComponentTypes.LIST, listTypeId));
     }
 
-    private static <T> void applyUpdate(ObjectProperty<T> property, UpdateObjectPropertyRequest input) {
+    private <T> void applyUpdate(ObjectProperty<T> property, UpdateObjectPropertyRequest input) {
         property.setValidator(input.validator());
         property.setSecurityFilter(input.securityFilter());
         JsonNode defaultValue = input.defaultValue();
-        if (defaultValue != null && !defaultValue.isNull() && property.getType().parse(defaultValue) == null) {
-            throw ApiException.validationFailed(
-                    "defaultValue",
-                    ConfigValueParseFailedException.CODE,
-                    property.getType().getName(),
-                    defaultValue.toString()
-            );
-        }
+        validateDefaultValue(property, defaultValue);
         property.setDefaultValue(defaultValue);
     }
 }

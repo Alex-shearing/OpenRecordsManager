@@ -134,10 +134,16 @@ class PropertyValueCodecTest {
     }
 
     @Test
+    void parseListMultipleFromDelimitedString() {
+        Object resolved = this.codec.parse(this.listMultipleProperty, NODES.textNode(ELEMENT_A.toString()));
+        assertEquals(List.of(this.elementA), resolved);
+    }
+
+    @Test
     void parseInvalidCollectionThrows() {
         assertThrows(
                 ApiException.class,
-                () -> this.codec.parse(this.listMultipleProperty, NODES.textNode(ELEMENT_A.toString()))
+                () -> this.codec.parse(this.listMultipleProperty, NODES.numberNode(1))
         );
     }
 

@@ -1,5 +1,6 @@
 package com.openrecordsmanager.rest.swagger;
 
+import com.openrecordsmanager.api.template.property.PropertyType;
 import com.openrecordsmanager.auth.AuthService;
 import com.openrecordsmanager.rest.dto.ApiResponseV1;
 import io.swagger.v3.core.converter.ModelConverter;
@@ -23,6 +24,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.method.HandlerMethod;
 import tools.jackson.databind.JsonNode;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Configuration
@@ -62,6 +64,28 @@ public class SwaggerConfiguration {
                     parentSchema.setProperties(null);
                     parentSchema.setType(null);
                 }
+            }
+        };
+    }
+
+    /**
+     * Publish {@link PropertyType} as a named string enum component (class + @JsonValue is inlined otherwise).
+     */
+    @Bean
+    public OpenApiCustomizer propertyTypeOpenApiCustomizer() {
+        return openApi -> {
+            if (openApi.getComponents() == null || openApi.getComponents().getSchemas() == null) {
+                return;
+            }
+            StringSchema propertyTypeSchema = new StringSchema();
+            List<String> values = new ArrayList<>(PropertyType.TYPES.keySet());
+            values.sort(String::compareTo);
+            propertyTypeSchema.setEnum(values);
+            openApi.getComponents().addSchemas("PropertyType", propertyTypeSchema);
+
+            Schema<?> request = openApi.getComponents().getSchemas().get("NewObjectPropertyRequest");
+            if (request != null && request.getProperties() != null) {
+                request.getProperties().put("type", new Schema<>().$ref("#/components/schemas/PropertyType"));
             }
         };
     }

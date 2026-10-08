@@ -87,7 +87,7 @@ public final class SearchOperatorSupport {
                     t == PropertyType.NUMBER ||
                             t == PropertyType.DECIMAL ||
                             t == PropertyType.DATE ||
-                            t == PropertyType.INT_LIST -> ORDERABLE_OPS;
+                            t == PropertyType.NUMBER_LIST -> ORDERABLE_OPS;
             default -> EQUALITY_OPS;
         };
     }

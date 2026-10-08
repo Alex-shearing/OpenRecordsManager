@@ -17,7 +17,7 @@ import tools.jackson.databind.JsonNode;
                 ConfigTypeResponseSchema.DecimalType.class,
                 ConfigTypeResponseSchema.UuidType.class,
                 ConfigTypeResponseSchema.StringListType.class,
-                ConfigTypeResponseSchema.IntListType.class,
+                ConfigTypeResponseSchema.NumberListType.class,
                 ConfigTypeResponseSchema.ObjectType.class
         },
         discriminatorProperty = "type",
@@ -28,7 +28,7 @@ import tools.jackson.databind.JsonNode;
                 @DiscriminatorMapping(value = "decimal", schema = ConfigTypeResponseSchema.DecimalType.class),
                 @DiscriminatorMapping(value = "uuid", schema = ConfigTypeResponseSchema.UuidType.class),
                 @DiscriminatorMapping(value = "string_list", schema = ConfigTypeResponseSchema.StringListType.class),
-                @DiscriminatorMapping(value = "int_list", schema = ConfigTypeResponseSchema.IntListType.class),
+                @DiscriminatorMapping(value = "number_list", schema = ConfigTypeResponseSchema.NumberListType.class),
                 @DiscriminatorMapping(value = "object", schema = ConfigTypeResponseSchema.ObjectType.class)
         }
 )

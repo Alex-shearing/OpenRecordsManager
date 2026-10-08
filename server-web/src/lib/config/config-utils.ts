@@ -51,7 +51,7 @@ export function groupConfigs(configs: ConfigTypeResponse[]) {
 const DEFAULT_FALLBACKS: Record<ConfigValueType, any> = {
 	boolean: false,
 	string_list: [''],
-	int_list: [],
+	number_list: [],
 	number: 0,
 	decimal: 0,
 	string: '',
@@ -71,7 +71,7 @@ export function formatDefaultValueForDisplay(cfg: ConfigTypeResponse) {
 		return t('web.common.em_dash');
 	}
 
-	if (cfg.type === 'string_list' || cfg.type === 'int_list') {
+	if (cfg.type === 'string_list' || cfg.type === 'number_list') {
 		return cfg.defaultValue.map(String).join(', ');
 	}
 

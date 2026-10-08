@@ -13,6 +13,10 @@ public class PropertyTypeConverter implements AttributeConverter<PropertyType<?>
 
     @Override
     public PropertyType<?> convertToEntityAttribute(String s) {
-        return PropertyType.TYPES.get(s);
+        PropertyType<?> type = PropertyType.TYPES.get(s);
+        if (type == null) {
+            throw new IllegalArgumentException("Unknown PropertyType: " + s);
+        }
+        return type;
     }
 }

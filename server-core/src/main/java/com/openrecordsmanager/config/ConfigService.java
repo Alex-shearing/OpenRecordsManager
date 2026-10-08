@@ -86,17 +86,22 @@ public class ConfigService implements ConfigStore {
         // connection and will deadlock with an open write TX on system_configurations (SQL Server).
         String envRaw = this.resolveNonDatabaseProperty(key.key());
         if (envRaw != null) {
-            T fromEnv = key.type().parseValue(envRaw);
-            if (fromEnv != null) {
-                return fromEnv;
+            T fromEnv = key.type().parse(PropertyType.nodeFromRawString(envRaw));
+            if (fromEnv == null) {
+                throw new ConfigValueParseFailedException(key.type().getName(), envRaw);
             }
+            return fromEnv;
         }
 
         if (!key.key().startsWith("server.")) {
             try {
                 Optional<ConfigItem> stored = this.repository.configRepo.findByConfigKey(key.key());
                 if (stored.isPresent()) {
-                    T fromDb = key.type().parse(stored.get().getValue());
+                    JsonNode storedValue = stored.get().getValue();
+                    T fromDb = key.type().parse(storedValue);
+                    if (fromDb == null && storedValue != null && !storedValue.isNull()) {
+                        throw new ConfigValueParseFailedException(key.type().getName(), storedValue.toString());
+                    }
                     if (fromDb != null) {
                         return fromDb;
                     }

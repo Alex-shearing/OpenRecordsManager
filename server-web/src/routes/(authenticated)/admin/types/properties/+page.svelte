@@ -1,6 +1,7 @@
 <script lang="ts">
 	import {
 		ObjectPropertyController,
+		PropertyType,
 		type ObjectPropertyResponse,
 		type SimpleObjectPropertyResponse,
 	} from '#lib/api/index.js';
@@ -17,7 +18,7 @@
 	import type { SchemaFormError } from '#lib/components/SchemaForm.svelte';
 	import { t, tApiErrorResponse } from '#lib/i18n/catalog.js';
 	import { objectPropertyDescription, objectPropertyName } from '#lib/i18n/labels.js';
-	import { isBuiltinResourceId, PROPERTY_TYPES, type PropertyTypeName } from '#lib/types/typeAdmin.js';
+	import { isBuiltinResourceId } from '#lib/types/typeAdmin.js';
 	import { refreshAll } from '$app/navigation';
 	import toast from 'svelte-hot-french-toast';
 
@@ -28,7 +29,7 @@
 	let createId = $state('');
 	let createName = $state('');
 	let createDescription = $state('');
-	let createType = $state<PropertyTypeName>('string');
+	let createType = $state<PropertyType>(PropertyType.STRING);
 	let createListType = $state('');
 	let createValidator = $state('');
 	let createSecurityFilter = $state('');
@@ -47,7 +48,9 @@
 	let editError = $state<SchemaFormError>();
 	let editLoading = $state(false);
 
-	const needsListType = $derived(createType === 'list_item' || createType === 'list_multiple');
+	const needsListType = $derived(
+		createType === PropertyType.LIST_ITEM || createType === PropertyType.LIST_MULTIPLE
+	);
 
 	function parseDefault(raw: string): unknown {
 		const trimmed = raw.trim();
@@ -75,8 +78,7 @@
 				id: createId.trim(),
 				name: createName.trim(),
 				description: createDescription.trim(),
-				// OpenAPI models PropertyType as an object; the API expects the type name string.
-				type: createType as unknown as { name?: string },
+				type: createType,
 				listType: needsListType && createListType.trim() ? createListType.trim() : undefined,
 				validator: createValidator.trim() || undefined,
 				securityFilter: createSecurityFilter.trim() || undefined,
@@ -95,7 +97,7 @@
 		createId = '';
 		createName = '';
 		createDescription = '';
-		createType = 'string';
+		createType = PropertyType.STRING;
 		createListType = '';
 		createValidator = '';
 		createSecurityFilter = '';
@@ -223,7 +225,7 @@
 		<label class="mb-4 flex flex-col gap-1">
 			<span class="text-label">{t('web.common.type')}</span>
 			<select class="input w-full" name="type" bind:value={createType} disabled={submitting}>
-				{#each PROPERTY_TYPES as type (type)}
+				{#each Object.values(PropertyType) as type (type)}
 					<option value={type}>{type}</option>
 				{/each}
 			</select>

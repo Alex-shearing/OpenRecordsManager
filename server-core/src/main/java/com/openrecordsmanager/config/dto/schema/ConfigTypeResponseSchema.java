@@ -93,15 +93,15 @@ public final class ConfigTypeResponseSchema {
     }
 
     @Schema(
-            name = "ConfigTypeIntListResponse",
-            description = "Integer list configuration value",
+            name = "ConfigTypeNumberListResponse",
+            description = "Number list configuration value",
             requiredProperties = {"key", "type"}
     )
-    public record IntListType(
+    public record NumberListType(
             String key,
-            @Schema(type = "string", allowableValues = {"int_list"}) String type,
-            List<Integer> currentValue,
-            List<Integer> defaultValue
+            @Schema(type = "string", allowableValues = {"number_list"}) String type,
+            List<Long> currentValue,
+            List<Long> defaultValue
     ) {
     }
 

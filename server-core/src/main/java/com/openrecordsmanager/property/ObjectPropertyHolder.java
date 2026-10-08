@@ -60,7 +60,9 @@ public abstract class ObjectPropertyHolder<SELF extends ObjectPropertyHolder<SEL
         BuiltinPropertyBinding<SELF, ?> binding = this.getBuiltinPropertyBindings().get(property.getId());
 
         if (binding != null) {
-            return property.getType().parseValue(binding.get(this.self()));
+            @SuppressWarnings("unchecked")
+            K value = (K) binding.get(this.self());
+            return value;
         }
 
         V stored = this.getDynamicProperties().get(property);

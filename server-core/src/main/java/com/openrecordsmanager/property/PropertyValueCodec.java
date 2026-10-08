@@ -1,11 +1,10 @@
 package com.openrecordsmanager.property;
 
-import com.openrecordsmanager.api.ResourceIdentifier;
 import com.openrecordsmanager.api.errors.ApiException;
+import com.openrecordsmanager.api.template.list.CatalogAccess;
 import com.openrecordsmanager.api.template.list.IListElement;
 import com.openrecordsmanager.api.template.property.PropertyType;
 import com.openrecordsmanager.api.types.ComponentTypes;
-import com.openrecordsmanager.list.ListElement;
 import com.openrecordsmanager.list.ListElementRepository;
 import com.openrecordsmanager.list.ListType;
 import com.openrecordsmanager.rest.exception.ResourceNotFoundException;
@@ -18,9 +17,7 @@ import tools.jackson.databind.node.ArrayNode;
 import tools.jackson.databind.node.JsonNodeFactory;
 import tools.jackson.databind.node.NullNode;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 
 /**
  * Bridges wire/storage {@link JsonNode} and domain {@code T} for object properties.
@@ -28,7 +25,6 @@ import java.util.List;
 @Component
 public class PropertyValueCodec {
     private static final String VALUE_INVALID = "property_value_invalid";
-    private static final String LIST_ELEMENT_ID_REQUIRED = "list_element_id_required";
 
     private static final JsonNodeFactory NODES = JsonNodeFactory.instance;
 
@@ -61,28 +57,8 @@ public class PropertyValueCodec {
             return type.parse(wire);
         }
 
-        ListType listType = requireListType(property);
-        Object domain;
-        if (type == PropertyType.LIST_ITEM) {
-            domain = resolveElement(listType, wire, type);
-        } else if (type == PropertyType.LIST_MULTIPLE) {
-            if (!wire.isArray()) {
-                throw ApiException.validationFailed(
-                        property.getId().toString(),
-                        VALUE_INVALID,
-                        type.getName()
-                );
-            }
-            List<ListElement> resolved = new ArrayList<>(wire.size());
-            for (JsonNode item : wire) {
-                resolved.add(resolveElement(listType, item, type));
-            }
-            domain = resolved;
-        } else {
-            domain = type.parse(wire);
-        }
-
-        T parsed = type.parseValue(domain);
+        CatalogAccess catalog = catalogFor(requireListType(property));
+        T parsed = type.parse(wire, catalog);
         if (parsed == null) {
             throw ApiException.validationFailed(
                     property.getId().toString(),
@@ -119,27 +95,8 @@ public class PropertyValueCodec {
             return property.getType().parse(stored);
         }
 
-        ListType listType = requireListType(property);
-
-        if (property.getType() == PropertyType.LIST_ITEM) {
-            return resolveElement(listType, stored, property.getType());
-        }
-
-        if (property.getType() == PropertyType.LIST_MULTIPLE) {
-            if (!stored.isArray()) {
-                return null;
-            }
-            if (stored.isEmpty()) {
-                return List.of();
-            }
-            List<ListElement> hydrated = new ArrayList<>(stored.size());
-            for (JsonNode item : stored) {
-                hydrated.add(resolveElement(listType, item, property.getType()));
-            }
-            return hydrated;
-        }
-
-        return property.getType().parse(stored);
+        CatalogAccess catalog = catalogFor(requireListType(property));
+        return property.getType().parse(stored, catalog);
     }
 
     /**
@@ -155,6 +112,11 @@ public class PropertyValueCodec {
         return PropertyType.toTree(domainValue);
     }
 
+    private CatalogAccess catalogFor(ListType listType) {
+        return elementId -> this.listElementRepository.getElement(listType.getId(), elementId)
+                .orElseThrow(() -> new ResourceNotFoundException(ComponentTypes.LIST_ELEMENT, elementId));
+    }
+
     private JsonNode toIdNode(Object domainValue) {
         if (domainValue instanceof IListElement element) {
             return NODES.stringNode(element.getId().toString());
@@ -162,27 +124,14 @@ public class PropertyValueCodec {
         if (domainValue instanceof Collection<?> collection) {
             ArrayNode array = NODES.arrayNode(collection.size());
             for (Object item : collection) {
-                if (item instanceof IListElement element) {
-                    array.add(element.getId().toString());
-                } else if (item != null) {
-                    array.add(item.toString());
+                if (!(item instanceof IListElement element)) {
+                    throw ApiException.validationFailed("value", VALUE_INVALID, "list_multiple");
                 }
+                array.add(element.getId().toString());
             }
             return array;
         }
-        return NODES.stringNode(domainValue.toString());
-    }
-
-    private ListElement resolveElement(ListType listType, JsonNode raw, PropertyType<?> type) {
-        if (raw.isNull()) {
-            throw ApiException.validationFailed("value", LIST_ELEMENT_ID_REQUIRED);
-        }
-        if (raw.isObject()) {
-            throw ApiException.validationFailed("value", VALUE_INVALID, type.getName());
-        }
-        ResourceIdentifier elementId = ResourceIdentifier.valueOf(raw.asString().trim());
-        return this.listElementRepository.getElement(listType.getId(), elementId)
-                .orElseThrow(() -> new ResourceNotFoundException(ComponentTypes.LIST_ELEMENT, elementId));
+        throw ApiException.validationFailed("value", VALUE_INVALID, "list_item");
     }
 
     private static ListType requireListType(ObjectProperty<?> property) {

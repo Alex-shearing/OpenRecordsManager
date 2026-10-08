@@ -4,7 +4,7 @@
 	import { getApiClient } from '#lib/api-client.js';
 	import type { SchemaFormError } from '#lib/components/SchemaForm.svelte';
 	import TransferList from '#lib/components/TransferList.svelte';
-	import ConfigIntListInput from '#lib/components/config/ConfigIntListInput.svelte';
+	import ConfigNumberListInput from '#lib/components/config/ConfigNumberListInput.svelte';
 	import ConfigStringListInput from '#lib/components/config/ConfigStringListInput.svelte';
 	import { t, tApiErrorResponse } from '#lib/i18n/catalog.js';
 	import { listElementName, objectPropertyDescription, objectPropertyName } from '#lib/i18n/labels.js';
@@ -220,7 +220,7 @@
 					</span>
 				{/if}
 			</div>
-		{:else if property.type === 'list_multiple' || property.type === 'string_list' || property.type === 'int_list'}
+		{:else if property.type === 'list_multiple' || property.type === 'string_list' || property.type === 'number_list'}
 			<div class="flex flex-col gap-1">
 				<span id="{inputId}-label">{name}</span>
 				{#if description !== descriptionKey}
@@ -263,7 +263,7 @@
 						disabled={submitting}
 					/>
 				{:else}
-					<ConfigIntListInput
+					<ConfigNumberListInput
 						id={inputId}
 						bind:value={() => asNumberArray(getValue(id)), v => setValue(id, v)}
 						disabled={submitting}

@@ -226,22 +226,18 @@ public class SqlSearchSupport {
         if (value == null || value.isNull()) {
             return null;
         }
-        if (type == PropertyType.NUMBER) {
-            return value.isNumber() ? value.asLong() : Long.parseLong(value.asString().trim());
-        }
-        if (type == PropertyType.DECIMAL) {
-            return value.isNumber() ? value.asDouble() : Double.parseDouble(value.asString().trim());
-        }
-        if (type == PropertyType.BOOLEAN) {
-            return value.isBoolean() ? value.asBoolean() : Boolean.parseBoolean(value.asString().trim());
-        }
-        if (type == PropertyType.DATE) {
-            return Instant.parse(value.asString().trim());
-        }
-        if (type == PropertyType.UUID || type == PropertyType.LIST_ITEM) {
+        // List filters bind element ids as strings; PropertyType.parse does not resolve ids.
+        if (type.allowsList()) {
+            if (!value.isString()) {
+                throw ApiException.validationFailed("value", "property_value_invalid", type.getName());
+            }
             return value.asString();
         }
-        return value.asString();
+        Object parsed = type.parse(value);
+        if (parsed == null) {
+            throw ApiException.validationFailed("value", "property_value_invalid", type.getName());
+        }
+        return parsed;
     }
 
     private static UUID toUuid(Object value) {

@@ -1,6 +1,9 @@
 package com.openrecordsmanager.api.template.property;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+import com.openrecordsmanager.api.ResourceIdentifier;
+import com.openrecordsmanager.api.template.list.CatalogAccess;
 import com.openrecordsmanager.api.template.list.IListElement;
 import org.jspecify.annotations.Nullable;
 import tools.jackson.databind.JsonNode;
@@ -12,9 +15,9 @@ import java.time.Instant;
 import java.util.*;
 
 /**
- * Pure value coercion for object properties and config keys.
- * Wire/storage uses {@link JsonNode}; domain values are typed {@code T}.
- * List id ↔ entity bridging lives in server-core {@code PropertyValueCodec}.
+ * Wire/storage value parsing for object properties and config keys.
+ * All inputs go through {@link #parse(JsonNode)}; list id resolution uses a
+ * list-scoped {@link CatalogAccess} when provided.
  */
 @SuppressWarnings("unused")
 public abstract class PropertyType<T> {
@@ -23,20 +26,20 @@ public abstract class PropertyType<T> {
 
     public static final PropertyType<String> STRING = new PropertyType<>("string", String.class, true) {
         @Override
-        protected @Nullable String coerce(@Nullable Object value) {
-            return value != null ? value.toString() : null;
+        protected @Nullable String coerceNode(JsonNode node, @Nullable CatalogAccess catalog) {
+            return node.isString() ? node.stringValue() : null;
         }
     };
 
     public static final PropertyType<Long> NUMBER = new PropertyType<>("number", Long.class, true) {
         @Override
-        protected @Nullable Long coerce(@Nullable Object value) {
-            if (value instanceof Number number) {
-                return number.longValue();
+        protected @Nullable Long coerceNode(JsonNode node, @Nullable CatalogAccess catalog) {
+            if (node.isIntegralNumber()) {
+                return node.longValue();
             }
-            if (value instanceof String s) {
+            if (node.isString()) {
                 try {
-                    return Long.valueOf(s.trim());
+                    return Long.valueOf(node.stringValue().trim());
                 } catch (NumberFormatException ignored) {
                     return null;
                 }
@@ -47,13 +50,13 @@ public abstract class PropertyType<T> {
 
     public static final PropertyType<Double> DECIMAL = new PropertyType<>("decimal", Double.class, true) {
         @Override
-        protected @Nullable Double coerce(@Nullable Object value) {
-            if (value instanceof Number number) {
-                return number.doubleValue();
+        protected @Nullable Double coerceNode(JsonNode node, @Nullable CatalogAccess catalog) {
+            if (node.isNumber()) {
+                return node.doubleValue();
             }
-            if (value instanceof String s) {
+            if (node.isString()) {
                 try {
-                    return Double.valueOf(s.trim());
+                    return Double.valueOf(node.stringValue().trim());
                 } catch (NumberFormatException ignored) {
                     return null;
                 }
@@ -64,12 +67,18 @@ public abstract class PropertyType<T> {
 
     public static final PropertyType<Boolean> BOOLEAN = new PropertyType<>("boolean", Boolean.class, true) {
         @Override
-        protected @Nullable Boolean coerce(@Nullable Object value) {
-            if (value instanceof Boolean bool) {
-                return bool;
+        protected @Nullable Boolean coerceNode(JsonNode node, @Nullable CatalogAccess catalog) {
+            if (node.isBoolean()) {
+                return node.booleanValue();
             }
-            if (value instanceof String s) {
-                return Boolean.valueOf(s.trim());
+            if (node.isString()) {
+                String trimmed = node.stringValue().trim();
+                if (trimmed.equalsIgnoreCase("true")) {
+                    return true;
+                }
+                if (trimmed.equalsIgnoreCase("false")) {
+                    return false;
+                }
             }
             return null;
         }
@@ -77,18 +86,15 @@ public abstract class PropertyType<T> {
 
     public static final PropertyType<UUID> UUID = new PropertyType<>("uuid", UUID.class, true) {
         @Override
-        protected @Nullable UUID coerce(@Nullable Object value) {
-            if (value instanceof UUID uuid) {
-                return uuid;
+        protected @Nullable UUID coerceNode(JsonNode node, @Nullable CatalogAccess catalog) {
+            if (!node.isString()) {
+                return null;
             }
-            if (value instanceof String s) {
-                try {
-                    return java.util.UUID.fromString(s.trim());
-                } catch (IllegalArgumentException ignored) {
-                    return null;
-                }
+            try {
+                return java.util.UUID.fromString(node.stringValue().trim());
+            } catch (IllegalArgumentException ignored) {
+                return null;
             }
-            return null;
         }
     };
 
@@ -97,119 +103,108 @@ public abstract class PropertyType<T> {
      */
     public static final PropertyType<JsonNode> OBJECT = new PropertyType<>("object", JsonNode.class, true) {
         @Override
-        protected @Nullable JsonNode coerce(@Nullable Object value) {
-            if (value == null) {
-                return null;
-            }
-            if (value instanceof JsonNode node) {
-                return node.isNull() ? null : node;
-            }
-            return JSON.valueToTree(value);
-        }
-
-        @Override
-        public @Nullable JsonNode parse(@Nullable JsonNode node) {
-            if (node == null || node.isNull()) {
-                return null;
-            }
-            return node;
+        protected @Nullable JsonNode coerceNode(JsonNode node, @Nullable CatalogAccess catalog) {
+            return node.isNull() ? null : node;
         }
     };
 
     public static final PropertyType<IListElement> LIST_ITEM = new PropertyType<>("list_item", IListElement.class, false) {
         @Override
-        protected @Nullable IListElement coerce(@Nullable Object value) {
-            return value instanceof IListElement v ? v : null;
-        }
-    };
-
-    public static final PropertyType<Collection<IListElement>> LIST_MULTIPLE = new PropertyType<>("list_multiple", (Class<Collection<IListElement>>) (Class<?>) Collection.class, false) {
-        @SuppressWarnings("unchecked")
-        @Override
-        protected @Nullable Collection<IListElement> coerce(@Nullable Object value) {
-            if (value instanceof Collection<?> v) {
-                if (v.isEmpty()) {
-                    return (Collection<IListElement>) v;
-                }
-                for (Object o : v) {
-                    if (!(o instanceof IListElement)) {
-                        return null;
-                    }
-                }
-                return (Collection<IListElement>) v;
+        protected @Nullable IListElement coerceNode(JsonNode node, @Nullable CatalogAccess catalog) {
+            if (catalog == null || node.isObject() || !node.isString()) {
+                return null;
             }
-            return null;
-        }
-
-        @Override
-        public @Nullable Collection<IListElement> parseValue(@Nullable Object value) {
-            return this.coerce(value);
+            return catalog.resolveElement(ResourceIdentifier.valueOf(node.stringValue().trim()));
         }
     };
 
     public static final PropertyType<Instant> DATE = new PropertyType<>("date", Instant.class, false) {
         @Override
-        protected @Nullable Instant coerce(@Nullable Object value) {
-            if (value instanceof Instant instant) {
-                return instant;
+        protected @Nullable Instant coerceNode(JsonNode node, @Nullable CatalogAccess catalog) {
+            if (!node.isString()) {
+                return null;
             }
-            if (value instanceof Date date) {
-                return date.toInstant();
+            try {
+                return Instant.parse(node.stringValue().trim());
+            } catch (Exception ignored) {
+                return null;
             }
-            if (value instanceof String s) {
-                try {
-                    return Instant.parse(s.trim());
-                } catch (Exception ignored) {
+        }
+    };
+
+    public static final PropertyType<Collection<IListElement>> LIST_MULTIPLE = new PropertyType<>(
+            "list_multiple",
+            (Class<Collection<IListElement>>) (Class<?>) Collection.class,
+            false
+    ) {
+        @Override
+        protected @Nullable Collection<IListElement> coerceNode(JsonNode node, @Nullable CatalogAccess catalog) {
+            return coerceListNode(node, LIST_ITEM, catalog);
+        }
+    };
+
+    public static final PropertyType<List<String>> STRING_LIST = new PropertyType<>(
+            "string_list",
+            (Class<List<String>>) (Class<?>) List.class,
+            true
+    ) {
+        @Override
+        protected @Nullable List<String> coerceNode(JsonNode node, @Nullable CatalogAccess catalog) {
+            return coerceListNode(node, STRING, catalog);
+        }
+    };
+
+    public static final PropertyType<List<Long>> NUMBER_LIST = new PropertyType<>(
+            "number_list",
+            (Class<List<Long>>) (Class<?>) List.class,
+            true
+    ) {
+        @Override
+        protected @Nullable List<Long> coerceNode(JsonNode node, @Nullable CatalogAccess catalog) {
+            return coerceListNode(node, NUMBER, catalog);
+        }
+    };
+
+    /**
+     * Array or {@code ;}/{@code ,}-delimited string → list of elements via {@code elementType.parse}.
+     */
+    private static <E> @Nullable List<E> coerceListNode(
+            JsonNode node,
+            PropertyType<E> elementType,
+            @Nullable CatalogAccess catalog
+    ) {
+        if (node.isArray()) {
+            List<E> out = new ArrayList<>(node.size());
+            for (JsonNode item : node) {
+                E parsed = elementType.parse(item, catalog);
+                if (parsed == null) {
                     return null;
                 }
+                out.add(parsed);
             }
-            return null;
+            return out;
         }
-    };
-
-    public static final PropertyType<List<String>> STRING_LIST = new PropertyType<>("string_list", (Class<List<String>>) (Class<?>) List.class, true) {
-        @Override
-        protected @Nullable List<String> coerce(@Nullable Object value) {
-            return switch (value) {
-                case null -> null;
-                case Collection<?> collection -> collection.stream().map(Object::toString).toList();
-                case String[] array -> Arrays.stream(array).map(Object::toString).toList();
-                case String s -> {
-                    if (s.isBlank()) {
-                        yield List.of();
-                    }
-                    yield Arrays.stream(s.split("[;,]"))
-                            .map(String::trim)
-                            .filter(part -> !part.isEmpty())
-                            .toList();
+        if (node.isString()) {
+            String s = node.stringValue();
+            if (s.isBlank()) {
+                return List.of();
+            }
+            List<E> out = new ArrayList<>();
+            for (String part : s.split("[;,]")) {
+                String trimmed = part.trim();
+                if (trimmed.isEmpty()) {
+                    continue;
                 }
-                default -> List.of(value.toString());
-            };
-        }
-    };
-
-    public static final PropertyType<List<Integer>> INT_LIST = new PropertyType<>("int_list", (Class<List<Integer>>) (Class<?>) List.class, true) {
-        @Override
-        protected @Nullable List<Integer> coerce(@Nullable Object value) {
-            return switch (value) {
-                case Collection<?> collection -> collection.stream()
-                        .map(item -> item instanceof Number n ? n.intValue() : Integer.parseInt(item.toString()))
-                        .toList();
-                case Integer[] array -> Arrays.stream(array).toList();
-                case String s -> {
-                    if (s.isBlank()) {
-                        yield List.of();
-                    }
-                    yield Arrays.stream(s.split("[;,]"))
-                            .map(String::trim)
-                            .filter(part -> !part.isEmpty())
-                            .map(Integer::valueOf)
-                            .toList();
+                E parsed = elementType.parse(JSON.getNodeFactory().stringNode(trimmed), catalog);
+                if (parsed == null) {
+                    return null;
                 }
-                case null, default -> null;
-            };
+                out.add(parsed);
+            }
+            return out;
         }
-    };
+        return null;
+    }
 
     private final String name;
     public final Class<T> valueClass;
@@ -222,51 +217,47 @@ public abstract class PropertyType<T> {
         TYPES.put(name, this);
     }
 
-    protected abstract @Nullable T coerce(@Nullable Object value);
+    /**
+     * Wire/storage {@link JsonNode} → domain {@code T}. Fail closed on shape mismatch.
+     * List types require a non-null {@code catalog} to resolve element ids.
+     */
+    protected abstract @Nullable T coerceNode(JsonNode node, @Nullable CatalogAccess catalog);
 
     /**
      * Primary parse entry: wire/storage {@link JsonNode} → domain {@code T}.
      */
     public @Nullable T parse(@Nullable JsonNode node) {
-        if (node == null || node instanceof NullNode || node.isNull()) {
-            return null;
-        }
-        if (this.valueClass.isInstance(node)) {
-            @SuppressWarnings("unchecked")
-            T typed = (T) node;
-            return typed;
-        }
-        Object javaValue = JSON.convertValue(node, Object.class);
-        return this.parseValue(javaValue);
+        return this.parse(node, null);
     }
 
     /**
-     * Coerce a domain or legacy raw value (e.g. env strings, in-memory tests).
-     * Prefer {@link #parse(JsonNode)} for wire/storage.
+     * Wire/storage {@link JsonNode} → domain {@code T}, resolving list ids via {@code catalog}.
      */
-    @SuppressWarnings("unchecked")
-    public @Nullable T parseValue(@Nullable Object value) {
-        switch (value) {
-            case null -> {
-                return null;
-            }
-            case JsonNode node -> {
-                return this.parse(node);
-            }
-            case String s when looksLikeJson(s) -> {
+    public @Nullable T parse(@Nullable JsonNode node, @Nullable CatalogAccess catalog) {
+        if (node == null || node instanceof NullNode || node.isNull()) {
+            return null;
+        }
+        return this.coerceNode(node, catalog);
+    }
+
+    /**
+     * Convert an env/file raw string into a {@link JsonNode} for {@link #parse(JsonNode)}.
+     * JSON documents/arrays/quoted strings are parsed as JSON; everything else becomes a string node
+     * (so {@code true}, {@code 42}, and delimited lists still work via {@code coerceNode}).
+     */
+    public static JsonNode nodeFromRawString(String raw) {
+        String trimmed = raw.trim();
+        if (!trimmed.isEmpty()) {
+            char first = trimmed.charAt(0);
+            if (first == '"' || first == '{' || first == '[') {
                 try {
-                    return this.parse(JSON.readTree(s));
+                    return JSON.readTree(trimmed);
                 } catch (Exception ignored) {
-                    // fall through
+                    // fall through to string node
                 }
             }
-            default -> {
-            }
         }
-        if (this.valueClass.isInstance(value)) {
-            return (T) value;
-        }
-        return this.coerce(value);
+        return JSON.getNodeFactory().stringNode(raw);
     }
 
     public static JsonNode toTree(@Nullable Object domain) {
@@ -279,15 +270,6 @@ public abstract class PropertyType<T> {
         return JSON.valueToTree(domain);
     }
 
-    private static boolean looksLikeJson(String s) {
-        String trimmed = s.trim();
-        if (trimmed.isEmpty()) {
-            return false;
-        }
-        char first = trimmed.charAt(0);
-        return first == '"' || first == '{' || first == '[';
-    }
-
     public boolean supportsConfig() {
         return this.configSupported;
     }
@@ -296,6 +278,7 @@ public abstract class PropertyType<T> {
         return this == LIST_ITEM || this == LIST_MULTIPLE;
     }
 
+    @JsonValue
     public String getName() {
         return this.name;
     }

@@ -3,21 +3,6 @@ import { LocationKind } from '#lib/api/index.js';
 /** Location types only allow user/group; {@link LocationKind.ANY} is for relationship constraints. */
 export const LOCATION_TYPE_KINDS = [LocationKind.USER, LocationKind.GROUP] as const;
 
-export const PROPERTY_TYPES = [
-	'string',
-	'number',
-	'decimal',
-	'boolean',
-	'uuid',
-	'object',
-	'date',
-	'string_list',
-	'int_list',
-	'list_item',
-	'list_multiple',
-] as const;
-export type PropertyTypeName = (typeof PROPERTY_TYPES)[number];
-
 export function isBuiltinResourceId(id: string): boolean {
 	return id.startsWith('builtin:');
 }

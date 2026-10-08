@@ -432,7 +432,7 @@ export type NewObjectPropertyRequest = {
     id: string;
     name: string;
     description: string;
-    type: PropertyTypeObject;
+    type: PropertyType;
     listType?: string;
     validator?: string;
     securityFilter?: string;
@@ -440,10 +440,6 @@ export type NewObjectPropertyRequest = {
      * Arbitrary JSON value (string, number, boolean, object, array, or null)
      */
     defaultValue?: unknown;
-};
-
-export type PropertyTypeObject = {
-    name?: string;
 };
 
 export type NewLocationTypeRequest = {
@@ -671,11 +667,11 @@ export type ConfigTypeDecimalResponse = {
 };
 
 /**
- * Integer list configuration value
+ * Number list configuration value
  */
-export type ConfigTypeIntListResponse = {
+export type ConfigTypeNumberListResponse = {
     key: string;
-    type: 'int_list';
+    type: 'number_list';
     currentValue?: Array<number>;
     defaultValue?: Array<number>;
 };
@@ -719,8 +715,8 @@ export type ConfigTypeResponse = ({
 } & ConfigTypeUuidResponse) | ({
     type: 'string_list';
 } & ConfigTypeStringListResponse) | ({
-    type: 'int_list';
-} & ConfigTypeIntListResponse) | ({
+    type: 'number_list';
+} & ConfigTypeNumberListResponse) | ({
     type: 'object';
 } & ConfigTypeObjectResponse);
 
@@ -814,6 +810,22 @@ export type AuditRelationship = {
     id?: string;
     role?: string;
 };
+
+export const PropertyType = {
+    BOOLEAN: 'boolean',
+    DATE: 'date',
+    DECIMAL: 'decimal',
+    LIST_ITEM: 'list_item',
+    LIST_MULTIPLE: 'list_multiple',
+    NUMBER: 'number',
+    NUMBER_LIST: 'number_list',
+    OBJECT: 'object',
+    STRING: 'string',
+    STRING_LIST: 'string_list',
+    UUID: 'uuid'
+} as const;
+
+export type PropertyType = typeof PropertyType[keyof typeof PropertyType];
 
 export type ListTranslationOverridesData = {
     body?: never;

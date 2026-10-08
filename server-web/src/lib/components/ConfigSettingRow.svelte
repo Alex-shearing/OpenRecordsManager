@@ -2,7 +2,7 @@
 	import type { ConfigDraftValue } from '#lib/config/config-utils.js';
 	import type { ConfigTypeResponse } from '#lib/api/types.gen.js';
 	import ConfigBooleanInput from '#lib/components/config/ConfigBooleanInput.svelte';
-	import ConfigIntListInput from '#lib/components/config/ConfigIntListInput.svelte';
+	import ConfigNumberListInput from '#lib/components/config/ConfigNumberListInput.svelte';
 	import ConfigNumberInput from '#lib/components/config/ConfigNumberInput.svelte';
 	import ConfigSettingLayout from '#lib/components/config/ConfigSettingLayout.svelte';
 	import ConfigStringInput from '#lib/components/config/ConfigStringInput.svelte';
@@ -27,8 +27,8 @@
 			<ConfigBooleanInput id={inputId} bind:value={value.currentValue} {disabled} />
 		{:else if value.type === 'string_list'}
 			<ConfigStringListInput id={inputId} bind:value={value.currentValue} {disabled} />
-		{:else if value.type === 'int_list'}
-			<ConfigIntListInput id={inputId} bind:value={value.currentValue} {disabled} />
+		{:else if value.type === 'number_list'}
+			<ConfigNumberListInput id={inputId} bind:value={value.currentValue} {disabled} />
 		{:else if value.type === 'number'}
 			<ConfigNumberInput id={inputId} bind:value={value.currentValue} {disabled} />
 		{:else if value.type === 'decimal'}
