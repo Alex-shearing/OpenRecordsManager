@@ -8,7 +8,6 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
-import org.jspecify.annotations.Nullable;
 import tools.jackson.databind.JsonNode;
 
 @Embeddable
@@ -18,16 +17,15 @@ public class LocationPropertyValue implements ObjectPropertyHolder.ObjectPropert
     @JoinColumn(name = "property_id", insertable = false, updatable = false)
     private ObjectProperty<?> property;
 
-    @Column(name = "property_value")
+    @Column(name = "property_value", nullable = false)
     @JdbcTypeCode(SqlTypes.JSON)
-    @Nullable
     private JsonNode value;
 
     @Deprecated
     protected LocationPropertyValue() {
     }
 
-    public LocationPropertyValue(ObjectProperty<?> property, @Nullable JsonNode value) {
+    public LocationPropertyValue(ObjectProperty<?> property, JsonNode value) {
         this.property = property;
         this.value = value;
     }
@@ -38,12 +36,12 @@ public class LocationPropertyValue implements ObjectPropertyHolder.ObjectPropert
     }
 
     @Override
-    public @Nullable JsonNode getStoredValue() {
+    public JsonNode getStoredValue() {
         return this.value;
     }
 
     @Override
-    public void setStoredValue(@Nullable JsonNode value) {
+    public void setStoredValue(JsonNode value) {
         this.value = value;
     }
 }

@@ -74,10 +74,7 @@ public class PropertyValueCodec {
      * List properties require {@link ObjectProperty#getListType()}.
      */
     public JsonNode toStored(ObjectProperty<?> property, @Nullable Object domainValue) {
-        if (domainValue == null) {
-            return NullNode.getInstance();
-        }
-        if (property.getType().allowsList()) {
+        if (property.getType().allowsList() && domainValue != null) {
             requireListType(property);
             return toIdNode(domainValue);
         }

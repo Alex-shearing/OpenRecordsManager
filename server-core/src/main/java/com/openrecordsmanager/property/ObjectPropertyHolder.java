@@ -82,7 +82,7 @@ public abstract class ObjectPropertyHolder<SELF extends ObjectPropertyHolder<SEL
 
     public abstract boolean canSetProperty(ObjectProperty<?> property);
 
-    public abstract V createProperty(ObjectProperty<?> property, @Nullable JsonNode storedValue);
+    public abstract V createProperty(ObjectProperty<?> property, JsonNode storedValue);
 
     protected abstract Map<ResourceIdentifier, BuiltinPropertyBinding<SELF, ?>> getBuiltinPropertyBindings();
 
@@ -90,6 +90,8 @@ public abstract class ObjectPropertyHolder<SELF extends ObjectPropertyHolder<SEL
 
     /**
      * Set a typed domain property. Persists as {@link JsonNode} via the codec when installed.
+     * Domain {@code null} removes the dynamic property row; non-null values are stored via
+     * {@link PropertyValueCodec#toStored}.
      */
     public final <K> void setProperty(ObjectProperty<K> property, @Nullable K value) {
         if (!this.canSetProperty(property)) {
@@ -110,12 +112,14 @@ public abstract class ObjectPropertyHolder<SELF extends ObjectPropertyHolder<SEL
         if (!Objects.equals(oldValue, value)) {
             this.touchDateModified();
 
-            JsonNode stored = NullNode.getInstance();
             PropertyValueCodec activeCodec = codec;
-            if (activeCodec != null) {
-                stored = activeCodec.toStored(property, value);
-            } else if (value != null) {
-                stored = PropertyType.toTree(value);
+            JsonNode stored = activeCodec != null
+                    ? activeCodec.toStored(property, value)
+                    : PropertyType.toTree(value);
+
+            if (stored.isNull()) {
+                this.getDynamicProperties().remove(property);
+                return;
             }
 
             V holder = this.getDynamicProperties().get(property);
@@ -149,9 +153,9 @@ public abstract class ObjectPropertyHolder<SELF extends ObjectPropertyHolder<SEL
     public interface ObjectPropertyValue {
         ObjectProperty<?> getProperty();
 
-        @Nullable JsonNode getStoredValue();
+        JsonNode getStoredValue();
 
-        void setStoredValue(@Nullable JsonNode value);
+        void setStoredValue(JsonNode value);
     }
 
     private static final class WirePropertyMap extends AbstractMap<String, JsonNode> {

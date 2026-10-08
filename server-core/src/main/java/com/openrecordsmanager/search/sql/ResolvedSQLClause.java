@@ -1,6 +1,7 @@
 package com.openrecordsmanager.search.sql;
 
 import com.openrecordsmanager.api.search.SearchClause;
+import com.openrecordsmanager.api.search.SearchOperator;
 import com.openrecordsmanager.api.template.property.PropertyType;
 import com.openrecordsmanager.property.ObjectProperty;
 import org.jspecify.annotations.Nullable;
@@ -67,6 +68,11 @@ public interface ResolvedSQLClause {
                 ObjectSearchSchema schema,
                 List<@Nullable Object> params
         ) {
+            String eavTable = schema.holderFk().tableName(support.getDialect());
+            String holderFk = schema.holderFk().column(support.getDialect());
+            String primaryKey = schema.primaryKey().column(support.getDialect());
+            String propertyId = schema.propertyId().column(support.getDialect());
+
             boolean numeric = this.property.getType() == PropertyType.NUMBER
                     || this.property.getType() == PropertyType.DECIMAL;
 
@@ -74,8 +80,27 @@ public interface ResolvedSQLClause {
                     ? support.getDialect().jsonNumeric(schema.propertyValue().column(support.getDialect()))
                     : support.getDialect().jsonText(schema.propertyValue().column(support.getDialect()));
 
-            // Bind property id before the value comparison so placeholders match SQL order.
+            // Bind property id before value comparison so placeholders match SQL order.
             params.add(this.property.getId().toString());
+
+            // Domain null = no EAV row
+            if (this.clause.op() == SearchOperator.IS_NULL) {
+                String present = support.compare(
+                        extracted,
+                        this.property.getType(),
+                        SearchOperator.IS_NOT_NULL,
+                        null,
+                        params
+                );
+                return "NOT EXISTS (SELECT 1 FROM %s WHERE %s = %s AND %s = ? AND %s)".formatted(
+                        eavTable,
+                        holderFk,
+                        primaryKey,
+                        propertyId,
+                        present
+                );
+            }
+
             String comparison = support.compare(
                     extracted,
                     this.property.getType(),
@@ -85,13 +110,12 @@ public interface ResolvedSQLClause {
             );
 
             return "EXISTS (SELECT 1 FROM %s WHERE %s = %s AND %s = ? AND %s)".formatted(
-                    schema.holderFk().tableName(support.getDialect()),
-                    schema.holderFk().column(support.getDialect()),
-                    schema.primaryKey().column(support.getDialect()),
-                    schema.propertyId().column(support.getDialect()),
+                    eavTable,
+                    holderFk,
+                    primaryKey,
+                    propertyId,
                     comparison
             );
-
         }
     }
 }

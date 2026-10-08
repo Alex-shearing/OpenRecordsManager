@@ -130,7 +130,7 @@ CREATE TABLE group_details (
 CREATE TABLE location_property_value (
     location_id UUID NOT NULL,
     property_id VARCHAR(255) NOT NULL,
-    property_value JSON,
+    property_value JSON NOT NULL,
     PRIMARY KEY (location_id, property_id),
     CONSTRAINT fk_lpv_location FOREIGN KEY (location_id) REFERENCES location (id),
     CONSTRAINT fk_lpv_property FOREIGN KEY (property_id) REFERENCES object_property (id)
@@ -234,7 +234,7 @@ CREATE INDEX IF NOT EXISTS idx_record_type_id ON "record" (type_id);
 CREATE TABLE record_property_value (
     record_id UUID NOT NULL,
     property_id VARCHAR(255) NOT NULL,
-    property_value JSON,
+    property_value JSON NOT NULL,
     PRIMARY KEY (record_id, property_id),
     CONSTRAINT fk_rpv_record FOREIGN KEY (record_id) REFERENCES "record" (id),
     CONSTRAINT fk_rpv_property FOREIGN KEY (property_id) REFERENCES object_property (id)

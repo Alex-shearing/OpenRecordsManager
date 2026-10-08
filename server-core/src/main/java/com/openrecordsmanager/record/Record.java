@@ -162,7 +162,7 @@ public class Record extends ObjectPropertyHolder<Record, RecordPropertyValue> {
     }
 
     @Override
-    public RecordPropertyValue createProperty(ObjectProperty<?> property, @Nullable JsonNode value) {
+    public RecordPropertyValue createProperty(ObjectProperty<?> property, JsonNode value) {
         return new RecordPropertyValue(property, value);
     }
 

@@ -20,6 +20,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -27,9 +28,12 @@ import tools.jackson.databind.node.JsonNodeFactory;
 
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @SpringBootTest
 class RecordSearchIntegrationTest {
@@ -54,6 +58,9 @@ class RecordSearchIntegrationTest {
 
     @Autowired
     private TransactionTemplate transactionTemplate;
+
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
 
     private User admin;
     private RecordType searchType;
@@ -148,6 +155,69 @@ class RecordSearchIntegrationTest {
                 "needle-value",
                 response.items().getFirst().properties().get(CUSTOM_PROP.toString()).asString()
         );
+    }
+
+    @Test
+    void nullDynamicPropertyOmitsEavRowAndMatchesIsNullSearch() {
+        Record unset = this.repository.recordRepo.saveAndFlush(new Record("Unset Custom", this.searchType));
+        assertEquals(0, this.countPropertyRows(unset.getId()));
+        assertNull(unset.getProperty(this.customProperty));
+
+        Record cleared = new Record("Cleared Custom", this.searchType);
+        cleared.setProperty(this.customProperty, "temporary");
+        this.repository.recordRepo.saveAndFlush(cleared);
+        assertEquals(1, this.countPropertyRows(cleared.getId()));
+
+        cleared.setProperty(this.customProperty, null);
+        this.repository.recordRepo.saveAndFlush(cleared);
+        assertEquals(0, this.countPropertyRows(cleared.getId()));
+
+        Record present = new Record("Present Custom", this.searchType);
+        present.setProperty(this.customProperty, "kept");
+        this.repository.recordRepo.saveAndFlush(present);
+
+        RecordSearchResponse nullMatches = this.recordService.search(
+                this.admin,
+                new ObjectSearchRequest(
+                        null,
+                        List.of(new SearchClause(CUSTOM_PROP, SearchOperator.IS_NULL, null)),
+                        null,
+                        SEARCH_RECORD_TYPE,
+                        null,
+                        null
+                )
+        );
+        assertTrue(nullMatches.items().stream().anyMatch(item -> item.id().equals(unset.getId())));
+        assertTrue(nullMatches.items().stream().anyMatch(item -> item.id().equals(cleared.getId())));
+        assertTrue(nullMatches.items().stream().noneMatch(item -> item.id().equals(present.getId())));
+
+        RecordSearchResponse notNullMatches = this.recordService.search(
+                this.admin,
+                new ObjectSearchRequest(
+                        null,
+                        List.of(new SearchClause(CUSTOM_PROP, SearchOperator.IS_NOT_NULL, null)),
+                        null,
+                        SEARCH_RECORD_TYPE,
+                        null,
+                        null
+                )
+        );
+        assertEquals(1, notNullMatches.items().size());
+        assertEquals(present.getId(), notNullMatches.items().getFirst().id());
+    }
+
+    private int countPropertyRows(UUID recordId) {
+        byte[] idBytes = java.nio.ByteBuffer.allocate(16)
+                .putLong(recordId.getMostSignificantBits())
+                .putLong(recordId.getLeastSignificantBits())
+                .array();
+        Integer count = this.jdbcTemplate.queryForObject(
+                "SELECT COUNT(*) FROM record_property_value WHERE record_id = ? AND property_id = ?",
+                Integer.class,
+                idBytes,
+                CUSTOM_PROP.toString()
+        );
+        return count == null ? 0 : count;
     }
 
     @SuppressWarnings("unchecked")

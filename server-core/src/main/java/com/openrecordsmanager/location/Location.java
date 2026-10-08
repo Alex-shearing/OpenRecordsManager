@@ -131,7 +131,7 @@ public abstract class Location extends ObjectPropertyHolder<Location, LocationPr
     }
 
     @Override
-    public LocationPropertyValue createProperty(ObjectProperty<?> property, @Nullable JsonNode value) {
+    public LocationPropertyValue createProperty(ObjectProperty<?> property, JsonNode value) {
         return new LocationPropertyValue(property, value);
     }
 
