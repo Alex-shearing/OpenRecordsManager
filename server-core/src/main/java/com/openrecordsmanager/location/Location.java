@@ -74,7 +74,7 @@ public abstract class Location extends ObjectPropertyHolder<Location, LocationPr
             );
         }
         this.type = type;
-        // Defaults before id/timestamps so readOnly builtins short-circuit on null→null.
+        // Defaults before id/timestamps
         type.getProperties().forEach(p -> this.setPropertyFromJson(p.getProperty(), p.getDefault()));
 
         this.id = UuidVersion7Strategy.INSTANCE.generateUuid(null);

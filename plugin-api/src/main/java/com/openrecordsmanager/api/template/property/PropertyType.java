@@ -22,7 +22,8 @@ import java.util.*;
 @SuppressWarnings("unused")
 public abstract class PropertyType<T> {
     public static final Map<String, PropertyType<?>> TYPES = new HashMap<>(16);
-    public static final ObjectMapper JSON = JsonMapper.builder().build();
+    
+    private static final ObjectMapper JSON = JsonMapper.builder().build();
 
     public static final PropertyType<String> STRING = new PropertyType<>("string", String.class, true) {
         @Override
@@ -132,6 +133,7 @@ public abstract class PropertyType<T> {
         }
     };
 
+    @SuppressWarnings("unchecked")
     public static final PropertyType<Collection<IListElement>> LIST_MULTIPLE = new PropertyType<>(
             "list_multiple",
             (Class<Collection<IListElement>>) (Class<?>) Collection.class,
@@ -143,6 +145,7 @@ public abstract class PropertyType<T> {
         }
     };
 
+    @SuppressWarnings("unchecked")
     public static final PropertyType<List<String>> STRING_LIST = new PropertyType<>(
             "string_list",
             (Class<List<String>>) (Class<?>) List.class,
@@ -154,6 +157,7 @@ public abstract class PropertyType<T> {
         }
     };
 
+    @SuppressWarnings("unchecked")
     public static final PropertyType<List<Long>> NUMBER_LIST = new PropertyType<>(
             "number_list",
             (Class<List<Long>>) (Class<?>) List.class,

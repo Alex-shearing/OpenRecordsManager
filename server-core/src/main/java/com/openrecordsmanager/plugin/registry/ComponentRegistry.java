@@ -9,7 +9,7 @@ import java.util.*;
 import java.util.stream.Stream;
 
 public class ComponentRegistry<T extends Component> implements ComponentAccess.RegistryAccess<T> {
-    private ImmutableMap<ResourceIdentifier, T> map = ImmutableMap.of();
+    private Map<ResourceIdentifier, T> map = Map.of();
     private Map<T, ResourceIdentifier> inverse = Map.of();
 
     @Override

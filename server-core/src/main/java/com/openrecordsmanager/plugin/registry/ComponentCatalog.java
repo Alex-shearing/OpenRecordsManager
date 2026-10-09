@@ -12,14 +12,12 @@ import com.openrecordsmanager.api.types.ComponentTypes;
 import com.openrecordsmanager.plugin.LoadedPlugin;
 import com.openrecordsmanager.plugin.PluginManager;
 import com.openrecordsmanager.plugin.registry.mapper.*;
-import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -75,11 +73,16 @@ public class ComponentCatalog implements ComponentAccess {
             .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 
     public ComponentCatalog(PluginManager pluginManager) {
-        this.loadCatalog(pluginManager);
+        this.reload(pluginManager);
     }
 
-    public synchronized void reload(PluginManager pluginManager) {
-        this.loadCatalog(pluginManager);
+    public void reload(PluginManager pluginManager) {
+        Builder builder = new Builder();
+        for (LoadedPlugin loaded : pluginManager.getLoadedPlugins()) {
+            LOGGER.info("Initializing plugin {}...", loaded.id());
+            loaded.initialize(builder);
+        }
+        builder.build();
     }
 
     @SuppressWarnings("unchecked")
@@ -94,27 +97,6 @@ public class ComponentCatalog implements ComponentAccess {
         return (TemplateComponentRegistry<K, D>) TEMPLATE_REGISTRIES.get(mapper.componentType());
     }
 
-    public Set<ComponentType<?>> getTemplateTypes() {
-        return TEMPLATE_REGISTRIES.keySet();
-    }
-
-    private void loadCatalog(PluginManager pluginManager) {
-        Builder builder = new Builder();
-        for (LoadedPlugin loaded : pluginManager.getLoadedPlugins()) {
-            LOGGER.info("Initializing plugin {}...", loaded.id());
-            loaded.initialize(builder);
-        }
-        builder.build();
-    }
-
-    @Nullable
-    public static TemplateRegistrationMapper<?, ?> mapperFromName(String name) {
-        return TEMPLATE_MAPPERS.stream()
-                .filter(mapper -> mapper.componentType().name().equals(name))
-                .findFirst()
-                .orElse(null);
-    }
-
     @SuppressWarnings("unchecked")
     public static <T extends TemplateComponent> TemplateRegistrationMapper<T, ?> mapperFromComponent(ComponentType<T> type) {
         return (TemplateRegistrationMapper<T, ?>) TEMPLATE_MAPPERS.stream()
@@ -122,7 +104,6 @@ public class ComponentCatalog implements ComponentAccess {
                 .findFirst()
                 .orElseThrow();
     }
-
 
     public class Builder {
         private final Map<ComponentType<?>, ComponentRegistry<?>.Builder> builder = ComponentCatalog.this.componentsMap
