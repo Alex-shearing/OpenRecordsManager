@@ -21,12 +21,16 @@ import java.util.Collection;
 
 /**
  * Bridges wire/storage {@link JsonNode} and domain {@code T} for object properties.
+ * Installed as an ambient service so {@link ObjectPropertyHolder} can resolve values
+ * without constructor injection.
  */
 @Component
 public class PropertyValueCodec {
     private static final String VALUE_INVALID = "property_value_invalid";
 
     private static final JsonNodeFactory NODES = JsonNodeFactory.instance;
+
+    private static volatile @Nullable PropertyValueCodec installed;
 
     private final ListElementRepository listElementRepository;
 
@@ -36,12 +40,22 @@ public class PropertyValueCodec {
 
     @PostConstruct
     void install() {
-        ObjectPropertyHolder.installCodec(this);
+        PropertyValueCodec.installed = this;
     }
 
     @PreDestroy
     void uninstall() {
-        ObjectPropertyHolder.uninstallCodec(this);
+        if (PropertyValueCodec.installed == this) {
+            PropertyValueCodec.installed = null;
+        }
+    }
+
+    public static PropertyValueCodec requireInstalled() {
+        PropertyValueCodec codec = PropertyValueCodec.installed;
+        if (codec == null) {
+            throw new IllegalStateException("PropertyValueCodec is not installed");
+        }
+        return codec;
     }
 
     /**

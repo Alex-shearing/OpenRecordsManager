@@ -17,18 +17,6 @@ import java.util.stream.Collectors;
  */
 public abstract class ObjectPropertyHolder<SELF extends ObjectPropertyHolder<SELF, V>, V extends ObjectPropertyHolder.ObjectPropertyValue> {
 
-    private static volatile @Nullable PropertyValueCodec codec;
-
-    static void installCodec(PropertyValueCodec propertyValueCodec) {
-        codec = propertyValueCodec;
-    }
-
-    static void uninstallCodec(PropertyValueCodec propertyValueCodec) {
-        if (codec == propertyValueCodec) {
-            codec = null;
-        }
-    }
-
     public abstract Set<ObjectProperty<?>> getPropertyKeys();
 
     protected abstract Map<ObjectProperty<?>, V> getDynamicProperties();
@@ -71,13 +59,9 @@ public abstract class ObjectPropertyHolder<SELF extends ObjectPropertyHolder<SEL
         }
 
         JsonNode raw = stored.getStoredValue();
-        PropertyValueCodec activeCodec = codec;
-        if (activeCodec != null) {
-            @SuppressWarnings("unchecked")
-            K hydrated = (K) activeCodec.hydrate(property, raw);
-            return hydrated;
-        }
-        return property.getType().parse(raw);
+        @SuppressWarnings("unchecked")
+        K hydrated = (K) PropertyValueCodec.requireInstalled().hydrate(property, raw);
+        return hydrated;
     }
 
     public abstract boolean canSetProperty(ObjectProperty<?> property);
@@ -89,9 +73,8 @@ public abstract class ObjectPropertyHolder<SELF extends ObjectPropertyHolder<SEL
     protected abstract SELF self();
 
     /**
-     * Set a typed domain property. Persists as {@link JsonNode} via the codec when installed.
-     * Domain {@code null} removes the dynamic property row; non-null values are stored via
-     * {@link PropertyValueCodec#toStored}.
+     * Set a typed domain property. Persists as {@link JsonNode} via
+     * {@link PropertyValueCodec#toStored}. Domain {@code null} removes the dynamic property row.
      */
     public final <K> void setProperty(ObjectProperty<K> property, @Nullable K value) {
         if (!this.canSetProperty(property)) {
@@ -112,10 +95,7 @@ public abstract class ObjectPropertyHolder<SELF extends ObjectPropertyHolder<SEL
         if (!Objects.equals(oldValue, value)) {
             this.touchDateModified();
 
-            PropertyValueCodec activeCodec = codec;
-            JsonNode stored = activeCodec != null
-                    ? activeCodec.toStored(property, value)
-                    : PropertyType.toTree(value);
+            JsonNode stored = PropertyValueCodec.requireInstalled().toStored(property, value);
 
             if (stored.isNull()) {
                 this.getDynamicProperties().remove(property);
@@ -136,14 +116,7 @@ public abstract class ObjectPropertyHolder<SELF extends ObjectPropertyHolder<SEL
      * Set from wire/storage {@link JsonNode}: parse once to domain, then store as JsonNode.
      */
     public final <K> @Nullable K setPropertyFromJson(ObjectProperty<K> property, @Nullable JsonNode value) {
-        PropertyValueCodec activeCodec = codec;
-        K newValue;
-        if (activeCodec != null) {
-            newValue = activeCodec.parse(property, value);
-        } else {
-            newValue = property.getType().parse(value);
-        }
-
+        K newValue = PropertyValueCodec.requireInstalled().parse(property, value);
         this.setProperty(property, newValue);
         return newValue;
     }
@@ -219,14 +192,7 @@ public abstract class ObjectPropertyHolder<SELF extends ObjectPropertyHolder<SEL
         }
 
         private static JsonNode encode(ObjectProperty<?> property, @Nullable Object domainValue) {
-            PropertyValueCodec activeCodec = codec;
-            if (activeCodec != null) {
-                return activeCodec.encode(property, domainValue);
-            }
-            if (domainValue == null) {
-                return NullNode.getInstance();
-            }
-            return PropertyType.toTree(domainValue);
+            return PropertyValueCodec.requireInstalled().encode(property, domainValue);
         }
     }
 
