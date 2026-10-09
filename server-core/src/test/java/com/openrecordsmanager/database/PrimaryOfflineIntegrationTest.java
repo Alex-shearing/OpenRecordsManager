@@ -69,8 +69,8 @@ class PrimaryOfflineIntegrationTest {
         try (Connection connection = DriverManager.getConnection(jdbcUrl)) {
             Timestamp now = Timestamp.from(Instant.now());
 
-            // /api/location/me serializes User wire properties via ObjectPropertyLookup; primary seeding
-            // is skipped when the primary DB is offline, so builtins must exist on the read replica.
+            // /api/location/me serializes User wire properties; primary seeding is skipped when the
+            // primary DB is offline, so builtins must exist on the read replica.
             try (PreparedStatement property = connection.prepareStatement(
                     "INSERT INTO object_property (id, type, user_hidden, date_created, date_modified) VALUES (?, ?, ?, ?, ?)"
             )) {
