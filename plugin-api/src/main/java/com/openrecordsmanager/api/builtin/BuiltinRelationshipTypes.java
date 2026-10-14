@@ -1,7 +1,10 @@
 package com.openrecordsmanager.api.builtin;
 
+import com.openrecordsmanager.api.ComponentReference;
+import com.openrecordsmanager.api.ResourceIdentifier;
 import com.openrecordsmanager.api.location.LocationKind;
 import com.openrecordsmanager.api.template.location.LocationRelationshipTypeTemplate;
+import com.openrecordsmanager.api.types.ComponentTypes;
 
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -13,7 +16,7 @@ public final class BuiltinRelationshipTypes {
     public static final Map<String, LocationRelationshipTypeTemplate> BUILTIN_RELATIONSHIP_TYPES =
             Collections.unmodifiableMap(TEMPLATES);
 
-    public static final LocationRelationshipTypeTemplate MEMBER_OF = register(
+    public static final ComponentReference<LocationRelationshipTypeTemplate> MEMBER_OF = register(
             BuiltinRelationshipTypeIds.MEMBER_OF,
             LocationRelationshipTypeTemplate.builder()
                     .sourceKind(LocationKind.ANY)
@@ -22,7 +25,7 @@ public final class BuiltinRelationshipTypes {
                     .build()
     );
 
-    public static final LocationRelationshipTypeTemplate REPORTS_TO = register(
+    public static final ComponentReference<LocationRelationshipTypeTemplate> REPORTS_TO = register(
             BuiltinRelationshipTypeIds.REPORTS_TO,
             LocationRelationshipTypeTemplate.builder()
                     .sourceKind(LocationKind.ANY)
@@ -31,7 +34,7 @@ public final class BuiltinRelationshipTypes {
                     .build()
     );
 
-    public static final LocationRelationshipTypeTemplate DEPUTY_OF = register(
+    public static final ComponentReference<LocationRelationshipTypeTemplate> DEPUTY_OF = register(
             BuiltinRelationshipTypeIds.DEPUTY_OF,
             LocationRelationshipTypeTemplate.builder()
                     .sourceKind(LocationKind.ANY)
@@ -40,7 +43,7 @@ public final class BuiltinRelationshipTypes {
                     .build()
     );
 
-    public static final LocationRelationshipTypeTemplate ACTING_FOR = register(
+    public static final ComponentReference<LocationRelationshipTypeTemplate> ACTING_FOR = register(
             BuiltinRelationshipTypeIds.ACTING_FOR,
             LocationRelationshipTypeTemplate.builder()
                     .sourceKind(LocationKind.ANY)
@@ -52,8 +55,14 @@ public final class BuiltinRelationshipTypes {
     private BuiltinRelationshipTypes() {
     }
 
-    private static LocationRelationshipTypeTemplate register(String id, LocationRelationshipTypeTemplate template) {
+    private static ComponentReference<LocationRelationshipTypeTemplate> register(
+            String id,
+            LocationRelationshipTypeTemplate template
+    ) {
         TEMPLATES.put(id, template);
-        return template;
+        return ComponentReference.of(
+                ComponentTypes.LOCATION_RELATIONSHIP_TYPE,
+                new ResourceIdentifier(BuiltinPlugin.BUILTIN_PLUGIN_NAME, id)
+        );
     }
 }

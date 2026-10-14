@@ -53,17 +53,9 @@ public record LocationTypeTemplate(
             return this;
         }
 
-        public Builder property(ObjectPropertyTemplate<?> property) {
-            return this.property(ComponentReference.of(property));
-        }
-
         public <T> Builder property(ComponentReference<ObjectPropertyTemplate<T>> property, T defaultValue) {
             this.properties.add(PropertyAssignment.of(property, defaultValue));
             return this;
-        }
-
-        public <T> Builder property(ObjectPropertyTemplate<T> property, T defaultValue) {
-            return this.property(ComponentReference.of(property), defaultValue);
         }
 
         public LocationTypeTemplate build() {

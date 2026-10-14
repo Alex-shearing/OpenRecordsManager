@@ -1,7 +1,10 @@
 package com.openrecordsmanager.api.builtin;
 
+import com.openrecordsmanager.api.ComponentReference;
+import com.openrecordsmanager.api.ResourceIdentifier;
 import com.openrecordsmanager.api.location.LocationKind;
 import com.openrecordsmanager.api.template.location.LocationTypeTemplate;
+import com.openrecordsmanager.api.types.ComponentTypes;
 
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -13,7 +16,7 @@ public final class BuiltinLocationTypes {
     public static final Map<String, LocationTypeTemplate> BUILTIN_LOCATION_TYPES =
             Collections.unmodifiableMap(TEMPLATES);
 
-    public static final LocationTypeTemplate USER = register(
+    public static final ComponentReference<LocationTypeTemplate> USER = register(
             BuiltinLocationTypeIds.USER,
             LocationTypeTemplate.builder()
                     .kind(LocationKind.USER)
@@ -29,7 +32,7 @@ public final class BuiltinLocationTypes {
                     .build()
     );
 
-    public static final LocationTypeTemplate GROUP = register(
+    public static final ComponentReference<LocationTypeTemplate> GROUP = register(
             BuiltinLocationTypeIds.GROUP,
             LocationTypeTemplate.builder()
                     .kind(LocationKind.GROUP)
@@ -44,8 +47,11 @@ public final class BuiltinLocationTypes {
     private BuiltinLocationTypes() {
     }
 
-    private static LocationTypeTemplate register(String id, LocationTypeTemplate template) {
+    private static ComponentReference<LocationTypeTemplate> register(String id, LocationTypeTemplate template) {
         TEMPLATES.put(id, template);
-        return template;
+        return ComponentReference.of(
+                ComponentTypes.LOCATION_TYPE,
+                new ResourceIdentifier(BuiltinPlugin.BUILTIN_PLUGIN_NAME, id)
+        );
     }
 }

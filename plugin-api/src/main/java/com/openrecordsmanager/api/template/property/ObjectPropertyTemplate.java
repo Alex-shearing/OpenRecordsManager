@@ -78,28 +78,13 @@ public record ObjectPropertyTemplate<T>(
         }
 
         /**
-         * The type of list for a {@link PropertyType#LIST_ITEM} or {@link PropertyType#LIST_MULTIPLE} type.
-         *
-         * @param listType the type of list to use
-         * @return this builder
-         */
-        public Builder<T> listType(ListTemplate listType) {
-            return this.listType(ComponentReference.of(listType));
-        }
-
-        /**
          * Apply a validation expression to the property
          *
-         * @param validator    the validation CET string
-         * @param dependencies dependencies used in the filter pattern
+         * @param validator the validation CET string
          * @return this builder
          */
-        public Builder<T> validator(String validator, ObjectPropertyTemplate<?>... dependencies) {
-            List<ComponentReference<TemplateComponent>> deps = Arrays.stream(dependencies)
-                    .<ComponentReference<TemplateComponent>>map(ComponentReference::of)
-                    .toList();
-
-            return this.validator(new ExpressionBuilder(validator, deps));
+        public Builder<T> validator(String validator) {
+            return this.validator(ExpressionBuilder.from(validator));
         }
 
         /**
@@ -138,16 +123,11 @@ public record ObjectPropertyTemplate<T>(
         /**
          * Apply a security filter to the object this property exists on.
          *
-         * @param filter       the filter CET string
-         * @param dependencies dependencies used in the filter pattern
+         * @param filter the filter CET string
          * @return this builder
          */
-        public Builder<T> securityFilter(String filter, ObjectPropertyTemplate<?>... dependencies) {
-            List<ComponentReference<TemplateComponent>> deps = Arrays.stream(dependencies)
-                    .<ComponentReference<TemplateComponent>>map(ComponentReference::of)
-                    .toList();
-
-            return this.securityFilter(new ExpressionBuilder(filter, deps));
+        public Builder<T> securityFilter(String filter) {
+            return this.securityFilter(ExpressionBuilder.from(filter));
         }
 
         /**
