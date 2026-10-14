@@ -1,6 +1,9 @@
 package com.openrecordsmanager.plugin.registry;
 
-import com.openrecordsmanager.api.*;
+import com.openrecordsmanager.api.Component;
+import com.openrecordsmanager.api.ComponentReference;
+import com.openrecordsmanager.api.RegistrationContext;
+import com.openrecordsmanager.api.ResourceIdentifier;
 import com.openrecordsmanager.api.template.TemplateComponent;
 import com.openrecordsmanager.api.template.list.ListElementTemplate;
 import com.openrecordsmanager.api.template.list.ListTemplate;
@@ -15,12 +18,13 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @Service
-public class ComponentCatalog implements ComponentAccess {
+public class ComponentCatalog {
     private static final Logger LOGGER = LoggerFactory.getLogger(ComponentCatalog.class);
 
     // Mappers
@@ -86,6 +90,10 @@ public class ComponentCatalog implements ComponentAccess {
     @SuppressWarnings("unchecked")
     public <K extends Component> ComponentRegistry<K> getRegistry(ComponentType<K> type) {
         return (ComponentRegistry<K>) this.componentsMap.get(type);
+    }
+
+    public <T extends Component> Optional<T> get(ComponentReference<T> reference) {
+        return this.getRegistry(reference.type()).get(reference.id());
     }
 
     @SuppressWarnings("unchecked")
