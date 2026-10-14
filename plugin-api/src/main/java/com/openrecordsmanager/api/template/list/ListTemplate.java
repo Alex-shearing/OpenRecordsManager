@@ -1,7 +1,6 @@
 package com.openrecordsmanager.api.template.list;
 
 import com.google.common.collect.ImmutableMap;
-import com.openrecordsmanager.api.ComponentReference;
 import com.openrecordsmanager.api.template.TemplateComponent;
 import org.jspecify.annotations.Nullable;
 import tools.jackson.databind.annotation.JsonDeserialize;
@@ -53,10 +52,8 @@ public record ListTemplate(Map<String, ListElementTemplate> defaultEntries) impl
         public ListTemplate build() {
             ListTemplate parent = new ListTemplate(new HashMap<>());
 
-            ComponentReference<ListTemplate> parentRef = ComponentReference.of(parent);
-
             ImmutableMap<String, ListElementTemplate> entries = this.defaultEntries.entrySet().stream()
-                    .map(builder -> Map.entry(builder.getKey(), builder.getValue().build(parentRef)))
+                    .map(builder -> Map.entry(builder.getKey(), builder.getValue().build()))
                     .sorted(Comparator.comparingInt(o -> o.getValue().index()))
                     .collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue));
 

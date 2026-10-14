@@ -120,12 +120,14 @@ public class ComponentCatalog implements ComponentAccess {
 
             ComponentReference<T> ref = typeBuilder.register(identifier, component);
 
-            if (component instanceof ListTemplate(
-                    Map<String, ListElementTemplate> defaultEntries
-            )) {
-                defaultEntries.forEach((s, element) -> {
-                    this.registerInstance(context, s, element);
-                });
+            if (component instanceof ListTemplate(Map<String, ListElementTemplate> defaultEntries)) {
+                ComponentReference<ListTemplate> parentRef = (ComponentReference<ListTemplate>) ref;
+
+                // Replace each default entry with a version that references the parent
+                defaultEntries.replaceAll((_, element) -> element.withParent(parentRef));
+
+                // Register all the default entries
+                defaultEntries.forEach((s, element) -> this.registerInstance(context, s, element));
             }
 
             return ref;

@@ -16,12 +16,11 @@ public record ListElementTemplate(
         int index,
         @Nullable Instant activeTo,
         @JsonSetter(nulls = Nulls.AS_EMPTY) Set<String> aliases,
-        ComponentReference<ListTemplate> parent
+        @Nullable ComponentReference<ListTemplate> parent
 ) implements TemplateComponent {
 
     public ListElementTemplate {
         Objects.requireNonNull(aliases, "Property 'aliases' must not be null");
-        Objects.requireNonNull(parent, "Property 'parent' must not be null");
     }
 
     /**
@@ -42,7 +41,11 @@ public record ListElementTemplate(
 
     @Override
     public Set<ComponentReference<? extends TemplateComponent>> getDependencies() {
-        return Set.of(this.parent);
+        return this.parent == null ? Set.of() : Set.of(this.parent);
+    }
+
+    public ListElementTemplate withParent(ComponentReference<ListTemplate> parent) {
+        return new ListElementTemplate(this.index, this.activeTo, this.aliases, parent);
     }
 
     public static class Builder {
@@ -79,7 +82,11 @@ public record ListElementTemplate(
             return this;
         }
 
-        public ListElementTemplate build(ComponentReference<ListTemplate> parent) {
+        public ListElementTemplate build() {
+            return this.build(null);
+        }
+
+        public ListElementTemplate build(@Nullable ComponentReference<ListTemplate> parent) {
             return new ListElementTemplate(
                     this.index,
                     this.activeTo,

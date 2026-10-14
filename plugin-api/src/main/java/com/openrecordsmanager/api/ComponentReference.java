@@ -17,10 +17,6 @@ public abstract class ComponentReference<T extends Component> {
 
     public abstract ComponentType<T> getType();
 
-    public static <K extends Component> ComponentReference<K> of(K value) {
-        return new Value<>(value);
-    }
-
     public static <K extends Component> ComponentReference.Reference<K> of(ComponentType<K> type, ResourceIdentifier id) {
         return new Reference<>(type, id);
     }
@@ -81,45 +77,6 @@ public abstract class ComponentReference<T extends Component> {
 
         public String getTranslationKey(TranslationField field) {
             return this.id.getTranslationKey(this.getType().name()) + "." + field.key();
-        }
-    }
-
-    public static class Value<T extends Component> extends ComponentReference<T> {
-        private final T value;
-
-        public Value(T value) {
-            this.value = value;
-        }
-
-        @Override
-        public Optional<T> getComponent(ComponentAccess catalog) {
-            return Optional.of(this.value);
-        }
-
-        @Override
-        public Optional<ResourceIdentifier> getId(ComponentAccess catalog) {
-            return catalog.getRegistry(this.getType()).getId(this.value);
-        }
-
-        @Override
-        public ComponentType<T> getType() {
-            return ComponentTypes.fromObject(this.value);
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (!(o instanceof Value<?> value1)) return false;
-            return Objects.equals(value, value1.value);
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hashCode(value);
-        }
-
-        @Override
-        public String toString() {
-            return String.format("Value[%s]", this.value);
         }
     }
 
