@@ -1,9 +1,11 @@
 package com.openrecordsmanager.filestore;
 
+import jakarta.validation.Valid;
 import com.openrecordsmanager.filestore.dto.*;
 import com.openrecordsmanager.filestore.middleware.MiddlewareService;
 import com.openrecordsmanager.filestore.store.FileStoreService;
 import com.openrecordsmanager.rest.swagger.ConflictApiResponse;
+import com.openrecordsmanager.rest.swagger.ValidationFailedApiResponse;
 import com.openrecordsmanager.rest.swagger.DefaultApiResponses;
 import com.openrecordsmanager.rest.swagger.NotFoundApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
@@ -44,7 +46,8 @@ public class FileStoreController {
     @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Create a new file store")
     @NotFoundApiResponse
-    public SimpleFileStoreResponse fileStore_create(@RequestBody NewFileStoreRequest input) {
+    @ValidationFailedApiResponse
+    public SimpleFileStoreResponse fileStore_create(@Valid @RequestBody NewFileStoreRequest input) {
         return this.storeService.create(input);
     }
 
@@ -79,7 +82,8 @@ public class FileStoreController {
     @PostMapping(value = "/middlewares", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Create a new file store middleware")
     @NotFoundApiResponse
-    public SimpleMiddlewareResponse middleware_create(@RequestBody NewFileStoreMiddlewareRequest input) {
+    @ValidationFailedApiResponse
+    public SimpleMiddlewareResponse middleware_create(@Valid @RequestBody NewFileStoreMiddlewareRequest input) {
         return this.middlewareService.create(input);
     }
 

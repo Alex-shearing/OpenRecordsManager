@@ -1,10 +1,12 @@
 package com.openrecordsmanager.record.type;
 
+import jakarta.validation.Valid;
 import com.openrecordsmanager.api.ResourceIdentifier;
 import com.openrecordsmanager.record.type.dto.NewRecordTypeRequest;
 import com.openrecordsmanager.record.type.dto.RecordTypeResponse;
 import com.openrecordsmanager.record.type.dto.UpdateRecordTypeRequest;
 import com.openrecordsmanager.rest.swagger.ConflictApiResponse;
+import com.openrecordsmanager.rest.swagger.ValidationFailedApiResponse;
 import com.openrecordsmanager.rest.swagger.DefaultApiResponses;
 import com.openrecordsmanager.rest.swagger.NotFoundApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
@@ -42,16 +44,18 @@ public class RecordTypeController {
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Create a custom record type")
     @ConflictApiResponse
-    public RecordTypeResponse createRecordType(@RequestBody NewRecordTypeRequest input) {
+    @ValidationFailedApiResponse
+    public RecordTypeResponse createRecordType(@Valid @RequestBody NewRecordTypeRequest input) {
         return this.service.create(input);
     }
 
     @PutMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Update a custom record type")
     @NotFoundApiResponse
+    @ValidationFailedApiResponse
     public RecordTypeResponse updateRecordType(
             @PathVariable("id") ResourceIdentifier id,
-            @RequestBody UpdateRecordTypeRequest input
+            @Valid @RequestBody UpdateRecordTypeRequest input
     ) {
         return this.service.update(id, input);
     }

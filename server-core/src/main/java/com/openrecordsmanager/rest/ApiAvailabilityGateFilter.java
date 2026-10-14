@@ -1,4 +1,4 @@
-package com.openrecordsmanager.database;
+package com.openrecordsmanager.rest;
 
 import com.openrecordsmanager.api.errors.ApiError;
 import com.openrecordsmanager.database.schema.SchemaMigrationState;
@@ -15,20 +15,20 @@ import tools.jackson.databind.json.JsonMapper;
 import java.io.IOException;
 
 /**
- * Blocks business APIs while the schema requires an operator-confirmed upgrade.
- * Registered in the Spring Security filter chain before token authentication so
- * auth lookups do not hit the database while an upgrade is required.
+ * Blocks business APIs while schema upgrade or first-run setup is required.
+ * Registered before token authentication so auth lookups do not hit the database
+ * during those states.
  */
 @Component
-public class SchemaUpgradeGateFilter extends OncePerRequestFilter {
+public class ApiAvailabilityGateFilter extends OncePerRequestFilter {
 
     public static final String UPGRADE_REQUIRED_HEADER = "X-ORM-Schema-Upgrade-Required";
 
-    private final SchemaMigrationState state;
+    private final SchemaMigrationState schemaState;
     private final JsonMapper jsonMapper;
 
-    public SchemaUpgradeGateFilter(SchemaMigrationState state, JsonMapper jsonMapper) {
-        this.state = state;
+    public ApiAvailabilityGateFilter(SchemaMigrationState schemaState, JsonMapper jsonMapper) {
+        this.schemaState = schemaState;
         this.jsonMapper = jsonMapper;
     }
 
@@ -41,8 +41,10 @@ public class SchemaUpgradeGateFilter extends OncePerRequestFilter {
         }
         return !path.startsWith("/api/")
                 || path.startsWith("/api/database/")
+                || path.startsWith("/api/setup/")
                 || path.startsWith("/api/web")
-                || path.startsWith("/api/health");
+                || path.startsWith("/api/health")
+                || path.startsWith("/api/translations/");
     }
 
     @Override
@@ -51,18 +53,17 @@ public class SchemaUpgradeGateFilter extends OncePerRequestFilter {
             HttpServletResponse response,
             FilterChain filterChain
     ) throws ServletException, IOException {
-        if (!this.state.isUpgradeRequired()) {
-            filterChain.doFilter(request, response);
+        if (this.schemaState.isUpgradeRequired() || this.schemaState.isSetupRequired()) {
+            response.setStatus(HttpServletResponse.SC_SERVICE_UNAVAILABLE);
+            response.setHeader(UPGRADE_REQUIRED_HEADER, "true");
+            response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+            this.jsonMapper.writeValue(
+                    response.getOutputStream(),
+                    ApiResponseV1.error(ApiError.of("schema_upgrade_required"))
+            );
             return;
         }
 
-        response.setStatus(HttpServletResponse.SC_SERVICE_UNAVAILABLE);
-        response.setHeader(UPGRADE_REQUIRED_HEADER, "true");
-        response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-
-        this.jsonMapper.writeValue(
-                response.getOutputStream(),
-                ApiResponseV1.error(ApiError.of("schema_upgrade_required"))
-        );
+        filterChain.doFilter(request, response);
     }
 }

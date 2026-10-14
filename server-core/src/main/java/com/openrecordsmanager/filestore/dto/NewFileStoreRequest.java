@@ -10,7 +10,7 @@ import java.util.UUID;
 
 public record NewFileStoreRequest(
         @NotBlank String name,
-        @NotBlank ResourceIdentifier type,
+        @NotNull ResourceIdentifier type,
         @NotNull Map<String, ?> properties,
         @NotNull List<UUID> middlewares) {
 }

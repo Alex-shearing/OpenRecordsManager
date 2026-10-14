@@ -11,13 +11,13 @@ public final class SchemaMigrationState {
 
     public enum Status {
         READY,
-        UPGRADE_REQUIRED
+        UPGRADE_REQUIRED,
+        SETUP_REQUIRED
     }
 
     private Status status = Status.READY;
     private @Nullable String currentVersion;
     private List<String> pendingMigrations = List.of();
-    private boolean initialSeedPending;
 
     public Status getStatus() {
         return this.status;
@@ -25,6 +25,10 @@ public final class SchemaMigrationState {
 
     public boolean isUpgradeRequired() {
         return this.status == Status.UPGRADE_REQUIRED;
+    }
+
+    public boolean isSetupRequired() {
+        return this.status == Status.SETUP_REQUIRED;
     }
 
     public @Nullable String getCurrentVersion() {
@@ -41,28 +45,15 @@ public final class SchemaMigrationState {
         this.pendingMigrations = List.of();
     }
 
+    public void markSetupRequired(@Nullable String currentVersion) {
+        this.status = Status.SETUP_REQUIRED;
+        this.currentVersion = currentVersion;
+        this.pendingMigrations = List.of();
+    }
+
     public void markUpgradeRequired(@Nullable String currentVersion, List<String> pending) {
         this.status = Status.UPGRADE_REQUIRED;
         this.currentVersion = currentVersion;
         this.pendingMigrations = List.copyOf(pending);
-    }
-
-    /**
-     * Mark that this process created a brand-new schema and should seed bootstrap data
-     * once JPA repositories are available (after Flyway / EntityManagerFactory startup).
-     */
-    public void markInitialSeedPending() {
-        this.initialSeedPending = true;
-    }
-
-    /**
-     * @return true once if an initial seed was requested; subsequent calls return false
-     */
-    public boolean consumeInitialSeedPending() {
-        if (!this.initialSeedPending) {
-            return false;
-        }
-        this.initialSeedPending = false;
-        return true;
     }
 }

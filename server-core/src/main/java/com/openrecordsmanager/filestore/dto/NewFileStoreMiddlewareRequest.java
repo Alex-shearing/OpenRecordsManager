@@ -8,6 +8,6 @@ import java.util.Map;
 
 public record NewFileStoreMiddlewareRequest(
         @NotBlank String name,
-        @NotBlank ResourceIdentifier type,
+        @NotNull ResourceIdentifier type,
         @NotNull Map<String, ?> properties) {
 }

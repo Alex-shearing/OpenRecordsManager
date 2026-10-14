@@ -10,7 +10,7 @@ import java.util.Set;
 public record UpdateListElementRequest(
         @NotBlank String name,
         @NotBlank String description,
-        @NotBlank int index,
+        @NotNull Integer index,
         @Nullable Instant activeTo,
         @NotNull Set<String> aliases
 ) {

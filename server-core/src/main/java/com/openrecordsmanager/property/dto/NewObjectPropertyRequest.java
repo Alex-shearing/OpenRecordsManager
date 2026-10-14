@@ -8,7 +8,7 @@ import org.jspecify.annotations.Nullable;
 import tools.jackson.databind.JsonNode;
 
 public record NewObjectPropertyRequest(
-        @NotBlank ResourceIdentifier id,
+        @NotNull ResourceIdentifier id,
         @NotBlank String name,
         @NotBlank String description,
         @NotNull PropertyType<?> type,

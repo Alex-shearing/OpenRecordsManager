@@ -7,6 +7,7 @@ import com.openrecordsmanager.audit.dto.AuditPolicyResponse;
 import com.openrecordsmanager.audit.dto.AuditStatusResponse;
 import com.openrecordsmanager.audit.dto.UpdateAuditPolicyRequest;
 import com.openrecordsmanager.rest.swagger.DefaultApiResponses;
+import com.openrecordsmanager.rest.swagger.ValidationFailedApiResponse;
 import com.openrecordsmanager.rest.swagger.NotFoundApiResponse;
 import com.openrecordsmanager.location.user.User;
 import io.swagger.v3.oas.annotations.Operation;
@@ -68,6 +69,7 @@ public class AuditController {
     @PutMapping(value = "/policies", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Update an audit policy")
     @NotFoundApiResponse
+    @ValidationFailedApiResponse
     public AuditPolicyResponse updateAuditPolicy(
             @RequestParam("entityType") String entityType,
             @RequestParam("operation") AuditOperation operation,

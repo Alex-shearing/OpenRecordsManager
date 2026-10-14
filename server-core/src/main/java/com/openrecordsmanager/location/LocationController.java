@@ -1,5 +1,6 @@
 package com.openrecordsmanager.location;
 
+import jakarta.validation.Valid;
 import com.openrecordsmanager.api.ResourceIdentifier;
 import com.openrecordsmanager.api.location.LocationKind;
 import com.openrecordsmanager.location.dto.LocationResponse;
@@ -12,6 +13,7 @@ import com.openrecordsmanager.location.relationship.dto.NewLocationRelationshipR
 import com.openrecordsmanager.location.user.User;
 import com.openrecordsmanager.rest.dto.ActionResponse;
 import com.openrecordsmanager.rest.swagger.ConflictApiResponse;
+import com.openrecordsmanager.rest.swagger.ValidationFailedApiResponse;
 import com.openrecordsmanager.rest.swagger.DefaultApiResponses;
 import com.openrecordsmanager.rest.swagger.NotFoundApiResponse;
 import com.openrecordsmanager.search.dto.ObjectSearchRequest;
@@ -65,7 +67,8 @@ public class LocationController {
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Create a new location (user or group)")
     @ConflictApiResponse
-    public LocationResponse createLocation(@RequestBody NewLocationRequest input) {
+    @ValidationFailedApiResponse
+    public LocationResponse createLocation(@Valid @RequestBody NewLocationRequest input) {
         return this.service.create(input);
     }
 
@@ -119,9 +122,10 @@ public class LocationController {
     @Operation(summary = "Create a relationship from this location to another")
     @NotFoundApiResponse
     @ConflictApiResponse
+    @ValidationFailedApiResponse
     public LocationRelationshipResponse createLocationRelationship(
             @PathVariable("id") UUID id,
-            @RequestBody NewLocationRelationshipRequest input
+            @Valid @RequestBody NewLocationRelationshipRequest input
     ) {
         return this.service.createRelationship(id, input);
     }

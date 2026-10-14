@@ -1,10 +1,12 @@
 package com.openrecordsmanager.record;
 
+import jakarta.validation.Valid;
 import com.openrecordsmanager.api.ResourceIdentifier;
 import com.openrecordsmanager.location.user.User;
 import com.openrecordsmanager.record.dto.*;
 import com.openrecordsmanager.rest.dto.ActionResponse;
 import com.openrecordsmanager.rest.swagger.DefaultApiResponses;
+import com.openrecordsmanager.rest.swagger.ValidationFailedApiResponse;
 import com.openrecordsmanager.rest.swagger.NotFoundApiResponse;
 import com.openrecordsmanager.search.dto.ObjectSearchRequest;
 import io.swagger.v3.oas.annotations.Operation;
@@ -74,7 +76,8 @@ public class RecordController {
     @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Create a new record")
     @NotFoundApiResponse
-    public RecordResponse createRecord(@RequestBody NewRecordRequest input) {
+    @ValidationFailedApiResponse
+    public RecordResponse createRecord(@Valid @RequestBody NewRecordRequest input) {
         return this.service.create(input);
     }
 

@@ -361,6 +361,11 @@ export const TemplateType = {
 
 export type TemplateType = typeof TemplateType[keyof typeof TemplateType];
 
+export type CompleteSetupRequest = {
+    username: string;
+    password: string;
+};
+
 export type NewRecordRequest = {
     type: string;
     title: string;
@@ -453,7 +458,7 @@ export type NewLocationRequest = {
     authProvider?: string;
     name?: string;
     /**
-     * Property id → JSON value
+     * Property id to JSON value map
      */
     properties: {
         [key: string]: unknown;
@@ -496,7 +501,7 @@ export type NewListElementRequest = {
     id: string;
     name: string;
     description: string;
-    index?: number;
+    index: number;
     activeTo?: string;
     aliases: Array<string>;
 };
@@ -518,14 +523,19 @@ export type NewFileStoreMiddlewareRequest = {
     };
 };
 
-export type SetupStatusResponse = {
+export type DatabaseStatusResponse = {
     state: Status;
     currentVersion?: string;
     pendingMigrations: Array<string>;
     migrationsApplied: number;
+    writable: boolean;
 };
 
-export const Status = { READY: 'READY', UPGRADE_REQUIRED: 'UPGRADE_REQUIRED' } as const;
+export const Status = {
+    READY: 'READY',
+    UPGRADE_REQUIRED: 'UPGRADE_REQUIRED',
+    SETUP_REQUIRED: 'SETUP_REQUIRED'
+} as const;
 
 export type Status = typeof Status[keyof typeof Status];
 
@@ -557,6 +567,7 @@ export type TranslationCatalogResponse = {
 
 export type ComponentReferenceTemplateComponent = {
     type?: ComponentTypeTemplateComponent;
+    id?: string;
 };
 
 export type ComponentTypeTemplateComponent = {
@@ -874,6 +885,10 @@ export type UpsertTranslationOverrideData = {
 
 export type UpsertTranslationOverrideErrors = {
     /**
+     * Validation failed
+     */
+    400: ApiErrorResponse;
+    /**
      * Unauthorized
      */
     401: ApiErrorResponse;
@@ -1149,6 +1164,10 @@ export type UpdateRecordTypeData = {
 
 export type UpdateRecordTypeErrors = {
     /**
+     * Validation failed
+     */
+    400: ApiErrorResponse;
+    /**
      * Unauthorized
      */
     401: ApiErrorResponse;
@@ -1419,6 +1438,10 @@ export type ObjectPropertyUpdateData = {
 
 export type ObjectPropertyUpdateErrors = {
     /**
+     * Validation failed
+     */
+    400: ApiErrorResponse;
+    /**
      * Unauthorized
      */
     401: ApiErrorResponse;
@@ -1508,6 +1531,10 @@ export type UpdateLocationTypeData = {
 };
 
 export type UpdateLocationTypeErrors = {
+    /**
+     * Validation failed
+     */
+    400: ApiErrorResponse;
     /**
      * Unauthorized
      */
@@ -1830,6 +1857,10 @@ export type CreateListElementData = {
 
 export type CreateListElementErrors = {
     /**
+     * Validation failed
+     */
+    400: ApiErrorResponse;
+    /**
      * Unauthorized
      */
     401: ApiErrorResponse;
@@ -1878,6 +1909,10 @@ export type UpdateListData = {
 };
 
 export type UpdateListErrors = {
+    /**
+     * Validation failed
+     */
+    400: ApiErrorResponse;
     /**
      * Unauthorized
      */
@@ -2014,6 +2049,10 @@ export type UpdateListElementData = {
 };
 
 export type UpdateListElementErrors = {
+    /**
+     * Validation failed
+     */
+    400: ApiErrorResponse;
     /**
      * Unauthorized
      */
@@ -2411,6 +2450,10 @@ export type CreateAuthProviderData = {
 
 export type CreateAuthProviderErrors = {
     /**
+     * Validation failed
+     */
+    400: ApiErrorResponse;
+    /**
      * Unauthorized
      */
     401: ApiErrorResponse;
@@ -2570,6 +2613,10 @@ export type UpdateAuditPolicyData = {
 
 export type UpdateAuditPolicyErrors = {
     /**
+     * Validation failed
+     */
+    400: ApiErrorResponse;
+    /**
      * Unauthorized
      */
     401: ApiErrorResponse;
@@ -2650,6 +2697,39 @@ export type RegisterTemplateResponses = {
 
 export type RegisterTemplateResponse = RegisterTemplateResponses[keyof RegisterTemplateResponses];
 
+export type CompleteSetupData = {
+    body: CompleteSetupRequest;
+    path?: never;
+    query?: never;
+    url: '/api/setup/complete';
+};
+
+export type CompleteSetupErrors = {
+    /**
+     * Validation failed
+     */
+    400: ApiErrorResponse;
+    /**
+     * Resource in use
+     */
+    409: ApiErrorResponse;
+    /**
+     * Internal Server error
+     */
+    500: ApiErrorResponse;
+};
+
+export type CompleteSetupError = CompleteSetupErrors[keyof CompleteSetupErrors];
+
+export type CompleteSetupResponses = {
+    /**
+     * OK
+     */
+    200: ApiSuccessEnvelope;
+};
+
+export type CompleteSetupResponse = CompleteSetupResponses[keyof CompleteSetupResponses];
+
 export type CreateRecordData = {
     body: NewRecordRequest;
     path?: never;
@@ -2658,6 +2738,10 @@ export type CreateRecordData = {
 };
 
 export type CreateRecordErrors = {
+    /**
+     * Validation failed
+     */
+    400: ApiErrorResponse;
     /**
      * Unauthorized
      */
@@ -2825,6 +2909,10 @@ export type CreateRecordTypeData = {
 };
 
 export type CreateRecordTypeErrors = {
+    /**
+     * Validation failed
+     */
+    400: ApiErrorResponse;
     /**
      * Unauthorized
      */
@@ -2996,6 +3084,10 @@ export type ObjectPropertyCreateData = {
 
 export type ObjectPropertyCreateErrors = {
     /**
+     * Validation failed
+     */
+    400: ApiErrorResponse;
+    /**
      * Unauthorized
      */
     401: ApiErrorResponse;
@@ -3087,6 +3179,10 @@ export type CreateLocationTypeData = {
 
 export type CreateLocationTypeErrors = {
     /**
+     * Validation failed
+     */
+    400: ApiErrorResponse;
+    /**
      * Unauthorized
      */
     401: ApiErrorResponse;
@@ -3129,6 +3225,10 @@ export type CreateLocationData = {
 };
 
 export type CreateLocationErrors = {
+    /**
+     * Validation failed
+     */
+    400: ApiErrorResponse;
     /**
      * Unauthorized
      */
@@ -3222,6 +3322,10 @@ export type CreateLocationRelationshipData = {
 };
 
 export type CreateLocationRelationshipErrors = {
+    /**
+     * Validation failed
+     */
+    400: ApiErrorResponse;
     /**
      * Unauthorized
      */
@@ -3396,6 +3500,10 @@ export type CreateLocationRelationshipTypeData = {
 
 export type CreateLocationRelationshipTypeErrors = {
     /**
+     * Validation failed
+     */
+    400: ApiErrorResponse;
+    /**
      * Unauthorized
      */
     401: ApiErrorResponse;
@@ -3477,6 +3585,10 @@ export type CreateListData = {
 };
 
 export type CreateListErrors = {
+    /**
+     * Validation failed
+     */
+    400: ApiErrorResponse;
     /**
      * Unauthorized
      */
@@ -3560,6 +3672,10 @@ export type FileStoreCreateData = {
 
 export type FileStoreCreateErrors = {
     /**
+     * Validation failed
+     */
+    400: ApiErrorResponse;
+    /**
      * Unauthorized
      */
     401: ApiErrorResponse;
@@ -3642,6 +3758,10 @@ export type MiddlewareCreateData = {
 
 export type MiddlewareCreateErrors = {
     /**
+     * Validation failed
+     */
+    400: ApiErrorResponse;
+    /**
      * Unauthorized
      */
     401: ApiErrorResponse;
@@ -3676,23 +3796,23 @@ export type MiddlewareCreateResponses = {
 
 export type MiddlewareCreateResponse = MiddlewareCreateResponses[keyof MiddlewareCreateResponses];
 
-export type ValidateData = {
+export type ValidateSchemaData = {
     body?: never;
     path?: never;
     query?: never;
     url: '/api/database/validate';
 };
 
-export type ValidateErrors = {
+export type ValidateSchemaErrors = {
     /**
      * Internal Server error
      */
     500: ApiErrorResponse;
 };
 
-export type ValidateError = ValidateErrors[keyof ValidateErrors];
+export type ValidateSchemaError = ValidateSchemaErrors[keyof ValidateSchemaErrors];
 
-export type ValidateResponses = {
+export type ValidateSchemaResponses = {
     /**
      * OK
      */
@@ -3701,34 +3821,34 @@ export type ValidateResponses = {
     };
 };
 
-export type ValidateResponse = ValidateResponses[keyof ValidateResponses];
+export type ValidateSchemaResponse = ValidateSchemaResponses[keyof ValidateSchemaResponses];
 
-export type UpgradeData = {
+export type UpgradeSchemaData = {
     body?: never;
     path?: never;
     query?: never;
     url: '/api/database/upgrade';
 };
 
-export type UpgradeErrors = {
+export type UpgradeSchemaErrors = {
     /**
      * Internal Server error
      */
     500: ApiErrorResponse;
 };
 
-export type UpgradeError = UpgradeErrors[keyof UpgradeErrors];
+export type UpgradeSchemaError = UpgradeSchemaErrors[keyof UpgradeSchemaErrors];
 
-export type UpgradeResponses = {
+export type UpgradeSchemaResponses = {
     /**
      * OK
      */
     200: ApiSuccessEnvelope & {
-        data: SetupStatusResponse;
+        data: DatabaseStatusResponse;
     };
 };
 
-export type UpgradeResponse = UpgradeResponses[keyof UpgradeResponses];
+export type UpgradeSchemaResponse = UpgradeSchemaResponses[keyof UpgradeSchemaResponses];
 
 export type SignupData = {
     body: {
@@ -4343,32 +4463,32 @@ export type FileStoreMiddlewareTypeGetResponses = {
 
 export type FileStoreMiddlewareTypeGetResponse = FileStoreMiddlewareTypeGetResponses[keyof FileStoreMiddlewareTypeGetResponses];
 
-export type StatusData = {
+export type GetSchemaMigrationStatusData = {
     body?: never;
     path?: never;
     query?: never;
     url: '/api/database/status';
 };
 
-export type StatusErrors = {
+export type GetSchemaMigrationStatusErrors = {
     /**
      * Internal Server error
      */
     500: ApiErrorResponse;
 };
 
-export type StatusError = StatusErrors[keyof StatusErrors];
+export type GetSchemaMigrationStatusError = GetSchemaMigrationStatusErrors[keyof GetSchemaMigrationStatusErrors];
 
-export type StatusResponses = {
+export type GetSchemaMigrationStatusResponses = {
     /**
      * OK
      */
     200: ApiSuccessEnvelope & {
-        data: SetupStatusResponse;
+        data: DatabaseStatusResponse;
     };
 };
 
-export type StatusResponse = StatusResponses[keyof StatusResponses];
+export type GetSchemaMigrationStatusResponse = GetSchemaMigrationStatusResponses[keyof GetSchemaMigrationStatusResponses];
 
 export type GetAllConfigData = {
     body?: never;

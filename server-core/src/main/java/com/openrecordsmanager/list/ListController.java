@@ -1,8 +1,10 @@
 package com.openrecordsmanager.list;
 
+import jakarta.validation.Valid;
 import com.openrecordsmanager.api.ResourceIdentifier;
 import com.openrecordsmanager.list.dto.*;
 import com.openrecordsmanager.rest.swagger.ConflictApiResponse;
+import com.openrecordsmanager.rest.swagger.ValidationFailedApiResponse;
 import com.openrecordsmanager.rest.swagger.DefaultApiResponses;
 import com.openrecordsmanager.rest.swagger.NotFoundApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
@@ -33,7 +35,8 @@ public class ListController {
     @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Create a new list type")
     @ConflictApiResponse
-    public ListTypeResponse createList(@RequestBody NewListTypeRequest input) {
+    @ValidationFailedApiResponse
+    public ListTypeResponse createList(@Valid @RequestBody NewListTypeRequest input) {
         return this.service.create(input);
     }
 
@@ -47,9 +50,10 @@ public class ListController {
     @PutMapping(value = "/{list}", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Update a list type")
     @NotFoundApiResponse
+    @ValidationFailedApiResponse
     public ListTypeResponse updateList(
             @PathVariable("list") ResourceIdentifier listType,
-            @RequestBody UpdateListTypeRequest input
+            @Valid @RequestBody UpdateListTypeRequest input
     ) {
         return this.service.update(listType, input);
     }
@@ -86,9 +90,10 @@ public class ListController {
     @Operation(summary = "Create a new list element")
     @NotFoundApiResponse
     @ConflictApiResponse
+    @ValidationFailedApiResponse
     public ListElementResponse createListElement(
             @PathVariable("list") ResourceIdentifier list,
-            @RequestBody NewListElementRequest input
+            @Valid @RequestBody NewListElementRequest input
     ) {
         return this.service.createElement(list, input);
     }
@@ -96,10 +101,11 @@ public class ListController {
     @PutMapping(value = "/{list}/{element}", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Update a list element")
     @NotFoundApiResponse
+    @ValidationFailedApiResponse
     public ListElementResponse updateListElement(
             @PathVariable("list") ResourceIdentifier list,
             @PathVariable("element") ResourceIdentifier element,
-            @RequestBody UpdateListElementRequest input
+            @Valid @RequestBody UpdateListElementRequest input
     ) {
         return this.service.updateElement(list, element, input);
     }

@@ -3,6 +3,6 @@ import { getApiClient } from '#lib/api-client.js';
 
 export async function load() {
 	return {
-		status: await DatabaseController.status({ client: getApiClient() }),
+		status: await DatabaseController.getSchemaMigrationStatus({ client: getApiClient() }),
 	};
 }

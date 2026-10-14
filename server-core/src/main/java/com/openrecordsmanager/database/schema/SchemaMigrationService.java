@@ -1,6 +1,6 @@
 package com.openrecordsmanager.database.schema;
 
-import com.openrecordsmanager.database.dto.SetupStatusResponse;
+import com.openrecordsmanager.database.dto.DatabaseStatusResponse;
 import org.flywaydb.core.Flyway;
 import org.flywaydb.core.api.MigrationInfo;
 import org.flywaydb.core.api.output.MigrateResult;
@@ -33,14 +33,14 @@ public class SchemaMigrationService {
         this.events = events;
     }
 
-    public SetupStatusResponse upgrade() {
+    public int upgrade() {
         MigrateResult result = this.writableFlyway().migrate();
         this.evaluate();
         if (this.state.isUpgradeRequired()) {
             throw new IllegalStateException("Schema upgrade completed but pending migrations remain");
         }
         this.events.publishEvent(new SchemaMigrationReadyEvent());
-        return this.toStatusResponse(result.migrationsExecuted);
+        return result.migrationsExecuted;
     }
 
     public void evaluate() {
@@ -48,10 +48,8 @@ public class SchemaMigrationService {
         MigrationInfo[] applied = this.flyway.info().applied();
 
         if (applied.length == 0) {
-            // Brand-new database: apply schema now. JPA is not available yet during Flyway init,
-            // so bootstrap rows are seeded later via InitialDatabaseSeeder.
+            // Brand-new database: apply schema now so the app can boot (JPA/services need tables).
             this.writableFlyway().migrate();
-            this.state.markInitialSeedPending();
             this.evaluate();
         } else if (pending.length > 0) {
             this.state.markUpgradeRequired(currentVersion(applied), pendingVersions(pending));
@@ -67,12 +65,13 @@ public class SchemaMigrationService {
                 .load();
     }
 
-    public SetupStatusResponse toStatusResponse(int migrationsApplied) {
-        return new SetupStatusResponse(
+    public DatabaseStatusResponse toStatusResponse(int migrationsApplied, boolean writable) {
+        return new DatabaseStatusResponse(
                 this.state.getStatus(),
                 this.state.getCurrentVersion(),
                 this.state.getPendingMigrations(),
-                migrationsApplied
+                migrationsApplied,
+                writable
         );
     }
 

@@ -1,5 +1,6 @@
 package com.openrecordsmanager.auth;
 
+import jakarta.validation.Valid;
 import com.openrecordsmanager.auth.dto.*;
 import com.openrecordsmanager.rest.swagger.*;
 import io.swagger.v3.oas.annotations.Operation;
@@ -74,7 +75,8 @@ public class AuthController {
     @PreAuthorize("isAuthenticated()")
     @ForbiddenApiResponse
     @UnauthorizedApiResponse
-    public AuthProviderResponse createAuthProvider(@RequestBody NewAuthProviderRequest provider) {
+    @ValidationFailedApiResponse
+    public AuthProviderResponse createAuthProvider(@Valid @RequestBody NewAuthProviderRequest provider) {
         return this.authService.createProvider(
                 provider.name(),
                 provider.type().toReference(),

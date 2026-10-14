@@ -9,7 +9,7 @@ import tools.jackson.databind.JsonNode;
 import java.util.Map;
 
 public record NewRecordRequest(
-        @NotBlank ResourceIdentifier type,
+        @NotNull ResourceIdentifier type,
         @NotBlank String title,
         @NotNull
         @Schema(description = "Property id → JSON value", additionalProperties = Schema.AdditionalPropertiesValue.TRUE)

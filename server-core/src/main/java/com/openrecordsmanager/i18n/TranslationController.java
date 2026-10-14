@@ -4,6 +4,7 @@ import com.openrecordsmanager.i18n.dto.TranslationCatalogResponse;
 import com.openrecordsmanager.i18n.dto.TranslationOverrideRequest;
 import com.openrecordsmanager.i18n.dto.TranslationOverrideResponse;
 import com.openrecordsmanager.rest.swagger.AuditCommentRequiredApiResponse;
+import com.openrecordsmanager.rest.swagger.ValidationFailedApiResponse;
 import com.openrecordsmanager.rest.swagger.ForbiddenApiResponse;
 import com.openrecordsmanager.rest.swagger.InternalServerErrorApiResponse;
 import com.openrecordsmanager.rest.swagger.NotFoundApiResponse;
@@ -84,6 +85,7 @@ public class TranslationController {
     @UnauthorizedApiResponse
     @ForbiddenApiResponse
     @AuditCommentRequiredApiResponse
+    @ValidationFailedApiResponse
     public TranslationOverrideResponse upsertTranslationOverride(
             @Valid @RequestBody TranslationOverrideRequest request
     ) {

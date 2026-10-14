@@ -5,6 +5,9 @@ import com.openrecordsmanager.filestore.store.FileStore;
 import com.openrecordsmanager.plugin.registry.ComponentCatalog;
 import org.jspecify.annotations.Nullable;
 import org.semver4j.Semver;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.dao.DataAccessException;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.json.JsonMapper;
 
@@ -26,6 +29,8 @@ public record DiscoveredPlugin(
         @Nullable Path path,
         @Nullable PersistedPlugin persistedPlugin
 ) {
+    private static final Logger LOGGER = LoggerFactory.getLogger(DiscoveredPlugin.class);
+
     public static final String FILE_NAME = "plugin.json";
 
     public static DiscoveredPlugin read(Path pluginFile, @Nullable PluginRepository repository) throws IOException {
@@ -57,8 +62,21 @@ public record DiscoveredPlugin(
                 id,
                 new Semver(version),
                 file,
-                repo != null ? repo.findById(id).orElse(null) : null
+                lookupPersisted(repo, id)
         );
+    }
+
+    private static @Nullable PersistedPlugin lookupPersisted(@Nullable PluginRepository repo, String id) {
+        if (repo == null) {
+            return null;
+        }
+        try {
+            return repo.findById(id).orElse(null);
+        } catch (DataAccessException e) {
+            // Schema may not exist yet (first-run / upgrade-required). Load from disk only.
+            LOGGER.debug("Plugin registry unavailable while reading {}: {}", id, e.toString());
+            return null;
+        }
     }
 
     private static String requireNonBlank(JsonNode node, String field) {

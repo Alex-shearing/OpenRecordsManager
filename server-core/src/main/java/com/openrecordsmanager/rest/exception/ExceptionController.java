@@ -14,11 +14,15 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 @RestControllerAdvice
@@ -53,6 +57,23 @@ public class ExceptionController {
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<ApiResponseV1<Void>> handleUnreadableBody(HttpMessageNotReadableException ex) {
         return makeErrResponse(HttpStatus.BAD_REQUEST, ApiError.of("invalid_request_body"));
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<ApiResponseV1<Void>> handleMethodArgumentNotValid(MethodArgumentNotValidException ex) {
+        Map<String, ApiError> fieldErrors = new LinkedHashMap<>();
+        for (FieldError fieldError : ex.getBindingResult().getFieldErrors()) {
+            fieldErrors.putIfAbsent(fieldError.getField(), ApiError.of(constraintErrorCode(fieldError)));
+        }
+        return makeErrResponse(HttpStatus.BAD_REQUEST, ApiError.of("validation_failed"), fieldErrors);
+    }
+
+    private static String constraintErrorCode(FieldError fieldError) {
+        String code = fieldError.getCode();
+        if (code == null || code.isBlank()) {
+            return "invalid";
+        }
+        return code.replaceAll("([a-z])([A-Z])", "$1_$2").toLowerCase(Locale.ROOT);
     }
 
     @ExceptionHandler(Exception.class)

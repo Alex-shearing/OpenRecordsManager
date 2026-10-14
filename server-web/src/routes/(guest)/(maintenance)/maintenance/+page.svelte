@@ -11,7 +11,9 @@
 
 	async function checkStatus() {
 		try {
-			const { data, error } = await DatabaseController.status({ client: getApiClient() });
+			const { data, error } = await DatabaseController.getSchemaMigrationStatus({
+				client: getApiClient(),
+			});
 			if (error) {
 				return 'unavailable';
 			}

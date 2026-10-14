@@ -58,6 +58,12 @@ public class PluginSyncService {
             return;
         }
 
+        if (!this.databaseWritableProbe.isWritable()) {
+            LOGGER.info("Database not writable (schema upgrade or setup pending), skipping startup plugin re-sync");
+            this.bundleMessageLoader.refresh();
+            return;
+        }
+
         LOGGER.info("Conducting startup plugin re-sync");
         this.syncAndReload(false);
     }

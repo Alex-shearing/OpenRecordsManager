@@ -156,12 +156,25 @@ async function redirectToLogin(): Promise<void> {
 	throw goto(dest);
 }
 
+function isMaintenanceRoute(): boolean {
+	return !!page.route.id?.startsWith('/(guest)/(maintenance)');
+}
+
+function requestPath(url: string): string {
+	try {
+		return new URL(url, 'http://localhost').pathname;
+	} catch {
+		return url;
+	}
+}
+
 function handleSchemaUpdateRequired(response: Response, request: Request): Response {
-	if (page.route.id?.startsWith('/(guest)/(maintenance)')) {
+	if (isMaintenanceRoute()) {
 		return response;
 	}
 
-	if (request.url.startsWith('/api/database/') || request.url.startsWith('/api/web')) {
+	const path = requestPath(request.url);
+	if (path.startsWith('/api/database/') || path.startsWith('/api/setup/') || path.startsWith('/api/web')) {
 		return response;
 	}
 

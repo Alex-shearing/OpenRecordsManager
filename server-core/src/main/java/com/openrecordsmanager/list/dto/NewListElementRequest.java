@@ -9,10 +9,10 @@ import java.time.Instant;
 import java.util.Set;
 
 public record NewListElementRequest(
-        @NotBlank ResourceIdentifier id,
+        @NotNull ResourceIdentifier id,
         @NotBlank String name,
         @NotBlank String description,
-        int index,
+        @NotNull Integer index,
         @Nullable Instant activeTo,
         @NotNull Set<String> aliases
 ) {

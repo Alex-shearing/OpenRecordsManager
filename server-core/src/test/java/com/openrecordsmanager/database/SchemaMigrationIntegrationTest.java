@@ -2,6 +2,7 @@ package com.openrecordsmanager.database;
 
 import com.openrecordsmanager.database.schema.SchemaMigrationService;
 import com.openrecordsmanager.database.schema.SchemaMigrationState;
+import com.openrecordsmanager.rest.ApiAvailabilityGateFilter;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -39,7 +40,7 @@ class SchemaMigrationIntegrationTest {
 
         this.mockMvc.perform(get("/api/auth/providers").accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isServiceUnavailable())
-                .andExpect(header().string(SchemaUpgradeGateFilter.UPGRADE_REQUIRED_HEADER, "true"));
+                .andExpect(header().string(ApiAvailabilityGateFilter.UPGRADE_REQUIRED_HEADER, "true"));
 
         // Restore ready state for other tests in this context
         this.schemaMigrationService.evaluate();

@@ -1,10 +1,12 @@
 package com.openrecordsmanager.location.relationship;
 
+import jakarta.validation.Valid;
 import com.openrecordsmanager.api.ResourceIdentifier;
 import com.openrecordsmanager.location.relationship.dto.LocationRelationshipTypeResponse;
 import com.openrecordsmanager.location.relationship.dto.NewLocationRelationshipTypeRequest;
 import com.openrecordsmanager.location.relationship.dto.UpdateLocationRelationshipTypeRequest;
 import com.openrecordsmanager.rest.swagger.ConflictApiResponse;
+import com.openrecordsmanager.rest.swagger.ValidationFailedApiResponse;
 import com.openrecordsmanager.rest.swagger.DefaultApiResponses;
 import com.openrecordsmanager.rest.swagger.NotFoundApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
@@ -42,8 +44,9 @@ public class LocationRelationshipTypeController {
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Create a custom location relationship type")
     @ConflictApiResponse
+    @ValidationFailedApiResponse
     public LocationRelationshipTypeResponse createLocationRelationshipType(
-            @RequestBody NewLocationRelationshipTypeRequest input
+            @Valid @RequestBody NewLocationRelationshipTypeRequest input
     ) {
         return this.service.create(input);
     }

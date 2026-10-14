@@ -7,7 +7,6 @@ import com.openrecordsmanager.auth.JwtSessionAuthenticationFilter;
 import com.openrecordsmanager.auth.PluginAuthenticationProvider;
 import com.openrecordsmanager.config.ConfigService;
 import com.openrecordsmanager.database.DataRepository;
-import com.openrecordsmanager.database.SchemaUpgradeGateFilter;
 import com.openrecordsmanager.plugin.registry.ComponentCatalog;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -46,6 +45,7 @@ public class RestConfiguration {
             "/api/auth/**",
             "/api/web/**",
             "/api/database/**",
+            "/api/setup/**",
             "/api/health",
             "/api/health/**",
             "/api/translations/catalog"
@@ -100,7 +100,7 @@ public class RestConfiguration {
         configuration.setExposedHeaders(List.of(
                 "X-CSRF-TOKEN",
                 JwtSessionAuthenticationFilter.SESSION_MODE_HEADER,
-                SchemaUpgradeGateFilter.UPGRADE_REQUIRED_HEADER
+                ApiAvailabilityGateFilter.UPGRADE_REQUIRED_HEADER
         ));
         // Required for browser preflights from localhost / private-network contexts
         configuration.setAllowPrivateNetwork(true);
@@ -125,7 +125,7 @@ public class RestConfiguration {
     public SecurityFilterChain securityFilterChain(
             HttpSecurity http,
             JwtSessionAuthenticationFilter tokenAuthenticationFilter,
-            SchemaUpgradeGateFilter schemaUpgradeFilter,
+            ApiAvailabilityGateFilter apiAvailabilityFilter,
             AuditContextFilter auditContextFilter,
             CsrfTokenResponseHeaderFilter csrfTokenResponseHeaderFilter
     ) {
@@ -168,7 +168,7 @@ public class RestConfiguration {
                 .addFilterAfter(csrfTokenResponseHeaderFilter, CsrfFilter.class)
                 .addFilterBefore(tokenAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .addFilterAfter(auditContextFilter, JwtSessionAuthenticationFilter.class)
-                .addFilterBefore(schemaUpgradeFilter, JwtSessionAuthenticationFilter.class)
+                .addFilterBefore(apiAvailabilityFilter, JwtSessionAuthenticationFilter.class)
                 .exceptionHandling(exception -> exception
                         // Force 401 Unauthorized for unauthenticated requests
                         .authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED))

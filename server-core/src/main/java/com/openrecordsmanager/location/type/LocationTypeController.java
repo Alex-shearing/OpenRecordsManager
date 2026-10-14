@@ -1,11 +1,13 @@
 package com.openrecordsmanager.location.type;
 
+import jakarta.validation.Valid;
 import com.openrecordsmanager.api.ResourceIdentifier;
 import com.openrecordsmanager.api.location.LocationKind;
 import com.openrecordsmanager.location.type.dto.LocationTypeResponse;
 import com.openrecordsmanager.location.type.dto.NewLocationTypeRequest;
 import com.openrecordsmanager.location.type.dto.UpdateLocationTypeRequest;
 import com.openrecordsmanager.rest.swagger.ConflictApiResponse;
+import com.openrecordsmanager.rest.swagger.ValidationFailedApiResponse;
 import com.openrecordsmanager.rest.swagger.DefaultApiResponses;
 import com.openrecordsmanager.rest.swagger.NotFoundApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
@@ -48,16 +50,18 @@ public class LocationTypeController {
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Create a custom location type")
     @ConflictApiResponse
-    public LocationTypeResponse createLocationType(@RequestBody NewLocationTypeRequest input) {
+    @ValidationFailedApiResponse
+    public LocationTypeResponse createLocationType(@Valid @RequestBody NewLocationTypeRequest input) {
         return this.service.create(input);
     }
 
     @PutMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Update a custom location type")
     @NotFoundApiResponse
+    @ValidationFailedApiResponse
     public LocationTypeResponse updateLocationType(
             @PathVariable("id") ResourceIdentifier id,
-            @RequestBody UpdateLocationTypeRequest input
+            @Valid @RequestBody UpdateLocationTypeRequest input
     ) {
         return this.service.update(id, input);
     }

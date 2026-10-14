@@ -1,11 +1,13 @@
 package com.openrecordsmanager.property;
 
+import jakarta.validation.Valid;
 import com.openrecordsmanager.api.ResourceIdentifier;
 import com.openrecordsmanager.property.dto.NewObjectPropertyRequest;
 import com.openrecordsmanager.property.dto.ObjectPropertyResponse;
 import com.openrecordsmanager.property.dto.SimpleObjectPropertyResponse;
 import com.openrecordsmanager.property.dto.UpdateObjectPropertyRequest;
 import com.openrecordsmanager.rest.swagger.ConflictApiResponse;
+import com.openrecordsmanager.rest.swagger.ValidationFailedApiResponse;
 import com.openrecordsmanager.rest.swagger.DefaultApiResponses;
 import com.openrecordsmanager.rest.swagger.NotFoundApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
@@ -44,16 +46,18 @@ public class ObjectPropertyController {
     @Operation(summary = "Create a new object property")
     @NotFoundApiResponse
     @ConflictApiResponse
-    public ObjectPropertyResponse objectProperty_create(@RequestBody NewObjectPropertyRequest input) {
+    @ValidationFailedApiResponse
+    public ObjectPropertyResponse objectProperty_create(@Valid @RequestBody NewObjectPropertyRequest input) {
         return this.service.create(input);
     }
 
     @PutMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Update an object property")
     @NotFoundApiResponse
+    @ValidationFailedApiResponse
     public ObjectPropertyResponse objectProperty_update(
             @PathVariable("id") ResourceIdentifier id,
-            @RequestBody UpdateObjectPropertyRequest input
+            @Valid @RequestBody UpdateObjectPropertyRequest input
     ) {
         return this.service.update(id, input);
     }
