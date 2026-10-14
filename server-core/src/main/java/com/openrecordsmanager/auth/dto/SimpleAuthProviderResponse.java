@@ -23,7 +23,7 @@ public record SimpleAuthProviderResponse(
         @Nullable InputFormSchema loginSchema
 ) {
     public static SimpleAuthProviderResponse of(ComponentCatalog catalog, AuthProvider provider) {
-        AuthProviderType<?> type = provider.getProviderType().getComponent(catalog)
+        AuthProviderType<?> type = catalog.get(provider.getProviderType())
                 .orElseThrow(() -> new ResourceNotFoundException(
                         provider.getProviderType().type(),
                         provider.getProviderType().id())

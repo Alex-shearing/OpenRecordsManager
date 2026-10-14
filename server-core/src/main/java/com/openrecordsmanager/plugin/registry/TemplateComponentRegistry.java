@@ -46,7 +46,7 @@ public class TemplateComponentRegistry<T extends TemplateComponent, D> extends C
             ComponentReference<T> reference,
             boolean includeDependencies
     ) {
-        T template = reference.getComponent(catalog)
+        T template = catalog.get(reference)
                 .orElseThrow(() -> new IllegalStateException("Cannot find referenced dependency " + reference));
 
         this.register(

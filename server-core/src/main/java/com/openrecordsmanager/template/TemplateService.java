@@ -47,15 +47,14 @@ public class TemplateService {
         this.auditPolicyService = auditPolicyService;
     }
 
-    // TODO: Clean this up, look at returning ComponentReference from template registry directly
     @Transactional(readOnly = true)
     public Set<ComponentReferenceDto> listTemplates(@Nullable TemplateType type) {
-        Set<ComponentReferenceDto> templates = (type == null
-                ? ComponentCatalog.TEMPLATE_MAPPERS.stream()
-                : Stream.of(ComponentCatalog.mapperFromComponent(type.componentType())))
-                .flatMap(mapper ->
-                        this.catalog.getTemplateRegistry(mapper).getIds().stream()
-                                .map(id -> ComponentReferenceDto.of(mapper.componentType(), id)))
+        Stream<TemplateRegistrationMapper<?, ?>> types = type == null ? ComponentCatalog.TEMPLATE_MAPPERS.stream()
+                : Stream.of(ComponentCatalog.mapperFromComponent(type.componentType()));
+        
+        Set<ComponentReferenceDto> templates = types
+                .flatMap(mapper -> this.catalog.getTemplateRegistry(mapper).references())
+                .map(ComponentReferenceDto::of)
                 .collect(Collectors.toSet());
 
         this.auditService.recordCollectionRead(AuditEntityType.TEMPLATE, templates.size());

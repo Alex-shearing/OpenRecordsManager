@@ -125,7 +125,7 @@ public class AuthProvider {
     }
 
     public AuthProviderType<?> getProviderType(ComponentCatalog catalog) {
-        return this.providerType.getComponent(catalog)
+        return catalog.get(this.providerType)
                 .orElseThrow(() -> new ResourceNotFoundException(
                         this.providerType.type(),
                         this.providerType.id()

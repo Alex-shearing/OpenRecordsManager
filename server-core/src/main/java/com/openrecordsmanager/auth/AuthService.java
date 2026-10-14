@@ -318,7 +318,7 @@ public class AuthService implements UserAuthContext {
             ComponentReference<? extends AuthProviderType<?>> type,
             Map<String, ?> settings
     ) {
-        AuthProviderType<?> providerType = type.getComponent(this.catalog)
+        AuthProviderType<?> providerType = this.catalog.get(type)
                 .orElseThrow(() -> new ResourceNotFoundException("authentication provider", type.toString()));
 
         TemplateRegistrationMapper.registerDependencies(

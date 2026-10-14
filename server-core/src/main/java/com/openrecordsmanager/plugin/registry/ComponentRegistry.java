@@ -30,8 +30,9 @@ public class ComponentRegistry<T extends Component> implements ComponentAccess.R
         return Optional.ofNullable(this.inverse.get(definition));
     }
 
-    public Set<ResourceIdentifier> getIds() {
-        return this.map.keySet();
+    public Stream<ComponentReference<T>> references() {
+        return this.map.keySet().stream()
+                .map(id -> ComponentReference.of(this.type, id));
     }
 
     public Stream<T> stream() {

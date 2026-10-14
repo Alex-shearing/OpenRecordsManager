@@ -7,13 +7,8 @@ import tools.jackson.databind.DeserializationContext;
 import tools.jackson.databind.KeyDeserializer;
 
 import java.util.Objects;
-import java.util.Optional;
 
 public record ComponentReference<T extends Component>(ComponentType<T> type, ResourceIdentifier id) {
-
-    public Optional<T> getComponent(ComponentAccess catalog) {
-        return catalog.getRegistry(this.type).get(this.id);
-    }
 
     public String getTranslationKey(TranslationField field) {
         return this.id.getTranslationKey(this.type.name()) + "." + field.key();

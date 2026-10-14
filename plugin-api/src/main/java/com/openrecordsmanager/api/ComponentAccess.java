@@ -8,6 +8,10 @@ public interface ComponentAccess {
 
     <T extends Component> RegistryAccess<T> getRegistry(ComponentType<T> type);
 
+    default <T extends Component> Optional<T> get(ComponentReference<T> reference) {
+        return this.getRegistry(reference.type()).get(reference.id());
+    }
+
     interface RegistryAccess<T extends Component> {
         Optional<T> get(ResourceIdentifier id);
 

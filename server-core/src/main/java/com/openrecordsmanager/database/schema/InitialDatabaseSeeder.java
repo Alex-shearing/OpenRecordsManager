@@ -2,6 +2,7 @@ package com.openrecordsmanager.database.schema;
 
 import com.openrecordsmanager.api.ComponentReference;
 import com.openrecordsmanager.api.ResourceIdentifier;
+import com.openrecordsmanager.api.auth.InputAuthProviderType;
 import com.openrecordsmanager.api.builtin.BuiltinLocationTypeIds;
 import com.openrecordsmanager.api.builtin.BuiltinPlugin;
 import com.openrecordsmanager.api.template.location.LocationRelationshipTypeTemplate;
@@ -15,9 +16,9 @@ import com.openrecordsmanager.auth.dto.AuthProviderResponse;
 import com.openrecordsmanager.auth.entity.AuthProvider;
 import com.openrecordsmanager.database.DataRepository;
 import com.openrecordsmanager.database.DatabaseWritableProbe;
+import com.openrecordsmanager.location.LocationService;
 import com.openrecordsmanager.location.relationship.LocationRelationshipType;
 import com.openrecordsmanager.location.type.LocationType;
-import com.openrecordsmanager.location.LocationService;
 import com.openrecordsmanager.location.user.User;
 import com.openrecordsmanager.plugin.ExpressionsService;
 import com.openrecordsmanager.plugin.registry.ComponentCatalog;
@@ -102,7 +103,9 @@ public class InitialDatabaseSeeder {
     }
 
     private void seedInitialAuth() {
-        if (this.catalog.getRegistry(ComponentTypes.INPUT_AUTH_PROVIDER).get(LOCAL_AUTH_TYPE).isEmpty()) {
+        ComponentReference<InputAuthProviderType<?, ?>> localAuthType = ComponentReference.of(ComponentTypes.INPUT_AUTH_PROVIDER, LOCAL_AUTH_TYPE);
+
+        if (this.catalog.get(localAuthType).isEmpty()) {
             LOGGER.warn("Skipping initial database seed: {} is not registered", LOCAL_AUTH_TYPE);
             return;
         }
@@ -111,7 +114,7 @@ public class InitialDatabaseSeeder {
 
         AuthProviderResponse created = this.authService.createProvider(
                 "Local Authentication",
-                ComponentReference.of(ComponentTypes.INPUT_AUTH_PROVIDER, LOCAL_AUTH_TYPE),
+                localAuthType,
                 Map.of()
         );
 
@@ -139,59 +142,47 @@ public class InitialDatabaseSeeder {
         TemplateComponentRegistry<ObjectPropertyTemplate<?>, ObjectProperty<?>> registry =
                 this.catalog.getTemplateRegistry(ComponentCatalog.OBJECT_PROPERTY_MAPPER);
 
-        for (ResourceIdentifier id : registry.getIds()) {
-            if (!id.isBuiltin()) {
-                continue;
-            }
-
-            registry.register(
-                    this.repository,
-                    this.catalog,
-                    this.expressions,
-                    this.auditService,
-                    ComponentReference.of(ComponentTypes.OBJECT_PROPERTY, id),
-                    true
-            );
-        }
+        registry.references()
+                .filter(ref -> ref.id().isBuiltin())
+                .forEach(ref -> registry.register(
+                        this.repository,
+                        this.catalog,
+                        this.expressions,
+                        this.auditService,
+                        ref,
+                        true
+                ));
     }
 
     public void seedBuiltinLocationTypes() {
         TemplateComponentRegistry<LocationTypeTemplate, LocationType> registry =
                 this.catalog.getTemplateRegistry(ComponentCatalog.LOCATION_TYPE_MAPPER);
 
-        for (ResourceIdentifier id : registry.getIds()) {
-            if (!id.isBuiltin()) {
-                continue;
-            }
-
-            registry.register(
-                    this.repository,
-                    this.catalog,
-                    this.expressions,
-                    this.auditService,
-                    ComponentReference.of(ComponentTypes.LOCATION_TYPE, id),
-                    true
-            );
-        }
+        registry.references()
+                .filter(ref -> ref.id().isBuiltin())
+                .forEach(ref -> registry.register(
+                        this.repository,
+                        this.catalog,
+                        this.expressions,
+                        this.auditService,
+                        ref,
+                        true
+                ));
     }
 
     public void seedBuiltinRelationshipTypes() {
         TemplateComponentRegistry<LocationRelationshipTypeTemplate, LocationRelationshipType> registry =
                 this.catalog.getTemplateRegistry(ComponentCatalog.LOCATION_RELATIONSHIP_TYPE_MAPPER);
 
-        for (ResourceIdentifier id : registry.getIds()) {
-            if (!id.isBuiltin()) {
-                continue;
-            }
-
-            registry.register(
-                    this.repository,
-                    this.catalog,
-                    this.expressions,
-                    this.auditService,
-                    ComponentReference.of(ComponentTypes.LOCATION_RELATIONSHIP_TYPE, id),
-                    true
-            );
-        }
+        registry.references()
+                .filter(ref -> ref.id().isBuiltin())
+                .forEach(ref -> registry.register(
+                        this.repository,
+                        this.catalog,
+                        this.expressions,
+                        this.auditService,
+                        ref,
+                        true
+                ));
     }
 }
