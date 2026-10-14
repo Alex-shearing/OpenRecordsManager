@@ -26,7 +26,7 @@ public record AuthProviderResponse(
         return new AuthProviderResponse(
                 provider.getId(),
                 provider.getName(),
-                ComponentReferenceDto.of(catalog, provider.getProviderType()),
+                ComponentReferenceDto.of(provider.getProviderType()),
                 provider.isEnabled(),
                 provider.getSettings(catalog),
                 provider.getDateCreated(),

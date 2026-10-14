@@ -84,9 +84,12 @@ public class ListService {
     public ListTypeResponse update(ResourceIdentifier id, UpdateListTypeRequest input) {
         ListType listType = this.repository.listTypeRepo.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(ComponentTypes.LIST, id));
-        ComponentReference.Reference<?> ref = listType.getReference();
 
-        String oldName = this.overrideService.upsertSilent(ref.getTranslationKey(TranslationField.NAME), LocaleContextHolder.getLocale(), input.name());
+        String oldName = this.overrideService.upsertSilent(
+                listType.getReference().getTranslationKey(TranslationField.NAME),
+                LocaleContextHolder.getLocale(),
+                input.name()
+        );
         listType.touchDateModified();
         this.repository.listTypeRepo.saveAndFlush(listType);
 
@@ -185,7 +188,7 @@ public class ListService {
                 input.activeTo(),
                 new HashSet<>(input.aliases())
         );
-        ComponentReference.Reference<?> ref = element.getReference();
+        ComponentReference<?> ref = element.getReference();
 
         this.repository.listElementRepo.saveAndFlush(element);
 
@@ -210,7 +213,7 @@ public class ListService {
     public ListElementResponse updateElement(ResourceIdentifier parentId, ResourceIdentifier elementId, UpdateListElementRequest input) {
         ListElement element = this.repository.listElementRepo.getElement(parentId, elementId)
                 .orElseThrow(() -> new ResourceNotFoundException(ComponentTypes.LIST_ELEMENT, elementId));
-        ComponentReference.Reference<?> ref = element.getReference();
+        ComponentReference<?> ref = element.getReference();
 
         Locale locale = LocaleContextHolder.getLocale();
         String oldName = this.overrideService.upsertSilent(ref.getTranslationKey(TranslationField.NAME), locale, input.name());

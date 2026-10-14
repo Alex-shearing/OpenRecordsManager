@@ -32,10 +32,8 @@ public class ListElementTemplateRegistrationMapper extends TemplateRegistrationM
         if (component.parent() == null) {
             throw new IllegalArgumentException("attempted to register list element without a parent reference");
         }
-        ResourceIdentifier parentId = component.parent().getId(catalog)
-                .orElseThrow(() -> new IllegalArgumentException("attempted to register list element to a parent that was not registered"));
 
-        ListType parent = repository.listTypeRepo.findById(parentId).orElseThrow();
+        ListType parent = repository.listTypeRepo.findById(component.parent().id()).orElseThrow();
 
         ListElement type = new ListElement(
                 id,

@@ -25,8 +25,8 @@ public record SimpleAuthProviderResponse(
     public static SimpleAuthProviderResponse of(ComponentCatalog catalog, AuthProvider provider) {
         AuthProviderType<?> type = provider.getProviderType().getComponent(catalog)
                 .orElseThrow(() -> new ResourceNotFoundException(
-                        provider.getProviderType().getType(),
-                        provider.getProviderType().getId(catalog).orElseThrow())
+                        provider.getProviderType().type(),
+                        provider.getProviderType().id())
                 );
 
         InputFormSchema schema = null;
@@ -37,7 +37,7 @@ public record SimpleAuthProviderResponse(
         return new SimpleAuthProviderResponse(
                 provider.getId(),
                 provider.getName(),
-                ComponentReferenceDto.of(catalog, provider.getProviderType()),
+                ComponentReferenceDto.of(provider.getProviderType()),
                 schema
         );
     }

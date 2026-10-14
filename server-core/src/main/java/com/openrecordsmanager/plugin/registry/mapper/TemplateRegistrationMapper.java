@@ -78,7 +78,7 @@ public abstract class TemplateRegistrationMapper<T extends TemplateComponent, D>
             AuditService auditService,
             ComponentReference<K> reference
     ) {
-        catalog.getTemplateRegistry(ComponentCatalog.mapperFromComponent(reference.getType()))
+        catalog.getTemplateRegistry(ComponentCatalog.mapperFromComponent(reference.type()))
                 .register(
                         repository,
                         catalog,
@@ -130,10 +130,9 @@ public abstract class TemplateRegistrationMapper<T extends TemplateComponent, D>
             ComponentCatalog catalog
     ) {
         for (ComponentReference<? extends TemplateComponent> dependency : collectDependencies(component, new HashSet<>())) {
-            ResourceIdentifier dependencyId = dependency.getId(catalog)
-                    .orElseThrow(() -> new IllegalStateException("Cannot find dependency " + dependency));
+            ResourceIdentifier dependencyId = dependency.id();
 
-            TemplateComponentRegistry<?, ?> registry = catalog.getTemplateRegistry(ComponentCatalog.mapperFromComponent(dependency.getType()));
+            TemplateComponentRegistry<?, ?> registry = catalog.getTemplateRegistry(ComponentCatalog.mapperFromComponent(dependency.type()));
 
             Optional<?> childComponent = registry.getRegistered(dependencyId, repository);
             if (childComponent.isEmpty()) {

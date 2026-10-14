@@ -127,8 +127,8 @@ public class AuthProvider {
     public AuthProviderType<?> getProviderType(ComponentCatalog catalog) {
         return this.providerType.getComponent(catalog)
                 .orElseThrow(() -> new ResourceNotFoundException(
-                        this.providerType.getType(),
-                        this.providerType.getId(catalog).orElseThrow()
+                        this.providerType.type(),
+                        this.providerType.id()
                 ));
     }
 
@@ -139,8 +139,8 @@ public class AuthProvider {
 
         if (!(this.getProviderType(catalog) instanceof RedirectAuthProviderType<?> type)) {
             throw new ResourceNotFoundException(
-                    this.providerType.getType(),
-                    this.providerType.getId(catalog).orElseThrow()
+                    this.providerType.type(),
+                    this.providerType.id()
             );
         }
 

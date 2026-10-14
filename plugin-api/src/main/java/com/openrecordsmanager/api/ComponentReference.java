@@ -9,16 +9,18 @@ import tools.jackson.databind.KeyDeserializer;
 import java.util.Objects;
 import java.util.Optional;
 
-public abstract class ComponentReference<T extends Component> {
+public record ComponentReference<T extends Component>(ComponentType<T> type, ResourceIdentifier id) {
 
-    public abstract Optional<T> getComponent(ComponentAccess catalog);
+    public Optional<T> getComponent(ComponentAccess catalog) {
+        return catalog.getRegistry(this.type).get(this.id);
+    }
 
-    public abstract Optional<ResourceIdentifier> getId(ComponentAccess catalog);
+    public String getTranslationKey(TranslationField field) {
+        return this.id.getTranslationKey(this.type.name()) + "." + field.key();
+    }
 
-    public abstract ComponentType<T> getType();
-
-    public static <K extends Component> ComponentReference.Reference<K> of(ComponentType<K> type, ResourceIdentifier id) {
-        return new Reference<>(type, id);
+    public static <K extends Component> ComponentReference<K> of(ComponentType<K> type, ResourceIdentifier id) {
+        return new ComponentReference<>(type, id);
     }
 
     @JsonCreator
@@ -35,49 +37,17 @@ public abstract class ComponentReference<T extends Component> {
         return of(componentType, ResourceIdentifier.valueOf(split[1]));
     }
 
-    public static class Reference<T extends Component> extends ComponentReference<T> {
-        private final ComponentType<T> type;
-        private final ResourceIdentifier id;
-
-        public Reference(ComponentType<T> type, ResourceIdentifier id) {
-            this.type = type;
-            this.id = id;
+    @Override
+    public boolean equals(Object o) {
+        if (o instanceof ComponentReference<?>(ComponentType<?> thatType, ResourceIdentifier thatId)) {
+            return Objects.equals(thatType, this.type) && Objects.equals(thatId, this.id);
         }
+        return false;
+    }
 
-        @Override
-        public Optional<T> getComponent(ComponentAccess catalog) {
-            return catalog.getRegistry(this.type).get(this.id);
-        }
-
-        @Override
-        public Optional<ResourceIdentifier> getId(ComponentAccess catalog) {
-            return Optional.of(this.id);
-        }
-
-        @Override
-        public ComponentType<T> getType() {
-            return this.type;
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (!(o instanceof Reference<?> reference)) return false;
-            return Objects.equals(type, reference.type) && Objects.equals(id, reference.id);
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hash(type, id);
-        }
-
-        @Override
-        public String toString() {
-            return String.format("%s/%s", this.type.name(), this.id);
-        }
-
-        public String getTranslationKey(TranslationField field) {
-            return this.id.getTranslationKey(this.getType().name()) + "." + field.key();
-        }
+    @Override
+    public String toString() {
+        return String.format("%s/%s", this.type.name(), this.id);
     }
 
     public static class RefKeyDeserializer extends KeyDeserializer {

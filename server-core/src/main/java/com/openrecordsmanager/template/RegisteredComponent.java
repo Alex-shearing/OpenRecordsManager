@@ -9,7 +9,7 @@ public interface RegisteredComponent {
 
     ResourceIdentifier getId();
 
-    default ComponentReference.Reference<?> getReference() {
+    default ComponentReference<?> getReference() {
         return ComponentReference.of(this.getComponentType(), this.getId());
     }
 }

@@ -10,10 +10,10 @@ import com.openrecordsmanager.api.types.ComponentTypes;
 import com.openrecordsmanager.audit.AuditEmitterImpl;
 import com.openrecordsmanager.audit.AuditService;
 import com.openrecordsmanager.database.DataRepository;
+import com.openrecordsmanager.location.user.User;
 import com.openrecordsmanager.plugin.registry.ComponentCatalog;
 import com.openrecordsmanager.property.ObjectProperty;
 import com.openrecordsmanager.rest.exception.ResourceNotFoundException;
-import com.openrecordsmanager.location.user.User;
 import org.jspecify.annotations.Nullable;
 
 import java.util.Optional;
@@ -66,7 +66,7 @@ class RecordActionContextImpl implements RecordActionContext {
     @Override
     public <T> boolean isPropertyRegistered(ComponentReference<ObjectPropertyTemplate<T>> property) {
         return this.catalog.getTemplateRegistry(ComponentCatalog.OBJECT_PROPERTY_MAPPER)
-                .getRegistered(property.getId(this.catalog).orElseThrow(), this.repository)
+                .getRegistered(property.id(), this.repository)
                 .isPresent();
     }
 
@@ -74,7 +74,7 @@ class RecordActionContextImpl implements RecordActionContext {
     @SuppressWarnings("unchecked")
     public <T> Optional<T> getTargetProperty(ComponentReference<ObjectPropertyTemplate<T>> property) {
         Optional<ObjectProperty<?>> prop = this.catalog.getTemplateRegistry(ComponentCatalog.OBJECT_PROPERTY_MAPPER)
-                .getRegistered(property.getId(this.catalog).orElseThrow(), this.repository);
+                .getRegistered(property.id(), this.repository);
 
         if (prop.isEmpty()) {
             return Optional.empty();
@@ -88,7 +88,7 @@ class RecordActionContextImpl implements RecordActionContext {
     public <T> void setTargetProperty(ComponentReference<ObjectPropertyTemplate<T>> property, @Nullable T value) {
         @SuppressWarnings("unchecked")
         ObjectProperty<T> prop = (ObjectProperty<T>) this.catalog.getTemplateRegistry(ComponentCatalog.OBJECT_PROPERTY_MAPPER)
-                .getRegistered(property.getId(this.catalog).orElseThrow(), this.repository)
+                .getRegistered(property.id(), this.repository)
                 .orElseThrow(() -> new ResourceNotFoundException(ComponentTypes.OBJECT_PROPERTY, property.toString()));
 
         T oldValue = this.target.getProperty(prop);

@@ -46,9 +46,6 @@ public class TemplateComponentRegistry<T extends TemplateComponent, D> extends C
             ComponentReference<T> reference,
             boolean includeDependencies
     ) {
-        ResourceIdentifier dependencyId = reference.getId(catalog)
-                .orElseThrow(() -> new IllegalStateException("Cannot find dependency " + reference));
-
         T template = reference.getComponent(catalog)
                 .orElseThrow(() -> new IllegalStateException("Cannot find referenced dependency " + reference));
 
@@ -57,7 +54,7 @@ public class TemplateComponentRegistry<T extends TemplateComponent, D> extends C
                 catalog,
                 expressions,
                 auditService,
-                dependencyId,
+                reference.id(),
                 template,
                 includeDependencies
         );

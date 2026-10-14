@@ -1,8 +1,8 @@
 package com.openrecordsmanager.plugin.registry.mapper;
 
 import com.openrecordsmanager.api.ResourceIdentifier;
-import com.openrecordsmanager.api.template.property.PropertyType;
 import com.openrecordsmanager.api.template.PropertyAssignment;
+import com.openrecordsmanager.api.template.property.PropertyType;
 import com.openrecordsmanager.api.template.recordtype.RecordTypeTemplate;
 import com.openrecordsmanager.api.types.ComponentType;
 import com.openrecordsmanager.api.types.ComponentTypes;
@@ -55,10 +55,10 @@ public class RecordTypeTemplateRegistrationMapper extends TemplateRegistrationMa
             ComponentCatalog catalog,
             DataRepository repository
     ) {
-        ResourceIdentifier id = assignment.property().getId(catalog)
-                .orElseThrow(() -> new IllegalArgumentException("id " + assignment.property() + " is not found"));
-        ObjectProperty<T> property = (ObjectProperty<T>) catalog.getTemplateRegistry(ComponentCatalog.OBJECT_PROPERTY_MAPPER).getRegistered(id, repository)
-                .orElseThrow(() -> new IllegalArgumentException("Attempted to use property that was not registered: " + assignment.property().getId(catalog)));
+        ResourceIdentifier id = assignment.property().id();
+        ObjectProperty<T> property = (ObjectProperty<T>) catalog.getTemplateRegistry(ComponentCatalog.OBJECT_PROPERTY_MAPPER)
+                .getRegistered(id, repository)
+                .orElseThrow(() -> new IllegalArgumentException("Attempted to use property that was not registered: " + id));
 
         return new RecordTypeProperty<>(
                 property, PropertyType.toTree(assignment.defaultValue())

@@ -299,7 +299,7 @@ public class AuthService implements UserAuthContext {
     @Override
     public <T> Optional<T> getUserProperty(String username, ComponentReference<ObjectPropertyTemplate<T>> property) {
         Optional<ObjectProperty<?>> prop = this.catalog.getTemplateRegistry(ComponentCatalog.OBJECT_PROPERTY_MAPPER)
-                .getRegistered(property.getId(this.catalog).orElseThrow(), this.repository);
+                .getRegistered(property.id(), this.repository);
 
         if (prop.isEmpty()) {
             return Optional.empty();

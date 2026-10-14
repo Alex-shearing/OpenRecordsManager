@@ -42,11 +42,12 @@ public class ObjectPropertyTemplateRegistrationMapper extends TemplateRegistrati
     ) {
         ListType listType = null;
         if (definition.type().allowsList() && definition.listType() != null) {
-            ResourceIdentifier listId = definition.listType().getId(catalog)
-                    .orElseThrow(() -> new RuntimeException("listType " + definition.listType() + " does not exist"));
 
-            listType = catalog.getTemplateRegistry(ComponentCatalog.LIST_MAPPER).getRegistered(listId, repository)
-                    .orElseThrow(() -> new IllegalArgumentException("listType " + definition.listType() + " is not registered"));
+            listType = catalog.getTemplateRegistry(ComponentCatalog.LIST_MAPPER)
+                    .getRegistered(definition.listType().id(), repository)
+                    .orElseThrow(() ->
+                            new IllegalArgumentException("listType " + definition.listType() + " is not registered")
+                    );
         }
 
         ObjectProperty<?> type = new ObjectProperty<>(

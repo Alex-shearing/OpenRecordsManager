@@ -47,6 +47,7 @@ public class TemplateService {
         this.auditPolicyService = auditPolicyService;
     }
 
+    // TODO: Clean this up, look at returning ComponentReference from template registry directly
     @Transactional(readOnly = true)
     public Set<ComponentReferenceDto> listTemplates(@Nullable TemplateType type) {
         Set<ComponentReferenceDto> templates = (type == null

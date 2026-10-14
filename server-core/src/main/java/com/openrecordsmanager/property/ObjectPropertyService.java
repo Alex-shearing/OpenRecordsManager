@@ -95,7 +95,7 @@ public class ObjectPropertyService {
                 input.defaultValue()
         );
 
-        ComponentReference.Reference<?> ref = property.getReference();
+        ComponentReference<?> ref = property.getReference();
 
         this.repository.objectPropertyRepo.saveAndFlush(property);
 
@@ -119,7 +119,7 @@ public class ObjectPropertyService {
             throw new BuiltinResourceImmutableException();
         }
 
-        ComponentReference.Reference<?> ref = property.getReference();
+        ComponentReference<?> ref = property.getReference();
 
         applyUpdate(property, input);
         Locale locale = LocaleContextHolder.getLocale();

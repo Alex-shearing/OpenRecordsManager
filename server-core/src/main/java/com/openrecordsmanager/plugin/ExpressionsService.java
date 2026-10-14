@@ -62,8 +62,7 @@ public class ExpressionsService {
         return MessageFormat.format(
                 builder.filter().replace("'", "''"),
                 builder.dependencies().stream()
-                        .map(ref -> ref.getId(this.catalog))
-                        .map(o -> "'" + o.orElseThrow() + "'")
+                        .map(ref -> "'" + ref.id() + "'")
                         .toArray()
         );
     }
