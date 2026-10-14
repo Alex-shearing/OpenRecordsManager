@@ -5,6 +5,7 @@ import com.openrecordsmanager.api.auth.InputAuthProviderType;
 import com.openrecordsmanager.api.auth.UserAuthContext;
 import com.openrecordsmanager.api.auth.UserAuthDetails;
 import com.openrecordsmanager.api.template.TemplateComponent;
+import com.openrecordsmanager.api.template.property.ObjectPropertyTemplate;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import org.jspecify.annotations.Nullable;
@@ -15,14 +16,17 @@ import java.util.Set;
 
 public class LocalAuthProviderType extends InputAuthProviderType<Record, LocalAuthProviderType.LocalAuthInputs> {
 
-    public LocalAuthProviderType() {
+    private final ComponentReference<ObjectPropertyTemplate<String>> passwordProperty;
+
+    public LocalAuthProviderType(ComponentReference<ObjectPropertyTemplate<String>> passwordProperty) {
         super(Record.class, LocalAuthInputs.class);
+        this.passwordProperty = passwordProperty;
     }
 
     public record LocalAuthInputs(
             @Schema(title = "input_auth_provider.auth_local.local_auth.schema.username.title")
             @NotBlank String username,
-            
+
             @Schema(
                     title = "input_auth_provider.auth_local.local_auth.schema.password.title",
                     format = "password",
@@ -38,7 +42,7 @@ public class LocalAuthProviderType extends InputAuthProviderType<Record, LocalAu
             Record settings,
             LocalAuthInputs inputs
     ) {
-        Optional<String> hash = context.getUserProperty(inputs.username(), AuthLocalPlugin.PASSWORD_HASH_PROPERTY);
+        Optional<String> hash = context.getUserProperty(inputs.username(), this.passwordProperty);
         if (hash.isEmpty()) {
             AuthLocalPlugin.LOGGER.info("Failed to validate password for user {} (no password set)", inputs.username());
             return null;
@@ -59,6 +63,6 @@ public class LocalAuthProviderType extends InputAuthProviderType<Record, LocalAu
 
     @Override
     public Set<ComponentReference<? extends TemplateComponent>> getDependencies() {
-        return Set.of(ComponentReference.of(AuthLocalPlugin.PASSWORD_HASH_PROPERTY));
+        return Set.of(this.passwordProperty);
     }
 }

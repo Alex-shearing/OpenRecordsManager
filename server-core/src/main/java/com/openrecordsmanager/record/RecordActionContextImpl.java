@@ -1,5 +1,6 @@
 package com.openrecordsmanager.record;
 
+import com.openrecordsmanager.api.ComponentReference;
 import com.openrecordsmanager.api.audit.AuditEmitter;
 import com.openrecordsmanager.api.audit.AuditEntityType;
 import com.openrecordsmanager.api.config.ConfigStore;
@@ -63,17 +64,17 @@ class RecordActionContextImpl implements RecordActionContext {
     }
 
     @Override
-    public <T> boolean isPropertyRegistered(ObjectPropertyTemplate<T> property) {
+    public <T> boolean isPropertyRegistered(ComponentReference<ObjectPropertyTemplate<T>> property) {
         return this.catalog.getTemplateRegistry(ComponentCatalog.OBJECT_PROPERTY_MAPPER)
-                .getRegistered(property, this.repository)
+                .getRegistered(property.getId(this.catalog).orElseThrow(), this.repository)
                 .isPresent();
     }
 
     @Override
     @SuppressWarnings("unchecked")
-    public <T> Optional<T> getTargetProperty(ObjectPropertyTemplate<T> property) {
+    public <T> Optional<T> getTargetProperty(ComponentReference<ObjectPropertyTemplate<T>> property) {
         Optional<ObjectProperty<?>> prop = this.catalog.getTemplateRegistry(ComponentCatalog.OBJECT_PROPERTY_MAPPER)
-                .getRegistered(property, this.repository);
+                .getRegistered(property.getId(this.catalog).orElseThrow(), this.repository);
 
         if (prop.isEmpty()) {
             return Optional.empty();
@@ -84,10 +85,10 @@ class RecordActionContextImpl implements RecordActionContext {
     }
 
     @Override
-    public <T> void setTargetProperty(ObjectPropertyTemplate<T> property, @Nullable T value) {
+    public <T> void setTargetProperty(ComponentReference<ObjectPropertyTemplate<T>> property, @Nullable T value) {
         @SuppressWarnings("unchecked")
         ObjectProperty<T> prop = (ObjectProperty<T>) this.catalog.getTemplateRegistry(ComponentCatalog.OBJECT_PROPERTY_MAPPER)
-                .getRegistered(property, this.repository)
+                .getRegistered(property.getId(this.catalog).orElseThrow(), this.repository)
                 .orElseThrow(() -> new ResourceNotFoundException(ComponentTypes.OBJECT_PROPERTY, property.toString()));
 
         T oldValue = this.target.getProperty(prop);

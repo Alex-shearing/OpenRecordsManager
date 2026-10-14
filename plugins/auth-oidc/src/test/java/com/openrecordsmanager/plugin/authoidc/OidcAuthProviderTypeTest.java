@@ -7,6 +7,7 @@ import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
 import com.nimbusds.oauth2.sdk.Scope;
 import com.nimbusds.openid.connect.sdk.claims.IDTokenClaimsSet;
+import com.openrecordsmanager.api.ComponentReference;
 import com.openrecordsmanager.api.auth.PendingRedirectAuth;
 import com.openrecordsmanager.api.auth.RedirectAuthChallenge;
 import com.openrecordsmanager.api.auth.UserAuthContext;
@@ -227,7 +228,7 @@ class OidcAuthProviderTypeTest {
             @Override
             public <T> @NonNull Optional<T> getUserProperty(
                     @NonNull String username,
-                    @NonNull ObjectPropertyTemplate<T> property
+                    @NonNull ComponentReference<ObjectPropertyTemplate<T>> property
             ) {
                 return Optional.empty();
             }

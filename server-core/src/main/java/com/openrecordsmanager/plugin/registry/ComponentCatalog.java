@@ -1,9 +1,6 @@
 package com.openrecordsmanager.plugin.registry;
 
-import com.openrecordsmanager.api.Component;
-import com.openrecordsmanager.api.ComponentAccess;
-import com.openrecordsmanager.api.RegistrationContext;
-import com.openrecordsmanager.api.ResourceIdentifier;
+import com.openrecordsmanager.api.*;
 import com.openrecordsmanager.api.template.TemplateComponent;
 import com.openrecordsmanager.api.template.list.ListElementTemplate;
 import com.openrecordsmanager.api.template.list.ListTemplate;
@@ -18,6 +15,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -54,16 +52,16 @@ public class ComponentCatalog implements ComponentAccess {
 
 
     // Static Registries
-    private static final Map<ComponentType<?>, ComponentRegistry<?>> STATIC_REGISTRIES = Map.of(
-            ComponentTypes.CONFIG, new ComponentRegistry<>(),
-            ComponentTypes.INPUT_AUTH_PROVIDER, new ComponentRegistry<>(),
-            ComponentTypes.REDIRECT_AUTH_PROVIDER, new ComponentRegistry<>(),
-            ComponentTypes.FILE_STORE, new ComponentRegistry<>(),
-            ComponentTypes.FILE_STORE_MIDDLEWARE, new ComponentRegistry<>(),
-            ComponentTypes.LOCATION_ACTION, new ComponentRegistry<>(),
-            ComponentTypes.RECORD_ACTION, new ComponentRegistry<>(),
-            ComponentTypes.SEARCH_FIELD_PROVIDER, new ComponentRegistry<>()
-    );
+    private static final Map<ComponentType<?>, ComponentRegistry<?>> STATIC_REGISTRIES = Stream.of(
+            ComponentTypes.CONFIG,
+            ComponentTypes.INPUT_AUTH_PROVIDER,
+            ComponentTypes.REDIRECT_AUTH_PROVIDER,
+            ComponentTypes.FILE_STORE,
+            ComponentTypes.FILE_STORE_MIDDLEWARE,
+            ComponentTypes.LOCATION_ACTION,
+            ComponentTypes.RECORD_ACTION,
+            ComponentTypes.SEARCH_FIELD_PROVIDER
+    ).collect(Collectors.toMap(Function.identity(), ComponentRegistry::new));
 
     // Combined
     private final Map<ComponentType<?>, ComponentRegistry<?>> componentsMap = Stream.concat(
@@ -112,7 +110,7 @@ public class ComponentCatalog implements ComponentAccess {
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 
         @SuppressWarnings("unchecked")
-        public <T extends Component> void registerInstance(RegistrationContext context, String id, T component) {
+        public <T extends Component> ComponentReference<T> registerInstance(RegistrationContext context, String id, T component) {
             ResourceIdentifier identifier = new ResourceIdentifier(context.id(), id);
 
             ComponentType<T> type = ComponentTypes.fromObject(component);
@@ -120,7 +118,7 @@ public class ComponentCatalog implements ComponentAccess {
 
             LOGGER.info("Registering plugin component '{}' as {}", identifier, type);
 
-            typeBuilder.register(identifier, component);
+            ComponentReference<T> ref = typeBuilder.register(identifier, component);
 
             if (component instanceof ListTemplate(
                     Map<String, ListElementTemplate> defaultEntries
@@ -129,6 +127,8 @@ public class ComponentCatalog implements ComponentAccess {
                     this.registerInstance(context, s, element);
                 });
             }
+
+            return ref;
         }
 
         public void build() {

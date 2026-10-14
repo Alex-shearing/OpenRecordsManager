@@ -18,13 +18,13 @@ import com.openrecordsmanager.auth.entity.AuthProvider;
 import com.openrecordsmanager.config.ConfigService;
 import com.openrecordsmanager.database.DataRepository;
 import com.openrecordsmanager.database.DatabaseWritableProbe;
+import com.openrecordsmanager.location.user.User;
 import com.openrecordsmanager.plugin.ExpressionsService;
 import com.openrecordsmanager.plugin.registry.ComponentCatalog;
 import com.openrecordsmanager.plugin.registry.mapper.TemplateRegistrationMapper;
 import com.openrecordsmanager.property.ObjectProperty;
 import com.openrecordsmanager.rest.CookieService;
 import com.openrecordsmanager.rest.exception.ResourceNotFoundException;
-import com.openrecordsmanager.location.user.User;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -297,9 +297,9 @@ public class AuthService implements UserAuthContext {
     }
 
     @Override
-    public <T> Optional<T> getUserProperty(String username, ObjectPropertyTemplate<T> property) {
+    public <T> Optional<T> getUserProperty(String username, ComponentReference<ObjectPropertyTemplate<T>> property) {
         Optional<ObjectProperty<?>> prop = this.catalog.getTemplateRegistry(ComponentCatalog.OBJECT_PROPERTY_MAPPER)
-                .getRegistered(property, this.repository);
+                .getRegistered(property.getId(this.catalog).orElseThrow(), this.repository);
 
         if (prop.isEmpty()) {
             return Optional.empty();

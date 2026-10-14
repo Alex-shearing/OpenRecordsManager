@@ -1,5 +1,6 @@
 package com.openrecordsmanager.api.location;
 
+import com.openrecordsmanager.api.ComponentReference;
 import com.openrecordsmanager.api.audit.AuditEmitter;
 import com.openrecordsmanager.api.config.ConfigStore;
 import com.openrecordsmanager.api.template.property.ObjectPropertyTemplate;
@@ -26,11 +27,11 @@ public interface LocationActionContext {
 
     ConfigStore getConfig();
 
-    <T> boolean isPropertyRegistered(ObjectPropertyTemplate<T> property);
+    <T> boolean isPropertyRegistered(ComponentReference<ObjectPropertyTemplate<T>> property);
 
-    <T> Optional<T> getTargetProperty(ObjectPropertyTemplate<T> property);
+    <T> Optional<T> getTargetProperty(ComponentReference<ObjectPropertyTemplate<T>> property);
 
-    <T> void setTargetProperty(ObjectPropertyTemplate<T> property, @Nullable T value);
+    <T> void setTargetProperty(ComponentReference<ObjectPropertyTemplate<T>> property, @Nullable T value);
 
     AuditEmitter getAudit();
 }

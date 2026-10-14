@@ -1,10 +1,13 @@
 package com.openrecordsmanager.template;
 
 import com.openrecordsmanager.api.Component;
+import com.openrecordsmanager.api.ComponentReference;
 import com.openrecordsmanager.api.RegistrationContext;
+import com.openrecordsmanager.api.ResourceIdentifier;
 import com.openrecordsmanager.api.template.list.ListElementTemplate;
 import com.openrecordsmanager.api.template.list.ListTemplate;
 import com.openrecordsmanager.api.template.property.ObjectPropertyTemplate;
+import com.openrecordsmanager.api.types.ComponentTypes;
 import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -137,8 +140,9 @@ class TemplateJsonLoaderTest {
         }
 
         @Override
-        public void registerComponent(@NonNull String id, @NonNull Component component) {
+        public <T extends Component> @NonNull ComponentReference<T> registerComponent(@NonNull String id, @NonNull T component) {
             this.registered.put(id, component);
+            return ComponentReference.of(ComponentTypes.fromObject(component), new ResourceIdentifier(this.id(), id));
         }
 
         List<String> ids() {

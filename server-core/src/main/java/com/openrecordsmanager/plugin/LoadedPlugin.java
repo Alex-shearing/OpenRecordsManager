@@ -1,6 +1,7 @@
 package com.openrecordsmanager.plugin;
 
 import com.openrecordsmanager.api.Component;
+import com.openrecordsmanager.api.ComponentReference;
 import com.openrecordsmanager.api.Plugin;
 import com.openrecordsmanager.api.RegistrationContext;
 import com.openrecordsmanager.plugin.registry.ComponentCatalog;
@@ -37,8 +38,8 @@ public record LoadedPlugin(DiscoveredPlugin info, Plugin plugin) {
         }
 
         @Override
-        public void registerComponent(String id, Component component) {
-            this.builder.registerInstance(this, id, component);
+        public <T extends Component> ComponentReference<T> registerComponent(String id, T component) {
+            return this.builder.registerInstance(this, id, component);
         }
     }
 }

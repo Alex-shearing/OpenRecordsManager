@@ -11,7 +11,7 @@ public interface RegistrationContext {
     /**
      * Register a component for this plugin
      */
-    void registerComponent(String id, Component component);
+    <T extends Component> ComponentReference<T> registerComponent(String id, T component);
 
     /**
      * Register a configuration component for this plugin

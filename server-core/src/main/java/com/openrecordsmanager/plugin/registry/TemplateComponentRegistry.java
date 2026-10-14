@@ -16,6 +16,7 @@ public class TemplateComponentRegistry<T extends TemplateComponent, D> extends C
     private final TemplateRegistrationMapper<T, D> mapper;
 
     public TemplateComponentRegistry(TemplateRegistrationMapper<T, D> mapper) {
+        super(mapper.componentType());
         this.mapper = mapper;
     }
 

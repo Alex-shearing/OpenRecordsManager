@@ -3,7 +3,9 @@ package com.openrecordsmanager.plugin.registry;
 import com.google.common.collect.ImmutableMap;
 import com.openrecordsmanager.api.Component;
 import com.openrecordsmanager.api.ComponentAccess;
+import com.openrecordsmanager.api.ComponentReference;
 import com.openrecordsmanager.api.ResourceIdentifier;
+import com.openrecordsmanager.api.types.ComponentType;
 
 import java.util.*;
 import java.util.stream.Stream;
@@ -11,6 +13,12 @@ import java.util.stream.Stream;
 public class ComponentRegistry<T extends Component> implements ComponentAccess.RegistryAccess<T> {
     private Map<ResourceIdentifier, T> map = Map.of();
     private Map<T, ResourceIdentifier> inverse = Map.of();
+
+    protected final ComponentType<T> type;
+
+    public ComponentRegistry(ComponentType<T> type) {
+        this.type = type;
+    }
 
     @Override
     public Optional<T> get(ResourceIdentifier id) {
@@ -37,8 +45,9 @@ public class ComponentRegistry<T extends Component> implements ComponentAccess.R
     public class Builder {
         private final HashMap<ResourceIdentifier, T> builder = new HashMap<>();
 
-        public void register(ResourceIdentifier id, T component) {
+        public ComponentReference<T> register(ResourceIdentifier id, T component) {
             this.builder.put(id, component);
+            return ComponentReference.of(ComponentRegistry.this.type, id);
         }
 
         public void build() {
