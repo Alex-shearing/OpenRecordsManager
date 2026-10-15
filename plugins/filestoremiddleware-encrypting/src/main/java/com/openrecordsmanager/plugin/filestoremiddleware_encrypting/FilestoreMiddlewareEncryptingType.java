@@ -12,14 +12,11 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.SequenceInputStream;
-import java.nio.charset.StandardCharsets;
+import java.nio.ByteBuffer;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
-import java.security.spec.AlgorithmParameterSpec;
-import java.util.Collections;
-import java.util.List;
 
 public class FilestoreMiddlewareEncryptingType extends FileStoreMiddlewareType<FilestoreMiddlewareEncryptingType.EncryptingMiddlewareSettings> {
     public FilestoreMiddlewareEncryptingType() {
@@ -29,11 +26,7 @@ public class FilestoreMiddlewareEncryptingType extends FileStoreMiddlewareType<F
     @Override
     public void initialize(EncryptingMiddlewareSettings settings) {
         try {
-            Cipher cipher = Cipher.getInstance(settings.algorithm().getTransformation());
-            SecretKeySpec secretKey = new SecretKeySpec(settings.secretKey(), settings.algorithm().getSecretKeySpec());
-            byte[] iv = new byte[settings.algorithm().getIvLength()];
-            SecureRandom.getInstanceStrong().nextBytes(iv);
-            cipher.init(Cipher.ENCRYPT_MODE, secretKey, settings.algorithm().createParameterSpec(iv));
+            settings.newEncryptCipher();
         } catch (InvalidKeyException e) {
             throw ApiException.validationFailed("secretKey", "encrypting_middleware_key_invalid", e.getMessage());
         } catch (NoSuchAlgorithmException | NoSuchPaddingException | InvalidAlgorithmParameterException e) {
@@ -44,28 +37,19 @@ public class FilestoreMiddlewareEncryptingType extends FileStoreMiddlewareType<F
     @Override
     public InputStream duringSave(EncryptingMiddlewareSettings settings, InputStream data) {
         try {
-            // Construct the cipher
-            Cipher cipher = Cipher.getInstance(settings.algorithm().getTransformation());
+            Cipher cipher = settings.newEncryptCipher();
+            byte[] iv = cipher.getIV();
 
-            // Construct secret key
-            SecretKeySpec secretKey = new SecretKeySpec(settings.secretKey(), settings.algorithm().getSecretKeySpec());
+            // Header: [ Algorithm ] + [ Nonce Length ] + [ Nonce ]
+            byte[] header = ByteBuffer.allocate(1 + 1 + iv.length)
+                    .put((byte) settings.algorithm().getId())
+                    .put((byte) iv.length).put(iv)
+                    .array();
 
-            // Construct nonce
-            byte[] iv = new byte[settings.algorithm().getIvLength()];
-            SecureRandom.getInstanceStrong().nextBytes(iv);
-            AlgorithmParameterSpec paramSpec = settings.algorithm().createParameterSpec(iv);
-
-            // Initialize cipher engine in ENCRYPT mode
-            cipher.init(Cipher.ENCRYPT_MODE, secretKey, paramSpec);
-
-            // Returns a concatenated single stream: [ Algorithm Length ] + [ Algorithm ] + [ Nonce Length ] + [ Nonce ] + [ Encrypted Body Bytes ]
-            return new SequenceInputStream(Collections.enumeration(List.of(
-                    new ByteArrayInputStream(new byte[]{(byte) settings.algorithm().name().length()}),
-                    new ByteArrayInputStream(settings.algorithm().name().getBytes(StandardCharsets.UTF_8)),
-                    new ByteArrayInputStream(new byte[]{(byte) iv.length}),
-                    new ByteArrayInputStream(iv),
+            return new SequenceInputStream(
+                    new ByteArrayInputStream(header),
                     new CipherInputStream(data, cipher)
-            )));
+            );
         } catch (NoSuchAlgorithmException | NoSuchPaddingException | InvalidAlgorithmParameterException |
                  InvalidKeyException e) {
             FileStoreMiddlewareEncryptingPlugin.LOGGER.error("Failed to initialize file encryption", e);
@@ -76,19 +60,12 @@ public class FilestoreMiddlewareEncryptingType extends FileStoreMiddlewareType<F
     @Override
     public InputStream duringRetrieve(EncryptingMiddlewareSettings settings, InputStream data) {
         try {
-            // Read the algorithm length
-            int algoLength = data.read();
-            if (algoLength == -1) {
-                throw new IOException("Corrupted stream payload: Failed to read algorithm length header.");
+            // Read the algorithm
+            int algoId = data.read();
+            if (algoId == -1) {
+                throw new IOException("Corrupted stream payload: Failed to read algorithm header.");
             }
-
-            // Read the algorithm name string
-            byte[] algoBytes = new byte[algoLength];
-            int algoBytesRead = data.readNBytes(algoBytes, 0, algoLength);
-            if (algoBytesRead != algoLength) {
-                throw new IOException("Corrupted stream payload: Failed to extract a valid algorithm name.");
-            }
-            EncryptionType algorithmName = EncryptionType.valueOf(new String(algoBytes, StandardCharsets.UTF_8));
+            EncryptionType alg = EncryptionType.fromId(algoId);
 
             // Read the nonce length
             int ivLength = data.read();
@@ -96,20 +73,12 @@ public class FilestoreMiddlewareEncryptingType extends FileStoreMiddlewareType<F
                 throw new IOException("Corrupted stream payload: Failed to read nonce length header.");
             }
 
-            byte[] iv = new byte[ivLength];
-            int nonceBytesRead = data.readNBytes(iv, 0, ivLength);
-            if (nonceBytesRead != ivLength) {
+            byte[] iv = data.readNBytes(ivLength);
+            if (iv.length != ivLength) {
                 throw new IOException("Corrupted stream payload: Failed to extract a valid nonce.");
             }
 
-            // Construct secret key
-            SecretKeySpec secretKey = new SecretKeySpec(settings.secretKey(), algorithmName.getSecretKeySpec());
-
-            // Initialize cipher engine in DECRYPT mode
-            Cipher cipher = Cipher.getInstance(algorithmName.getTransformation());
-            cipher.init(Cipher.DECRYPT_MODE, secretKey, algorithmName.createParameterSpec(iv));
-
-            return new CipherInputStream(data, cipher);
+            return new CipherInputStream(data, settings.createCipher(Cipher.DECRYPT_MODE, alg, iv));
         } catch (NoSuchAlgorithmException | NoSuchPaddingException | InvalidAlgorithmParameterException |
                  InvalidKeyException | IOException e) {
             FileStoreMiddlewareEncryptingPlugin.LOGGER.error("Failed to initialize file decryption", e);
@@ -128,5 +97,23 @@ public class FilestoreMiddlewareEncryptingType extends FileStoreMiddlewareType<F
             @Schema(title = "file_store_middleware.filestoremiddleware_encrypting.encrypting.schema.algorithm.title")
             EncryptionType algorithm
     ) {
+        private Cipher newEncryptCipher()
+                throws NoSuchAlgorithmException, NoSuchPaddingException,
+                InvalidKeyException, InvalidAlgorithmParameterException {
+            byte[] iv = new byte[algorithm.getIvLength()];
+            SecureRandom.getInstanceStrong().nextBytes(iv);
+
+            return this.createCipher(Cipher.ENCRYPT_MODE, this.algorithm, iv);
+        }
+
+        private Cipher createCipher(int opmode, EncryptionType algorithm, byte[] iv)
+                throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException,
+                InvalidAlgorithmParameterException {
+            Cipher cipher = Cipher.getInstance(algorithm.getTransformation());
+            SecretKeySpec spec = new SecretKeySpec(this.secretKey, algorithm.getSecretKeySpec());
+
+            cipher.init(opmode, spec, algorithm.createParameterSpec(iv));
+            return cipher;
+        }
     }
 }
