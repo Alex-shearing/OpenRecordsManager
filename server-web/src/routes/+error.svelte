@@ -1,12 +1,11 @@
 <script lang="ts">
 	import { page } from '$app/state';
-	import BrandingHeader from '#lib/components/BrandingHeader.svelte';
-	import PageContent from '#lib/components/layout/PageContent.svelte';
-	import { t } from '#lib/i18n/catalog.js';
+	import AppStatusView from '#lib/components/AppStatusView.svelte';
+	import { t, tx } from '#lib/i18n/catalog.js';
 
 	let title = $derived.by(() => {
 		if (!page.data.online) {
-			return t('web.error.server_offline');
+			return tx('web.error.server_offline', 'Server offline');
 		}
 
 		switch (page.status) {
@@ -23,7 +22,10 @@
 
 	let description = $derived.by(() => {
 		if (!page.data.online) {
-			return t('web.error.server_offline_description');
+			return tx(
+				'web.error.server_offline_description',
+				'The API could not be reached. Check that the server is running and try again.'
+			);
 		}
 
 		switch (page.status) {
@@ -40,36 +42,7 @@
 </script>
 
 <svelte:head>
-	<title>{page.status} · {t('web.layout.product_name')}</title>
+	<title>{page.status} - {tx('web.layout.product_name', 'Open Records Manager')}</title>
 </svelte:head>
 
-<div class="flex h-dvh flex-col overflow-hidden">
-	<BrandingHeader branding={page.data.branding} showLogoOnMobile />
-
-	<div class="min-h-0 flex-1 overflow-y-auto">
-		<PageContent variant="guest">
-			<div class="card">
-				<div class="card-header">
-					<h1 class="text-2xl font-semibold">{title}</h1>
-				</div>
-
-				<div class="card-body">
-					<p class="text-hint">{description}</p>
-
-					<div class="mt-6 flex gap-3">
-						<a href="/" class="btn-primary">{t('web.error.go_home')}</a>
-						{#if page.status === 401}
-							<a href="/login" class="btn-secondary">{t('web.error.sign_in')}</a>
-						{/if}
-					</div>
-				</div>
-			</div>
-
-			{#if page.data.branding.supportUrl}
-				<p class="mt-4 text-center text-hint">
-					<a href={page.data.branding.supportUrl} class="text-link">{t('web.layout.need_help')}</a>
-				</p>
-			{/if}
-		</PageContent>
-	</div>
-</div>
+<AppStatusView {title} {description} branding={page.data.branding} showSignIn={page.status === 401} />
