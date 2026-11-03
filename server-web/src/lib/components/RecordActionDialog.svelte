@@ -3,7 +3,7 @@
 	import { RecordController } from '#lib/api/index.js';
 	import { auditHeaders, getApiClient } from '#lib/api-client.js';
 	import { t } from '#lib/i18n/catalog.js';
-	import { recordActionDescription } from '#lib/i18n/labels.js';
+	import { actionDescription } from '#lib/i18n/labels.js';
 	import AppDialog from './AppDialog.svelte';
 	import DialogActions from './DialogActions.svelte';
 	import SchemaForm from './SchemaForm.svelte';
@@ -68,9 +68,9 @@
 
 {#if action}
 	{#key action.id}
-		<AppDialog bind:open title={`record_action.${action.id.replaceAll(':', '.')}.name`} onclose={handleClose}>
+		<AppDialog bind:open title={`action.${action.id.replaceAll(':', '.')}.name`} onclose={handleClose}>
 			{#snippet description()}
-				{recordActionDescription(action.id)}
+				{actionDescription(action.id)}
 			{/snippet}
 			{#snippet body()}
 				<form id={formId} class="flex flex-col gap-4" onsubmit={handleSubmit} novalidate>
@@ -90,7 +90,7 @@
 				</form>
 			{/snippet}
 			{#snippet footer()}
-				<DialogActions {formId} confirmLabel={`record_action.${action.id.replaceAll(':', '.')}.name`} {submitting} />
+				<DialogActions {formId} confirmLabel={`action.${action.id.replaceAll(':', '.')}.name`} {submitting} />
 			{/snippet}
 		</AppDialog>
 	{/key}

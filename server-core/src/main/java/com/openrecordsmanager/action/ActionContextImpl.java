@@ -20,7 +20,6 @@ import org.jspecify.annotations.Nullable;
 
 import java.util.Optional;
 import java.util.UUID;
-import java.util.function.Consumer;
 
 public class ActionContextImpl implements ActionContext {
     private final DataRepository repository;
@@ -30,7 +29,6 @@ public class ActionContextImpl implements ActionContext {
     private final User actor;
     private final ManagedObject<?> target;
     private final AuditEntityType auditEntityType;
-    private final Consumer<ManagedObject<?>> persist;
 
     public ActionContextImpl(
             DataRepository repository,
@@ -39,8 +37,7 @@ public class ActionContextImpl implements ActionContext {
             AuditService auditService,
             User actor,
             ManagedObject<?> target,
-            AuditEntityType auditEntityType,
-            Consumer<ManagedObject<?>> persist
+            AuditEntityType auditEntityType
     ) {
         this.repository = repository;
         this.catalog = catalog;
@@ -49,7 +46,6 @@ public class ActionContextImpl implements ActionContext {
         this.actor = actor;
         this.target = target;
         this.auditEntityType = auditEntityType;
-        this.persist = persist;
     }
 
     @Override
@@ -108,7 +104,7 @@ public class ActionContextImpl implements ActionContext {
         T oldValue = this.target.getProperty(prop);
         this.target.setProperty(prop, value);
 
-        this.persist.accept(this.target);
+        this.repository.managedObjectRepo.saveAndFlush(this.target);
 
         if (oldValue != value) {
             this.getAudit().addPropertyChangeEvent(prop.getId().toString(), oldValue, value);

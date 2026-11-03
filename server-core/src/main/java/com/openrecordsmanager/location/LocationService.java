@@ -1,19 +1,15 @@
 package com.openrecordsmanager.location;
 
-import com.openrecordsmanager.action.ActionContextImpl;
+import com.openrecordsmanager.action.ActionService;
 import com.openrecordsmanager.api.ResourceIdentifier;
-import com.openrecordsmanager.api.action.ActionContext;
 import com.openrecordsmanager.api.audit.AuditEntityType;
 import com.openrecordsmanager.api.audit.AuditOperation;
 import com.openrecordsmanager.api.errors.ApiException;
-import com.openrecordsmanager.api.location.LocationActionType;
 import com.openrecordsmanager.api.property.ManagedObjectKind;
 import com.openrecordsmanager.api.search.SearchFieldTarget;
 import com.openrecordsmanager.api.types.ComponentTypes;
-import com.openrecordsmanager.audit.AuditPolicyService;
 import com.openrecordsmanager.audit.AuditService;
 import com.openrecordsmanager.audit.RequiresAuditComment;
-import com.openrecordsmanager.config.ConfigService;
 import com.openrecordsmanager.database.DataRepository;
 import com.openrecordsmanager.location.dto.LocationResponse;
 import com.openrecordsmanager.location.dto.LocationSearchResponse;
@@ -24,11 +20,8 @@ import com.openrecordsmanager.location.group.GroupService;
 import com.openrecordsmanager.location.type.LocationType;
 import com.openrecordsmanager.location.user.User;
 import com.openrecordsmanager.location.user.UserService;
-import com.openrecordsmanager.plugin.registry.ComponentCatalog;
 import com.openrecordsmanager.rest.dto.ActionResponse;
-import com.openrecordsmanager.rest.exception.ActionNotAvailableException;
 import com.openrecordsmanager.rest.exception.ResourceNotFoundException;
-import com.openrecordsmanager.schema.JsonSchemaValidator;
 import com.openrecordsmanager.search.dto.ObjectSearchRequest;
 import com.openrecordsmanager.search.sql.BuiltinColumnResolver;
 import com.openrecordsmanager.search.sql.ObjectSearchSchema;
@@ -47,9 +40,7 @@ public class LocationService {
 
     private final DataRepository repository;
     private final AuditService auditService;
-    private final AuditPolicyService auditPolicyService;
-    private final ConfigService config;
-    private final ComponentCatalog catalog;
+    private final ActionService actionService;
     private final LocationSearchSupport searchSupport;
     private final ObjectSearchSchema searchSchema;
     private final UserService userService;
@@ -58,9 +49,7 @@ public class LocationService {
     public LocationService(
             DataRepository repository,
             AuditService auditService,
-            AuditPolicyService auditPolicyService,
-            ConfigService config,
-            ComponentCatalog catalog,
+            ActionService actionService,
             LocationSearchSupport searchSupport,
             BuiltinColumnResolver columnResolver,
             UserService userService,
@@ -68,9 +57,7 @@ public class LocationService {
     ) {
         this.repository = repository;
         this.auditService = auditService;
-        this.auditPolicyService = auditPolicyService;
-        this.config = config;
-        this.catalog = catalog;
+        this.actionService = actionService;
         this.searchSupport = searchSupport;
         this.searchSchema = ObjectSearchSchema.of(
                 SearchFieldTarget.LOCATION,
@@ -144,62 +131,13 @@ public class LocationService {
     public Set<ActionResponse> listActions(User actor, UUID id) {
         Location target = this.repository.locationRepo.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("location", id));
-
-        ActionContext context = this.actionContext(actor, target);
-
-        Set<ActionResponse> actions = this.catalog.getRegistry(ComponentTypes.LOCATION_ACTION).stream()
-                .filter(action -> action.isAvailable(context))
-                .map(action -> ActionResponse.ofLocation(this.catalog, action, this.auditPolicyService))
-                .collect(Collectors.toSet());
-
-        this.auditService.addReadEvent(AuditEntityType.LOCATION, id);
-        return actions;
+        return this.actionService.listActions(actor, target, AuditEntityType.LOCATION);
     }
 
     @Transactional
     public void executeAction(User actor, UUID id, ResourceIdentifier actionId, Map<String, ?> inputs) {
-        LocationActionType<?> action = this.catalog.getRegistry(ComponentTypes.LOCATION_ACTION).get(actionId)
-                .orElseThrow(() -> new ResourceNotFoundException(ComponentTypes.LOCATION_ACTION, actionId));
-
         Location target = this.repository.locationRepo.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("location", id));
-
-        ActionContext context = this.actionContext(actor, target);
-
-        if (!action.isAvailable(context)) {
-            throw new ActionNotAvailableException(actionId, "location", id);
-        }
-
-        this.auditPolicyService.validateCommentRequired(AuditEntityType.LOCATION, AuditOperation.ACTION);
-
-        parseAndExecute(action, context, inputs);
-
-        this.auditService.addActionRanEvent(
-                actionId,
-                AuditEntityType.LOCATION,
-                id,
-                Map.of("inputs", inputs.keySet())
-        );
-    }
-
-    private ActionContext actionContext(User actor, Location target) {
-        return new ActionContextImpl(
-                this.repository,
-                this.catalog,
-                this.config,
-                this.auditService,
-                actor,
-                target,
-                AuditEntityType.LOCATION,
-                managed -> this.repository.locationRepo.saveAndFlush((Location) managed)
-        );
-    }
-
-    private static <I extends Record> void parseAndExecute(
-            LocationActionType<I> action,
-            ActionContext context,
-            Map<String, ?> inputs
-    ) {
-        action.execute(context, JsonSchemaValidator.toRecord(action.getInputClass(), inputs));
+        this.actionService.executeAction(actor, target, AuditEntityType.LOCATION, actionId, inputs);
     }
 }

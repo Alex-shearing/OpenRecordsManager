@@ -62,8 +62,7 @@ public class ComponentCatalog {
             ComponentTypes.REDIRECT_AUTH_PROVIDER,
             ComponentTypes.FILE_STORE,
             ComponentTypes.FILE_STORE_MIDDLEWARE,
-            ComponentTypes.LOCATION_ACTION,
-            ComponentTypes.RECORD_ACTION,
+            ComponentTypes.ACTION,
             ComponentTypes.SEARCH_FIELD_PROVIDER
     ).collect(Collectors.toMap(Function.identity(), ComponentRegistry::new));
 

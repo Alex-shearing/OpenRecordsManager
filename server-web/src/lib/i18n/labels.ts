@@ -58,20 +58,12 @@ export function configDescription(key: string): string {
 	return t(`config.${key}.description`);
 }
 
-export function locationActionName(id: string): string {
-	return t(`location_action.${idSegment(id)}.name`);
+export function actionName(id: string): string {
+	return t(`action.${idSegment(id)}.name`);
 }
 
-export function locationActionDescription(id: string): string {
-	return t(`location_action.${idSegment(id)}.description`);
-}
-
-export function recordActionName(id: string): string {
-	return t(`record_action.${idSegment(id)}.name`);
-}
-
-export function recordActionDescription(id: string): string {
-	return t(`record_action.${idSegment(id)}.description`);
+export function actionDescription(id: string): string {
+	return t(`action.${idSegment(id)}.description`);
 }
 
 /** Template list labels use the same keys as the registered vocabulary for that type. */

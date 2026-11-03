@@ -3,12 +3,7 @@
 	import LocationActionDialog from '#lib/components/LocationActionDialog.svelte';
 	import RecordActionDialog from '#lib/components/RecordActionDialog.svelte';
 	import { t } from '#lib/i18n/catalog.js';
-	import {
-		locationActionDescription,
-		locationActionName,
-		recordActionDescription,
-		recordActionName,
-	} from '#lib/i18n/labels.js';
+	import { actionDescription, actionName } from '#lib/i18n/labels.js';
 
 	let {
 		actions,
@@ -45,12 +40,8 @@
 						class="list-panel-item flex w-full flex-col gap-1 text-left"
 						onclick={() => openAction(action)}
 					>
-						<span class="font-medium">
-							{kind === 'location' ? locationActionName(action.id) : recordActionName(action.id)}
-						</span>
-						<span class="text-hint">
-							{kind === 'location' ? locationActionDescription(action.id) : recordActionDescription(action.id)}
-						</span>
+						<span class="font-medium">{actionName(action.id)}</span>
+						<span class="text-hint">{actionDescription(action.id)}</span>
 					</button>
 				</li>
 			{/each}

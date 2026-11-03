@@ -11,7 +11,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 /**
- * Runtime context for a location or record action: actor, target, config, properties, audit.
+ * Runtime context for an action: actor, target, config, properties, audit.
  */
 public interface ActionContext {
     UUID getActorId();

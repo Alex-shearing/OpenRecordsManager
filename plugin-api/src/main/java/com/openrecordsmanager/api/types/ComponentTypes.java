@@ -1,13 +1,12 @@
 package com.openrecordsmanager.api.types;
 
 import com.openrecordsmanager.api.Component;
+import com.openrecordsmanager.api.action.ActionType;
 import com.openrecordsmanager.api.auth.InputAuthProviderType;
 import com.openrecordsmanager.api.auth.RedirectAuthProviderType;
 import com.openrecordsmanager.api.config.ConfigType;
 import com.openrecordsmanager.api.filestore.FileStoreMiddlewareType;
 import com.openrecordsmanager.api.filestore.FileStoreType;
-import com.openrecordsmanager.api.location.LocationActionType;
-import com.openrecordsmanager.api.record.RecordActionType;
 import com.openrecordsmanager.api.search.SearchFieldProvider;
 import com.openrecordsmanager.api.template.list.ListElementTemplate;
 import com.openrecordsmanager.api.template.list.ListTemplate;
@@ -26,8 +25,7 @@ public class ComponentTypes {
     public static final ComponentType<RedirectAuthProviderType<?>> REDIRECT_AUTH_PROVIDER = ComponentType.of("redirect_auth_provider", RedirectAuthProviderType.class);
     public static final ComponentType<FileStoreType<?>> FILE_STORE = ComponentType.of("file_store", FileStoreType.class);
     public static final ComponentType<FileStoreMiddlewareType<?>> FILE_STORE_MIDDLEWARE = ComponentType.of("file_store_middleware", FileStoreMiddlewareType.class);
-    public static final ComponentType<LocationActionType<?>> LOCATION_ACTION = ComponentType.of("location_action", LocationActionType.class);
-    public static final ComponentType<RecordActionType<?>> RECORD_ACTION = ComponentType.of("record_action", RecordActionType.class);
+    public static final ComponentType<ActionType<?>> ACTION = ComponentType.of("action", ActionType.class);
     public static final ComponentType<SearchFieldProvider> SEARCH_FIELD_PROVIDER = ComponentType.of("search_field_provider", SearchFieldProvider.class);
 
     // Registerable components
@@ -51,8 +49,7 @@ public class ComponentTypes {
             REDIRECT_AUTH_PROVIDER,
             FILE_STORE,
             FILE_STORE_MIDDLEWARE,
-            LOCATION_ACTION,
-            RECORD_ACTION,
+            ACTION,
             SEARCH_FIELD_PROVIDER
     );
 

@@ -3,7 +3,7 @@
 	import { LocationController } from '#lib/api/index.js';
 	import { auditHeaders, getApiClient } from '#lib/api-client.js';
 	import { t } from '#lib/i18n/catalog.js';
-	import { locationActionDescription } from '#lib/i18n/labels.js';
+	import { actionDescription } from '#lib/i18n/labels.js';
 	import AppDialog from './AppDialog.svelte';
 	import DialogActions from './DialogActions.svelte';
 	import SchemaForm from './SchemaForm.svelte';
@@ -68,9 +68,9 @@
 
 {#if action}
 	{#key action.id}
-		<AppDialog bind:open title={`location_action.${action.id.replaceAll(':', '.')}.name`} onclose={handleClose}>
+		<AppDialog bind:open title={`action.${action.id.replaceAll(':', '.')}.name`} onclose={handleClose}>
 			{#snippet description()}
-				{locationActionDescription(action.id)}
+				{actionDescription(action.id)}
 			{/snippet}
 			{#snippet body()}
 				<form id={formId} class="flex flex-col gap-4" onsubmit={handleSubmit} novalidate>
@@ -90,7 +90,7 @@
 				</form>
 			{/snippet}
 			{#snippet footer()}
-				<DialogActions {formId} confirmLabel={`location_action.${action.id.replaceAll(':', '.')}.name`} {submitting} />
+				<DialogActions {formId} confirmLabel={`action.${action.id.replaceAll(':', '.')}.name`} {submitting} />
 			{/snippet}
 		</AppDialog>
 	{/key}

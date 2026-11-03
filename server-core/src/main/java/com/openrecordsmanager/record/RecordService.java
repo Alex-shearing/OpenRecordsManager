@@ -1,12 +1,10 @@
 package com.openrecordsmanager.record;
 
-import com.openrecordsmanager.action.ActionContextImpl;
+import com.openrecordsmanager.action.ActionService;
 import com.openrecordsmanager.api.ResourceIdentifier;
-import com.openrecordsmanager.api.action.ActionContext;
 import com.openrecordsmanager.api.audit.AuditEntityType;
 import com.openrecordsmanager.api.audit.AuditOperation;
 import com.openrecordsmanager.api.builtin.BuiltinConfigs;
-import com.openrecordsmanager.api.record.RecordActionType;
 import com.openrecordsmanager.api.search.SearchFieldTarget;
 import com.openrecordsmanager.api.template.recordtype.SecurityFilterUsage;
 import com.openrecordsmanager.api.types.ComponentTypes;
@@ -23,10 +21,8 @@ import com.openrecordsmanager.record.exception.DefaultFileStoreNotSetException;
 import com.openrecordsmanager.record.exception.RecordTypeNoFileSupportException;
 import com.openrecordsmanager.record.type.RecordType;
 import com.openrecordsmanager.rest.dto.ActionResponse;
-import com.openrecordsmanager.rest.exception.ActionNotAvailableException;
 import com.openrecordsmanager.rest.exception.ForbiddenException;
 import com.openrecordsmanager.rest.exception.ResourceNotFoundException;
-import com.openrecordsmanager.schema.JsonSchemaValidator;
 import com.openrecordsmanager.search.ObjectSearchExecutor;
 import com.openrecordsmanager.search.dto.ObjectSearchRequest;
 import com.openrecordsmanager.search.sql.BuiltinColumnResolver;
@@ -49,7 +45,7 @@ public class RecordService {
     private final ComponentCatalog catalog;
     private final ExpressionsService expressions;
     private final AuditService auditService;
-    private final AuditPolicyService auditPolicyService;
+    private final ActionService actionService;
     private final ObjectPropertyApplier propertyApplier;
     private final ObjectSearchExecutor searchExecutor;
     private final ObjectSearchSchema searchSchema;
@@ -60,7 +56,7 @@ public class RecordService {
             ComponentCatalog catalog,
             ExpressionsService expressions,
             AuditService auditService,
-            AuditPolicyService auditPolicyService,
+            ActionService actionService,
             ObjectPropertyApplier propertyApplier,
             ObjectSearchExecutor searchExecutor,
             BuiltinColumnResolver columnResolver
@@ -70,7 +66,7 @@ public class RecordService {
         this.catalog = catalog;
         this.expressions = expressions;
         this.auditService = auditService;
-        this.auditPolicyService = auditPolicyService;
+        this.actionService = actionService;
         this.propertyApplier = propertyApplier;
         this.searchExecutor = searchExecutor;
         this.searchSchema = ObjectSearchSchema.of(
@@ -295,67 +291,14 @@ public class RecordService {
 
     @Transactional(readOnly = true)
     public Set<ActionResponse> listActions(User actor, UUID recordId) {
-        Record record = this.repository.recordRepo.findById(recordId)
-                .filter(r -> r.securityFilter(this.expressions, actor).canSeeMetadata())
-                .orElseThrow(() -> new ResourceNotFoundException("record", recordId));
-
-        ActionContext context = this.actionContext(actor, record);
-
-        Set<ActionResponse> actions = this.catalog.getRegistry(ComponentTypes.RECORD_ACTION).stream()
-                .filter(action -> action.isAvailable(context))
-                .map(action -> ActionResponse.ofRecord(this.catalog, action, this.auditPolicyService))
-                .collect(Collectors.toSet());
-
-        this.auditService.addReadEvent(AuditEntityType.RECORD, recordId);
-        return actions;
+        Record record = this.requireVisibleRecord(actor, recordId);
+        return this.actionService.listActions(actor, record, AuditEntityType.RECORD);
     }
 
     @Transactional
     public void executeAction(User actor, UUID recordId, ResourceIdentifier actionId, Map<String, ?> inputs) {
-        RecordActionType<?> action = this.catalog.getRegistry(ComponentTypes.RECORD_ACTION).get(actionId)
-                .orElseThrow(() -> new ResourceNotFoundException(ComponentTypes.RECORD_ACTION, actionId));
-
-        Record record = this.repository.recordRepo.findById(recordId)
-                .filter(r -> r.securityFilter(this.expressions, actor).canSeeMetadata())
-                .orElseThrow(() -> new ResourceNotFoundException("record", recordId));
-
-        ActionContext context = this.actionContext(actor, record);
-
-        if (!action.isAvailable(context)) {
-            throw new ActionNotAvailableException(actionId, "record", recordId);
-        }
-
-        this.auditPolicyService.validateCommentRequired(AuditEntityType.RECORD, AuditOperation.ACTION);
-
-        parseAndExecute(action, context, inputs);
-
-        this.auditService.addActionRanEvent(
-                actionId,
-                AuditEntityType.RECORD,
-                recordId,
-                Map.of("inputs", inputs.keySet())
-        );
-    }
-
-    private ActionContext actionContext(User actor, Record record) {
-        return new ActionContextImpl(
-                this.repository,
-                this.catalog,
-                this.config,
-                this.auditService,
-                actor,
-                record,
-                AuditEntityType.RECORD,
-                managed -> this.repository.recordRepo.saveAndFlush((Record) managed)
-        );
-    }
-
-    private static <I extends java.lang.Record> void parseAndExecute(
-            RecordActionType<I> action,
-            ActionContext context,
-            Map<String, ?> inputs
-    ) {
-        action.execute(context, JsonSchemaValidator.toRecord(action.getInputClass(), inputs));
+        Record record = this.requireVisibleRecord(actor, recordId);
+        this.actionService.executeAction(actor, record, AuditEntityType.RECORD, actionId, inputs);
     }
 
     public Record requireVisibleRecord(User actor, UUID id) {

@@ -40,7 +40,7 @@
 - **Relationship / RelationshipType** — typed edge between two managed objects (location to location, location to record,
   record to record). Endpoint constraints use managed-object types (and thus kinds).
 - **List / ListElement** — controlled vocabulary and its entries; referenced by list-typed object properties.
-- **RecordAction / LocationAction** — plugin-provided operations on a record or location (availability + typed input).
+- **ActionType** — plugin-provided operations on managed objects (target kinds, availability + typed input).
 
 ## REST controllers
 
