@@ -1,20 +1,26 @@
-package com.openrecordsmanager.api.record;
+package com.openrecordsmanager.api.action;
 
 import com.openrecordsmanager.api.ComponentReference;
 import com.openrecordsmanager.api.audit.AuditEmitter;
 import com.openrecordsmanager.api.config.ConfigStore;
+import com.openrecordsmanager.api.property.ManagedObjectKind;
 import com.openrecordsmanager.api.template.property.ObjectPropertyTemplate;
 import org.jspecify.annotations.Nullable;
 
 import java.util.Optional;
 import java.util.UUID;
 
-public interface RecordActionContext {
+/**
+ * Runtime context for a location or record action: actor, target, config, properties, audit.
+ */
+public interface ActionContext {
     UUID getActorId();
 
     String getActorUsername();
 
-    UUID getTargetRecordId();
+    UUID getTargetId();
+
+    ManagedObjectKind getTargetKind();
 
     ConfigStore getConfig();
 

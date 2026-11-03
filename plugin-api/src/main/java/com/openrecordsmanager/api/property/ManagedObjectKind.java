@@ -7,7 +7,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.Locale;
 
 /**
- * Kind of {@code ManagedObject} used as a relationship endpoint and JPA discriminator.
+ * Kind of Managed Object (have the universal property model).
  */
 @Schema(name = "ManagedObjectKind", enumAsRef = true)
 public enum ManagedObjectKind {

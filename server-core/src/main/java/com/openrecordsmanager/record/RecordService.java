@@ -1,6 +1,8 @@
 package com.openrecordsmanager.record;
 
+import com.openrecordsmanager.action.ActionContextImpl;
 import com.openrecordsmanager.api.ResourceIdentifier;
+import com.openrecordsmanager.api.action.ActionContext;
 import com.openrecordsmanager.api.audit.AuditEntityType;
 import com.openrecordsmanager.api.audit.AuditOperation;
 import com.openrecordsmanager.api.builtin.BuiltinConfigs;
@@ -297,14 +299,7 @@ public class RecordService {
                 .filter(r -> r.securityFilter(this.expressions, actor).canSeeMetadata())
                 .orElseThrow(() -> new ResourceNotFoundException("record", recordId));
 
-        RecordActionContextImpl context = new RecordActionContextImpl(
-                this.repository,
-                this.catalog,
-                this.config,
-                this.auditService,
-                actor,
-                record
-        );
+        ActionContext context = this.actionContext(actor, record);
 
         Set<ActionResponse> actions = this.catalog.getRegistry(ComponentTypes.RECORD_ACTION).stream()
                 .filter(action -> action.isAvailable(context))
@@ -324,14 +319,7 @@ public class RecordService {
                 .filter(r -> r.securityFilter(this.expressions, actor).canSeeMetadata())
                 .orElseThrow(() -> new ResourceNotFoundException("record", recordId));
 
-        RecordActionContextImpl context = new RecordActionContextImpl(
-                this.repository,
-                this.catalog,
-                this.config,
-                this.auditService,
-                actor,
-                record
-        );
+        ActionContext context = this.actionContext(actor, record);
 
         if (!action.isAvailable(context)) {
             throw new ActionNotAvailableException(actionId, "record", recordId);
@@ -349,9 +337,22 @@ public class RecordService {
         );
     }
 
+    private ActionContext actionContext(User actor, Record record) {
+        return new ActionContextImpl(
+                this.repository,
+                this.catalog,
+                this.config,
+                this.auditService,
+                actor,
+                record,
+                AuditEntityType.RECORD,
+                managed -> this.repository.recordRepo.saveAndFlush((Record) managed)
+        );
+    }
+
     private static <I extends java.lang.Record> void parseAndExecute(
             RecordActionType<I> action,
-            RecordActionContextImpl context,
+            ActionContext context,
             Map<String, ?> inputs
     ) {
         action.execute(context, JsonSchemaValidator.toRecord(action.getInputClass(), inputs));

@@ -1,6 +1,7 @@
 package com.openrecordsmanager.api.location;
 
 import com.openrecordsmanager.api.Component;
+import com.openrecordsmanager.api.action.ActionContext;
 
 /**
  * Defines an action that can be run against a location.
@@ -22,16 +23,16 @@ public abstract class LocationActionType<I extends Record> implements Component 
     /**
      * Whether this action is currently available for the given location and actor.
      *
-     * @param context actor and target location context
+     * @param context actor and target context
      * @return {@code true} if the action may be offered and executed
      */
-    public abstract boolean isAvailable(LocationActionContext context);
+    public abstract boolean isAvailable(ActionContext context);
 
     /**
      * Runs the action against the target location.
      *
-     * @param context actor and target location context
+     * @param context actor and target context
      * @param inputs  validated action inputs
      */
-    public abstract void execute(LocationActionContext context, I inputs);
+    public abstract void execute(ActionContext context, I inputs);
 }

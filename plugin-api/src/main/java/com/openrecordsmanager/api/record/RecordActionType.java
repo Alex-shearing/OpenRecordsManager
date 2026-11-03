@@ -1,6 +1,7 @@
 package com.openrecordsmanager.api.record;
 
 import com.openrecordsmanager.api.Component;
+import com.openrecordsmanager.api.action.ActionContext;
 
 /**
  * Defines an action that can be run against a record.
@@ -21,16 +22,16 @@ public abstract class RecordActionType<I extends Record> implements Component {
     /**
      * Whether this action is currently available for the given record and actor.
      *
-     * @param context actor and target record context
+     * @param context actor and target context
      * @return {@code true} if the action may be offered and executed
      */
-    public abstract boolean isAvailable(RecordActionContext context);
+    public abstract boolean isAvailable(ActionContext context);
 
     /**
      * Runs the action against the target record.
      *
-     * @param context actor and target record context
+     * @param context actor and target context
      * @param inputs  validated action inputs
      */
-    public abstract void execute(RecordActionContext context, I inputs);
+    public abstract void execute(ActionContext context, I inputs);
 }

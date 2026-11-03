@@ -1,6 +1,8 @@
 package com.openrecordsmanager.location;
 
+import com.openrecordsmanager.action.ActionContextImpl;
 import com.openrecordsmanager.api.ResourceIdentifier;
+import com.openrecordsmanager.api.action.ActionContext;
 import com.openrecordsmanager.api.audit.AuditEntityType;
 import com.openrecordsmanager.api.audit.AuditOperation;
 import com.openrecordsmanager.api.errors.ApiException;
@@ -143,14 +145,7 @@ public class LocationService {
         Location target = this.repository.locationRepo.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("location", id));
 
-        LocationActionContextImpl context = new LocationActionContextImpl(
-                this.repository,
-                this.catalog,
-                this.config,
-                this.auditService,
-                actor,
-                target
-        );
+        ActionContext context = this.actionContext(actor, target);
 
         Set<ActionResponse> actions = this.catalog.getRegistry(ComponentTypes.LOCATION_ACTION).stream()
                 .filter(action -> action.isAvailable(context))
@@ -169,14 +164,7 @@ public class LocationService {
         Location target = this.repository.locationRepo.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("location", id));
 
-        LocationActionContextImpl context = new LocationActionContextImpl(
-                this.repository,
-                this.catalog,
-                this.config,
-                this.auditService,
-                actor,
-                target
-        );
+        ActionContext context = this.actionContext(actor, target);
 
         if (!action.isAvailable(context)) {
             throw new ActionNotAvailableException(actionId, "location", id);
@@ -194,9 +182,22 @@ public class LocationService {
         );
     }
 
+    private ActionContext actionContext(User actor, Location target) {
+        return new ActionContextImpl(
+                this.repository,
+                this.catalog,
+                this.config,
+                this.auditService,
+                actor,
+                target,
+                AuditEntityType.LOCATION,
+                managed -> this.repository.locationRepo.saveAndFlush((Location) managed)
+        );
+    }
+
     private static <I extends Record> void parseAndExecute(
             LocationActionType<I> action,
-            LocationActionContextImpl context,
+            ActionContext context,
             Map<String, ?> inputs
     ) {
         action.execute(context, JsonSchemaValidator.toRecord(action.getInputClass(), inputs));

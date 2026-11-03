@@ -1,10 +1,11 @@
-package com.openrecordsmanager.record;
+package com.openrecordsmanager.action;
 
 import com.openrecordsmanager.api.ComponentReference;
+import com.openrecordsmanager.api.action.ActionContext;
 import com.openrecordsmanager.api.audit.AuditEmitter;
 import com.openrecordsmanager.api.audit.AuditEntityType;
 import com.openrecordsmanager.api.config.ConfigStore;
-import com.openrecordsmanager.api.record.RecordActionContext;
+import com.openrecordsmanager.api.property.ManagedObjectKind;
 import com.openrecordsmanager.api.template.property.ObjectPropertyTemplate;
 import com.openrecordsmanager.api.types.ComponentTypes;
 import com.openrecordsmanager.audit.AuditEmitterImpl;
@@ -12,28 +13,34 @@ import com.openrecordsmanager.audit.AuditService;
 import com.openrecordsmanager.database.DataRepository;
 import com.openrecordsmanager.location.user.User;
 import com.openrecordsmanager.plugin.registry.ComponentCatalog;
+import com.openrecordsmanager.property.ManagedObject;
 import com.openrecordsmanager.property.ObjectProperty;
 import com.openrecordsmanager.rest.exception.ResourceNotFoundException;
 import org.jspecify.annotations.Nullable;
 
 import java.util.Optional;
 import java.util.UUID;
+import java.util.function.Consumer;
 
-class RecordActionContextImpl implements RecordActionContext {
+public class ActionContextImpl implements ActionContext {
     private final DataRepository repository;
     private final ComponentCatalog catalog;
     private final ConfigStore config;
     private final AuditService auditService;
     private final User actor;
-    private final Record target;
+    private final ManagedObject<?> target;
+    private final AuditEntityType auditEntityType;
+    private final Consumer<ManagedObject<?>> persist;
 
-    RecordActionContextImpl(
+    public ActionContextImpl(
             DataRepository repository,
             ComponentCatalog catalog,
             ConfigStore config,
             AuditService auditService,
             User actor,
-            Record target
+            ManagedObject<?> target,
+            AuditEntityType auditEntityType,
+            Consumer<ManagedObject<?>> persist
     ) {
         this.repository = repository;
         this.catalog = catalog;
@@ -41,6 +48,8 @@ class RecordActionContextImpl implements RecordActionContext {
         this.auditService = auditService;
         this.actor = actor;
         this.target = target;
+        this.auditEntityType = auditEntityType;
+        this.persist = persist;
     }
 
     @Override
@@ -54,8 +63,13 @@ class RecordActionContextImpl implements RecordActionContext {
     }
 
     @Override
-    public UUID getTargetRecordId() {
+    public UUID getTargetId() {
         return this.target.getId();
+    }
+
+    @Override
+    public ManagedObjectKind getTargetKind() {
+        return this.target.getKind();
     }
 
     @Override
@@ -94,7 +108,7 @@ class RecordActionContextImpl implements RecordActionContext {
         T oldValue = this.target.getProperty(prop);
         this.target.setProperty(prop, value);
 
-        this.repository.recordRepo.saveAndFlush(this.target);
+        this.persist.accept(this.target);
 
         if (oldValue != value) {
             this.getAudit().addPropertyChangeEvent(prop.getId().toString(), oldValue, value);
@@ -103,6 +117,6 @@ class RecordActionContextImpl implements RecordActionContext {
 
     @Override
     public AuditEmitter getAudit() {
-        return new AuditEmitterImpl(this.auditService, AuditEntityType.RECORD, this.target.getId().toString());
+        return new AuditEmitterImpl(this.auditService, this.auditEntityType, this.target.getId().toString());
     }
 }

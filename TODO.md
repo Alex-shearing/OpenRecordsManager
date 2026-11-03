@@ -6,8 +6,6 @@
 - Only create audit log for component registrations that actually made a change
 - `POST /api/auth/signup` — wire through `AuthService` (endpoint exists but returns `null`; see `AuthController` TODO).
 
-## Merge action system
-
 ## Permissions System
 
 System for assigning permissions to explicit locations
