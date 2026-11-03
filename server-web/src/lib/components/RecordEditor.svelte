@@ -36,18 +36,24 @@
 	const formId = 'record-editor-form';
 	const isEdit = $derived(mode === 'edit');
 
-	const sortedTypes = $derived([...types].toSorted((a, b) => recordTypeName(a.id).localeCompare(recordTypeName(b.id))));
+	const sortedTypes = $derived(
+		types
+			.filter(type => !type.abstractType)
+			.toSorted((a, b) => recordTypeName(a.id).localeCompare(recordTypeName(b.id)))
+	);
 
 	function fieldsForType(typeId: string) {
 		const type = types.find(entry => entry.id === typeId);
-		return type ? filterCreateFields(toTypePropertyAssignments(type.properties), { omitRecordIdentity: true }) : [];
+		return filterCreateFields(toTypePropertyAssignments(type?.effectiveProperties), {
+			omitRecordIdentity: true,
+		});
 	}
 
 	function initialTypeId() {
 		if (mode === 'edit' && record) {
 			return record.type;
 		}
-		return types.at(0)?.id ?? '';
+		return sortedTypes.at(0)?.id ?? '';
 	}
 
 	function initialTitle() {

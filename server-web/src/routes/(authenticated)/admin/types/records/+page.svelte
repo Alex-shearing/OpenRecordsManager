@@ -17,8 +17,10 @@
 		assignmentsFromTypeProperties,
 		buildTypePropertyAssignments,
 		formatContentTypes,
+		inheritedPropertiesFromBase,
 		isBuiltinResourceId,
 		parseContentTypes,
+		withoutInheritedPropertyIds,
 	} from '#lib/types/typeAdmin.js';
 	import { refreshAll } from '$app/navigation';
 	import toast from 'svelte-hot-french-toast';
@@ -32,6 +34,8 @@
 	let createContentTypes = $state('');
 	let createSecurityFilter = $state('');
 	let createSecurityFilterUsage = $state<SecurityFilterUsage>(SecurityFilterUsage.HIDE_FILES);
+	let createAbstract = $state(false);
+	let createBaseTypeId = $state('');
 	let createSelectedIds = $state<string[]>([]);
 	let createDefaults = $state<Record<string, string>>({});
 	let createAuditComment = $state('');
@@ -42,10 +46,31 @@
 	let editContentTypes = $state('');
 	let editSecurityFilter = $state('');
 	let editSecurityFilterUsage = $state<SecurityFilterUsage>(SecurityFilterUsage.HIDE_FILES);
+	let editAbstract = $state(false);
+	let editBaseTypeId = $state('');
 	let editSelectedIds = $state<string[]>([]);
 	let editDefaults = $state<Record<string, string>>({});
 	let editAuditComment = $state('');
 	let editError = $state<SchemaFormError>();
+
+	const createInheritedProperties = $derived(
+		inheritedPropertiesFromBase(sortedTypes, createBaseTypeId)
+	);
+	const editInheritedProperties = $derived(inheritedPropertiesFromBase(sortedTypes, editBaseTypeId));
+
+	function onCreateBaseTypeChange() {
+		createSelectedIds = withoutInheritedPropertyIds(
+			createSelectedIds,
+			inheritedPropertiesFromBase(sortedTypes, createBaseTypeId)
+		);
+	}
+
+	function onEditBaseTypeChange() {
+		editSelectedIds = withoutInheritedPropertyIds(
+			editSelectedIds,
+			inheritedPropertiesFromBase(sortedTypes, editBaseTypeId)
+		);
+	}
 
 	async function handleCreate(event: SubmitEvent) {
 		event.preventDefault();
@@ -59,6 +84,8 @@
 				contentTypes: parseContentTypes(createContentTypes),
 				securityFilter: createSecurityFilter.trim() || undefined,
 				securityFilterUsage: createSecurityFilterUsage,
+				abstractType: createAbstract,
+				baseTypeId: createBaseTypeId || undefined,
 				properties: buildTypePropertyAssignments(createSelectedIds, createDefaults),
 			},
 			headers: auditHeaders(createAuditComment),
@@ -76,6 +103,8 @@
 		createContentTypes = '';
 		createSecurityFilter = '';
 		createSecurityFilterUsage = SecurityFilterUsage.HIDE_FILES;
+		createAbstract = false;
+		createBaseTypeId = '';
 		createSelectedIds = [];
 		createDefaults = {};
 		createAuditComment = '';
@@ -90,8 +119,11 @@
 		editContentTypes = formatContentTypes(type.contentTypes);
 		editSecurityFilter = type.securityFilter ?? '';
 		editSecurityFilterUsage = type.securityFilterUsage;
-		const assignments = assignmentsFromTypeProperties(type.properties);
-		editSelectedIds = assignments.selectedIds;
+		editAbstract = type.abstractType ?? false;
+		editBaseTypeId = type.baseTypeId ?? '';
+		const assignments = assignmentsFromTypeProperties(type.declaredProperties);
+		const inherited = inheritedPropertiesFromBase(sortedTypes, type.baseTypeId ?? '');
+		editSelectedIds = withoutInheritedPropertyIds(assignments.selectedIds, inherited);
 		editDefaults = assignments.defaults;
 		editAuditComment = '';
 		editError = undefined;
@@ -111,6 +143,8 @@
 				contentTypes: parseContentTypes(editContentTypes),
 				securityFilter: editSecurityFilter.trim() || undefined,
 				securityFilterUsage: editSecurityFilterUsage,
+				abstractType: editAbstract,
+				baseTypeId: editBaseTypeId || undefined,
 				properties: buildTypePropertyAssignments(editSelectedIds, editDefaults),
 			},
 			headers: auditHeaders(editAuditComment),
@@ -140,6 +174,8 @@
 	>
 		{#snippet header()}
 			<th class="px-5 py-3 font-medium">{t('web.common.id')}</th>
+			<th class="px-5 py-3 font-medium">{t('web.record_types.abstract')}</th>
+			<th class="px-5 py-3 font-medium">{t('web.record_types.base_type')}</th>
 			<th class="px-5 py-3 font-medium">{t('web.record_types.security_usage')}</th>
 			<th class="px-5 py-3 font-medium">{t('web.record_types.content_types')}</th>
 			<th class="px-5 py-3 font-medium">{t('web.types.properties')}</th>
@@ -147,9 +183,11 @@
 		{/snippet}
 		{#snippet row(type)}
 			<td class="px-5 py-4"><MonoId value={type.id} /></td>
+			<td class="px-5 py-4">{type.abstractType ? t('web.common.yes') : t('web.common.no')}</td>
+			<td class="px-5 py-4">{type.baseTypeId ?? t('web.record_types.base_type_none')}</td>
 			<td class="px-5 py-4">{type.securityFilterUsage}</td>
 			<td class="px-5 py-4">{formatContentTypes(type.contentTypes) || t('web.common.none')}</td>
-			<td class="px-5 py-4">{type.properties.length}</td>
+			<td class="px-5 py-4">{type.effectiveProperties.length}</td>
 			<td class="px-5 py-4 text-right">
 				<TypeEditButton id={type.id} disabled={submitting} onclick={() => openEdit(type)} />
 			</td>
@@ -213,11 +251,33 @@
 			</select>
 		</label>
 
+		<label class="mb-4 flex items-center gap-2">
+			<input type="checkbox" name="abstractType" bind:checked={createAbstract} disabled={submitting} />
+			<span class="text-label">{t('web.record_types.abstract')}</span>
+		</label>
+
+		<label class="mb-4 flex flex-col gap-1">
+			<span class="text-label">{t('web.record_types.base_type')}</span>
+			<select
+				class="input w-full"
+				name="baseTypeId"
+				bind:value={createBaseTypeId}
+				onchange={onCreateBaseTypeChange}
+				disabled={submitting}
+			>
+				<option value="">{t('web.record_types.base_type_none')}</option>
+				{#each sortedTypes as typeOption (typeOption.id)}
+					<option value={typeOption.id}>{typeOption.id}</option>
+				{/each}
+			</select>
+		</label>
+
 		<div class="mb-4">
 			<TypePropertyAssignmentsEditor
 				properties={data.properties}
 				bind:selectedIds={createSelectedIds}
 				bind:defaults={createDefaults}
+				inheritedProperties={createInheritedProperties}
 				disabled={submitting}
 			/>
 		</div>
@@ -228,7 +288,7 @@
 	{#snippet description(target)}
 		{t('web.record_types.edit_description', target.id)}
 	{/snippet}
-	{#snippet body(_target)}
+	{#snippet body(target)}
 		<form id="record-type-edit-form" class="flex flex-col gap-4" onsubmit={handleEdit}>
 			<label class="flex flex-col gap-1">
 				<span class="text-label">{t('web.record_types.content_types')}</span>
@@ -259,10 +319,34 @@
 				</select>
 			</label>
 
+			<label class="flex items-center gap-2">
+				<input type="checkbox" name="abstractType" bind:checked={editAbstract} disabled={submitting} />
+				<span class="text-label">{t('web.record_types.abstract')}</span>
+			</label>
+
+			<label class="flex flex-col gap-1">
+				<span class="text-label">{t('web.record_types.base_type')}</span>
+				<select
+					class="input w-full"
+					name="baseTypeId"
+					bind:value={editBaseTypeId}
+					onchange={onEditBaseTypeChange}
+					disabled={submitting}
+				>
+					<option value="">{t('web.record_types.base_type_none')}</option>
+					{#each sortedTypes as typeOption (typeOption.id)}
+						{#if typeOption.id !== target.id}
+							<option value={typeOption.id}>{typeOption.id}</option>
+						{/if}
+					{/each}
+				</select>
+			</label>
+
 			<TypePropertyAssignmentsEditor
 				properties={data.properties}
 				bind:selectedIds={editSelectedIds}
 				bind:defaults={editDefaults}
+				inheritedProperties={editInheritedProperties}
 				disabled={submitting}
 			/>
 

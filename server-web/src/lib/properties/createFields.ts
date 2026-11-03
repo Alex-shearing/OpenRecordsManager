@@ -1,7 +1,6 @@
 import type {
-	LocationTypePropertyResponse,
+	ManagedObjectTypePropertyResponse,
 	ObjectPropertyResponse,
-	RecordTypePropertyResponse,
 } from '#lib/api/types.gen.js';
 import { objectPropertyName } from '#lib/i18n/labels.js';
 
@@ -22,7 +21,7 @@ export type CreateFieldFilter = {
 };
 
 export function toTypePropertyAssignments(
-	properties: ReadonlyArray<RecordTypePropertyResponse | LocationTypePropertyResponse> | undefined
+	properties: ReadonlyArray<ManagedObjectTypePropertyResponse> | undefined
 ): TypePropertyAssignment[] {
 	return [...(properties ?? [])].map(entry => ({
 		property: entry.property,

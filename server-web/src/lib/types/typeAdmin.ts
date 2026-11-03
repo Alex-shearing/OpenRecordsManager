@@ -1,10 +1,40 @@
-import { LocationKind } from '#lib/api/index.js';
+import { ManagedObjectKind, type ManagedObjectTypePropertyResponse } from '#lib/api/index.js';
 
-/** Location types only allow user/group; {@link LocationKind.ANY} is for relationship constraints. */
-export const LOCATION_TYPE_KINDS = [LocationKind.USER, LocationKind.GROUP] as const;
+/** Admin location-type forms only allow concrete kinds (user/group). */
+export const LOCATION_TYPE_KINDS = [ManagedObjectKind.USER, ManagedObjectKind.GROUP] as const;
+
+export type LocationTypeKind = (typeof LOCATION_TYPE_KINDS)[number];
+
+export function asLocationTypeKind(value: string | undefined): LocationTypeKind | undefined {
+	return LOCATION_TYPE_KINDS.find(kind => kind === value);
+}
 
 export function isBuiltinResourceId(id: string): boolean {
 	return id.startsWith('builtin:');
+}
+
+export function sortById<T extends { id: string }>(items: T[]): T[] {
+	return [...items].sort((a, b) => a.id.localeCompare(b.id));
+}
+
+/** Effective properties inherited from the selected base type (empty when none). */
+export function inheritedPropertiesFromBase(
+	types: ReadonlyArray<{ id: string; effectiveProperties?: ManagedObjectTypePropertyResponse[] }>,
+	baseTypeId: string
+): ManagedObjectTypePropertyResponse[] {
+	if (!baseTypeId) {
+		return [];
+	}
+	return types.find(type => type.id === baseTypeId)?.effectiveProperties ?? [];
+}
+
+/** Drop ids that are locked by inheritance so they are not re-declared on save. */
+export function withoutInheritedPropertyIds(
+	selectedIds: readonly string[],
+	inherited: ReadonlyArray<ManagedObjectTypePropertyResponse>
+): string[] {
+	const locked = new Set(inherited.map(entry => entry.property.id));
+	return selectedIds.filter(id => !locked.has(id));
 }
 
 export function parseContentTypes(value: string): string[] {

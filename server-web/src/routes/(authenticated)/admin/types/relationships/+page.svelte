@@ -1,9 +1,5 @@
 <script lang="ts">
-	import {
-		LocationKind,
-		LocationRelationshipTypeController,
-		type LocationRelationshipTypeResponse,
-	} from '#lib/api/index.js';
+	import { RelationshipTypeController, type RelationshipTypeResponse } from '#lib/api/index.js';
 	import { auditHeaders, getApiClient } from '#lib/api-client.js';
 	import AdminCreateForm from '#lib/components/AdminCreateForm.svelte';
 	import AdminFormError from '#lib/components/AdminFormError.svelte';
@@ -16,26 +12,27 @@
 	import TypeEditButton from '#lib/components/TypeEditButton.svelte';
 	import type { SchemaFormError } from '#lib/components/SchemaForm.svelte';
 	import { t } from '#lib/i18n/catalog.js';
-	import { isBuiltinResourceId } from '#lib/types/typeAdmin.js';
-	import { invalidateAll, refreshAll } from '$app/navigation';
+	import { isBuiltinResourceId, sortById } from '#lib/types/typeAdmin.js';
+	import { refreshAll } from '$app/navigation';
 	import toast from 'svelte-hot-french-toast';
 
 	let { data } = $props();
 
-	const sorted = $derived([...data.types].sort((a, b) => a.id.localeCompare(b.id)));
-	const locationKinds = Object.values(LocationKind);
+	const sortedItems = $derived(sortById(data.types));
+	const allHolderTypes = $derived(sortById([...data.availableLocationTypes, ...data.availableRecordTypes]));
+
+	let submitting = $state(false);
 
 	let createId = $state('');
-	let createSourceKind = $state<LocationKind>(LocationKind.USER);
-	let createTargetKind = $state<LocationKind>(LocationKind.GROUP);
+	let createSourceTypeId = $state('');
+	let createTargetTypeId = $state('');
 	let createUniquePerSource = $state(false);
 	let createAuditComment = $state('');
 	let createError = $state<SchemaFormError>();
-	let submitting = $state(false);
 
-	let editTarget = $state<LocationRelationshipTypeResponse>();
-	let editSourceKind = $state<LocationKind>(LocationKind.USER);
-	let editTargetKind = $state<LocationKind>(LocationKind.GROUP);
+	let editTarget = $state<RelationshipTypeResponse>();
+	let editSourceTypeId = $state('');
+	let editTargetTypeId = $state('');
 	let editUniquePerSource = $state(false);
 	let editAuditComment = $state('');
 	let editError = $state<SchemaFormError>();
@@ -45,12 +42,12 @@
 		submitting = true;
 		createError = undefined;
 
-		const { error } = await LocationRelationshipTypeController.createLocationRelationshipType({
+		const { error } = await RelationshipTypeController.createRelationshipType({
 			client: getApiClient(),
 			body: {
 				id: createId.trim(),
-				sourceKind: createSourceKind,
-				targetKind: createTargetKind,
+				sourceTypeId: createSourceTypeId,
+				targetTypeId: createTargetTypeId,
 				uniquePerSource: createUniquePerSource,
 			},
 			headers: auditHeaders(createAuditComment),
@@ -64,18 +61,18 @@
 
 		toast.success(t('web.relationship_types.created'));
 		createId = '';
-		createSourceKind = LocationKind.USER;
-		createTargetKind = LocationKind.GROUP;
+		createSourceTypeId = '';
+		createTargetTypeId = '';
 		createUniquePerSource = false;
 		createAuditComment = '';
-		await invalidateAll();
+		await refreshAll();
 	}
 
-	function openEdit(type: LocationRelationshipTypeResponse) {
+	function openEdit(type: RelationshipTypeResponse) {
 		if (isBuiltinResourceId(type.id)) return;
 		editTarget = type;
-		editSourceKind = type.sourceKind;
-		editTargetKind = type.targetKind;
+		editSourceTypeId = type.sourceTypeId;
+		editTargetTypeId = type.targetTypeId;
 		editUniquePerSource = type.uniquePerSource;
 		editAuditComment = '';
 		editError = undefined;
@@ -87,12 +84,12 @@
 		submitting = true;
 		editError = undefined;
 
-		const { error } = await LocationRelationshipTypeController.updateLocationRelationshipType({
+		const { error } = await RelationshipTypeController.updateRelationshipType({
 			client: getApiClient(),
 			path: { id: editTarget.id },
 			body: {
-				sourceKind: editSourceKind,
-				targetKind: editTargetKind,
+				sourceTypeId: editSourceTypeId,
+				targetTypeId: editTargetTypeId,
 				uniquePerSource: editUniquePerSource,
 			},
 			headers: auditHeaders(editAuditComment),
@@ -119,21 +116,21 @@
 {#if !data.error}
 	<TableCard
 		title={t('web.relationship_types.table_title')}
-		items={sorted}
+		items={sortedItems}
 		empty={t('web.relationship_types.empty')}
 		getKey={type => type.id}
 	>
 		{#snippet header()}
 			<th class="px-5 py-3 font-medium">{t('web.common.id')}</th>
-			<th class="px-5 py-3 font-medium">{t('web.relationship_types.source_kind')}</th>
-			<th class="px-5 py-3 font-medium">{t('web.relationship_types.target_kind')}</th>
+			<th class="px-5 py-3 font-medium">{t('web.relationship_types.source_type')}</th>
+			<th class="px-5 py-3 font-medium">{t('web.relationship_types.target_type')}</th>
 			<th class="px-5 py-3 font-medium">{t('web.relationship_types.unique_per_source')}</th>
 			<th class="px-5 py-3 font-medium"><span class="sr-only">{t('web.common.actions')}</span></th>
 		{/snippet}
 		{#snippet row(type)}
 			<td class="px-5 py-4"><MonoId value={type.id} /></td>
-			<td class="px-5 py-4">{type.sourceKind}</td>
-			<td class="px-5 py-4">{type.targetKind}</td>
+			<td class="px-5 py-4">{type.sourceTypeId}</td>
+			<td class="px-5 py-4">{type.targetTypeId}</td>
 			<td class="px-5 py-4">{type.uniquePerSource ? t('web.common.yes') : t('web.common.no')}</td>
 			<td class="px-5 py-4 text-right">
 				<TypeEditButton id={type.id} disabled={submitting} onclick={() => openEdit(type)} />
@@ -146,7 +143,7 @@
 		hint={t('web.relationship_types.create_hint')}
 		onsubmit={handleCreate}
 		{submitting}
-		submitDisabled={!createId.trim()}
+		submitDisabled={!createId.trim() || !createSourceTypeId || !createTargetTypeId}
 		error={createError}
 		bind:auditComment={createAuditComment}
 		auditRequired={data.auditCommentRequired.create}
@@ -163,18 +160,20 @@
 			/>
 		</label>
 		<label class="mb-4 flex flex-col gap-1">
-			<span class="text-label">{t('web.relationship_types.source_kind')}</span>
-			<select class="input w-full" name="sourceKind" bind:value={createSourceKind} disabled={submitting}>
-				{#each locationKinds as kind (kind)}
-					<option value={kind}>{kind}</option>
+			<span class="text-label">{t('web.relationship_types.source_type')}</span>
+			<select class="input w-full" name="sourceTypeId" bind:value={createSourceTypeId} required disabled={submitting}>
+				<option value="" disabled>{t('web.relationship_types.source_type')}</option>
+				{#each allHolderTypes as typeOption (typeOption.id)}
+					<option value={typeOption.id}>{typeOption.id}</option>
 				{/each}
 			</select>
 		</label>
 		<label class="mb-4 flex flex-col gap-1">
-			<span class="text-label">{t('web.relationship_types.target_kind')}</span>
-			<select class="input w-full" name="targetKind" bind:value={createTargetKind} disabled={submitting}>
-				{#each locationKinds as kind (kind)}
-					<option value={kind}>{kind}</option>
+			<span class="text-label">{t('web.relationship_types.target_type')}</span>
+			<select class="input w-full" name="targetTypeId" bind:value={createTargetTypeId} required disabled={submitting}>
+				<option value="" disabled>{t('web.relationship_types.target_type')}</option>
+				{#each allHolderTypes as typeOption (typeOption.id)}
+					<option value={typeOption.id}>{typeOption.id}</option>
 				{/each}
 			</select>
 		</label>
@@ -183,48 +182,48 @@
 			<span class="text-label">{t('web.relationship_types.unique_per_source')}</span>
 		</label>
 	</AdminCreateForm>
-{/if}
 
-<TargetDialog bind:target={editTarget} title="web.relationship_types.edit_title">
-	{#snippet description(target)}
-		{t('web.relationship_types.edit_description', target.id)}
-	{/snippet}
-	{#snippet body(_target)}
-		<form id="relationship-type-edit-form" class="flex flex-col gap-4" onsubmit={handleEdit}>
-			<label class="flex flex-col gap-1">
-				<span class="text-label">{t('web.relationship_types.source_kind')}</span>
-				<select class="input w-full" name="sourceKind" bind:value={editSourceKind} disabled={submitting}>
-					{#each locationKinds as kind (kind)}
-						<option value={kind}>{kind}</option>
-					{/each}
-				</select>
-			</label>
-			<label class="flex flex-col gap-1">
-				<span class="text-label">{t('web.relationship_types.target_kind')}</span>
-				<select class="input w-full" name="targetKind" bind:value={editTargetKind} disabled={submitting}>
-					{#each locationKinds as kind (kind)}
-						<option value={kind}>{kind}</option>
-					{/each}
-				</select>
-			</label>
-			<label class="flex items-center gap-2">
-				<input type="checkbox" name="uniquePerSource" bind:checked={editUniquePerSource} disabled={submitting} />
-				<span class="text-label">{t('web.relationship_types.unique_per_source')}</span>
-			</label>
-			<AdminFormError error={editError} />
-			<AuditCommentField
-				bind:value={editAuditComment}
-				required={data.auditCommentRequired.update}
-				disabled={submitting}
+	<TargetDialog bind:target={editTarget} title="web.relationship_types.edit_title">
+		{#snippet description(target)}
+			{t('web.relationship_types.edit_description', target.id)}
+		{/snippet}
+		{#snippet body(_target)}
+			<form id="relationship-type-edit-form" class="flex flex-col gap-4" onsubmit={handleEdit}>
+				<label class="flex flex-col gap-1">
+					<span class="text-label">{t('web.relationship_types.source_type')}</span>
+					<select class="input w-full" name="sourceTypeId" bind:value={editSourceTypeId} required disabled={submitting}>
+						{#each allHolderTypes as typeOption (typeOption.id)}
+							<option value={typeOption.id}>{typeOption.id}</option>
+						{/each}
+					</select>
+				</label>
+				<label class="flex flex-col gap-1">
+					<span class="text-label">{t('web.relationship_types.target_type')}</span>
+					<select class="input w-full" name="targetTypeId" bind:value={editTargetTypeId} required disabled={submitting}>
+						{#each allHolderTypes as typeOption (typeOption.id)}
+							<option value={typeOption.id}>{typeOption.id}</option>
+						{/each}
+					</select>
+				</label>
+				<label class="flex items-center gap-2">
+					<input type="checkbox" name="uniquePerSource" bind:checked={editUniquePerSource} disabled={submitting} />
+					<span class="text-label">{t('web.relationship_types.unique_per_source')}</span>
+				</label>
+				<AdminFormError error={editError} />
+				<AuditCommentField
+					bind:value={editAuditComment}
+					required={data.auditCommentRequired.update}
+					disabled={submitting}
+				/>
+			</form>
+		{/snippet}
+		{#snippet footer(_target)}
+			<DialogActions
+				formId="relationship-type-edit-form"
+				confirmLabel="web.common.save"
+				confirmingLabel="web.common.saving"
+				{submitting}
 			/>
-		</form>
-	{/snippet}
-	{#snippet footer(_target)}
-		<DialogActions
-			formId="relationship-type-edit-form"
-			confirmLabel="web.common.save"
-			confirmingLabel="web.common.saving"
-			{submitting}
-		/>
-	{/snippet}
-</TargetDialog>
+		{/snippet}
+	</TargetDialog>
+{/if}

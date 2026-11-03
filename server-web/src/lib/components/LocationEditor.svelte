@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
-	import { LocationController } from '#lib/api/index.js';
+	import { LocationController, ManagedObjectKind } from '#lib/api/index.js';
 	import type {
 		ApiFieldError,
 		LocationResponse,
@@ -23,6 +23,7 @@
 		valuesFromExistingProperties,
 	} from '#lib/properties/createFields.js';
 	import toast from 'svelte-hot-french-toast';
+	import type { LocationTypeKind } from '#lib/types/typeAdmin.js';
 
 	let {
 		mode,
@@ -42,10 +43,12 @@
 
 	const formId = 'location-editor-form';
 
-	type SelectableLocationType = LocationTypeResponse & { kind: 'user' | 'group' };
+	type SelectableLocationType = LocationTypeResponse & {
+		kind: LocationTypeKind;
+	};
 
 	function isSelectableType(type: LocationTypeResponse): type is SelectableLocationType {
-		return type.kind === 'user' || type.kind === 'group';
+		return !type.abstractType && (type.kind === ManagedObjectKind.USER || type.kind === ManagedObjectKind.GROUP);
 	}
 
 	const isEdit = $derived(mode === 'edit');
@@ -56,7 +59,7 @@
 
 	function fieldsForType(forTypeId: string) {
 		const type = types.find(entry => entry.id === forTypeId);
-		return filterCreateFields(toTypePropertyAssignments(type?.properties), {
+		return filterCreateFields(toTypePropertyAssignments(type?.effectiveProperties), {
 			omitLocationIdentity: true,
 		});
 	}

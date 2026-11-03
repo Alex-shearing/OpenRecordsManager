@@ -46,6 +46,21 @@ export type TranslationOverrideResponse = {
     updatedAt: string;
 };
 
+export type UpdateRelationshipTypeRequest = {
+    sourceTypeId?: string;
+    targetTypeId?: string;
+    uniquePerSource?: boolean;
+};
+
+export type RelationshipTypeResponse = {
+    id: string;
+    sourceTypeId: string;
+    targetTypeId: string;
+    uniquePerSource: boolean;
+    dateCreated: string;
+    dateModified: string;
+};
+
 export type UpdateRecordRequest = {
     type?: string;
     title?: string;
@@ -84,7 +99,17 @@ export type UpdateRecordTypeRequest = {
     contentTypes?: Array<string>;
     securityFilter?: string;
     securityFilterUsage: SecurityFilterUsage;
+    abstractType: boolean;
+    baseTypeId?: string;
     properties: Array<TypePropertyAssignment>;
+};
+
+export type ManagedObjectTypePropertyResponse = {
+    property: ObjectPropertyResponse;
+    /**
+     * Arbitrary JSON value (string, number, boolean, object, array, or null)
+     */
+    default?: unknown;
 };
 
 export type ObjectPropertyResponse = {
@@ -101,20 +126,15 @@ export type ObjectPropertyResponse = {
     dateModified: string;
 };
 
-export type RecordTypePropertyResponse = {
-    property: ObjectPropertyResponse;
-    /**
-     * Arbitrary JSON value (string, number, boolean, object, array, or null)
-     */
-    default?: unknown;
-};
-
 export type RecordTypeResponse = {
     id: string;
     securityFilter?: string;
     securityFilterUsage: SecurityFilterUsage;
     contentTypes?: Array<string>;
-    properties: Array<RecordTypePropertyResponse>;
+    abstractType?: boolean;
+    baseTypeId?: string;
+    declaredProperties: Array<ManagedObjectTypePropertyResponse>;
+    effectiveProperties: Array<ManagedObjectTypePropertyResponse>;
     dateCreated: string;
     dateModified: string;
 };
@@ -143,31 +163,28 @@ export type UpdateObjectPropertyRequest = {
     defaultValue?: unknown;
 };
 
-export const LocationKind = {
+export const ManagedObjectKind = {
     USER: 'user',
     GROUP: 'group',
-    ANY: 'any'
+    RECORD: 'record'
 } as const;
 
-export type LocationKind = typeof LocationKind[keyof typeof LocationKind];
+export type ManagedObjectKind = typeof ManagedObjectKind[keyof typeof ManagedObjectKind];
 
 export type UpdateLocationTypeRequest = {
-    kind: LocationKind;
+    kind?: ManagedObjectKind;
+    abstractType: boolean;
+    baseTypeId?: string;
     properties: Array<TypePropertyAssignment>;
-};
-
-export type LocationTypePropertyResponse = {
-    property: ObjectPropertyResponse;
-    /**
-     * Arbitrary JSON value (string, number, boolean, object, array, or null)
-     */
-    default?: unknown;
 };
 
 export type LocationTypeResponse = {
     id: string;
-    kind: LocationKind;
-    properties: Array<LocationTypePropertyResponse>;
+    kind?: ManagedObjectKind;
+    abstractType: boolean;
+    baseTypeId?: string;
+    declaredProperties: Array<ManagedObjectTypePropertyResponse>;
+    effectiveProperties: Array<ManagedObjectTypePropertyResponse>;
     dateCreated: string;
     dateModified: string;
 };
@@ -186,25 +203,12 @@ export type LocationResponse = {
     type: string;
     name: string;
     displayName: string;
-    kind: LocationKind;
+    kind: ManagedObjectKind;
     authProvider?: string;
     enabled?: boolean;
     properties: {
         [key: string]: unknown;
     };
-};
-
-export type UpdateLocationRelationshipTypeRequest = {
-    sourceKind?: LocationKind;
-    targetKind?: LocationKind;
-    uniquePerSource?: boolean;
-};
-
-export type LocationRelationshipTypeResponse = {
-    id: string;
-    sourceKind: LocationKind;
-    targetKind: LocationKind;
-    uniquePerSource: boolean;
 };
 
 export type UpdateListTypeRequest = {
@@ -325,9 +329,9 @@ export const AuditEntityType = {
     RECORD: 'record',
     RECORD_TYPE: 'record_type',
     LOCATION: 'location',
-    LOCATION_RELATIONSHIP: 'location_relationship',
-    LOCATION_RELATIONSHIP_TYPE: 'location_relationship_type',
     LOCATION_TYPE: 'location_type',
+    RELATIONSHIP: 'relationship',
+    RELATIONSHIP_TYPE: 'relationship_type',
     CONFIG: 'config',
     LIST: 'list',
     LIST_ELEMENT: 'list_element',
@@ -356,7 +360,7 @@ export const TemplateType = {
     OBJECT_PROPERTY: 'object_property',
     RECORD_TYPE: 'record_type',
     LOCATION_TYPE: 'location_type',
-    LOCATION_RELATIONSHIP_TYPE: 'location_relationship_type'
+    RELATIONSHIP_TYPE: 'relationship_type'
 } as const;
 
 export type TemplateType = typeof TemplateType[keyof typeof TemplateType];
@@ -364,6 +368,13 @@ export type TemplateType = typeof TemplateType[keyof typeof TemplateType];
 export type CompleteSetupRequest = {
     username: string;
     password: string;
+};
+
+export type NewRelationshipTypeRequest = {
+    id: string;
+    sourceTypeId: string;
+    targetTypeId: string;
+    uniquePerSource?: boolean;
 };
 
 export type NewRecordRequest = {
@@ -375,6 +386,23 @@ export type NewRecordRequest = {
     properties: {
         [key: string]: unknown;
     };
+};
+
+export type NewRelationshipRequest = {
+    targetId: string;
+    typeId: string;
+    activeTo?: string;
+};
+
+export type RelationshipResponse = {
+    id: string;
+    sourceId: string;
+    targetId: string;
+    typeId: string;
+    sourceKind: ManagedObjectKind;
+    targetKind: ManagedObjectKind;
+    dateCreated: string;
+    activeTo?: string;
 };
 
 export type ObjectSearchRequest = {
@@ -426,6 +454,8 @@ export type NewRecordTypeRequest = {
     contentTypes?: Array<string>;
     securityFilter?: string;
     securityFilterUsage: SecurityFilterUsage;
+    abstractType: boolean;
+    baseTypeId?: string;
     properties: Array<TypePropertyAssignment>;
 };
 
@@ -449,7 +479,9 @@ export type NewObjectPropertyRequest = {
 
 export type NewLocationTypeRequest = {
     id: string;
-    kind: LocationKind;
+    kind?: ManagedObjectKind;
+    abstractType: boolean;
+    baseTypeId?: string;
     properties: Array<TypePropertyAssignment>;
 };
 
@@ -465,31 +497,9 @@ export type NewLocationRequest = {
     };
 };
 
-export type NewLocationRelationshipRequest = {
-    targetId: string;
-    typeId: string;
-    activeTo?: string;
-};
-
-export type LocationRelationshipResponse = {
-    id: string;
-    sourceId: string;
-    targetId: string;
-    typeId: string;
-    dateCreated: string;
-    activeTo?: string;
-};
-
 export type LocationSearchResponse = {
     items?: Array<LocationResponse>;
     nextCursor?: string;
-};
-
-export type NewLocationRelationshipTypeRequest = {
-    id: string;
-    sourceKind: LocationKind;
-    targetKind: LocationKind;
-    uniquePerSource?: boolean;
 };
 
 export type NewListTypeRequest = {
@@ -578,6 +588,10 @@ export type TemplateComponent = {
     dependencies?: Array<ComponentReferenceTemplateComponent>;
 };
 
+export const RelationshipDirection = { OUTGOING: 'outgoing', INCOMING: 'incoming' } as const;
+
+export type RelationshipDirection = typeof RelationshipDirection[keyof typeof RelationshipDirection];
+
 export type ActionResponse = {
     id: string;
     inputSchema: InputFormSchema;
@@ -618,10 +632,6 @@ export type SimpleObjectPropertyResponse = {
     id: string;
     type: string;
 };
-
-export const RelationshipDirection = { OUTGOING: 'outgoing', INCOMING: 'incoming' } as const;
-
-export type RelationshipDirection = typeof RelationshipDirection[keyof typeof RelationshipDirection];
 
 export type FileStoreResponse = {
     id: string;
@@ -918,6 +928,100 @@ export type UpsertTranslationOverrideResponses = {
 };
 
 export type UpsertTranslationOverrideResponse = UpsertTranslationOverrideResponses[keyof UpsertTranslationOverrideResponses];
+
+export type GetRelationshipTypeData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/relationship-type/{id}';
+};
+
+export type GetRelationshipTypeErrors = {
+    /**
+     * Unauthorized
+     */
+    401: ApiErrorResponse;
+    /**
+     * Forbidden
+     */
+    403: ApiErrorResponse;
+    /**
+     * Not Found
+     */
+    404: ApiErrorResponse;
+    /**
+     * Audit comment required
+     */
+    422: ApiErrorResponse;
+    /**
+     * Internal Server error
+     */
+    500: ApiErrorResponse;
+};
+
+export type GetRelationshipTypeError = GetRelationshipTypeErrors[keyof GetRelationshipTypeErrors];
+
+export type GetRelationshipTypeResponses = {
+    /**
+     * OK
+     */
+    200: ApiSuccessEnvelope & {
+        data: RelationshipTypeResponse;
+    };
+};
+
+export type GetRelationshipTypeResponse = GetRelationshipTypeResponses[keyof GetRelationshipTypeResponses];
+
+export type UpdateRelationshipTypeData = {
+    body: UpdateRelationshipTypeRequest;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/relationship-type/{id}';
+};
+
+export type UpdateRelationshipTypeErrors = {
+    /**
+     * Validation failed
+     */
+    400: ApiErrorResponse;
+    /**
+     * Unauthorized
+     */
+    401: ApiErrorResponse;
+    /**
+     * Forbidden
+     */
+    403: ApiErrorResponse;
+    /**
+     * Not Found
+     */
+    404: ApiErrorResponse;
+    /**
+     * Audit comment required
+     */
+    422: ApiErrorResponse;
+    /**
+     * Internal Server error
+     */
+    500: ApiErrorResponse;
+};
+
+export type UpdateRelationshipTypeError = UpdateRelationshipTypeErrors[keyof UpdateRelationshipTypeErrors];
+
+export type UpdateRelationshipTypeResponses = {
+    /**
+     * OK
+     */
+    200: ApiSuccessEnvelope & {
+        data: RelationshipTypeResponse;
+    };
+};
+
+export type UpdateRelationshipTypeResponse = UpdateRelationshipTypeResponses[keyof UpdateRelationshipTypeResponses];
 
 export type GetRecordData = {
     body?: never;
@@ -1663,96 +1767,6 @@ export type UpdateLocationResponses = {
 };
 
 export type UpdateLocationResponse = UpdateLocationResponses[keyof UpdateLocationResponses];
-
-export type GetLocationRelationshipTypeData = {
-    body?: never;
-    path: {
-        id: string;
-    };
-    query?: never;
-    url: '/api/location-relationship-type/{id}';
-};
-
-export type GetLocationRelationshipTypeErrors = {
-    /**
-     * Unauthorized
-     */
-    401: ApiErrorResponse;
-    /**
-     * Forbidden
-     */
-    403: ApiErrorResponse;
-    /**
-     * Not Found
-     */
-    404: ApiErrorResponse;
-    /**
-     * Audit comment required
-     */
-    422: ApiErrorResponse;
-    /**
-     * Internal Server error
-     */
-    500: ApiErrorResponse;
-};
-
-export type GetLocationRelationshipTypeError = GetLocationRelationshipTypeErrors[keyof GetLocationRelationshipTypeErrors];
-
-export type GetLocationRelationshipTypeResponses = {
-    /**
-     * OK
-     */
-    200: ApiSuccessEnvelope & {
-        data: LocationRelationshipTypeResponse;
-    };
-};
-
-export type GetLocationRelationshipTypeResponse = GetLocationRelationshipTypeResponses[keyof GetLocationRelationshipTypeResponses];
-
-export type UpdateLocationRelationshipTypeData = {
-    body: UpdateLocationRelationshipTypeRequest;
-    path: {
-        id: string;
-    };
-    query?: never;
-    url: '/api/location-relationship-type/{id}';
-};
-
-export type UpdateLocationRelationshipTypeErrors = {
-    /**
-     * Unauthorized
-     */
-    401: ApiErrorResponse;
-    /**
-     * Forbidden
-     */
-    403: ApiErrorResponse;
-    /**
-     * Not Found
-     */
-    404: ApiErrorResponse;
-    /**
-     * Audit comment required
-     */
-    422: ApiErrorResponse;
-    /**
-     * Internal Server error
-     */
-    500: ApiErrorResponse;
-};
-
-export type UpdateLocationRelationshipTypeError = UpdateLocationRelationshipTypeErrors[keyof UpdateLocationRelationshipTypeErrors];
-
-export type UpdateLocationRelationshipTypeResponses = {
-    /**
-     * OK
-     */
-    200: ApiSuccessEnvelope & {
-        data: LocationRelationshipTypeResponse;
-    };
-};
-
-export type UpdateLocationRelationshipTypeResponse = UpdateLocationRelationshipTypeResponses[keyof UpdateLocationRelationshipTypeResponses];
 
 export type DeleteListData = {
     body?: never;
@@ -2730,6 +2744,92 @@ export type CompleteSetupResponses = {
 
 export type CompleteSetupResponse = CompleteSetupResponses[keyof CompleteSetupResponses];
 
+export type ListRelationshipTypesData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/relationship-type';
+};
+
+export type ListRelationshipTypesErrors = {
+    /**
+     * Unauthorized
+     */
+    401: ApiErrorResponse;
+    /**
+     * Forbidden
+     */
+    403: ApiErrorResponse;
+    /**
+     * Audit comment required
+     */
+    422: ApiErrorResponse;
+    /**
+     * Internal Server error
+     */
+    500: ApiErrorResponse;
+};
+
+export type ListRelationshipTypesError = ListRelationshipTypesErrors[keyof ListRelationshipTypesErrors];
+
+export type ListRelationshipTypesResponses = {
+    /**
+     * OK
+     */
+    200: ApiSuccessEnvelope & {
+        data: Array<RelationshipTypeResponse>;
+    };
+};
+
+export type ListRelationshipTypesResponse = ListRelationshipTypesResponses[keyof ListRelationshipTypesResponses];
+
+export type CreateRelationshipTypeData = {
+    body: NewRelationshipTypeRequest;
+    path?: never;
+    query?: never;
+    url: '/api/relationship-type';
+};
+
+export type CreateRelationshipTypeErrors = {
+    /**
+     * Validation failed
+     */
+    400: ApiErrorResponse;
+    /**
+     * Unauthorized
+     */
+    401: ApiErrorResponse;
+    /**
+     * Forbidden
+     */
+    403: ApiErrorResponse;
+    /**
+     * Resource in use
+     */
+    409: ApiErrorResponse;
+    /**
+     * Audit comment required
+     */
+    422: ApiErrorResponse;
+    /**
+     * Internal Server error
+     */
+    500: ApiErrorResponse;
+};
+
+export type CreateRelationshipTypeError = CreateRelationshipTypeErrors[keyof CreateRelationshipTypeErrors];
+
+export type CreateRelationshipTypeResponses = {
+    /**
+     * OK
+     */
+    200: ApiSuccessEnvelope & {
+        data: RelationshipTypeResponse;
+    };
+};
+
+export type CreateRelationshipTypeResponse = CreateRelationshipTypeResponses[keyof CreateRelationshipTypeResponses];
+
 export type CreateRecordData = {
     body: NewRecordRequest;
     path?: never;
@@ -2776,6 +2876,107 @@ export type CreateRecordResponses = {
 };
 
 export type CreateRecordResponse = CreateRecordResponses[keyof CreateRecordResponses];
+
+export type ListRecordRelationshipsData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: {
+        direction?: RelationshipDirection;
+        type?: string;
+    };
+    url: '/api/records/{id}/relationships';
+};
+
+export type ListRecordRelationshipsErrors = {
+    /**
+     * Unauthorized
+     */
+    401: ApiErrorResponse;
+    /**
+     * Forbidden
+     */
+    403: ApiErrorResponse;
+    /**
+     * Not Found
+     */
+    404: ApiErrorResponse;
+    /**
+     * Audit comment required
+     */
+    422: ApiErrorResponse;
+    /**
+     * Internal Server error
+     */
+    500: ApiErrorResponse;
+};
+
+export type ListRecordRelationshipsError = ListRecordRelationshipsErrors[keyof ListRecordRelationshipsErrors];
+
+export type ListRecordRelationshipsResponses = {
+    /**
+     * OK
+     */
+    200: ApiSuccessEnvelope & {
+        data: Array<RelationshipResponse>;
+    };
+};
+
+export type ListRecordRelationshipsResponse = ListRecordRelationshipsResponses[keyof ListRecordRelationshipsResponses];
+
+export type CreateRecordRelationshipData = {
+    body: NewRelationshipRequest;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/records/{id}/relationships';
+};
+
+export type CreateRecordRelationshipErrors = {
+    /**
+     * Validation failed
+     */
+    400: ApiErrorResponse;
+    /**
+     * Unauthorized
+     */
+    401: ApiErrorResponse;
+    /**
+     * Forbidden
+     */
+    403: ApiErrorResponse;
+    /**
+     * Not Found
+     */
+    404: ApiErrorResponse;
+    /**
+     * Resource in use
+     */
+    409: ApiErrorResponse;
+    /**
+     * Audit comment required
+     */
+    422: ApiErrorResponse;
+    /**
+     * Internal Server error
+     */
+    500: ApiErrorResponse;
+};
+
+export type CreateRecordRelationshipError = CreateRecordRelationshipErrors[keyof CreateRecordRelationshipErrors];
+
+export type CreateRecordRelationshipResponses = {
+    /**
+     * OK
+     */
+    200: ApiSuccessEnvelope & {
+        data: RelationshipResponse;
+    };
+};
+
+export type CreateRecordRelationshipResponse = CreateRecordRelationshipResponses[keyof CreateRecordRelationshipResponses];
 
 export type ExecuteRecordActionData = {
     body: {
@@ -3133,7 +3334,7 @@ export type ListLocationTypesData = {
         /**
          * Optional location kind filter
          */
-        kind?: LocationKind;
+        kind?: ManagedObjectKind;
     };
     url: '/api/location_types';
 };
@@ -3306,14 +3507,14 @@ export type ListLocationRelationshipsResponses = {
      * OK
      */
     200: ApiSuccessEnvelope & {
-        data: Array<LocationRelationshipResponse>;
+        data: Array<RelationshipResponse>;
     };
 };
 
 export type ListLocationRelationshipsResponse = ListLocationRelationshipsResponses[keyof ListLocationRelationshipsResponses];
 
 export type CreateLocationRelationshipData = {
-    body: NewLocationRelationshipRequest;
+    body: NewRelationshipRequest;
     path: {
         id: string;
     };
@@ -3359,7 +3560,7 @@ export type CreateLocationRelationshipResponses = {
      * OK
      */
     200: ApiSuccessEnvelope & {
-        data: LocationRelationshipResponse;
+        data: RelationshipResponse;
     };
 };
 
@@ -3415,7 +3616,7 @@ export type SearchLocationsData = {
     body: ObjectSearchRequest;
     path?: never;
     query?: {
-        kind?: LocationKind;
+        kind?: ManagedObjectKind;
     };
     url: '/api/location/search';
 };
@@ -3451,92 +3652,6 @@ export type SearchLocationsResponses = {
 };
 
 export type SearchLocationsResponse = SearchLocationsResponses[keyof SearchLocationsResponses];
-
-export type ListLocationRelationshipTypesData = {
-    body?: never;
-    path?: never;
-    query?: never;
-    url: '/api/location-relationship-type';
-};
-
-export type ListLocationRelationshipTypesErrors = {
-    /**
-     * Unauthorized
-     */
-    401: ApiErrorResponse;
-    /**
-     * Forbidden
-     */
-    403: ApiErrorResponse;
-    /**
-     * Audit comment required
-     */
-    422: ApiErrorResponse;
-    /**
-     * Internal Server error
-     */
-    500: ApiErrorResponse;
-};
-
-export type ListLocationRelationshipTypesError = ListLocationRelationshipTypesErrors[keyof ListLocationRelationshipTypesErrors];
-
-export type ListLocationRelationshipTypesResponses = {
-    /**
-     * OK
-     */
-    200: ApiSuccessEnvelope & {
-        data: Array<LocationRelationshipTypeResponse>;
-    };
-};
-
-export type ListLocationRelationshipTypesResponse = ListLocationRelationshipTypesResponses[keyof ListLocationRelationshipTypesResponses];
-
-export type CreateLocationRelationshipTypeData = {
-    body: NewLocationRelationshipTypeRequest;
-    path?: never;
-    query?: never;
-    url: '/api/location-relationship-type';
-};
-
-export type CreateLocationRelationshipTypeErrors = {
-    /**
-     * Validation failed
-     */
-    400: ApiErrorResponse;
-    /**
-     * Unauthorized
-     */
-    401: ApiErrorResponse;
-    /**
-     * Forbidden
-     */
-    403: ApiErrorResponse;
-    /**
-     * Resource in use
-     */
-    409: ApiErrorResponse;
-    /**
-     * Audit comment required
-     */
-    422: ApiErrorResponse;
-    /**
-     * Internal Server error
-     */
-    500: ApiErrorResponse;
-};
-
-export type CreateLocationRelationshipTypeError = CreateLocationRelationshipTypeErrors[keyof CreateLocationRelationshipTypeErrors];
-
-export type CreateLocationRelationshipTypeResponses = {
-    /**
-     * OK
-     */
-    200: ApiSuccessEnvelope & {
-        data: LocationRelationshipTypeResponse;
-    };
-};
-
-export type CreateLocationRelationshipTypeResponse = CreateLocationRelationshipTypeResponses[keyof CreateLocationRelationshipTypeResponses];
 
 export type GetListsData = {
     body?: never;
@@ -4907,6 +5022,50 @@ export type GetAuditEventResponses = {
 };
 
 export type GetAuditEventResponse = GetAuditEventResponses[keyof GetAuditEventResponses];
+
+export type EndRecordRelationshipData = {
+    body?: never;
+    path: {
+        id: string;
+        relationshipId: string;
+    };
+    query?: never;
+    url: '/api/records/{id}/relationships/{relationshipId}';
+};
+
+export type EndRecordRelationshipErrors = {
+    /**
+     * Unauthorized
+     */
+    401: ApiErrorResponse;
+    /**
+     * Forbidden
+     */
+    403: ApiErrorResponse;
+    /**
+     * Not Found
+     */
+    404: ApiErrorResponse;
+    /**
+     * Audit comment required
+     */
+    422: ApiErrorResponse;
+    /**
+     * Internal Server error
+     */
+    500: ApiErrorResponse;
+};
+
+export type EndRecordRelationshipError = EndRecordRelationshipErrors[keyof EndRecordRelationshipErrors];
+
+export type EndRecordRelationshipResponses = {
+    /**
+     * OK
+     */
+    200: ApiSuccessEnvelope;
+};
+
+export type EndRecordRelationshipResponse = EndRecordRelationshipResponses[keyof EndRecordRelationshipResponses];
 
 export type EndLocationRelationshipData = {
     body?: never;

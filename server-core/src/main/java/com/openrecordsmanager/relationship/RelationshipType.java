@@ -1,13 +1,11 @@
 package com.openrecordsmanager.relationship;
 
 import com.openrecordsmanager.api.ResourceIdentifier;
-import com.openrecordsmanager.api.property.ManagedObjectKind;
 import com.openrecordsmanager.api.types.ComponentType;
 import com.openrecordsmanager.api.types.ComponentTypes;
 import com.openrecordsmanager.template.ManagedObjectType;
 import com.openrecordsmanager.template.RegisteredComponent;
 import jakarta.persistence.*;
-import org.jspecify.annotations.Nullable;
 
 @Entity
 @Table(name = "relationship_type")
@@ -62,14 +60,6 @@ public class RelationshipType extends RegisteredComponent {
 
     public ResourceIdentifier getTargetTypeId() {
         return this.targetType.getId();
-    }
-
-    public @Nullable ManagedObjectKind getSourceKind() {
-        return this.sourceType.getKind();
-    }
-
-    public @Nullable ManagedObjectKind getTargetKind() {
-        return this.targetType.getKind();
     }
 
     public boolean isUniquePerSource() {
