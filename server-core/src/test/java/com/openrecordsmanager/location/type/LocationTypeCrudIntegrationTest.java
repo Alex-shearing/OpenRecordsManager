@@ -84,8 +84,13 @@ class LocationTypeCrudIntegrationTest {
         assertEquals(ManagedObjectKind.USER, created.kind());
         assertFalse(created.abstractType());
         assertEquals(LOCATION_ROOT, created.baseTypeId());
-        assertEquals(1, created.properties().size());
-        assertTrue(created.properties().stream().anyMatch(p -> p.property().id().equals(NAME)));
+        assertEquals(1, created.declaredProperties().size());
+        assertTrue(created.declaredProperties().stream().anyMatch(p -> p.property().id().equals(NAME)));
+        assertTrue(created.effectiveProperties().stream().anyMatch(p -> p.property().id().equals(NAME)));
+        assertTrue(
+                created.effectiveProperties().size() >= created.declaredProperties().size(),
+                "effective properties include inherited bindings from the base type"
+        );
 
         LocationTypeResponse updated = AuditTestSupport.withAudit(this.admin, () -> this.locationTypeService.update(
                 TYPE_ID,
@@ -101,7 +106,8 @@ class LocationTypeCrudIntegrationTest {
         ));
 
         assertEquals(ManagedObjectKind.GROUP, updated.kind());
-        assertEquals(2, updated.properties().size());
+        assertEquals(2, updated.declaredProperties().size());
+        assertTrue(updated.effectiveProperties().size() >= updated.declaredProperties().size());
 
         assertThrows(ResourceAlreadyExistsException.class, () -> AuditTestSupport.withAudit(this.admin, () ->
                 this.locationTypeService.create(new NewLocationTypeRequest(

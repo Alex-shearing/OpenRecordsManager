@@ -10,14 +10,14 @@ import org.jspecify.annotations.Nullable;
 
 import java.time.Instant;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 public record LocationTypeResponse(
         @NotBlank ResourceIdentifier id,
         @Nullable ManagedObjectKind kind,
         @NotNull boolean abstractType,
         @Nullable ResourceIdentifier baseTypeId,
-        @NotNull Set<ManagedObjectTypePropertyResponse> properties,
+        @NotNull Set<ManagedObjectTypePropertyResponse> declaredProperties,
+        @NotNull Set<ManagedObjectTypePropertyResponse> effectiveProperties,
         @NotNull Instant dateCreated,
         @NotNull Instant dateModified
 ) {
@@ -27,10 +27,8 @@ public record LocationTypeResponse(
                 locationType.getKind(),
                 locationType.isAbstract(),
                 locationType.getBaseTypeId(),
-                locationType.getDeclaredProperties().stream()
-                        .filter(property -> !property.getProperty().isSystemProperty())
-                        .map(ManagedObjectTypePropertyResponse::of)
-                        .collect(Collectors.toSet()),
+                ManagedObjectTypePropertyResponse.ofAll(locationType.getDeclaredProperties()),
+                ManagedObjectTypePropertyResponse.ofAll(locationType.getEffectiveProperties()),
                 locationType.getDateCreated(),
                 locationType.getDateModified()
         );

@@ -89,8 +89,13 @@ class RecordTypeCrudIntegrationTest {
         assertEquals(Set.of("text/plain", "application/pdf"), created.contentTypes());
         assertFalse(created.abstractType());
         assertEquals(RECORD_ROOT, created.baseTypeId());
-        assertEquals(1, created.properties().size());
-        assertTrue(created.properties().stream().anyMatch(p -> p.property().id().equals(TITLE)));
+        assertEquals(1, created.declaredProperties().size());
+        assertTrue(created.declaredProperties().stream().anyMatch(p -> p.property().id().equals(TITLE)));
+        assertTrue(created.effectiveProperties().stream().anyMatch(p -> p.property().id().equals(TITLE)));
+        assertTrue(
+                created.effectiveProperties().size() >= created.declaredProperties().size(),
+                "effective properties include inherited bindings from the base type"
+        );
 
         RecordTypeResponse updated = AuditTestSupport.withAudit(this.admin, () -> this.recordTypeService.update(
                 TYPE_ID,
@@ -110,8 +115,9 @@ class RecordTypeCrudIntegrationTest {
         assertEquals(Set.of("image/png"), updated.contentTypes());
         assertEquals("actor.isAdmin()", updated.securityFilter());
         assertEquals(SecurityFilterUsage.HIDE_FILES, updated.securityFilterUsage());
-        assertEquals(2, updated.properties().size());
-        assertTrue(updated.properties().stream().anyMatch(
+        assertEquals(2, updated.declaredProperties().size());
+        assertTrue(updated.effectiveProperties().size() >= updated.declaredProperties().size());
+        assertTrue(updated.declaredProperties().stream().anyMatch(
                 p -> p.property().id().equals(NOTES) && p.defaultValue() != null && p.defaultValue().asString().equals("note")
         ));
 

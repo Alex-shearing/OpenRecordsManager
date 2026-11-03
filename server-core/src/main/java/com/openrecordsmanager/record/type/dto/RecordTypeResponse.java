@@ -10,7 +10,6 @@ import org.jspecify.annotations.Nullable;
 
 import java.time.Instant;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 public record RecordTypeResponse(
         @NotBlank ResourceIdentifier id,
@@ -19,7 +18,8 @@ public record RecordTypeResponse(
         @Nullable Set<String> contentTypes,
         boolean abstractType,
         @Nullable ResourceIdentifier baseTypeId,
-        @NotNull Set<ManagedObjectTypePropertyResponse> properties,
+        @NotNull Set<ManagedObjectTypePropertyResponse> declaredProperties,
+        @NotNull Set<ManagedObjectTypePropertyResponse> effectiveProperties,
         @NotNull Instant dateCreated,
         @NotNull Instant dateModified
 ) {
@@ -31,10 +31,8 @@ public record RecordTypeResponse(
                 recordType.getContentTypes(),
                 recordType.isAbstract(),
                 recordType.getBaseTypeId(),
-                recordType.getDeclaredProperties().stream()
-                        .filter(property -> !property.getProperty().isSystemProperty())
-                        .map(ManagedObjectTypePropertyResponse::of)
-                        .collect(Collectors.toSet()),
+                ManagedObjectTypePropertyResponse.ofAll(recordType.getDeclaredProperties()),
+                ManagedObjectTypePropertyResponse.ofAll(recordType.getEffectiveProperties()),
                 recordType.getDateCreated(),
                 recordType.getDateModified()
         );
