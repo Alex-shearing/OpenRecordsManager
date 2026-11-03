@@ -4,7 +4,7 @@ import com.openrecordsmanager.api.builtin.BuiltinConfigs;
 import com.openrecordsmanager.api.ResourceIdentifier;
 import com.openrecordsmanager.api.builtin.BuiltinPlugin;
 import com.openrecordsmanager.api.builtin.BuiltinPropertyIds;
-import com.openrecordsmanager.api.location.LocationKind;
+import com.openrecordsmanager.api.property.ManagedObjectKind;
 import com.openrecordsmanager.api.search.SearchClause;
 import com.openrecordsmanager.api.search.SearchOperator;
 import com.openrecordsmanager.database.DataRepository;
@@ -51,7 +51,7 @@ class UserSearchIntegrationTest {
 
         LocationSearchResponse response = this.locationService.search(
                 admin,
-                LocationKind.USER,
+                ManagedObjectKind.USER,
                 new ObjectSearchRequest("admin", null, null, null, null, null)
         );
 
@@ -75,7 +75,7 @@ class UserSearchIntegrationTest {
 
         LocationSearchResponse response = this.locationService.search(
                 admin,
-                LocationKind.USER,
+                ManagedObjectKind.USER,
                 new ObjectSearchRequest(
                         null,
                         List.of(new SearchClause(new ResourceIdentifier(BuiltinPlugin.BUILTIN_PLUGIN_NAME, BuiltinPropertyIds.EMAIL), SearchOperator.IS_NULL, null)),

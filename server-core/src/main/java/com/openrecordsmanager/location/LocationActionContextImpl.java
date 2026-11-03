@@ -5,7 +5,7 @@ import com.openrecordsmanager.api.audit.AuditEmitter;
 import com.openrecordsmanager.api.audit.AuditEntityType;
 import com.openrecordsmanager.api.config.ConfigStore;
 import com.openrecordsmanager.api.location.LocationActionContext;
-import com.openrecordsmanager.api.location.LocationKind;
+import com.openrecordsmanager.api.property.ManagedObjectKind;
 import com.openrecordsmanager.api.template.property.ObjectPropertyTemplate;
 import com.openrecordsmanager.api.types.ComponentTypes;
 import com.openrecordsmanager.audit.AuditEmitterImpl;
@@ -60,7 +60,7 @@ class LocationActionContextImpl implements LocationActionContext {
     }
 
     @Override
-    public LocationKind getTargetKind() {
+    public ManagedObjectKind getTargetKind() {
         return this.target.getKind();
     }
 

@@ -158,6 +158,7 @@ public class RecordService {
     public RecordResponse create(NewRecordRequest input) {
         RecordType type = this.repository.recordTypeRepo.findById(input.type())
                 .orElseThrow(() -> new ResourceNotFoundException(ComponentTypes.RECORD_TYPE, input.type()));
+        type.getKindRequireInstantiable();
 
         List<AuditPropertyChange> changes = new ArrayList<>();
         changes.add(AuditPropertyChange.newProperty("type", input.type()));
@@ -192,6 +193,7 @@ public class RecordService {
         if (input.type() != null && !input.type().equals(record.getType().getId())) {
             RecordType newType = this.repository.recordTypeRepo.findById(input.type())
                     .orElseThrow(() -> new ResourceNotFoundException(ComponentTypes.RECORD_TYPE, input.type()));
+            newType.getKindRequireInstantiable();
 
             ResourceIdentifier oldType = record.getType().getId();
             record.setType(newType);
@@ -353,5 +355,14 @@ public class RecordService {
             Map<String, ?> inputs
     ) {
         action.execute(context, JsonSchemaValidator.toRecord(action.getInputClass(), inputs));
+    }
+
+    public Record requireVisibleRecord(User actor, UUID id) {
+        Record record = this.repository.recordRepo.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("record", id));
+        if (!record.securityFilter(this.expressions, actor).canSeeMetadata()) {
+            throw new ResourceNotFoundException("record", id);
+        }
+        return record;
     }
 }

@@ -8,6 +8,9 @@ import org.hibernate.persister.entity.EntityPersister;
 import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Resolves physical SQL table/column identifiers from the Hibernate mapping metamodel.
  */
@@ -33,7 +36,7 @@ public class BuiltinColumnResolver {
     }
 
     ResolvedColumn resolveColumn(Class<?> entityClass, String javaAttribute) {
-        EntityPersister persister = entityPersister(entityClass);
+        EntityPersister persister = this.entityPersister(entityClass);
 
         // Hibernate keeps the identifier outside AttributeMapping; resolve it via identifier metadata.
         if (javaAttribute.equals(persister.getIdentifierPropertyName())) {
@@ -52,12 +55,12 @@ public class BuiltinColumnResolver {
         }
         return new ResolvedColumn(
                 new QualifiedSqlColumn(table, requireSelectableName(selectable, entityClass, javaAttribute)),
-                idColumnForTable(entityClass, table)
+                this.idColumnForTable(entityClass, table)
         );
     }
 
     HolderTableMetadata holderTables(Class<?> entityClass) {
-        EntityPersister persister = entityPersister(entityClass);
+        EntityPersister persister = this.entityPersister(entityClass);
         PluralAttributeMapping properties = requirePlural(persister, entityClass);
         String eavTable = propertyValueTable(properties, entityClass);
 
@@ -80,14 +83,47 @@ public class BuiltinColumnResolver {
             if (persister == null) {
                 continue;
             }
-            if (table.equals(tableName(persister, type))) {
-                return idColumn(persister, type);
+            QualifiedSqlColumn match = findIdColumnOnPersister(persister, table, type);
+            if (match != null) {
+                return match;
             }
         }
         throw new IllegalArgumentException(
                 "Table '" + table + "' is not mapped by " + entityClass.getName()
                         + " or a superclass entity"
         );
+    }
+
+    /**
+     * Primary or secondary table key for {@code table} on {@code persister}, or {@code null} if absent.
+     */
+    private static @Nullable QualifiedSqlColumn findIdColumnOnPersister(
+            EntityPersister persister,
+            String table,
+            Class<?> mappedType
+    ) {
+        List<QualifiedSqlColumn> matches = new ArrayList<>(1);
+        persister.forEachTableDetails(details -> {
+            if (!table.equals(details.getTableName())) {
+                return;
+            }
+            TableDetails.KeyDetails keys = details.getKeyDetails();
+            if (keys.getColumnCount() != 1) {
+                throw new IllegalStateException(
+                        "Expected a single key column for table '" + table
+                                + "' on " + mappedType.getName()
+                );
+            }
+            String column = keys.getKeyColumn(0).getColumnName();
+            if (column == null || column.isBlank()) {
+                throw new IllegalStateException(
+                        "Expected a single key column for table '" + table
+                                + "' on " + mappedType.getName()
+                );
+            }
+            matches.add(new QualifiedSqlColumn(table, column));
+        });
+        return matches.isEmpty() ? null : matches.getFirst();
     }
 
     private static String tableName(EntityPersister persister, Class<?> entityClass) {
@@ -135,8 +171,8 @@ public class BuiltinColumnResolver {
         String column = singleColumnName(keyPart, entityClass, TYPE_ATTRIBUTE);
 
         // Find the table that physically owns the FK. With JOINED inheritance the
-        // persister's root table is the concrete subclass (e.g. user_details), but type
-        // lives on the parent table (location).
+        // persister's mapped table is the concrete subclass (e.g. user_details), but type
+        // lives on the root managed_object table.
         String table = tableName(persister, entityClass);
         if (keyPart.getJdbcTypeCount() == 1) {
             String containing = keyPart.getSelectable(0).getContainingTableExpression();

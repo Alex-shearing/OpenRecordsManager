@@ -5,6 +5,7 @@ import com.openrecordsmanager.api.template.ExpressionBuilder;
 import com.openrecordsmanager.api.template.PropertyAssignment;
 import com.openrecordsmanager.api.template.TemplateComponent;
 import com.openrecordsmanager.api.template.property.ObjectPropertyTemplate;
+import jakarta.validation.constraints.NotNull;
 import org.jspecify.annotations.Nullable;
 import tools.jackson.databind.annotation.JsonDeserialize;
 
@@ -19,7 +20,9 @@ public record RecordTypeTemplate(
         @JsonDeserialize(using = PropertyAssignment.ListDeserializer.class) List<PropertyAssignment<?>> properties,
         @Nullable Set<String> allowedContentTypes,
         @Nullable ExpressionBuilder securityFilter,
-        @JsonDeserialize(using = SecurityFilterUsage.Deserializer.class) SecurityFilterUsage securityFilterUsage
+        @JsonDeserialize(using = SecurityFilterUsage.Deserializer.class) SecurityFilterUsage securityFilterUsage,
+        @NotNull boolean abstractType,
+        @Nullable ComponentReference<RecordTypeTemplate> baseType
 ) implements TemplateComponent {
 
     public RecordTypeTemplate {
@@ -33,15 +36,16 @@ public record RecordTypeTemplate(
 
     @Override
     public Set<ComponentReference<? extends TemplateComponent>> getDependencies() {
-        Stream<ComponentReference<? extends TemplateComponent>> propertyDeps = this.properties.stream()
+        Stream<ComponentReference<? extends TemplateComponent>> deps = this.properties.stream()
                 .map(PropertyAssignment::property);
-
-        if (this.securityFilter == null) {
-            return propertyDeps.collect(Collectors.toSet());
+        if (this.securityFilter != null) {
+            deps = Stream.concat(deps, this.securityFilter.dependencies().stream());
         }
-
-        return Stream.concat(propertyDeps, this.securityFilter.dependencies().stream())
-                .collect(Collectors.toSet());
+        ComponentReference<RecordTypeTemplate> baseType = this.baseType;
+        if (this.baseType != null) {
+            deps = Stream.concat(deps, Stream.of(baseType));
+        }
+        return deps.collect(Collectors.toSet());
     }
 
     public static class Builder {
@@ -51,6 +55,8 @@ public record RecordTypeTemplate(
         @Nullable
         private ExpressionBuilder securityFilter = null;
         private SecurityFilterUsage securityFilterUsage = SecurityFilterUsage.HIDE_FILES;
+        private boolean abstractType = false;
+        private @Nullable ComponentReference<RecordTypeTemplate> baseType;
 
         private Builder() {
         }
@@ -71,6 +77,21 @@ public record RecordTypeTemplate(
             return this;
         }
 
+        public Builder securityFilterUsage(SecurityFilterUsage securityFilterUsage) {
+            this.securityFilterUsage = securityFilterUsage;
+            return this;
+        }
+
+        public Builder abstractType(boolean abstractType) {
+            this.abstractType = abstractType;
+            return this;
+        }
+
+        public Builder baseType(@Nullable ComponentReference<RecordTypeTemplate> baseType) {
+            this.baseType = baseType;
+            return this;
+        }
+
         /**
          * This will be determined using the {@link Files#probeContentType(Path)} method.
          * Supports using asterisk (*) wildcard characters (i.e. `*`, `text/*`).
@@ -88,7 +109,9 @@ public record RecordTypeTemplate(
                     this.properties,
                     this.allowedContentTypes,
                     this.securityFilter,
-                    this.securityFilterUsage
+                    this.securityFilterUsage,
+                    this.abstractType,
+                    this.baseType
             );
         }
     }

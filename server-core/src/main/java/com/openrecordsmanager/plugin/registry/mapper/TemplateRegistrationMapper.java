@@ -129,7 +129,7 @@ public abstract class TemplateRegistrationMapper<T extends TemplateComponent, D>
             DataRepository repository,
             ComponentCatalog catalog
     ) {
-        for (ComponentReference<? extends TemplateComponent> dependency : collectDependencies(component, new HashSet<>())) {
+        for (ComponentReference<? extends TemplateComponent> dependency : collectDependencies(component, catalog, new HashSet<>())) {
             ResourceIdentifier dependencyId = dependency.id();
 
             TemplateComponentRegistry<?, ?> registry = catalog.getTemplateRegistry(ComponentCatalog.mapperFromComponent(dependency.type()));
@@ -145,14 +145,20 @@ public abstract class TemplateRegistrationMapper<T extends TemplateComponent, D>
      * Recursively collect all dependencies of a component.
      *
      * @param component    the component to collect from
+     * @param catalog      catalog used to resolve dependency templates
      * @param dependencies the current list of dependencies
      * @return the input set, with new dependencies added
      */
-    private static Set<ComponentReference<? extends TemplateComponent>> collectDependencies(Component component, Set<ComponentReference<? extends TemplateComponent>> dependencies) {
+    private static Set<ComponentReference<? extends TemplateComponent>> collectDependencies(
+            Component component,
+            ComponentCatalog catalog,
+            Set<ComponentReference<? extends TemplateComponent>> dependencies
+    ) {
         for (ComponentReference<? extends TemplateComponent> dependencyRef : component.getDependencies()) {
-            if (!dependencies.contains(dependencyRef)) {
-                dependencies.add(dependencyRef);
-                dependencies.addAll(collectDependencies(component, dependencies));
+            if (dependencies.add(dependencyRef)) {
+                catalog.get(dependencyRef).ifPresent(dependency ->
+                        collectDependencies(dependency, catalog, dependencies)
+                );
             }
         }
         return dependencies;

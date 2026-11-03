@@ -11,10 +11,10 @@ import com.openrecordsmanager.api.record.RecordActionType;
 import com.openrecordsmanager.api.search.SearchFieldProvider;
 import com.openrecordsmanager.api.template.list.ListElementTemplate;
 import com.openrecordsmanager.api.template.list.ListTemplate;
-import com.openrecordsmanager.api.template.location.LocationRelationshipTypeTemplate;
 import com.openrecordsmanager.api.template.location.LocationTypeTemplate;
 import com.openrecordsmanager.api.template.property.ObjectPropertyTemplate;
 import com.openrecordsmanager.api.template.recordtype.RecordTypeTemplate;
+import com.openrecordsmanager.api.template.relationship.RelationshipTypeTemplate;
 import org.jspecify.annotations.Nullable;
 
 import java.util.Objects;
@@ -36,8 +36,8 @@ public class ComponentTypes {
     public static final ComponentType<ObjectPropertyTemplate<?>> OBJECT_PROPERTY = ComponentType.of("object_property", ObjectPropertyTemplate.class);
     public static final ComponentType<RecordTypeTemplate> RECORD_TYPE = ComponentType.of("record_type", RecordTypeTemplate.class);
     public static final ComponentType<LocationTypeTemplate> LOCATION_TYPE = ComponentType.of("location_type", LocationTypeTemplate.class);
-    public static final ComponentType<LocationRelationshipTypeTemplate> LOCATION_RELATIONSHIP_TYPE =
-            ComponentType.of("location_relationship_type", LocationRelationshipTypeTemplate.class);
+    public static final ComponentType<RelationshipTypeTemplate> RELATIONSHIP_TYPE =
+            ComponentType.of("relationship_type", RelationshipTypeTemplate.class);
 
     private static final Set<ComponentType<?>> VALUES = Set.of(
             CONFIG,
@@ -46,7 +46,7 @@ public class ComponentTypes {
             OBJECT_PROPERTY,
             RECORD_TYPE,
             LOCATION_TYPE,
-            LOCATION_RELATIONSHIP_TYPE,
+            RELATIONSHIP_TYPE,
             INPUT_AUTH_PROVIDER,
             REDIRECT_AUTH_PROVIDER,
             FILE_STORE,

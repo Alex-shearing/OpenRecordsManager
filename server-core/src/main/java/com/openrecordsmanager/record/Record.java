@@ -2,45 +2,38 @@ package com.openrecordsmanager.record;
 
 import com.openrecordsmanager.api.ResourceIdentifier;
 import com.openrecordsmanager.api.builtin.BuiltinPropertyIds;
+import com.openrecordsmanager.api.property.ManagedObjectKind;
 import com.openrecordsmanager.api.template.recordtype.SecurityFilterUsage;
 import com.openrecordsmanager.filestore.store.FileStoreEntry;
 import com.openrecordsmanager.location.user.User;
 import com.openrecordsmanager.plugin.ExpressionsService;
 import com.openrecordsmanager.property.BuiltinProperty;
 import com.openrecordsmanager.property.BuiltinPropertyBinding;
-import com.openrecordsmanager.property.ObjectProperty;
-import com.openrecordsmanager.property.ObjectPropertyHolder;
+import com.openrecordsmanager.property.ManagedObject;
 import com.openrecordsmanager.record.type.RecordType;
-import com.openrecordsmanager.record.type.RecordTypeProperty;
 import jakarta.persistence.*;
 import org.hibernate.annotations.JdbcTypeCode;
-import org.hibernate.id.uuid.UuidVersion7Strategy;
 import org.hibernate.type.SqlTypes;
 import org.jspecify.annotations.Nullable;
-import tools.jackson.databind.JsonNode;
 
 import java.time.Instant;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Entity
 @Table(name = "record")
-@SuppressWarnings({"NotNullFieldNotInitialized", "CanBeFinal"})
-public class Record extends ObjectPropertyHolder<Record, RecordPropertyValue> {
-    public static final Map<ResourceIdentifier, BuiltinPropertyBinding<Record, ?>> BUILTIN_PROPERTY_BINDINGS =
+@DiscriminatorValue("RECORD")
+@PrimaryKeyJoinColumn(name = "id")
+@SuppressWarnings("CanBeFinal")
+public class Record extends ManagedObject<RecordType> {
+    public static final Map<ResourceIdentifier, BuiltinPropertyBinding<?>> BUILTIN_PROPERTY_BINDINGS =
             BuiltinPropertyBinding.scan(Record.class);
-
-    @Id
-    @BuiltinProperty(value = BuiltinPropertyIds.ID, readOnly = true)
-    private UUID id;
 
     @BuiltinProperty(value = BuiltinPropertyIds.TITLE, defaultSearch = true)
     @Column(nullable = false)
     private String title;
-
-    @ManyToOne(optional = false)
-    @JoinColumn(nullable = false)
-    private RecordType type;
 
     @BuiltinProperty(value = BuiltinPropertyIds.KEYWORDS, defaultSearch = true)
     @Column
@@ -48,53 +41,26 @@ public class Record extends ObjectPropertyHolder<Record, RecordPropertyValue> {
     @Nullable
     private String keywords;
 
-    @BuiltinProperty(value = BuiltinPropertyIds.NOTES, defaultSearch = true)
-    @Column
-    @JdbcTypeCode(SqlTypes.LONG32VARCHAR)
-    @Nullable
-    private String notes;
-
-    @BuiltinProperty(BuiltinPropertyIds.DATE_CREATED)
-    @Column(nullable = false)
-    private Instant dateCreated;
-
     @BuiltinProperty(BuiltinPropertyIds.DATE_REGISTERED)
     @Column
     @Nullable
     private Instant dateRegistered;
 
-    @BuiltinProperty(value = BuiltinPropertyIds.DATE_MODIFIED, readOnly = true)
-    @Column(nullable = false)
-    private Instant dateModified;
-
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "record", fetch = FetchType.LAZY)
     private List<RecordRevision> revisions = new ArrayList<>();
-
-    @ElementCollection(fetch = FetchType.EAGER)
-    @CollectionTable(
-            name = "record_property_value",
-            joinColumns = @JoinColumn(name = "record_id")
-    )
-    @MapKeyJoinColumn(name = "property_id")
-    private Map<ObjectProperty<?>, RecordPropertyValue> properties = new HashMap<>();
 
     @Deprecated
     protected Record() {
     }
 
     public Record(String title, RecordType type) {
-        this.type = type;
-        // Defaults before id/timestamps so readOnly builtins short-circuit on null→null.
-        type.getProperties().forEach(p -> this.setPropertyFromJson(p.getProperty(), p.getDefault()));
-
-        this.id = UuidVersion7Strategy.INSTANCE.generateUuid(null);
+        super(type);
         this.title = title;
-        this.dateCreated = Instant.now();
-        this.dateModified = Instant.now();
     }
 
-    public UUID getId() {
-        return this.id;
+    @Override
+    public ManagedObjectKind getKind() {
+        return ManagedObjectKind.RECORD;
     }
 
     public String getTitle() {
@@ -106,49 +72,12 @@ public class Record extends ObjectPropertyHolder<Record, RecordPropertyValue> {
         this.touchDateModified();
     }
 
-    public @Nullable String getNotes() {
-        return this.notes;
-    }
-
-    public Instant getDateCreated() {
-        return this.dateCreated;
-    }
-
     public @Nullable Instant getDateRegistered() {
         return this.dateRegistered;
     }
 
-    public Instant getDateModified() {
-        return this.dateModified;
-    }
-
-    public void touchDateModified() {
-        this.dateModified = Instant.now();
-    }
-
     public @Nullable String getKeywords() {
         return this.keywords;
-    }
-
-    public RecordType getType() {
-        return this.type;
-    }
-
-    public void setType(RecordType type) {
-        this.type = type;
-        Map<ObjectProperty<?>, RecordPropertyValue> oldProperties = Map.copyOf(this.properties);
-
-        this.properties.clear();
-        type.getProperties()
-                .forEach(p -> this.setPropertyFromJson(p.getProperty(), p.getDefault()));
-
-        oldProperties.forEach((property, holder) -> {
-            if (this.canSetProperty(property)) {
-                this.setPropertyFromJson(property, holder.getStoredValue());
-            }
-        });
-
-        this.touchDateModified();
     }
 
     public RecordRevision getCurrentRevision() {
@@ -162,39 +91,12 @@ public class Record extends ObjectPropertyHolder<Record, RecordPropertyValue> {
     }
 
     @Override
-    public RecordPropertyValue createProperty(ObjectProperty<?> property, JsonNode value) {
-        return new RecordPropertyValue(property, value);
-    }
-
-    @Override
-    public Set<ObjectProperty<?>> getPropertyKeys() {
-        return this.type.getProperties().stream()
-                .map(RecordTypeProperty::getProperty)
-                .collect(Collectors.toSet());
-    }
-
-    @Override
-    public boolean canSetProperty(ObjectProperty<?> property) {
-        return this.type.hasProperty(property);
-    }
-
-    @Override
-    protected Map<ObjectProperty<?>, RecordPropertyValue> getDynamicProperties() {
-        return this.properties;
-    }
-
-    @Override
-    protected Map<ResourceIdentifier, BuiltinPropertyBinding<Record, ?>> getBuiltinPropertyBindings() {
+    protected Map<ResourceIdentifier, BuiltinPropertyBinding<?>> getBuiltinPropertyBindings() {
         return BUILTIN_PROPERTY_BINDINGS;
     }
 
-    @Override
-    protected Record self() {
-        return this;
-    }
-
     public SecurityFilterUsage securityFilter(ExpressionsService expressions, User actor) {
-        return this.type.securityFilter(expressions, this, actor);
+        return this.getType().securityFilter(expressions, this, actor);
     }
 
     public RecordRevision addRevision(String version, FileStoreEntry file) {

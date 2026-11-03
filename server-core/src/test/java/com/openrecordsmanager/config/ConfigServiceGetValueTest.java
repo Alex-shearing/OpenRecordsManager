@@ -8,14 +8,13 @@ import com.openrecordsmanager.audit.persistence.AuditEventRepository;
 import com.openrecordsmanager.audit.persistence.AuditPolicyRepository;
 import com.openrecordsmanager.auth.AuthProviderRepository;
 import com.openrecordsmanager.database.DataRepository;
+import com.openrecordsmanager.property.ManagedObjectRepository;
 import com.openrecordsmanager.filestore.middleware.MiddlewareRepository;
 import com.openrecordsmanager.filestore.store.FileStoreRepository;
 import com.openrecordsmanager.list.ListElementRepository;
 import com.openrecordsmanager.list.ListTypeRepository;
 import com.openrecordsmanager.location.LocationRepository;
 import com.openrecordsmanager.location.group.GroupRepository;
-import com.openrecordsmanager.location.relationship.LocationRelationshipRepository;
-import com.openrecordsmanager.location.relationship.LocationRelationshipTypeRepository;
 import com.openrecordsmanager.location.type.LocationTypeRepository;
 import com.openrecordsmanager.location.user.UserRepository;
 import com.openrecordsmanager.plugin.PluginRepository;
@@ -23,6 +22,9 @@ import com.openrecordsmanager.plugin.registry.ComponentCatalog;
 import com.openrecordsmanager.property.ObjectPropertyRepository;
 import com.openrecordsmanager.record.RecordRepository;
 import com.openrecordsmanager.record.type.RecordTypeRepository;
+import com.openrecordsmanager.relationship.RelationshipRepository;
+import com.openrecordsmanager.relationship.RelationshipTypeRepository;
+import com.openrecordsmanager.template.ManagedObjectTypeRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -86,8 +88,10 @@ class ConfigServiceGetValueTest {
                 mock(ListElementRepository.class),
                 mock(ListTypeRepository.class),
                 mock(ObjectPropertyRepository.class),
+                mock(ManagedObjectTypeRepository.class),
                 mock(RecordTypeRepository.class),
                 mock(RecordRepository.class),
+                mock(ManagedObjectRepository.class),
                 mock(FileStoreRepository.class),
                 mock(MiddlewareRepository.class),
                 mock(PluginRepository.class),
@@ -95,8 +99,8 @@ class ConfigServiceGetValueTest {
                 mock(GroupRepository.class),
                 mock(LocationRepository.class),
                 mock(LocationTypeRepository.class),
-                mock(LocationRelationshipTypeRepository.class),
-                mock(LocationRelationshipRepository.class)
+                mock(RelationshipTypeRepository.class),
+                mock(RelationshipRepository.class)
         );
 
         this.configService = new ConfigService(

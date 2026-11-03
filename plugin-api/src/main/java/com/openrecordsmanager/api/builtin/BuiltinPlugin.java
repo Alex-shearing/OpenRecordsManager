@@ -44,6 +44,7 @@ public class BuiltinPlugin implements Plugin {
 
         BuiltinProperties.BUILTIN_PROPERTIES.forEach(registry::registerComponent);
         BuiltinLocationTypes.BUILTIN_LOCATION_TYPES.forEach(registry::registerComponent);
+        BuiltinRecordTypes.BUILTIN_RECORD_TYPES.forEach(registry::registerComponent);
         BuiltinRelationshipTypes.BUILTIN_RELATIONSHIP_TYPES.forEach(registry::registerComponent);
     }
 }

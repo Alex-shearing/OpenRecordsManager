@@ -2,14 +2,15 @@ package com.openrecordsmanager.location;
 
 import jakarta.validation.Valid;
 import com.openrecordsmanager.api.ResourceIdentifier;
-import com.openrecordsmanager.api.location.LocationKind;
+import com.openrecordsmanager.api.property.ManagedObjectKind;
 import com.openrecordsmanager.location.dto.LocationResponse;
 import com.openrecordsmanager.location.dto.LocationSearchResponse;
 import com.openrecordsmanager.location.dto.NewLocationRequest;
 import com.openrecordsmanager.location.dto.UpdateLocationRequest;
-import com.openrecordsmanager.location.relationship.RelationshipDirection;
-import com.openrecordsmanager.location.relationship.dto.LocationRelationshipResponse;
-import com.openrecordsmanager.location.relationship.dto.NewLocationRelationshipRequest;
+import com.openrecordsmanager.relationship.RelationshipDirection;
+import com.openrecordsmanager.relationship.RelationshipService;
+import com.openrecordsmanager.relationship.dto.NewRelationshipRequest;
+import com.openrecordsmanager.relationship.dto.RelationshipResponse;
 import com.openrecordsmanager.location.user.User;
 import com.openrecordsmanager.rest.dto.ActionResponse;
 import com.openrecordsmanager.rest.swagger.ConflictApiResponse;
@@ -36,16 +37,21 @@ import java.util.UUID;
 public class LocationController {
 
     private final LocationService service;
+    private final RelationshipService relationshipService;
 
-    public LocationController(LocationService service) {
+    public LocationController(
+            LocationService service,
+            RelationshipService relationshipService
+    ) {
         this.service = service;
+        this.relationshipService = relationshipService;
     }
 
     @PostMapping(value = "/search", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Search locations by property criteria")
     public LocationSearchResponse searchLocations(
             @AuthenticationPrincipal User user,
-            @RequestParam(required = false) @Nullable LocationKind kind,
+            @RequestParam(required = false) @Nullable ManagedObjectKind kind,
             @RequestBody ObjectSearchRequest input
     ) {
         return this.service.search(user, kind, input);
@@ -106,12 +112,13 @@ public class LocationController {
     @GetMapping(value = "/{id}/relationships", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "List active relationships for a location")
     @NotFoundApiResponse
-    public List<LocationRelationshipResponse> listLocationRelationships(
+    public List<RelationshipResponse> listLocationRelationships(
+            @AuthenticationPrincipal User user,
             @PathVariable("id") UUID id,
             @RequestParam(value = "direction", defaultValue = "outgoing") RelationshipDirection direction,
             @RequestParam(value = "type", required = false) @Nullable ResourceIdentifier type
     ) {
-        return this.service.listRelationships(id, direction, type);
+        return this.relationshipService.list(user, id, direction, type);
     }
 
     @PostMapping(
@@ -119,24 +126,26 @@ public class LocationController {
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE
     )
-    @Operation(summary = "Create a relationship from this location to another")
+    @Operation(summary = "Create a relationship from this location to another managed entity")
     @NotFoundApiResponse
     @ConflictApiResponse
     @ValidationFailedApiResponse
-    public LocationRelationshipResponse createLocationRelationship(
+    public RelationshipResponse createLocationRelationship(
+            @AuthenticationPrincipal User user,
             @PathVariable("id") UUID id,
-            @Valid @RequestBody NewLocationRelationshipRequest input
+            @Valid @RequestBody NewRelationshipRequest input
     ) {
-        return this.service.createRelationship(id, input);
+        return this.relationshipService.create(user, id, input);
     }
 
     @DeleteMapping(value = "/{id}/relationships/{relationshipId}")
     @Operation(summary = "End an active relationship involving this location")
     @NotFoundApiResponse
     public void endLocationRelationship(
+            @AuthenticationPrincipal User user,
             @PathVariable("id") UUID id,
             @PathVariable("relationshipId") UUID relationshipId
     ) {
-        this.service.endRelationship(id, relationshipId);
+        this.relationshipService.end(user, id, relationshipId);
     }
 }

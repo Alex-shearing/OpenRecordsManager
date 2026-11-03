@@ -71,23 +71,27 @@ class PrimaryOfflineIntegrationTest {
 
             // /api/location/me serializes User wire properties; primary seeding is skipped when the
             // primary DB is offline, so builtins must exist on the read replica.
-            try (PreparedStatement property = connection.prepareStatement(
-                    "INSERT INTO object_property (id, type, user_hidden, date_created, date_modified) VALUES (?, ?, ?, ?, ?)"
-            )) {
-                BuiltinProperties.BUILTIN_PROPERTIES.forEach((id, template) -> {
+            try (PreparedStatement template = connection.prepareStatement(
+                    "INSERT INTO registered_component (id, component_kind, date_created, date_modified) VALUES (?, ?, ?, ?)"
+            );
+                 PreparedStatement property = connection.prepareStatement(
+                         "INSERT INTO object_property (id, type, system_property) VALUES (?, ?, ?)"
+                 )) {
+                BuiltinProperties.BUILTIN_PROPERTIES.forEach((id, templateDef) -> {
                     try {
                         seedObjectProperty(
+                                template,
                                 property,
                                 now,
                                 new ResourceIdentifier(BuiltinPlugin.BUILTIN_PLUGIN_NAME, id).toString(),
-                                template.type().getName(),
-                                template.userHidden()
+                                templateDef.type().getName(),
+                                templateDef.systemProperty()
                         );
                     } catch (Exception e) {
                         throw new RuntimeException("Failed to seed builtin property " + id, e);
                     }
                 });
-                seedObjectProperty(property, now, "auth_local:password_hash", "string", true);
+                seedObjectProperty(template, property, now, "auth_local:password_hash", "string", true);
             }
 
             try (PreparedStatement provider = connection.prepareStatement(
@@ -103,17 +107,26 @@ class PrimaryOfflineIntegrationTest {
                 provider.executeUpdate();
             }
 
-            try (PreparedStatement locationType = connection.prepareStatement(
-                    """
-                            INSERT INTO location_type
-                            (id, kind, date_created, date_modified)
-                            VALUES (?, ?, ?, ?)
-                            """
-            )) {
+            try (PreparedStatement template = connection.prepareStatement(
+                    "INSERT INTO registered_component (id, component_kind, date_created, date_modified) VALUES (?, ?, ?, ?)"
+            );
+                 PreparedStatement managedType = connection.prepareStatement(
+                         "INSERT INTO managed_object_type (id) VALUES (?)"
+                 );
+                 PreparedStatement locationType = connection.prepareStatement(
+                         "INSERT INTO location_type (id, kind) VALUES (?, ?)"
+                 )) {
+                template.setString(1, "builtin:user");
+                template.setString(2, "location_type");
+                template.setTimestamp(3, now);
+                template.setTimestamp(4, now);
+                template.executeUpdate();
+
+                managedType.setString(1, "builtin:user");
+                managedType.executeUpdate();
+
                 locationType.setString(1, "builtin:user");
                 locationType.setString(2, "USER");
-                locationType.setTimestamp(3, now);
-                locationType.setTimestamp(4, now);
                 locationType.executeUpdate();
             }
 
@@ -140,19 +153,25 @@ class PrimaryOfflineIntegrationTest {
                 }
             }
 
-            try (PreparedStatement location = connection.prepareStatement(
+            try (PreparedStatement managed = connection.prepareStatement(
                     """
-                            INSERT INTO location
-                            (id, name, notes, date_created, date_modified, location_kind, type_id)
-                            VALUES (?, ?, NULL, ?, ?, ?, ?)
+                            INSERT INTO managed_object
+                            (id, object_kind, type_id, notes, date_created, date_modified)
+                            VALUES (?, ?, ?, NULL, ?, ?)
                             """
-            )) {
+            );
+                 PreparedStatement location = connection.prepareStatement(
+                         "INSERT INTO location (id, name) VALUES (?, ?)"
+                 )) {
+                managed.setBytes(1, uuidBytes(USER_ID));
+                managed.setString(2, "USER");
+                managed.setString(3, "builtin:user");
+                managed.setTimestamp(4, now);
+                managed.setTimestamp(5, now);
+                managed.executeUpdate();
+
                 location.setBytes(1, uuidBytes(USER_ID));
                 location.setString(2, "admin");
-                location.setTimestamp(3, now);
-                location.setTimestamp(4, now);
-                location.setString(5, "USER");
-                location.setString(6, "builtin:user");
                 location.executeUpdate();
             }
 
@@ -171,7 +190,7 @@ class PrimaryOfflineIntegrationTest {
             }
 
             try (PreparedStatement value = connection.prepareStatement(
-                    "INSERT INTO location_property_value (location_id, property_id, property_value) VALUES (?, ?, ?)"
+                    "INSERT INTO managed_object_property_value (managed_object_id, property_id, property_value) VALUES (?, ?, ?)"
             )) {
                 value.setBytes(1, uuidBytes(USER_ID));
                 value.setString(2, "auth_local:password_hash");
@@ -184,17 +203,22 @@ class PrimaryOfflineIntegrationTest {
     }
 
     private static void seedObjectProperty(
+            PreparedStatement template,
             PreparedStatement property,
             Timestamp now,
             String id,
             String type,
-            boolean userHidden
+            boolean systemProperty
     ) throws Exception {
+        template.setString(1, id);
+        template.setString(2, "object_property");
+        template.setTimestamp(3, now);
+        template.setTimestamp(4, now);
+        template.executeUpdate();
+
         property.setString(1, id);
         property.setString(2, type);
-        property.setBoolean(3, userHidden);
-        property.setTimestamp(4, now);
-        property.setTimestamp(5, now);
+        property.setBoolean(3, systemProperty);
         property.executeUpdate();
     }
 

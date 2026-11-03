@@ -1,4 +1,4 @@
--- Initial schema matching current JPA entities (SQL Server)
+-- Initial schema
 IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'system_configurations')
 BEGIN
     CREATE TABLE system_configurations (
@@ -20,10 +20,20 @@ CREATE TABLE auth_provider (
 );
 GO
 
-CREATE TABLE list_type (
+CREATE TABLE registered_component (
     id NVARCHAR(255) NOT NULL PRIMARY KEY,
+    component_kind NVARCHAR(64) NOT NULL,
     date_created DATETIMEOFFSET NOT NULL,
     date_modified DATETIMEOFFSET NOT NULL
+);
+GO
+
+CREATE INDEX idx_registered_component_kind ON registered_component (component_kind);
+GO
+
+CREATE TABLE list_type (
+    id NVARCHAR(255) NOT NULL PRIMARY KEY,
+    CONSTRAINT fk_list_type_registered_component FOREIGN KEY (id) REFERENCES registered_component (id)
 );
 GO
 
@@ -34,9 +44,8 @@ CREATE TABLE object_property (
     validator NVARCHAR(255) NULL,
     security_filter NVARCHAR(255) NULL,
     default_value VARCHAR(MAX) NULL,
-    user_hidden BIT NOT NULL,
-    date_created DATETIMEOFFSET NOT NULL,
-    date_modified DATETIMEOFFSET NOT NULL,
+    system_property BIT NOT NULL,
+    CONSTRAINT fk_object_property_registered_component FOREIGN KEY (id) REFERENCES registered_component (id),
     CONSTRAINT fk_object_property_list_type FOREIGN KEY (list_type_id) REFERENCES list_type (id)
 );
 GO
@@ -49,8 +58,7 @@ CREATE TABLE list_element (
     parent_id NVARCHAR(255) NOT NULL,
     element_index INT NOT NULL,
     active_to DATETIMEOFFSET NULL,
-    date_created DATETIMEOFFSET NOT NULL,
-    date_modified DATETIMEOFFSET NOT NULL,
+    CONSTRAINT fk_list_element_registered_component FOREIGN KEY (id) REFERENCES registered_component (id),
     CONSTRAINT fk_list_element_parent FOREIGN KEY (parent_id) REFERENCES list_type (id)
 );
 GO
@@ -68,33 +76,22 @@ GO
 CREATE INDEX idx_list_element_alias_element ON list_element_alias (list_element_id);
 GO
 
-CREATE TABLE record_type (
+CREATE TABLE managed_object_type (
     id NVARCHAR(255) NOT NULL PRIMARY KEY,
-    security_filter NVARCHAR(255) NULL,
-    security_filter_usage TINYINT NOT NULL CHECK (security_filter_usage BETWEEN 0 AND 2),
-    content_types VARCHAR(MAX) NULL,
-    date_created DATETIMEOFFSET NOT NULL,
-    date_modified DATETIMEOFFSET NOT NULL
+    base_type_id NVARCHAR(255) NULL,
+    is_abstract BIT NOT NULL CONSTRAINT df_managed_object_type_is_abstract DEFAULT 0,
+    CONSTRAINT fk_managed_object_type_registered_component FOREIGN KEY (id) REFERENCES registered_component (id),
+    CONSTRAINT fk_managed_object_type_base FOREIGN KEY (base_type_id) REFERENCES managed_object_type (id)
 );
 GO
 
-CREATE TABLE record_type_property (
-    record_type NVARCHAR(255) NOT NULL,
-    property_id NVARCHAR(255) NOT NULL,
-    default_value VARCHAR(MAX) NULL,
-    CONSTRAINT fk_rtp_record_type FOREIGN KEY (record_type) REFERENCES record_type (id),
-    CONSTRAINT fk_rtp_property FOREIGN KEY (property_id) REFERENCES object_property (id)
-);
-GO
-
-CREATE INDEX idx_rtp_property_id ON record_type_property (property_id);
+CREATE INDEX idx_managed_object_type_base ON managed_object_type (base_type_id);
 GO
 
 CREATE TABLE location_type (
     id NVARCHAR(255) NOT NULL PRIMARY KEY,
-    kind NVARCHAR(32) NOT NULL,
-    date_created DATETIMEOFFSET NOT NULL,
-    date_modified DATETIMEOFFSET NOT NULL
+    kind NVARCHAR(32) NULL,
+    CONSTRAINT fk_location_type_holder FOREIGN KEY (id) REFERENCES managed_object_type (id)
 );
 GO
 
@@ -110,25 +107,70 @@ GO
 CREATE INDEX idx_ltp_property_id ON location_type_property (property_id);
 GO
 
-CREATE TABLE location (
-    id UNIQUEIDENTIFIER NOT NULL PRIMARY KEY,
-    name NVARCHAR(255) NOT NULL UNIQUE,
-    notes NVARCHAR(255) NULL,
-    date_created DATETIMEOFFSET NOT NULL,
-    date_modified DATETIMEOFFSET NOT NULL,
-    location_kind NVARCHAR(32) NOT NULL,
-    type_id NVARCHAR(255) NOT NULL,
-    CONSTRAINT fk_location_type FOREIGN KEY (type_id) REFERENCES location_type (id)
+CREATE TABLE record_type (
+    id NVARCHAR(255) NOT NULL PRIMARY KEY,
+    security_filter NVARCHAR(255) NULL,
+    security_filter_usage TINYINT NOT NULL CHECK (security_filter_usage BETWEEN 0 AND 2),
+    content_types VARCHAR(MAX) NULL,
+    CONSTRAINT fk_record_type_holder FOREIGN KEY (id) REFERENCES managed_object_type (id)
 );
 GO
 
-CREATE INDEX idx_location_kind ON location (location_kind);
+CREATE TABLE record_type_property (
+    record_type NVARCHAR(255) NOT NULL,
+    property_id NVARCHAR(255) NOT NULL,
+    default_value VARCHAR(MAX) NULL,
+    CONSTRAINT fk_rtp_record_type FOREIGN KEY (record_type) REFERENCES record_type (id),
+    CONSTRAINT fk_rtp_property FOREIGN KEY (property_id) REFERENCES object_property (id)
+);
 GO
+
+CREATE INDEX idx_rtp_property_id ON record_type_property (property_id);
+GO
+
+CREATE TABLE relationship_type (
+    id NVARCHAR(255) NOT NULL PRIMARY KEY,
+    source_type_id NVARCHAR(255) NOT NULL,
+    target_type_id NVARCHAR(255) NOT NULL,
+    unique_per_source BIT NOT NULL,
+    CONSTRAINT fk_relationship_type_registered_component FOREIGN KEY (id) REFERENCES registered_component (id),
+    CONSTRAINT fk_relationship_type_source_type FOREIGN KEY (source_type_id) REFERENCES managed_object_type (id),
+    CONSTRAINT fk_relationship_type_target_type FOREIGN KEY (target_type_id) REFERENCES managed_object_type (id)
+);
+GO
+
+CREATE INDEX idx_relationship_type_source_type ON relationship_type (source_type_id);
+GO
+
+CREATE INDEX idx_relationship_type_target_type ON relationship_type (target_type_id);
+GO
+
+CREATE TABLE managed_object (
+    id UNIQUEIDENTIFIER NOT NULL PRIMARY KEY,
+    object_kind NVARCHAR(32) NULL,
+    type_id NVARCHAR(255) NOT NULL,
+    notes VARCHAR(MAX) NULL,
+    date_created DATETIMEOFFSET NOT NULL,
+    date_modified DATETIMEOFFSET NOT NULL,
+    CONSTRAINT fk_managed_object_type FOREIGN KEY (type_id) REFERENCES managed_object_type (id)
+);
+GO
+
+CREATE INDEX idx_managed_object_kind ON managed_object (object_kind);
+GO
+
+CREATE INDEX idx_managed_object_type_id ON managed_object (type_id);
+GO
+
+CREATE TABLE location (
+    id UNIQUEIDENTIFIER NOT NULL PRIMARY KEY,
+    name NVARCHAR(255) NOT NULL UNIQUE,
+    CONSTRAINT fk_location_holder FOREIGN KEY (id) REFERENCES managed_object (id)
+);
+GO
+
 
 CREATE INDEX idx_location_name ON location (name);
-GO
-
-CREATE INDEX idx_location_type_id ON location (type_id);
 GO
 
 CREATE TABLE user_details (
@@ -154,52 +196,26 @@ CREATE TABLE group_details (
 );
 GO
 
-CREATE TABLE location_property_value (
-    location_id UNIQUEIDENTIFIER NOT NULL,
+CREATE TABLE record (
+    id UNIQUEIDENTIFIER NOT NULL PRIMARY KEY,
+    title NVARCHAR(255) NOT NULL,
+    keywords VARCHAR(MAX) NULL,
+    date_registered DATETIMEOFFSET NULL,
+    CONSTRAINT fk_record_holder FOREIGN KEY (id) REFERENCES managed_object (id)
+);
+GO
+
+CREATE TABLE managed_object_property_value (
+    managed_object_id UNIQUEIDENTIFIER NOT NULL,
     property_id NVARCHAR(255) NOT NULL,
     property_value VARCHAR(MAX) NOT NULL,
-    PRIMARY KEY (location_id, property_id),
-    CONSTRAINT fk_lpv_location FOREIGN KEY (location_id) REFERENCES location (id),
-    CONSTRAINT fk_lpv_property FOREIGN KEY (property_id) REFERENCES object_property (id)
+    PRIMARY KEY (managed_object_id, property_id),
+    CONSTRAINT fk_mopv_object FOREIGN KEY (managed_object_id) REFERENCES managed_object (id),
+    CONSTRAINT fk_mopv_property FOREIGN KEY (property_id) REFERENCES object_property (id)
 );
 GO
 
-CREATE INDEX idx_lpv_property_id ON location_property_value (property_id);
-GO
-
-CREATE TABLE location_relationship_type (
-    id NVARCHAR(255) NOT NULL PRIMARY KEY,
-    source_kind NVARCHAR(32) NOT NULL,
-    target_kind NVARCHAR(32) NOT NULL,
-    unique_per_source BIT NOT NULL,
-    date_created DATETIMEOFFSET NOT NULL,
-    date_modified DATETIMEOFFSET NOT NULL
-);
-GO
-
-CREATE TABLE location_relationship (
-    id UNIQUEIDENTIFIER NOT NULL PRIMARY KEY,
-    source_id UNIQUEIDENTIFIER NOT NULL,
-    target_id UNIQUEIDENTIFIER NOT NULL,
-    type_id NVARCHAR(255) NOT NULL,
-    date_created DATETIMEOFFSET NOT NULL,
-    active_to DATETIMEOFFSET NULL,
-    CONSTRAINT fk_lr_source FOREIGN KEY (source_id) REFERENCES location (id),
-    CONSTRAINT fk_lr_target FOREIGN KEY (target_id) REFERENCES location (id),
-    CONSTRAINT fk_lr_type FOREIGN KEY (type_id) REFERENCES location_relationship_type (id)
-);
-GO
-
-CREATE INDEX idx_lr_source ON location_relationship (source_id);
-GO
-
-CREATE INDEX idx_lr_target ON location_relationship (target_id);
-GO
-
-CREATE INDEX idx_lr_type ON location_relationship (type_id);
-GO
-
-CREATE UNIQUE INDEX uk_lr_active_edge ON location_relationship (source_id, target_id, type_id) WHERE active_to IS NULL;
+CREATE INDEX idx_mopv_property_id ON managed_object_property_value (property_id);
 GO
 
 CREATE TABLE file_store (
@@ -265,35 +281,6 @@ GO
 CREATE UNIQUE INDEX uq_plugin_file_id ON plugin (file_id) WHERE file_id IS NOT NULL;
 GO
 
-CREATE TABLE record (
-    id UNIQUEIDENTIFIER NOT NULL PRIMARY KEY,
-    title NVARCHAR(255) NOT NULL,
-    type_id NVARCHAR(255) NOT NULL,
-    notes VARCHAR(MAX) NULL,
-    date_created DATETIMEOFFSET NOT NULL,
-    date_registered DATETIMEOFFSET NULL,
-    date_modified DATETIMEOFFSET NOT NULL,
-    keywords VARCHAR(MAX) NULL,
-    CONSTRAINT fk_record_type FOREIGN KEY (type_id) REFERENCES record_type (id)
-);
-GO
-
-CREATE INDEX idx_record_type_id ON record (type_id);
-GO
-
-CREATE TABLE record_property_value (
-    record_id UNIQUEIDENTIFIER NOT NULL,
-    property_id NVARCHAR(255) NOT NULL,
-    property_value VARCHAR(MAX) NOT NULL,
-    PRIMARY KEY (record_id, property_id),
-    CONSTRAINT fk_rpv_record FOREIGN KEY (record_id) REFERENCES record (id),
-    CONSTRAINT fk_rpv_property FOREIGN KEY (property_id) REFERENCES object_property (id)
-);
-GO
-
-CREATE INDEX idx_rpv_property_id ON record_property_value (property_id);
-GO
-
 CREATE TABLE record_revision (
     id UNIQUEIDENTIFIER NOT NULL PRIMARY KEY,
     version NVARCHAR(255) NOT NULL,
@@ -304,6 +291,31 @@ CREATE TABLE record_revision (
     CONSTRAINT fk_rr_record FOREIGN KEY (record_id) REFERENCES record (id),
     CONSTRAINT fk_rr_file FOREIGN KEY (file_id) REFERENCES file_store_entry (id)
 );
+GO
+
+CREATE TABLE relationship (
+    id UNIQUEIDENTIFIER NOT NULL PRIMARY KEY,
+    source_id UNIQUEIDENTIFIER NOT NULL,
+    target_id UNIQUEIDENTIFIER NOT NULL,
+    type_id NVARCHAR(255) NOT NULL,
+    date_created DATETIMEOFFSET NOT NULL,
+    active_to DATETIMEOFFSET NULL,
+    CONSTRAINT fk_rel_source FOREIGN KEY (source_id) REFERENCES managed_object (id),
+    CONSTRAINT fk_rel_target FOREIGN KEY (target_id) REFERENCES managed_object (id),
+    CONSTRAINT fk_rel_type FOREIGN KEY (type_id) REFERENCES relationship_type (id)
+);
+GO
+
+CREATE INDEX idx_rel_source ON relationship (source_id);
+GO
+
+CREATE INDEX idx_rel_target ON relationship (target_id);
+GO
+
+CREATE INDEX idx_rel_type ON relationship (type_id);
+GO
+
+CREATE UNIQUE INDEX uk_rel_active_edge ON relationship (source_id, target_id, type_id) WHERE active_to IS NULL;
 GO
 
 CREATE TABLE audit_event (

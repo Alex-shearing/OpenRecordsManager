@@ -9,10 +9,11 @@ import com.openrecordsmanager.api.types.ComponentTypes;
 import com.openrecordsmanager.audit.AuditService;
 import com.openrecordsmanager.database.DataRepository;
 import com.openrecordsmanager.location.type.LocationType;
-import com.openrecordsmanager.location.type.LocationTypeProperty;
 import com.openrecordsmanager.plugin.ExpressionsService;
 import com.openrecordsmanager.plugin.registry.ComponentCatalog;
 import com.openrecordsmanager.property.ObjectProperty;
+import com.openrecordsmanager.template.ManagedObjectType;
+import com.openrecordsmanager.template.ManagedObjectTypeProperty;
 
 import java.util.Optional;
 import java.util.Set;
@@ -35,17 +36,31 @@ public class LocationTypeTemplateRegistrationMapper
             ResourceIdentifier id,
             LocationTypeTemplate component
     ) {
-        Set<LocationTypeProperty<?>> properties = component.properties()
+        Set<ManagedObjectTypeProperty<?>> properties = component.properties()
                 .stream()
-                .map(def -> createLocationTypeProperty(def, catalog, repository))
-                .collect(Collectors.<LocationTypeProperty<?>>toSet());
+                .map(def -> createTypeProperty(def, catalog, repository))
+                .collect(Collectors.<ManagedObjectTypeProperty<?>>toSet());
 
-        LocationType type = new LocationType(id, component.kind(), properties);
+        ManagedObjectType baseType = null;
+        if (component.baseType() != null) {
+            baseType = repository.locationTypeRepo.findById(component.baseType().id())
+                    .orElseThrow(() -> new IllegalArgumentException(
+                            "Attempted to use base location type that was not registered: " + component.baseType()
+                    ));
+        }
+
+        LocationType type = new LocationType(
+                id,
+                component.kind(),
+                component.abstractType(),
+                baseType,
+                properties
+        );
         repository.locationTypeRepo.saveAndFlush(type);
     }
 
     @SuppressWarnings("unchecked")
-    private static <T> LocationTypeProperty<T> createLocationTypeProperty(
+    private static <T> ManagedObjectTypeProperty<T> createTypeProperty(
             PropertyAssignment<T> assignment,
             ComponentCatalog catalog,
             DataRepository repository
@@ -59,7 +74,7 @@ public class LocationTypeTemplateRegistrationMapper
                         "Attempted to use property that was not registered: " + id
                 ));
 
-        return new LocationTypeProperty<>(property, PropertyType.toTree(assignment.defaultValue()));
+        return new ManagedObjectTypeProperty<>(property, PropertyType.toTree(assignment.defaultValue()));
     }
 
     @Override

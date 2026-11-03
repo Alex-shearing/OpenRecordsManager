@@ -1,5 +1,6 @@
 package com.openrecordsmanager.record.type.dto;
 
+import com.openrecordsmanager.api.ResourceIdentifier;
 import com.openrecordsmanager.api.template.recordtype.SecurityFilterUsage;
 import com.openrecordsmanager.property.dto.TypePropertyAssignment;
 import jakarta.validation.Valid;
@@ -13,6 +14,8 @@ public record UpdateRecordTypeRequest(
         @Nullable Set<String> contentTypes,
         @Nullable String securityFilter,
         @NotNull SecurityFilterUsage securityFilterUsage,
+        @NotNull boolean abstractType,
+        @Nullable ResourceIdentifier baseTypeId,
         @NotNull @Valid List<TypePropertyAssignment> properties
 ) {
 }

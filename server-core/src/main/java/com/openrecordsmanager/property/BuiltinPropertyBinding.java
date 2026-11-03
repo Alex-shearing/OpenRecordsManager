@@ -16,33 +16,36 @@ import java.util.function.BiConsumer;
 import java.util.function.Function;
 
 /**
- * Domain access + search metadata for a builtin column-backed property on an {@link ObjectPropertyHolder}.
+ * Domain access + search metadata for a builtin column-backed property on a {@link ManagedObject}.
  * Prefer declaring bindings with {@link BuiltinProperty} on entity fields and {@link #scan(Class)}.
  */
-public record BuiltinPropertyBinding<T, P>(
+public record BuiltinPropertyBinding<P>(
         ResourceIdentifier id,
         String javaAttribute,
-        Function<T, @Nullable P> getter,
-        BiConsumer<T, @Nullable P> setter,
+        Function<ManagedObject<?>, @Nullable P> getter,
+        BiConsumer<ManagedObject<?>, @Nullable P> setter,
         PropertyType<?> propertyType,
         boolean jsonStored,
-        boolean defaultSearch
+        boolean defaultSearch,
+        boolean readOnly
 ) {
-    public @Nullable P get(T object) {
+    public @Nullable P get(ManagedObject<?> object) {
         return this.getter.apply(object);
     }
 
     @SuppressWarnings("unchecked")
-    public <K> void set(T object, @Nullable K value) {
-        ((BiConsumer<T, @Nullable K>) this.setter).accept(object, value);
+    public <K> void set(ManagedObject<?> object, @Nullable K value) {
+        ((BiConsumer<ManagedObject<?>, @Nullable K>) this.setter).accept(object, value);
     }
 
     /**
-     * Scans {@code entityClass} and its superclasses up to {@link ObjectPropertyHolder}
+     * Scans {@code entityClass} and its superclasses up to {@link ManagedObject}
      * for {@link BuiltinProperty}-annotated fields (superclass fields first).
      */
-    public static <T> Map<ResourceIdentifier, BuiltinPropertyBinding<T, ?>> scan(Class<? extends T> entityClass) {
-        Map<ResourceIdentifier, BuiltinPropertyBinding<T, ?>> indexed = new HashMap<>();
+    public static Map<ResourceIdentifier, BuiltinPropertyBinding<?>> scan(
+            Class<? extends ManagedObject<?>> entityClass
+    ) {
+        Map<ResourceIdentifier, BuiltinPropertyBinding<?>> indexed = new HashMap<>();
 
         for (Class<?> type : hierarchyClasses(entityClass)) {
             for (Field field : type.getDeclaredFields()) {
@@ -76,18 +79,16 @@ public record BuiltinPropertyBinding<T, P>(
         List<Class<?>> chain = new ArrayList<>();
 
         for (Class<?> current = entityClass;
-             current != null && ObjectPropertyHolder.class.isAssignableFrom(current)
-                     && current != ObjectPropertyHolder.class;
+             current != null && ManagedObject.class.isAssignableFrom(current);
              current = current.getSuperclass()
         ) {
-
             chain.addFirst(current);
         }
 
         return chain;
     }
 
-    private static <T> BuiltinPropertyBinding<T, ?> bindingFromField(
+    private static BuiltinPropertyBinding<?> bindingFromField(
             Class<?> entityClass,
             Field field,
             ResourceIdentifier id,
@@ -98,7 +99,7 @@ public record BuiltinPropertyBinding<T, P>(
         boolean required = isRequired(field);
         boolean jsonStored = isJsonStored(field);
 
-        Function<T, @Nullable Object> getter = instance -> {
+        Function<ManagedObject<?>, @Nullable Object> getter = instance -> {
             try {
                 return field.get(instance);
             } catch (IllegalAccessException e) {
@@ -109,7 +110,7 @@ public record BuiltinPropertyBinding<T, P>(
             }
         };
 
-        BiConsumer<T, @Nullable Object> setter = (instance, value) -> {
+        BiConsumer<ManagedObject<?>, @Nullable Object> setter = (instance, value) -> {
             if (annotation.readOnly()) {
                 throw new IllegalArgumentException(id + " cannot be set explicitly");
             }
@@ -134,7 +135,8 @@ public record BuiltinPropertyBinding<T, P>(
                 setter,
                 template.type(),
                 jsonStored,
-                annotation.defaultSearch()
+                annotation.defaultSearch(),
+                annotation.readOnly()
         );
     }
 

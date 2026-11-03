@@ -2,7 +2,7 @@ package com.openrecordsmanager.location.type;
 
 import jakarta.validation.Valid;
 import com.openrecordsmanager.api.ResourceIdentifier;
-import com.openrecordsmanager.api.location.LocationKind;
+import com.openrecordsmanager.api.property.ManagedObjectKind;
 import com.openrecordsmanager.location.type.dto.LocationTypeResponse;
 import com.openrecordsmanager.location.type.dto.NewLocationTypeRequest;
 import com.openrecordsmanager.location.type.dto.UpdateLocationTypeRequest;
@@ -35,7 +35,7 @@ public class LocationTypeController {
     @Operation(summary = "List all location types")
     public List<LocationTypeResponse> listLocationTypes(
             @Parameter(description = "Optional location kind filter")
-            @RequestParam(value = "kind", required = false) @Nullable LocationKind kind
+            @RequestParam(value = "kind", required = false) @Nullable ManagedObjectKind kind
     ) {
         return this.service.getAll(kind);
     }

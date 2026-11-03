@@ -5,6 +5,7 @@ package com.openrecordsmanager.api.builtin;
  */
 public final class BuiltinLocationTypeIds {
 
+    public static final String LOCATION = "location";
     public static final String USER = "user";
     public static final String GROUP = "group";
 

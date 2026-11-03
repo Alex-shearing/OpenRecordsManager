@@ -27,13 +27,13 @@ public class ObjectPropertyApplier {
     }
 
     public void applyOnCreate(
-            ObjectPropertyHolder<?, ?> holder,
+            ManagedObject<?> holder,
             Map<ResourceIdentifier, JsonNode> properties,
-            boolean excludeUserHidden,
+            boolean excludeSystemProperty,
             List<AuditPropertyChange> changes
     ) {
         properties.forEach((identifier, value) -> {
-            ObjectProperty<?> property = findProperty(identifier, excludeUserHidden);
+            ObjectProperty<?> property = this.findProperty(identifier, excludeSystemProperty);
             Object newValue = holder.setPropertyFromJson(property, value);
             changes.add(AuditPropertyChange.newProperty(
                     identifier.toString(),
@@ -43,13 +43,13 @@ public class ObjectPropertyApplier {
     }
 
     public void applyOnUpdate(
-            ObjectPropertyHolder<?, ?> holder,
+            ManagedObject<?> holder,
             Map<ResourceIdentifier, JsonNode> properties,
-            boolean excludeUserHidden,
+            boolean excludeSystemProperty,
             List<AuditPropertyChange> changes
     ) {
         properties.forEach((identifier, value) -> {
-            ObjectProperty<?> property = findProperty(identifier, excludeUserHidden);
+            ObjectProperty<?> property = this.findProperty(identifier, excludeSystemProperty);
             Object oldValue = holder.getProperty(property);
             Object newValue = holder.setPropertyFromJson(property, value);
             if (!Objects.equals(oldValue, newValue)) {
@@ -62,9 +62,9 @@ public class ObjectPropertyApplier {
         });
     }
 
-    private ObjectProperty<?> findProperty(ResourceIdentifier identifier, boolean excludeUserHidden) {
+    private ObjectProperty<?> findProperty(ResourceIdentifier identifier, boolean excludeSystemProperty) {
         return this.repository.objectPropertyRepo.findById(identifier)
-                .filter(p -> !excludeUserHidden || !p.isUserHidden())
+                .filter(p -> !excludeSystemProperty || !p.isSystemProperty())
                 .orElseThrow(() -> new ResourceNotFoundException(ComponentTypes.OBJECT_PROPERTY, identifier));
     }
 }

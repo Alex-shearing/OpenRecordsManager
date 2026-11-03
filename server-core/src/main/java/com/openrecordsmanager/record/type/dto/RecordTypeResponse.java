@@ -3,6 +3,7 @@ package com.openrecordsmanager.record.type.dto;
 import com.openrecordsmanager.api.ResourceIdentifier;
 import com.openrecordsmanager.api.template.recordtype.SecurityFilterUsage;
 import com.openrecordsmanager.record.type.RecordType;
+import com.openrecordsmanager.template.dto.ManagedObjectTypePropertyResponse;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import org.jspecify.annotations.Nullable;
@@ -16,7 +17,9 @@ public record RecordTypeResponse(
         @Nullable String securityFilter,
         @NotNull SecurityFilterUsage securityFilterUsage,
         @Nullable Set<String> contentTypes,
-        @NotNull Set<RecordTypePropertyResponse> properties,
+        boolean abstractType,
+        @Nullable ResourceIdentifier baseTypeId,
+        @NotNull Set<ManagedObjectTypePropertyResponse> properties,
         @NotNull Instant dateCreated,
         @NotNull Instant dateModified
 ) {
@@ -26,9 +29,11 @@ public record RecordTypeResponse(
                 recordType.getSecurityFilter(),
                 recordType.getSecurityFilterUsage(),
                 recordType.getContentTypes(),
-                recordType.getProperties().stream()
-                        .filter(property -> !property.getProperty().isUserHidden())
-                        .map(RecordTypePropertyResponse::of)
+                recordType.isAbstract(),
+                recordType.getBaseTypeId(),
+                recordType.getDeclaredProperties().stream()
+                        .filter(property -> !property.getProperty().isSystemProperty())
+                        .map(ManagedObjectTypePropertyResponse::of)
                         .collect(Collectors.toSet()),
                 recordType.getDateCreated(),
                 recordType.getDateModified()

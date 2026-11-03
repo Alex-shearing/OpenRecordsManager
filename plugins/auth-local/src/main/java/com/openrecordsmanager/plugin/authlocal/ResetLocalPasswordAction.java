@@ -3,7 +3,7 @@ package com.openrecordsmanager.plugin.authlocal;
 import com.openrecordsmanager.api.ComponentReference;
 import com.openrecordsmanager.api.location.LocationActionContext;
 import com.openrecordsmanager.api.location.LocationActionType;
-import com.openrecordsmanager.api.location.LocationKind;
+import com.openrecordsmanager.api.property.ManagedObjectKind;
 import com.openrecordsmanager.api.template.property.ObjectPropertyTemplate;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
@@ -30,7 +30,7 @@ public class ResetLocalPasswordAction extends LocationActionType<ResetLocalPassw
 
     @Override
     public boolean isAvailable(LocationActionContext context) {
-        return context.getTargetKind() == LocationKind.USER
+        return context.getTargetKind() == ManagedObjectKind.USER
                 && context.isPropertyRegistered(this.passwordProperty);
     }
 

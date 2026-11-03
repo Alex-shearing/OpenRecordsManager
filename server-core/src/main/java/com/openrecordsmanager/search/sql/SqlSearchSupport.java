@@ -24,7 +24,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 /**
- * SQL-first ID lookup for {@code ObjectPropertyHolder} property criteria.
+ * SQL-first ID lookup for {@code ManagedObject} property criteria.
  */
 @Component
 public class SqlSearchSupport {
@@ -191,8 +191,8 @@ public class SqlSearchSupport {
                 params.add(SearchWildcard.toLikePattern(value.asString()));
                 yield this.dialect.like(expr, "?") + " ESCAPE '\\'";
             }
-            case IN -> inList(expr, type, value, params, SearchOperator.IN);
-            case NOT_IN -> inList(expr, type, value, params, SearchOperator.NOT_IN);
+            case IN -> this.inList(expr, type, value, params, SearchOperator.IN);
+            case NOT_IN -> this.inList(expr, type, value, params, SearchOperator.NOT_IN);
             case BETWEEN -> {
                 if (value == null || !value.isArray() || value.size() != 2) {
                     throw ApiException.validationFailed("value", SearchOperatorSupport.OPERATOR_REQUIRES_TWO_VALUES, op.name());

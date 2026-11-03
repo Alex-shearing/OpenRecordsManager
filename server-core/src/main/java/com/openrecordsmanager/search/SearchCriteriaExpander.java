@@ -92,7 +92,7 @@ public class SearchCriteriaExpander {
         }
 
         ObjectProperty<?> property = this.repository.objectPropertyRepo.findById(clause.field())
-                .filter(p -> !p.isUserHidden())
+                .filter(p -> !p.isSystemProperty())
                 .orElseThrow(() -> ApiException.validationFailed(
                         clause.field().toString(),
                         SearchOperatorSupport.FIELD_UNSUPPORTED

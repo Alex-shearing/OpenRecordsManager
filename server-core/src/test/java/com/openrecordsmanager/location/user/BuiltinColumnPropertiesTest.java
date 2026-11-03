@@ -5,17 +5,16 @@ import com.openrecordsmanager.api.builtin.BuiltinConfigs;
 import com.openrecordsmanager.api.builtin.BuiltinLocationTypeIds;
 import com.openrecordsmanager.api.builtin.BuiltinPlugin;
 import com.openrecordsmanager.api.builtin.BuiltinPropertyIds;
-import com.openrecordsmanager.api.location.LocationKind;
+import com.openrecordsmanager.api.property.ManagedObjectKind;
 import com.openrecordsmanager.api.template.property.PropertyType;
 import com.openrecordsmanager.api.template.recordtype.SecurityFilterUsage;
 import com.openrecordsmanager.database.DataRepository;
 import com.openrecordsmanager.database.SqliteTestSupport;
 import com.openrecordsmanager.location.type.LocationType;
-import com.openrecordsmanager.location.type.LocationTypeProperty;
 import com.openrecordsmanager.property.ObjectProperty;
 import com.openrecordsmanager.record.Record;
 import com.openrecordsmanager.record.type.RecordType;
-import com.openrecordsmanager.record.type.RecordTypeProperty;
+import com.openrecordsmanager.template.ManagedObjectTypeProperty;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -55,16 +54,16 @@ class BuiltinColumnPropertiesTest {
 
     @Test
     void recordStoresBuiltinPropertiesInColumnsNotEavMap() {
-        ObjectProperty<String> titleProperty = requireProperty(TITLE);
-        ObjectProperty<String> notesProperty = requireProperty(NOTES);
+        ObjectProperty<String> titleProperty = this.requireProperty(TITLE);
+        ObjectProperty<String> notesProperty = this.requireProperty(NOTES);
         RecordType recordType = new RecordType(
                 ResourceIdentifier.valueOf("test:record_type"),
                 null,
                 null,
                 SecurityFilterUsage.SHOW_ALL,
                 Set.of(
-                        new RecordTypeProperty<>(notesProperty, JsonNodeFactory.instance.stringNode("default notes")),
-                        new RecordTypeProperty<>(titleProperty, null)
+                        new ManagedObjectTypeProperty<>(notesProperty, JsonNodeFactory.instance.stringNode("default notes")),
+                        new ManagedObjectTypeProperty<>(titleProperty, null)
                 )
         );
 
@@ -79,7 +78,7 @@ class BuiltinColumnPropertiesTest {
 
     @Test
     void userStoresBuiltinPropertiesInColumnsNotEavMap() {
-        ObjectProperty<String> givenNameProperty = requireProperty(GIVEN_NAME);
+        ObjectProperty<String> givenNameProperty = this.requireProperty(GIVEN_NAME);
         LocationType userType = this.repository.locationTypeRepo
                 .findById(USER_TYPE)
                 .orElseThrow();
@@ -94,7 +93,7 @@ class BuiltinColumnPropertiesTest {
 
     @Test
     void setPropertyUpdatesDateModifiedForBuiltinAndDynamicProperties() {
-        ObjectProperty<String> givenNameProperty = requireProperty(GIVEN_NAME);
+        ObjectProperty<String> givenNameProperty = this.requireProperty(GIVEN_NAME);
         ObjectProperty<String> customProperty = new ObjectProperty<>(
                 ResourceIdentifier.valueOf("test:custom_property"),
                 PropertyType.STRING
@@ -102,14 +101,14 @@ class BuiltinColumnPropertiesTest {
         LocationType builtinUser = this.repository.locationTypeRepo
                 .findById(USER_TYPE)
                 .orElseThrow();
-        Set<LocationTypeProperty<?>> properties = new LinkedHashSet<>();
-        for (LocationTypeProperty<?> property : builtinUser.getProperties()) {
-            properties.add(new LocationTypeProperty<>(property.getProperty(), null));
+        Set<ManagedObjectTypeProperty<?>> properties = new LinkedHashSet<>();
+        for (ManagedObjectTypeProperty<?> binding : builtinUser.getEffectiveProperties()) {
+            properties.add(new ManagedObjectTypeProperty<>(binding.getProperty(), null));
         }
-        properties.add(new LocationTypeProperty<>(customProperty, null));
+        properties.add(new ManagedObjectTypeProperty<>(customProperty, null));
         LocationType userType = new LocationType(
                 ResourceIdentifier.valueOf("test:custom_user_type"),
-                LocationKind.USER,
+                ManagedObjectKind.USER,
                 properties
         );
 
@@ -130,13 +129,13 @@ class BuiltinColumnPropertiesTest {
 
     @Test
     void recordSetPropertyUpdatesDateModifiedForBuiltinProperties() {
-        ObjectProperty<String> notesProperty = requireProperty(NOTES);
+        ObjectProperty<String> notesProperty = this.requireProperty(NOTES);
         RecordType recordType = new RecordType(
                 ResourceIdentifier.valueOf("test:record_type"),
                 null,
                 null,
                 SecurityFilterUsage.SHOW_ALL,
-                Set.of(new RecordTypeProperty<>(notesProperty, JsonNodeFactory.instance.textNode("default notes")))
+                Set.of(new ManagedObjectTypeProperty<>(notesProperty, JsonNodeFactory.instance.textNode("default notes")))
         );
 
         Record record = new Record("tba", recordType);

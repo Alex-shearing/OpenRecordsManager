@@ -34,8 +34,8 @@ public class ComponentCatalog {
     public static final RecordTypeTemplateRegistrationMapper RECORD_TYPE_MAPPER = new RecordTypeTemplateRegistrationMapper();
     public static final LocationTypeTemplateRegistrationMapper LOCATION_TYPE_MAPPER =
             new LocationTypeTemplateRegistrationMapper();
-    public static final LocationRelationshipTypeTemplateRegistrationMapper LOCATION_RELATIONSHIP_TYPE_MAPPER =
-            new LocationRelationshipTypeTemplateRegistrationMapper();
+    public static final RelationshipTypeTemplateRegistrationMapper RELATIONSHIP_TYPE_MAPPER =
+            new RelationshipTypeTemplateRegistrationMapper();
 
     public static final List<TemplateRegistrationMapper<?, ?>> TEMPLATE_MAPPERS = List.of(
             LIST_MAPPER,
@@ -43,7 +43,7 @@ public class ComponentCatalog {
             OBJECT_PROPERTY_MAPPER,
             RECORD_TYPE_MAPPER,
             LOCATION_TYPE_MAPPER,
-            LOCATION_RELATIONSHIP_TYPE_MAPPER
+            RELATIONSHIP_TYPE_MAPPER
     );
 
     // Templates Registries

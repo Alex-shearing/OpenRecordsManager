@@ -70,7 +70,8 @@ public class BuiltinTemplateSeeder {
     public void seedAll() {
         this.seedBuiltin(ComponentCatalog.OBJECT_PROPERTY_MAPPER);
         this.seedBuiltin(ComponentCatalog.LOCATION_TYPE_MAPPER);
-        this.seedBuiltin(ComponentCatalog.LOCATION_RELATIONSHIP_TYPE_MAPPER);
+        this.seedBuiltin(ComponentCatalog.RECORD_TYPE_MAPPER);
+        this.seedBuiltin(ComponentCatalog.RELATIONSHIP_TYPE_MAPPER);
     }
 
     public <T extends TemplateComponent, D> void seedBuiltin(TemplateRegistrationMapper<T, D> mapper) {

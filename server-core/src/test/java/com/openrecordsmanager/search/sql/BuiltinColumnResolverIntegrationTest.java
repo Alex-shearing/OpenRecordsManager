@@ -41,11 +41,11 @@ class BuiltinColumnResolverIntegrationTest {
                 this.columnResolver
         );
         assertEquals(new QualifiedSqlColumn("record", "id"), record.primaryKey());
-        assertEquals(List.of(), record.joins());
-        assertEquals(new QualifiedSqlColumn("record_property_value", "record_id"), record.holderFk());
-        assertEquals(new QualifiedSqlColumn("record_property_value", "property_id"), record.propertyId());
-        assertEquals(new QualifiedSqlColumn("record_property_value", "property_value"), record.propertyValue());
-        assertEquals(new QualifiedSqlColumn("record", "type_id"), record.typeColumn());
+        assertEquals(List.of(new QualifiedSqlColumn("managed_object", "id")), record.joins());
+        assertEquals(new QualifiedSqlColumn("managed_object_property_value", "managed_object_id"), record.holderFk());
+        assertEquals(new QualifiedSqlColumn("managed_object_property_value", "property_id"), record.propertyId());
+        assertEquals(new QualifiedSqlColumn("managed_object_property_value", "property_value"), record.propertyValue());
+        assertEquals(new QualifiedSqlColumn("managed_object", "type_id"), record.typeColumn());
         assertEquals(
                 new QualifiedSqlColumn("record", "id"),
                 record.builtinColumns().get(new ResourceIdentifier(BuiltinPlugin.BUILTIN_PLUGIN_NAME, BuiltinPropertyIds.ID)).column()
@@ -70,11 +70,17 @@ class BuiltinColumnResolverIntegrationTest {
                 this.columnResolver
         );
         assertEquals(new QualifiedSqlColumn("user_details", "id"), user.primaryKey());
-        assertEquals(List.of(new QualifiedSqlColumn("location", "id")), user.joins());
-        assertEquals(new QualifiedSqlColumn("location_property_value", "location_id"), user.holderFk());
-        assertEquals(new QualifiedSqlColumn("location_property_value", "property_id"), user.propertyId());
-        assertEquals(new QualifiedSqlColumn("location_property_value", "property_value"), user.propertyValue());
-        assertEquals(new QualifiedSqlColumn("location", "type_id"), user.typeColumn());
+        assertEquals(
+                List.of(
+                        new QualifiedSqlColumn("managed_object", "id"),
+                        new QualifiedSqlColumn("location", "id")
+                ),
+                user.joins()
+        );
+        assertEquals(new QualifiedSqlColumn("managed_object_property_value", "managed_object_id"), user.holderFk());
+        assertEquals(new QualifiedSqlColumn("managed_object_property_value", "property_id"), user.propertyId());
+        assertEquals(new QualifiedSqlColumn("managed_object_property_value", "property_value"), user.propertyValue());
+        assertEquals(new QualifiedSqlColumn("managed_object", "type_id"), user.typeColumn());
         assertEquals(
                 new QualifiedSqlColumn("user_details", "given_name"),
                 user.builtinColumns().get(new ResourceIdentifier(BuiltinPlugin.BUILTIN_PLUGIN_NAME, BuiltinPropertyIds.GIVEN_NAME)).column()
@@ -90,6 +96,7 @@ class BuiltinColumnResolverIntegrationTest {
         assertEquals(
                 Set.of(
                         new ResourceIdentifier(BuiltinPlugin.BUILTIN_PLUGIN_NAME, BuiltinPropertyIds.NAME),
+                        new ResourceIdentifier(BuiltinPlugin.BUILTIN_PLUGIN_NAME, BuiltinPropertyIds.NOTES),
                         new ResourceIdentifier(BuiltinPlugin.BUILTIN_PLUGIN_NAME, BuiltinPropertyIds.GIVEN_NAME),
                         new ResourceIdentifier(BuiltinPlugin.BUILTIN_PLUGIN_NAME, BuiltinPropertyIds.SURNAME),
                         new ResourceIdentifier(BuiltinPlugin.BUILTIN_PLUGIN_NAME, BuiltinPropertyIds.EMAIL)

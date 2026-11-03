@@ -3,6 +3,7 @@ package com.openrecordsmanager.api.location;
 import com.openrecordsmanager.api.ComponentReference;
 import com.openrecordsmanager.api.audit.AuditEmitter;
 import com.openrecordsmanager.api.config.ConfigStore;
+import com.openrecordsmanager.api.property.ManagedObjectKind;
 import com.openrecordsmanager.api.template.property.ObjectPropertyTemplate;
 import org.jspecify.annotations.Nullable;
 
@@ -16,7 +17,7 @@ public interface LocationActionContext {
 
     UUID getTargetLocationId();
 
-    LocationKind getTargetKind();
+    ManagedObjectKind getTargetKind();
 
     /**
      * Login/storage name when the target is a user location; empty otherwise.

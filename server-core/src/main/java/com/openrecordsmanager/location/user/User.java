@@ -3,7 +3,7 @@ package com.openrecordsmanager.location.user;
 import com.google.common.base.Strings;
 import com.openrecordsmanager.api.ResourceIdentifier;
 import com.openrecordsmanager.api.builtin.BuiltinPropertyIds;
-import com.openrecordsmanager.api.location.LocationKind;
+import com.openrecordsmanager.api.property.ManagedObjectKind;
 import com.openrecordsmanager.auth.entity.AuthProvider;
 import com.openrecordsmanager.location.Location;
 import com.openrecordsmanager.location.type.LocationType;
@@ -25,7 +25,7 @@ import java.util.Objects;
 @PrimaryKeyJoinColumn(name = "id")
 @SuppressWarnings({"CanBeFinal"})
 public class User extends Location implements UserDetails {
-    public static final Map<ResourceIdentifier, BuiltinPropertyBinding<Location, ?>> BUILTIN_PROPERTY_BINDINGS =
+    public static final Map<ResourceIdentifier, BuiltinPropertyBinding<?>> BUILTIN_PROPERTY_BINDINGS =
             BuiltinPropertyBinding.scan(User.class);
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -70,8 +70,8 @@ public class User extends Location implements UserDetails {
     }
 
     @Override
-    public LocationKind getKind() {
-        return LocationKind.USER;
+    public ManagedObjectKind getKind() {
+        return ManagedObjectKind.USER;
     }
 
     public @Nullable AuthProvider getAuthProvider() {
@@ -120,7 +120,7 @@ public class User extends Location implements UserDetails {
     }
 
     @Override
-    protected Map<ResourceIdentifier, BuiltinPropertyBinding<Location, ?>> getBuiltinPropertyBindings() {
+    protected Map<ResourceIdentifier, BuiltinPropertyBinding<?>> getBuiltinPropertyBindings() {
         return BUILTIN_PROPERTY_BINDINGS;
     }
 

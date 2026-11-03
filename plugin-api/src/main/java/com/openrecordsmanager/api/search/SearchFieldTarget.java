@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import java.util.Locale;
 
 /**
- * Which {@code ObjectPropertyHolder} kind a {@link SearchFieldProvider} applies to.
+ * Which {@code ManagedObject} kind a {@link SearchFieldProvider} applies to.
  */
 public enum SearchFieldTarget {
     RECORD,

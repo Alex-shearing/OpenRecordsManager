@@ -2,7 +2,7 @@ package com.openrecordsmanager.plugin;
 
 import com.openrecordsmanager.api.ResourceIdentifier;
 import com.openrecordsmanager.api.builtin.BuiltinConfigs;
-import com.openrecordsmanager.api.location.LocationKind;
+import com.openrecordsmanager.api.property.ManagedObjectKind;
 import com.openrecordsmanager.api.template.ExpressionBuilder;
 import com.openrecordsmanager.api.template.list.IListElement;
 import com.openrecordsmanager.api.template.property.PropertyType;
@@ -12,12 +12,11 @@ import com.openrecordsmanager.database.SqliteTestSupport;
 import com.openrecordsmanager.list.ListElement;
 import com.openrecordsmanager.list.ListType;
 import com.openrecordsmanager.location.type.LocationType;
-import com.openrecordsmanager.location.type.LocationTypeProperty;
+import com.openrecordsmanager.template.ManagedObjectTypeProperty;
 import com.openrecordsmanager.location.user.User;
 import com.openrecordsmanager.property.ObjectProperty;
 import com.openrecordsmanager.record.Record;
 import com.openrecordsmanager.record.type.RecordType;
-import com.openrecordsmanager.record.type.RecordTypeProperty;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -106,12 +105,12 @@ class ExpressionsServiceTest {
         );
         LocationType userType = new LocationType(
                 ResourceIdentifier.valueOf("test:expr_user_type"),
-                LocationKind.USER,
+                ManagedObjectKind.USER,
                 Set.of(
-                        new LocationTypeProperty<>(numberProperty, null),
-                        new LocationTypeProperty<>(stringProperty, null),
-                        new LocationTypeProperty<>(listProperty, null),
-                        new LocationTypeProperty<>(listMultiple, null)
+                        new ManagedObjectTypeProperty<>(numberProperty, null),
+                        new ManagedObjectTypeProperty<>(stringProperty, null),
+                        new ManagedObjectTypeProperty<>(listProperty, null),
+                        new ManagedObjectTypeProperty<>(listMultiple, null)
                 )
         );
         this.testUser = new User("test", null, userType);
@@ -175,7 +174,7 @@ class ExpressionsServiceTest {
                 SecurityFilterUsage.HIDE_RECORD,
                 new HashSet<>()
         );
-        recordType.getProperties().add(new RecordTypeProperty<>(
+        recordType.getDeclaredProperties().add(new ManagedObjectTypeProperty<>(
                 recordProperty,
                 JsonNodeFactory.instance.booleanNode(false)
         ));

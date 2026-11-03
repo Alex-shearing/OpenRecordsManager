@@ -4,6 +4,8 @@ import com.openrecordsmanager.api.ResourceIdentifier;
 import com.openrecordsmanager.api.builtin.BuiltinConfigs;
 import com.openrecordsmanager.api.builtin.BuiltinPlugin;
 import com.openrecordsmanager.api.builtin.BuiltinPropertyIds;
+import com.openrecordsmanager.api.builtin.BuiltinRecordTypeIds;
+import com.openrecordsmanager.api.errors.ApiException;
 import com.openrecordsmanager.api.template.recordtype.SecurityFilterUsage;
 import com.openrecordsmanager.audit.AuditTestSupport;
 import com.openrecordsmanager.database.DataRepository;
@@ -11,6 +13,8 @@ import com.openrecordsmanager.database.SqliteTestSupport;
 import com.openrecordsmanager.location.user.User;
 import com.openrecordsmanager.plugin.exception.BuiltinResourceImmutableException;
 import com.openrecordsmanager.property.dto.TypePropertyAssignment;
+import com.openrecordsmanager.record.RecordService;
+import com.openrecordsmanager.record.dto.NewRecordRequest;
 import com.openrecordsmanager.record.type.dto.NewRecordTypeRequest;
 import com.openrecordsmanager.record.type.dto.RecordTypeResponse;
 import com.openrecordsmanager.record.type.dto.UpdateRecordTypeRequest;
@@ -25,6 +29,7 @@ import org.springframework.test.context.DynamicPropertySource;
 import tools.jackson.databind.node.JsonNodeFactory;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -37,6 +42,10 @@ class RecordTypeCrudIntegrationTest {
     private static final ResourceIdentifier NOTES =
             new ResourceIdentifier(BuiltinPlugin.BUILTIN_PLUGIN_NAME, BuiltinPropertyIds.NOTES);
     private static final ResourceIdentifier TYPE_ID = ResourceIdentifier.valueOf("test:admin_record_type");
+    private static final ResourceIdentifier RECORD_ROOT =
+            new ResourceIdentifier(BuiltinPlugin.BUILTIN_PLUGIN_NAME, BuiltinRecordTypeIds.RECORD);
+    private static final ResourceIdentifier ABSTRACT_TYPE_ID =
+            ResourceIdentifier.valueOf("test:abstract_record_type");
 
     @DynamicPropertySource
     static void properties(DynamicPropertyRegistry registry) {
@@ -47,6 +56,9 @@ class RecordTypeCrudIntegrationTest {
 
     @Autowired
     private RecordTypeService recordTypeService;
+
+    @Autowired
+    private RecordService recordService;
 
     @Autowired
     private DataRepository repository;
@@ -66,6 +78,8 @@ class RecordTypeCrudIntegrationTest {
                         Set.of("text/plain", "application/pdf"),
                         null,
                         SecurityFilterUsage.SHOW_ALL,
+                        false,
+                        RECORD_ROOT,
                         List.of(new TypePropertyAssignment(TITLE, null))
                 )
         ));
@@ -73,6 +87,8 @@ class RecordTypeCrudIntegrationTest {
         assertEquals(TYPE_ID, created.id());
         assertEquals(SecurityFilterUsage.SHOW_ALL, created.securityFilterUsage());
         assertEquals(Set.of("text/plain", "application/pdf"), created.contentTypes());
+        assertFalse(created.abstractType());
+        assertEquals(RECORD_ROOT, created.baseTypeId());
         assertEquals(1, created.properties().size());
         assertTrue(created.properties().stream().anyMatch(p -> p.property().id().equals(TITLE)));
 
@@ -82,6 +98,8 @@ class RecordTypeCrudIntegrationTest {
                         Set.of("image/png"),
                         "actor.isAdmin()",
                         SecurityFilterUsage.HIDE_FILES,
+                        false,
+                        RECORD_ROOT,
                         List.of(
                                 new TypePropertyAssignment(TITLE, null),
                                 new TypePropertyAssignment(NOTES, JsonNodeFactory.instance.stringNode("note"))
@@ -103,6 +121,8 @@ class RecordTypeCrudIntegrationTest {
                         Set.of(),
                         null,
                         SecurityFilterUsage.SHOW_ALL,
+                        false,
+                        null,
                         List.of()
                 ))
         ));
@@ -114,6 +134,8 @@ class RecordTypeCrudIntegrationTest {
                         Set.of(),
                         null,
                         SecurityFilterUsage.SHOW_ALL,
+                        false,
+                        null,
                         List.of()
                 ))
         ));
@@ -125,8 +147,30 @@ class RecordTypeCrudIntegrationTest {
                         Set.of(),
                         null,
                         SecurityFilterUsage.SHOW_ALL,
+                        false,
+                        null,
                         List.of(new TypePropertyAssignment(unknownProperty, null))
                 ))
+        ));
+    }
+
+    @Test
+    void abstractRecordTypesCannotBeInstantiated() {
+        RecordTypeResponse abstractType = AuditTestSupport.withAudit(this.admin, () -> this.recordTypeService.create(
+                new NewRecordTypeRequest(
+                        ABSTRACT_TYPE_ID,
+                        Set.of(),
+                        null,
+                        SecurityFilterUsage.SHOW_ALL,
+                        true,
+                        null,
+                        List.of()
+                )
+        ));
+        assertTrue(abstractType.abstractType());
+
+        assertThrows(ApiException.class, () -> AuditTestSupport.withAudit(this.admin, () ->
+                this.recordService.create(new NewRecordRequest(ABSTRACT_TYPE_ID, "Nope", Map.of()))
         ));
     }
 }

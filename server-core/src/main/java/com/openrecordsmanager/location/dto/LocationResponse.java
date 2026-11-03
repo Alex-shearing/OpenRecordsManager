@@ -1,7 +1,7 @@
 package com.openrecordsmanager.location.dto;
 
 import com.openrecordsmanager.api.ResourceIdentifier;
-import com.openrecordsmanager.api.location.LocationKind;
+import com.openrecordsmanager.api.property.ManagedObjectKind;
 import com.openrecordsmanager.location.Location;
 import com.openrecordsmanager.location.user.User;
 import jakarta.validation.constraints.NotBlank;
@@ -17,7 +17,7 @@ public record LocationResponse(
         @NotBlank ResourceIdentifier type,
         @NotBlank String name,
         @NotBlank String displayName,
-        @NotNull LocationKind kind,
+        @NotNull ManagedObjectKind kind,
         @Nullable UUID authProvider,
         @Nullable Boolean enabled,
         @NotNull Map<String, @Nullable JsonNode> properties

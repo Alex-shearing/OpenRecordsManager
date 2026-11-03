@@ -4,7 +4,7 @@ import com.openrecordsmanager.api.ResourceIdentifier;
 import com.openrecordsmanager.api.builtin.BuiltinConfigs;
 import com.openrecordsmanager.api.builtin.BuiltinLocationTypeIds;
 import com.openrecordsmanager.api.builtin.BuiltinPlugin;
-import com.openrecordsmanager.api.location.LocationKind;
+import com.openrecordsmanager.api.property.ManagedObjectKind;
 import com.openrecordsmanager.api.template.list.IListElement;
 import com.openrecordsmanager.api.template.property.PropertyType;
 import com.openrecordsmanager.audit.AuditTestSupport;
@@ -17,10 +17,11 @@ import com.openrecordsmanager.location.dto.LocationResponse;
 import com.openrecordsmanager.location.dto.NewLocationRequest;
 import com.openrecordsmanager.location.dto.UpdateLocationRequest;
 import com.openrecordsmanager.location.type.LocationType;
-import com.openrecordsmanager.location.type.LocationTypeProperty;
 import com.openrecordsmanager.property.ObjectProperty;
 import com.openrecordsmanager.rest.exception.ResourceAlreadyExistsException;
 import com.openrecordsmanager.rest.exception.ResourceNotFoundException;
+import com.openrecordsmanager.template.ManagedObjectType;
+import com.openrecordsmanager.template.ManagedObjectTypeProperty;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,11 +31,7 @@ import org.springframework.test.context.DynamicPropertySource;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.JsonNodeFactory;
 
-import java.util.Collection;
-import java.util.LinkedHashSet;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -112,20 +109,20 @@ class UserCrudIntegrationTest {
 
         if (this.repository.locationTypeRepo.findById(LIST_USER_TYPE).isEmpty()) {
             LocationType builtinUser = this.repository.locationTypeRepo.findById(USER_TYPE).orElseThrow();
-            Set<LocationTypeProperty<?>> properties = new LinkedHashSet<>();
-            for (LocationTypeProperty<?> property : builtinUser.getProperties()) {
-                properties.add(new LocationTypeProperty<>(property.getProperty(), null));
+            Set<ManagedObjectTypeProperty<?>> properties = new LinkedHashSet<>();
+            for (ManagedObjectTypeProperty<?> binding : builtinUser.getEffectiveProperties()) {
+                properties.add(new ManagedObjectTypeProperty<>(binding.getProperty(), null));
             }
-            properties.add(new LocationTypeProperty<>(
+            properties.add(new ManagedObjectTypeProperty<>(
                     this.repository.objectPropertyRepo.findById(LIST_ITEM_PROP).orElseThrow(),
                     null
             ));
-            properties.add(new LocationTypeProperty<>(
+            properties.add(new ManagedObjectTypeProperty<>(
                     this.repository.objectPropertyRepo.findById(LIST_MULTI_PROP).orElseThrow(),
                     null
             ));
             this.repository.locationTypeRepo.saveAndFlush(
-                    new LocationType(LIST_USER_TYPE, LocationKind.USER, properties)
+                    new LocationType(LIST_USER_TYPE, ManagedObjectKind.USER, properties)
             );
         }
     }

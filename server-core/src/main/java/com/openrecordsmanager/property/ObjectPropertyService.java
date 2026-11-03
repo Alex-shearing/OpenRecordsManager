@@ -58,7 +58,7 @@ public class ObjectPropertyService {
     @Transactional(readOnly = true)
     public Set<SimpleObjectPropertyResponse> getAll() {
         Set<SimpleObjectPropertyResponse> results = this.repository.objectPropertyRepo.findAll().stream()
-                .filter(property -> !property.isUserHidden())
+                .filter(property -> !property.isSystemProperty())
                 .map(SimpleObjectPropertyResponse::of)
                 .collect(Collectors.toSet());
         this.auditService.recordCollectionRead(AuditEntityType.OBJECT_PROPERTY, results.size());
@@ -68,7 +68,7 @@ public class ObjectPropertyService {
     @Transactional(readOnly = true)
     public ObjectPropertyResponse get(ResourceIdentifier id) throws ResourceNotFoundException {
         ObjectProperty<?> property = this.repository.objectPropertyRepo.findById(id)
-                .filter(p -> !p.isUserHidden())
+                .filter(p -> !p.isSystemProperty())
                 .orElseThrow(() -> new ResourceNotFoundException(ComponentTypes.OBJECT_PROPERTY, id));
 
         this.auditService.addReadEvent(AuditEntityType.OBJECT_PROPERTY, id);
@@ -86,7 +86,7 @@ public class ObjectPropertyService {
             throw new BuiltinResourceImmutableException();
         }
 
-        ObjectProperty<?> property = buildProperty(
+        ObjectProperty<?> property = this.buildProperty(
                 input.id(),
                 input.type(),
                 input.listType(),
@@ -112,7 +112,7 @@ public class ObjectPropertyService {
     @RequiresAuditComment(operation = AuditOperation.UPDATE, targetType = AuditEntityType.OBJECT_PROPERTY)
     public ObjectPropertyResponse update(ResourceIdentifier id, UpdateObjectPropertyRequest input) throws ResourceNotFoundException {
         ObjectProperty<?> property = this.repository.objectPropertyRepo.findById(id)
-                .filter(p -> !p.isUserHidden())
+                .filter(p -> !p.isSystemProperty())
                 .orElseThrow(() -> new ResourceNotFoundException(ComponentTypes.OBJECT_PROPERTY, id));
 
         if (id.isBuiltin()) {
@@ -121,7 +121,7 @@ public class ObjectPropertyService {
 
         ComponentReference<?> ref = property.getReference();
 
-        applyUpdate(property, input);
+        this.applyUpdate(property, input);
         Locale locale = LocaleContextHolder.getLocale();
         String oldName = this.overrideService.upsertSilent(ref.getTranslationKey(TranslationField.NAME), locale, input.name());
         this.overrideService.upsertSilent(ref.getTranslationKey(TranslationField.DESCRIPTION), locale, input.description());
@@ -144,7 +144,7 @@ public class ObjectPropertyService {
     @RequiresAuditComment(operation = AuditOperation.DELETE, targetType = AuditEntityType.OBJECT_PROPERTY)
     public void delete(ResourceIdentifier id) throws ResourceNotFoundException, ResourceInUseException {
         ObjectProperty<?> property = this.repository.objectPropertyRepo.findById(id)
-                .filter(p -> !p.isUserHidden())
+                .filter(p -> !p.isSystemProperty())
                 .orElseThrow(() -> new ResourceNotFoundException(ComponentTypes.OBJECT_PROPERTY, id));
 
         if (id.isBuiltin()) {
@@ -170,7 +170,7 @@ public class ObjectPropertyService {
             @Nullable String securityFilter,
             @Nullable JsonNode defaultValue
     ) {
-        ListType listType = resolveListType(type, listTypeId);
+        ListType listType = this.resolveListType(type, listTypeId);
         ObjectProperty<T> property = new ObjectProperty<>(
                 id,
                 type,
@@ -180,7 +180,7 @@ public class ObjectPropertyService {
                 defaultValue,
                 false
         );
-        validateDefaultValue(property, defaultValue);
+        this.validateDefaultValue(property, defaultValue);
         return property;
     }
 
@@ -222,7 +222,7 @@ public class ObjectPropertyService {
         property.setValidator(input.validator());
         property.setSecurityFilter(input.securityFilter());
         JsonNode defaultValue = input.defaultValue();
-        validateDefaultValue(property, defaultValue);
+        this.validateDefaultValue(property, defaultValue);
         property.setDefaultValue(defaultValue);
     }
 }

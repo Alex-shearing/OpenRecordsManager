@@ -6,9 +6,7 @@
 - Only create audit log for component registrations that actually made a change
 - `POST /api/auth/signup` — wire through `AuthService` (endpoint exists but returns `null`; see `AuthController` TODO).
 
-## Relationships
-
-- Improve relationships system to include Record->Record, Location->Record
+## Merge action system
 
 ## Permissions System
 

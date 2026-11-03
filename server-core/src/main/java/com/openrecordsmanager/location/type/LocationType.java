@@ -1,44 +1,41 @@
 package com.openrecordsmanager.location.type;
 
 import com.openrecordsmanager.api.ResourceIdentifier;
-import com.openrecordsmanager.api.location.LocationKind;
+import com.openrecordsmanager.api.property.ManagedObjectKind;
+import com.openrecordsmanager.api.template.location.LocationTypeTemplate;
 import com.openrecordsmanager.api.types.ComponentType;
 import com.openrecordsmanager.api.types.ComponentTypes;
-import com.openrecordsmanager.database.util.ResourceIdentifierJavaType;
-import com.openrecordsmanager.property.ObjectProperty;
-import com.openrecordsmanager.template.RegisteredComponent;
+import com.openrecordsmanager.template.ManagedObjectType;
+import com.openrecordsmanager.template.ManagedObjectTypeProperty;
 import jakarta.persistence.*;
-import org.hibernate.annotations.JavaType;
+import org.hibernate.annotations.Fetch;
+import org.hibernate.annotations.FetchMode;
+import org.jspecify.annotations.Nullable;
 
-import java.time.Instant;
 import java.util.HashSet;
-import java.util.Objects;
 import java.util.Set;
 
 @Entity
 @Table(name = "location_type")
-@SuppressWarnings("NotNullFieldNotInitialized")
-public class LocationType implements RegisteredComponent {
-    @Id
-    @JavaType(ResourceIdentifierJavaType.class)
-    private ResourceIdentifier id;
-
+@DiscriminatorValue("location_type")
+@PrimaryKeyJoinColumn(name = "id")
+public class LocationType extends ManagedObjectType {
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 32)
-    private LocationKind kind;
+    @Column(length = 32)
+    @Nullable
+    private ManagedObjectKind kind;
 
-    @Column(nullable = false)
-    private Instant dateCreated;
-
-    @Column(nullable = false)
-    private Instant dateModified;
-
+    /**
+     * Subselect (not join) so an EAGER load does not multiply rows against {@code baseType}'s
+     * properties and inflate this set under flush.
+     */
     @ElementCollection(fetch = FetchType.EAGER)
+    @Fetch(FetchMode.SUBSELECT)
     @CollectionTable(
             name = "location_type_property",
             joinColumns = @JoinColumn(name = "location_type")
     )
-    private Set<LocationTypeProperty<?>> properties = new HashSet<>();
+    private Set<ManagedObjectTypeProperty<?>> properties = new HashSet<>();
 
     @Deprecated
     protected LocationType() {
@@ -46,59 +43,50 @@ public class LocationType implements RegisteredComponent {
 
     public LocationType(
             ResourceIdentifier id,
-            LocationKind kind,
-            Set<LocationTypeProperty<?>> properties
+            @Nullable ManagedObjectKind kind,
+            Set<ManagedObjectTypeProperty<?>> properties
     ) {
-        if (kind == LocationKind.ANY) {
-            throw new IllegalArgumentException("Location type kind must be USER or GROUP");
-        }
-        this.id = id;
+        this(id, kind, false, null, properties);
+    }
+
+    public LocationType(
+            ResourceIdentifier id,
+            @Nullable ManagedObjectKind kind,
+            boolean abstractType,
+            @Nullable ManagedObjectType baseType,
+            Set<ManagedObjectTypeProperty<?>> properties
+    ) {
+        super(id, abstractType, baseType);
+        LocationTypeTemplate.validateKind(kind, abstractType);
         this.kind = kind;
         this.properties = properties;
-        this.dateCreated = Instant.now();
-        this.dateModified = Instant.now();
     }
 
-    public ResourceIdentifier getId() {
-        return this.id;
-    }
-
-    public LocationKind getKind() {
+    @Override
+    public @Nullable ManagedObjectKind getKind() {
         return this.kind;
     }
 
-    public Set<LocationTypeProperty<?>> getProperties() {
+    @Override
+    public Set<ManagedObjectTypeProperty<?>> getDeclaredProperties() {
         return this.properties;
     }
 
-    public Instant getDateCreated() {
-        return this.dateCreated;
-    }
-
-    public Instant getDateModified() {
-        return this.dateModified;
-    }
-
-    public void touchDateModified() {
-        this.dateModified = Instant.now();
-    }
-
-    public void setKind(LocationKind kind) {
-        if (kind == LocationKind.ANY) {
-            throw new IllegalArgumentException("Location type kind must be USER or GROUP");
-        }
+    public void setKind(@Nullable ManagedObjectKind kind) {
+        LocationTypeTemplate.validateKind(kind, this.isAbstract());
         this.kind = kind;
-        touchDateModified();
+        this.touchDateModified();
     }
 
-    public void setProperties(Set<LocationTypeProperty<?>> properties) {
+    public void setProperties(Set<ManagedObjectTypeProperty<?>> properties) {
         this.properties = properties;
-        touchDateModified();
+        this.touchDateModified();
     }
 
-    public boolean hasProperty(ObjectProperty<?> property) {
-        return this.properties.stream()
-                .anyMatch(prop -> Objects.equals(prop.getProperty(), property));
+    @Override
+    public void setAbstractType(boolean abstractType) {
+        LocationTypeTemplate.validateKind(this.kind, abstractType);
+        super.setAbstractType(abstractType);
     }
 
     @Override

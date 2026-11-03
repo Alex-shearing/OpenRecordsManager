@@ -1,7 +1,7 @@
 package com.openrecordsmanager.location.group;
 
 import com.openrecordsmanager.api.ResourceIdentifier;
-import com.openrecordsmanager.api.location.LocationKind;
+import com.openrecordsmanager.api.property.ManagedObjectKind;
 import com.openrecordsmanager.location.Location;
 import com.openrecordsmanager.location.type.LocationType;
 import com.openrecordsmanager.property.BuiltinPropertyBinding;
@@ -17,7 +17,7 @@ import java.util.Map;
 @DiscriminatorValue("GROUP")
 @PrimaryKeyJoinColumn(name = "id")
 public class Group extends Location {
-    public static final Map<ResourceIdentifier, BuiltinPropertyBinding<Location, ?>> BUILTIN_PROPERTY_BINDINGS =
+    public static final Map<ResourceIdentifier, BuiltinPropertyBinding<?>> BUILTIN_PROPERTY_BINDINGS =
             BuiltinPropertyBinding.scan(Group.class);
 
     @Deprecated
@@ -29,12 +29,12 @@ public class Group extends Location {
     }
 
     @Override
-    public LocationKind getKind() {
-        return LocationKind.GROUP;
+    public ManagedObjectKind getKind() {
+        return ManagedObjectKind.GROUP;
     }
 
     @Override
-    protected Map<ResourceIdentifier, BuiltinPropertyBinding<Location, ?>> getBuiltinPropertyBindings() {
+    protected Map<ResourceIdentifier, BuiltinPropertyBinding<?>> getBuiltinPropertyBindings() {
         return BUILTIN_PROPERTY_BINDINGS;
     }
 }

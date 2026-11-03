@@ -3,7 +3,8 @@ package com.openrecordsmanager.location.type;
 import com.openrecordsmanager.api.ResourceIdentifier;
 import com.openrecordsmanager.api.audit.AuditEntityType;
 import com.openrecordsmanager.api.audit.AuditOperation;
-import com.openrecordsmanager.api.location.LocationKind;
+import com.openrecordsmanager.api.property.ManagedObjectKind;
+import com.openrecordsmanager.api.template.location.LocationTypeTemplate;
 import com.openrecordsmanager.api.types.ComponentTypes;
 import com.openrecordsmanager.audit.AuditService;
 import com.openrecordsmanager.audit.RequiresAuditComment;
@@ -16,6 +17,8 @@ import com.openrecordsmanager.property.ObjectProperty;
 import com.openrecordsmanager.property.dto.TypePropertyAssignment;
 import com.openrecordsmanager.rest.exception.ResourceAlreadyExistsException;
 import com.openrecordsmanager.rest.exception.ResourceNotFoundException;
+import com.openrecordsmanager.template.ManagedObjectType;
+import com.openrecordsmanager.template.ManagedObjectTypeProperty;
 import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -36,7 +39,7 @@ public class LocationTypeService {
     }
 
     @Transactional(readOnly = true)
-    public List<LocationTypeResponse> getAll(@Nullable LocationKind kind) {
+    public List<LocationTypeResponse> getAll(@Nullable ManagedObjectKind kind) {
         List<LocationTypeResponse> types = this.repository.locationTypeRepo.findAll().stream()
                 .filter(type -> kind == null || type.getKind() == kind)
                 .map(LocationTypeResponse::of)
@@ -60,14 +63,18 @@ public class LocationTypeService {
         if (input.id().isBuiltin()) {
             throw new BuiltinResourceImmutableException();
         }
-        if (input.kind() == LocationKind.ANY) {
-            throw new IllegalArgumentException("Location type kind must be USER or GROUP");
-        }
+        LocationTypeTemplate.validateKind(input.kind(), input.abstractType());
         if (this.repository.locationTypeRepo.existsById(input.id())) {
             throw new ResourceAlreadyExistsException(ComponentTypes.LOCATION_TYPE, input.id());
         }
 
-        LocationType type = new LocationType(input.id(), input.kind(), resolveProperties(input.properties()));
+        LocationType type = new LocationType(
+                input.id(),
+                input.kind(),
+                input.abstractType(),
+                this.resolveBaseType(input.baseTypeId()),
+                this.resolveProperties(input.properties())
+        );
         this.repository.locationTypeRepo.saveAndFlush(type);
 
         this.auditService.addEvent(AuditOperation.CREATE, AuditEntityType.LOCATION_TYPE, type.getId());
@@ -83,37 +90,51 @@ public class LocationTypeService {
         if (id.isBuiltin()) {
             throw new BuiltinResourceImmutableException();
         }
-        if (input.kind() == LocationKind.ANY) {
-            throw new IllegalArgumentException("Location type kind must be USER or GROUP");
-        }
+        LocationTypeTemplate.validateKind(input.kind(), input.abstractType());
 
-        type.setKind(input.kind());
-        type.setProperties(mergeProperties(type.getProperties(), input.properties()));
+        // Clear concrete kind before clearing abstract; set null kind only after abstract is set.
+        if (input.kind() != null) {
+            type.setKind(input.kind());
+        }
+        type.setAbstractType(input.abstractType());
+        if (input.kind() == null) {
+            type.setKind(null);
+        }
+        type.setBaseType(this.resolveBaseType(input.baseTypeId()));
+        type.setProperties(this.mergeProperties(type.getDeclaredProperties(), input.properties()));
 
         this.repository.locationTypeRepo.saveAndFlush(type);
         this.auditService.addEvent(AuditOperation.UPDATE, AuditEntityType.LOCATION_TYPE, id);
         return LocationTypeResponse.of(type);
     }
 
-    private Set<LocationTypeProperty<?>> mergeProperties(
-            Set<LocationTypeProperty<?>> existing,
+    private @Nullable ManagedObjectType resolveBaseType(@Nullable ResourceIdentifier baseTypeId) {
+        if (baseTypeId == null) {
+            return null;
+        }
+        return this.repository.locationTypeRepo.findById(baseTypeId)
+                .orElseThrow(() -> new ResourceNotFoundException(ComponentTypes.LOCATION_TYPE, baseTypeId));
+    }
+
+    private Set<ManagedObjectTypeProperty<?>> mergeProperties(
+            Set<ManagedObjectTypeProperty<?>> existing,
             List<TypePropertyAssignment> assignments
     ) {
-        Set<LocationTypeProperty<?>> properties = resolveProperties(assignments);
+        Set<ManagedObjectTypeProperty<?>> properties = this.resolveProperties(assignments);
         existing.stream()
-                .filter(property -> property.getProperty().isUserHidden())
+                .filter(property -> property.getProperty().isSystemProperty())
                 .forEach(properties::add);
         return properties;
     }
 
     @SuppressWarnings({"rawtypes", "unchecked"})
-    private Set<LocationTypeProperty<?>> resolveProperties(List<TypePropertyAssignment> assignments) {
-        Set<LocationTypeProperty<?>> properties = new HashSet<>();
+    private Set<ManagedObjectTypeProperty<?>> resolveProperties(List<TypePropertyAssignment> assignments) {
+        Set<ManagedObjectTypeProperty<?>> properties = new HashSet<>();
         for (TypePropertyAssignment assignment : assignments) {
             ObjectProperty property = this.repository.objectPropertyRepo.findById(assignment.property())
-                    .filter(p -> !p.isUserHidden())
+                    .filter(p -> !p.isSystemProperty())
                     .orElseThrow(() -> new ResourceNotFoundException(ComponentTypes.OBJECT_PROPERTY, assignment.property()));
-            properties.add(new LocationTypeProperty(property, assignment.defaultValue()));
+            properties.add(new ManagedObjectTypeProperty(property, assignment.defaultValue()));
         }
         return properties;
     }

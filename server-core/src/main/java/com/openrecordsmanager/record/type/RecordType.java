@@ -1,34 +1,30 @@
 package com.openrecordsmanager.record.type;
 
 import com.openrecordsmanager.api.ResourceIdentifier;
+import com.openrecordsmanager.api.property.ManagedObjectKind;
 import com.openrecordsmanager.api.template.recordtype.SecurityFilterUsage;
 import com.openrecordsmanager.api.types.ComponentType;
 import com.openrecordsmanager.api.types.ComponentTypes;
-import com.openrecordsmanager.database.util.ResourceIdentifierJavaType;
 import com.openrecordsmanager.location.user.User;
 import com.openrecordsmanager.plugin.ExpressionsService;
-import com.openrecordsmanager.property.ObjectProperty;
 import com.openrecordsmanager.record.Record;
-import com.openrecordsmanager.template.RegisteredComponent;
+import com.openrecordsmanager.template.ManagedObjectType;
+import com.openrecordsmanager.template.ManagedObjectTypeProperty;
 import jakarta.persistence.*;
-import org.hibernate.annotations.JavaType;
+import org.hibernate.annotations.Fetch;
+import org.hibernate.annotations.FetchMode;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 import org.jspecify.annotations.Nullable;
 
-import java.time.Instant;
 import java.util.HashSet;
-import java.util.Objects;
 import java.util.Set;
 
 @Entity
 @Table(name = "record_type")
-@SuppressWarnings("NotNullFieldNotInitialized")
-public class RecordType implements RegisteredComponent {
-    @Id
-    @JavaType(ResourceIdentifierJavaType.class)
-    private ResourceIdentifier id;
-
+@DiscriminatorValue("record_type")
+@PrimaryKeyJoinColumn(name = "id")
+public class RecordType extends ManagedObjectType {
     @Column()
     @Nullable
     private String securityFilter;
@@ -40,18 +36,17 @@ public class RecordType implements RegisteredComponent {
     @JdbcTypeCode(SqlTypes.JSON)
     private Set<String> contentTypes = new HashSet<>();
 
-    @Column(nullable = false)
-    private Instant dateCreated;
-
-    @Column(nullable = false)
-    private Instant dateModified;
-
-    @ElementCollection
+    /**
+     * Subselect (not join) so an EAGER load does not multiply rows against {@code baseType}'s
+     * properties and inflate this set under flush.
+     */
+    @ElementCollection(fetch = FetchType.EAGER)
+    @Fetch(FetchMode.SUBSELECT)
     @CollectionTable(
             name = "record_type_property",
             joinColumns = @JoinColumn(name = "record_type")
     )
-    private Set<RecordTypeProperty<?>> properties = new HashSet<>();
+    private Set<ManagedObjectTypeProperty<?>> properties = new HashSet<>();
 
     @Deprecated
     protected RecordType() {
@@ -62,19 +57,25 @@ public class RecordType implements RegisteredComponent {
             @Nullable Set<String> contentTypes,
             @Nullable String securityFilter,
             SecurityFilterUsage securityFilterUsage,
-            Set<RecordTypeProperty<?>> properties
+            Set<ManagedObjectTypeProperty<?>> properties
     ) {
-        this.id = id;
+        this(id, false, null, contentTypes, securityFilter, securityFilterUsage, properties);
+    }
+
+    public RecordType(
+            ResourceIdentifier id,
+            boolean abstractType,
+            @Nullable ManagedObjectType baseType,
+            @Nullable Set<String> contentTypes,
+            @Nullable String securityFilter,
+            SecurityFilterUsage securityFilterUsage,
+            Set<ManagedObjectTypeProperty<?>> properties
+    ) {
+        super(id, abstractType, baseType);
         this.contentTypes = contentTypes != null ? contentTypes : new HashSet<>();
         this.securityFilter = securityFilter;
         this.securityFilterUsage = securityFilterUsage;
         this.properties = properties;
-        this.dateCreated = Instant.now();
-        this.dateModified = Instant.now();
-    }
-
-    public ResourceIdentifier getId() {
-        return this.id;
     }
 
     public @Nullable String getSecurityFilter() {
@@ -85,7 +86,8 @@ public class RecordType implements RegisteredComponent {
         return this.securityFilterUsage;
     }
 
-    public Set<RecordTypeProperty<?>> getProperties() {
+    @Override
+    public Set<ManagedObjectTypeProperty<?>> getDeclaredProperties() {
         return this.properties;
     }
 
@@ -93,60 +95,60 @@ public class RecordType implements RegisteredComponent {
         return this.contentTypes;
     }
 
-    public Instant getDateCreated() {
-        return this.dateCreated;
-    }
-
-    public Instant getDateModified() {
-        return this.dateModified;
-    }
-
-    public void touchDateModified() {
-        this.dateModified = Instant.now();
-    }
-
     public void setSecurityFilter(@Nullable String securityFilter) {
         this.securityFilter = securityFilter;
-        touchDateModified();
+        this.touchDateModified();
     }
 
     public void setSecurityFilterUsage(SecurityFilterUsage securityFilterUsage) {
         this.securityFilterUsage = securityFilterUsage;
-        touchDateModified();
+        this.touchDateModified();
     }
 
     public void setContentTypes(@Nullable Set<String> contentTypes) {
         this.contentTypes = contentTypes != null ? new HashSet<>(contentTypes) : new HashSet<>();
-        touchDateModified();
+        this.touchDateModified();
     }
 
-    public void setProperties(Set<RecordTypeProperty<?>> properties) {
+    public void setProperties(Set<ManagedObjectTypeProperty<?>> properties) {
         this.properties = properties;
-        touchDateModified();
+        this.touchDateModified();
     }
 
     public boolean supportsFile() {
         return !this.contentTypes.isEmpty();
     }
 
-    public boolean hasProperty(ObjectProperty<?> property) {
-        return this.properties.stream()
-                .anyMatch(prop -> Objects.equals(prop.getProperty(), property));
+    @Override
+    public ManagedObjectKind getKind() {
+        return ManagedObjectKind.RECORD;
     }
 
     public SecurityFilterUsage securityFilter(ExpressionsService expressions, Record record, User actor) {
-        if (this.securityFilter != null && !expressions.checkPropertyExpression(
-                record.getId(),
-                this.securityFilter,
-                null,
-                actor,
-                record
-        )) {
-            return this.securityFilterUsage;
+        RecordType cursor = this;
+        while (cursor != null) {
+            if (cursor.securityFilter != null && !expressions.checkPropertyExpression(
+                    record.getId(),
+                    cursor.securityFilter,
+                    null,
+                    actor,
+                    record
+            )) {
+                return cursor.securityFilterUsage;
+            }
+            ManagedObjectType base = cursor.getBaseType();
+            cursor = base instanceof RecordType recordBase ? recordBase : null;
         }
 
-        for (RecordTypeProperty<?> recordTypeProperty : this.properties) {
-            if (!recordTypeProperty.securityFilter(expressions, record, actor)) {
+        for (ManagedObjectTypeProperty<?> binding : this.getEffectiveProperties()) {
+            String propertyFilter = binding.getProperty().getSecurityFilter();
+            if (propertyFilter != null && !expressions.checkPropertyExpression(
+                    record.getId(),
+                    propertyFilter,
+                    record.getProperty(binding.getProperty()),
+                    actor,
+                    record
+            )) {
                 return this.securityFilterUsage;
             }
         }

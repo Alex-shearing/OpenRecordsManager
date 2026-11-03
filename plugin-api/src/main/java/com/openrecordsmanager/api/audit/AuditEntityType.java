@@ -14,9 +14,9 @@ public enum AuditEntityType {
     RECORD("record", null),
     RECORD_TYPE("record_type", ComponentTypes.RECORD_TYPE),
     LOCATION("location", null),
-    LOCATION_RELATIONSHIP("location_relationship", null),
-    LOCATION_RELATIONSHIP_TYPE("location_relationship_type", ComponentTypes.LOCATION_RELATIONSHIP_TYPE),
     LOCATION_TYPE("location_type", ComponentTypes.LOCATION_TYPE),
+    RELATIONSHIP("relationship", null),
+    RELATIONSHIP_TYPE("relationship_type", ComponentTypes.RELATIONSHIP_TYPE),
     CONFIG("config", ComponentTypes.CONFIG),
     LIST("list", ComponentTypes.LIST),
     LIST_ELEMENT("list_element", ComponentTypes.LIST_ELEMENT),
@@ -38,7 +38,7 @@ public enum AuditEntityType {
 
     @JsonValue
     public String key() {
-        return key;
+        return this.key;
     }
 
     @JsonCreator

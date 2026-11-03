@@ -8,8 +8,8 @@
   `RegistrationContext`.
 - **Component** — anything a plugin or builtin code provides: auth providers, config keys, templates, actions, search
   fields, file stores, etc.
-- **ComponentType** — kind tag for a component (`object_property`, `record_type`, `file_store`,
-  `search_field_provider`, …).
+- **ComponentType** — kind tag for a component (`object_property`, `record_type`, `location_type`,
+  `relationship_type`, `file_store`, `search_field_provider`, …).
 - **ResourceIdentifier** — stable `source:item` id (`source` = plugin id, `item` = local name), e.g. `builtin:title`,
   `auth_local:local_auth`.
 - **ComponentReference** — typed handle to a component by type + id (or an inline value); used for dependencies and
@@ -17,19 +17,28 @@
 - **Component Catalog** (`ComponentCatalog` / `catalog`) — in-memory registries of loaded components, keyed by
   `ComponentType` and `ResourceIdentifier`. Distinct from persisted data.
 - **TemplateComponent** — JSON-shaped, registerable definition (`ObjectPropertyTemplate`, `RecordTypeTemplate`,
-  `ListTemplate`, …).
+  `LocationTypeTemplate`, `RelationshipTypeTemplate`, `ListTemplate`, …).
 - **Registration** — copying a template (and optionally its dependencies) from the catalog into persisted entities.
 
 ### Domain data
 
-- **Data Repository** (`DataRepository` / `repository`) — facade over persisted domain entities (users, records,
+- **Data Repository** (`DataRepository` / `repository`) — facade over persisted domain entities (locations, records,
   properties, plugins, …). Not the component catalog.
-- **ObjectProperty** — field definition for users/records (typed by **PropertyType**). May be builtin (column-backed) or
-  dynamic (EAV / `*_property_value`).
-- **BuiltinProperty** — column-backed property on a holder entity (`@BuiltinProperty`), still represented as an
+- **ManagedObject** — base typed domain object (JOINED root): id, type, notes, timestamps, builtin columns, and dynamic
+  property values. Concrete kinds are **Record** and **Location** (`User` / `Group`).
+- **ManagedObjectKind** — discriminator / endpoint kind: `USER`, `GROUP`, or `RECORD`.
+- **ManagedObjectType** — type/schema for a managed object (`LocationType`, `RecordType`); may be abstract and
+  inherit from a base type.
+- **ObjectProperty** — field definition for managed objects (typed by **PropertyType**). May be builtin (column-backed)
+  or dynamic (EAV / `managed_object_property_value`).
+- **BuiltinProperty** — column-backed property on a `ManagedObject` (`@BuiltinProperty`), still represented as an
   `ObjectProperty` in the catalog/DB.
-- **ObjectPropertyHolder** — user or record value bag: builtin columns plus dynamic property values.
+- **Location** — actor/party managed object (`User` or `Group`); not a geographic place.
+- **LocationType** — schema for locations; concrete kinds are `USER` / `GROUP`, or `null` kind when abstract (any
+  location).
 - **RecordType** — schema for records: which properties apply, optional security filter, content rules.
+- **Relationship / RelationshipType** — typed edge between two managed objects (location to location, location to record,
+  record to record). Endpoint constraints use managed-object types (and thus kinds).
 - **List / ListElement** — controlled vocabulary and its entries; referenced by list-typed object properties.
 - **RecordAction / LocationAction** — plugin-provided operations on a record or location (availability + typed input).
 
@@ -38,7 +47,7 @@
 Controller handler method names become OpenAPI `operationId`s. Name every handler with a **verb + noun** that uniquely
 identifies the action across the API — do not use bare verbs like `get`, `create`, `update`, `search`, or `getAll`.
 
-Good: `getLocation`, `searchGroups`, `createLocationRelationship`, `listLocationRelationshipTypes`.  
+Good: `getLocation`, `searchGroups`, `createLocationRelationship`, `listRelationshipTypes`.  
 Bad: `get`, `create`, `update`, `search`, `getAll`, `listRelationships` (noun too generic when another controller may
 share it).
 

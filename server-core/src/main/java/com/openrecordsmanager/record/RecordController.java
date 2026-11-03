@@ -4,7 +4,12 @@ import jakarta.validation.Valid;
 import com.openrecordsmanager.api.ResourceIdentifier;
 import com.openrecordsmanager.location.user.User;
 import com.openrecordsmanager.record.dto.*;
+import com.openrecordsmanager.relationship.RelationshipDirection;
+import com.openrecordsmanager.relationship.RelationshipService;
+import com.openrecordsmanager.relationship.dto.NewRelationshipRequest;
+import com.openrecordsmanager.relationship.dto.RelationshipResponse;
 import com.openrecordsmanager.rest.dto.ActionResponse;
+import com.openrecordsmanager.rest.swagger.ConflictApiResponse;
 import com.openrecordsmanager.rest.swagger.DefaultApiResponses;
 import com.openrecordsmanager.rest.swagger.ValidationFailedApiResponse;
 import com.openrecordsmanager.rest.swagger.NotFoundApiResponse;
@@ -25,6 +30,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -36,9 +42,14 @@ import java.util.UUID;
 public class RecordController {
 
     private final RecordService service;
+    private final RelationshipService relationshipService;
 
-    public RecordController(RecordService service) {
+    public RecordController(
+            RecordService service,
+            RelationshipService relationshipService
+    ) {
         this.service = service;
+        this.relationshipService = relationshipService;
     }
 
     @PostMapping(value = "/search", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
@@ -81,6 +92,46 @@ public class RecordController {
         return this.service.create(input);
     }
 
+    @GetMapping(value = "/{id}/relationships", produces = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(summary = "List active relationships for a record")
+    @NotFoundApiResponse
+    public List<RelationshipResponse> listRecordRelationships(
+            @AuthenticationPrincipal User user,
+            @PathVariable("id") UUID id,
+            @RequestParam(value = "direction", defaultValue = "outgoing") RelationshipDirection direction,
+            @RequestParam(value = "type", required = false) @Nullable ResourceIdentifier type
+    ) {
+        return this.relationshipService.list(user, id, direction, type);
+    }
+
+    @PostMapping(
+            value = "/{id}/relationships",
+            consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    @Operation(summary = "Create a relationship from this record to another managed entity")
+    @NotFoundApiResponse
+    @ConflictApiResponse
+    @ValidationFailedApiResponse
+    public RelationshipResponse createRecordRelationship(
+            @AuthenticationPrincipal User user,
+            @PathVariable("id") UUID id,
+            @Valid @RequestBody NewRelationshipRequest input
+    ) {
+        return this.relationshipService.create(user, id, input);
+    }
+
+    @DeleteMapping(value = "/{id}/relationships/{relationshipId}")
+    @Operation(summary = "End an active relationship involving this record")
+    @NotFoundApiResponse
+    public void endRecordRelationship(
+            @AuthenticationPrincipal User user,
+            @PathVariable("id") UUID id,
+            @PathVariable("relationshipId") UUID relationshipId
+    ) {
+        this.relationshipService.end(user, id, relationshipId);
+    }
+
     @PutMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Update a record")
     @NotFoundApiResponse
@@ -113,7 +164,7 @@ public class RecordController {
             ContentDisposition disposition = ContentDisposition.parse(dispositionHeader);
             String filename = disposition.getFilename();
             if (filename != null && !filename.isBlank()) {
-                fileExtension = getExtensionFromFile(filename);
+                fileExtension = this.getExtensionFromFile(filename);
             }
         }
 
@@ -136,7 +187,7 @@ public class RecordController {
     ) throws IOException {
         String extension = "";
         if (file.getOriginalFilename() != null && file.getOriginalFilename().contains(".")) {
-            extension = getExtensionFromFile(file.getOriginalFilename());
+            extension = this.getExtensionFromFile(file.getOriginalFilename());
         }
 
         return this.service.createRevision(user, id, version, extension, file.getInputStream());

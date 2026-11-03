@@ -15,6 +15,8 @@ public record NewRecordTypeRequest(
         @Nullable Set<String> contentTypes,
         @Nullable String securityFilter,
         @NotNull SecurityFilterUsage securityFilterUsage,
+        @NotNull boolean abstractType,
+        @Nullable ResourceIdentifier baseTypeId,
         @NotNull @Valid List<TypePropertyAssignment> properties
 ) {
 }

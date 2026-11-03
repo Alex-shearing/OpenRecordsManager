@@ -1,0 +1,22 @@
+{
+  "defaultEntries": {
+    "archives": {
+      "parent": "list/defaults_aus_gov:record_categories"
+    },
+    "archive": {
+      "parent": "list/defaults_aus_gov:record_categories"
+    },
+    "series": {
+      "parent": "list/defaults_aus_gov:record_categories"
+    },
+    "file": {
+      "parent": "list/defaults_aus_gov:record_categories"
+    },
+    "transaction_sequence": {
+      "parent": "list/defaults_aus_gov:record_categories"
+    },
+    "item": {
+      "parent": "list/defaults_aus_gov:record_categories"
+    }
+  }
+}

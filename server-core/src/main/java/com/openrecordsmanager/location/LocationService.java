@@ -5,7 +5,7 @@ import com.openrecordsmanager.api.audit.AuditEntityType;
 import com.openrecordsmanager.api.audit.AuditOperation;
 import com.openrecordsmanager.api.errors.ApiException;
 import com.openrecordsmanager.api.location.LocationActionType;
-import com.openrecordsmanager.api.location.LocationKind;
+import com.openrecordsmanager.api.property.ManagedObjectKind;
 import com.openrecordsmanager.api.search.SearchFieldTarget;
 import com.openrecordsmanager.api.types.ComponentTypes;
 import com.openrecordsmanager.audit.AuditPolicyService;
@@ -13,21 +13,18 @@ import com.openrecordsmanager.audit.AuditService;
 import com.openrecordsmanager.audit.RequiresAuditComment;
 import com.openrecordsmanager.config.ConfigService;
 import com.openrecordsmanager.database.DataRepository;
-import com.openrecordsmanager.location.dto.*;
+import com.openrecordsmanager.location.dto.LocationResponse;
+import com.openrecordsmanager.location.dto.LocationSearchResponse;
+import com.openrecordsmanager.location.dto.NewLocationRequest;
+import com.openrecordsmanager.location.dto.UpdateLocationRequest;
 import com.openrecordsmanager.location.group.Group;
 import com.openrecordsmanager.location.group.GroupService;
-import com.openrecordsmanager.location.relationship.LocationRelationship;
-import com.openrecordsmanager.location.relationship.LocationRelationshipType;
-import com.openrecordsmanager.location.relationship.RelationshipDirection;
-import com.openrecordsmanager.location.relationship.dto.LocationRelationshipResponse;
-import com.openrecordsmanager.location.relationship.dto.NewLocationRelationshipRequest;
 import com.openrecordsmanager.location.type.LocationType;
 import com.openrecordsmanager.location.user.User;
 import com.openrecordsmanager.location.user.UserService;
 import com.openrecordsmanager.plugin.registry.ComponentCatalog;
 import com.openrecordsmanager.rest.dto.ActionResponse;
 import com.openrecordsmanager.rest.exception.ActionNotAvailableException;
-import com.openrecordsmanager.rest.exception.ResourceAlreadyExistsException;
 import com.openrecordsmanager.rest.exception.ResourceNotFoundException;
 import com.openrecordsmanager.schema.JsonSchemaValidator;
 import com.openrecordsmanager.search.dto.ObjectSearchRequest;
@@ -37,8 +34,6 @@ import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.Instant;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -86,7 +81,7 @@ public class LocationService {
     }
 
     @Transactional(readOnly = true)
-    public LocationSearchResponse search(User actor, @Nullable LocationKind kind, ObjectSearchRequest request) {
+    public LocationSearchResponse search(User actor, @Nullable ManagedObjectKind kind, ObjectSearchRequest request) {
         return switch (kind) {
             case USER -> this.userService.search(actor, request);
             case GROUP -> this.groupService.search(actor, request);
@@ -120,10 +115,11 @@ public class LocationService {
         LocationType type = this.repository.locationTypeRepo.findById(input.type())
                 .orElseThrow(() -> new ResourceNotFoundException(ComponentTypes.LOCATION_TYPE, input.type()));
 
-        return switch (type.getKind()) {
+        ManagedObjectKind kind = type.getKindRequireInstantiable();
+        return switch (kind) {
             case USER -> this.userService.create(type, input);
             case GROUP -> this.groupService.create(type, input);
-            case ANY -> throw ApiException.validationFailed("type", "invalid_location_type_kind", type.getKind().key());
+            default -> throw ApiException.validationFailed("type", "invalid_location_type_kind", kind.key());
         };
     }
 
@@ -136,7 +132,9 @@ public class LocationService {
         return switch (location.getKind()) {
             case USER -> this.userService.update(actor, (User) location, input);
             case GROUP -> this.groupService.update((Group) location, input);
-            case ANY -> throw ApiException.validationFailed("id", "invalid_location_kind", location.getKind().key());
+            default -> throw ApiException.validationFailed(
+                    "id", "invalid_location_kind", location.getKind().key()
+            );
         };
     }
 
@@ -202,97 +200,5 @@ public class LocationService {
             Map<String, ?> inputs
     ) {
         action.execute(context, JsonSchemaValidator.toRecord(action.getInputClass(), inputs));
-    }
-
-    @Transactional(readOnly = true)
-    public List<LocationRelationshipResponse> listRelationships(
-            UUID locationId,
-            RelationshipDirection direction,
-            @Nullable ResourceIdentifier typeId
-    ) {
-        if (!this.repository.locationRepo.existsById(locationId)) {
-            throw new ResourceNotFoundException("location", locationId);
-        }
-
-        List<LocationRelationship> relationships = direction == RelationshipDirection.INCOMING
-                ? this.repository.locationRelationshipRepo.findActiveIncoming(locationId, typeId)
-                : this.repository.locationRelationshipRepo.findActiveOutgoing(locationId, typeId);
-
-        this.auditService.addReadEvent(AuditEntityType.LOCATION, locationId);
-        return relationships.stream().map(LocationRelationshipResponse::of).toList();
-    }
-
-    @Transactional
-    @RequiresAuditComment(operation = AuditOperation.CREATE, targetType = AuditEntityType.LOCATION_RELATIONSHIP)
-    public LocationRelationshipResponse createRelationship(UUID sourceId, NewLocationRelationshipRequest input) {
-        Location source = this.repository.locationRepo.findById(sourceId)
-                .orElseThrow(() -> new ResourceNotFoundException("location", sourceId));
-        Location target = this.repository.locationRepo.findById(input.targetId())
-                .orElseThrow(() -> new ResourceNotFoundException("location", input.targetId()));
-        LocationRelationshipType type = this.repository.locationRelationshipTypeRepo.findById(input.typeId())
-                .orElseThrow(() -> new ResourceNotFoundException(ComponentTypes.LOCATION_RELATIONSHIP_TYPE, input.typeId()));
-
-        if (!type.getSourceKind().matches(source.getKind())) {
-            throw ApiException.validationFailed("typeId", "relationship_kind_mismatch", "source");
-        }
-        if (!type.getTargetKind().matches(target.getKind())) {
-            throw ApiException.validationFailed("typeId", "relationship_kind_mismatch", "target");
-        }
-        if (source.getId().equals(target.getId())) {
-            throw ApiException.validationFailed("targetId", "relationship_self_not_allowed");
-        }
-
-        if (this.repository.locationRelationshipRepo.findActiveEdge(sourceId, input.targetId(), input.typeId()).isPresent()) {
-            throw new ResourceAlreadyExistsException(
-                    "location relationship",
-                    input.typeId() + ":" + sourceId + "->" + input.targetId()
-            );
-        }
-
-        if (type.isUniquePerSource()) {
-            List<LocationRelationship> existing = this.repository.locationRelationshipRepo
-                    .findActiveBySourceAndType(sourceId, input.typeId());
-            if (!existing.isEmpty()) {
-                throw ApiException.validationFailed("typeId", "relationship_unique_per_source", input.typeId().toString());
-            }
-        }
-
-        LocationRelationship relationship = new LocationRelationship(source, target, type);
-        if (input.activeTo() != null) {
-            relationship.end(input.activeTo());
-        }
-
-        this.repository.locationRelationshipRepo.saveAndFlush(relationship);
-
-        this.auditService.addEvent(
-                AuditOperation.CREATE,
-                AuditEntityType.LOCATION_RELATIONSHIP,
-                relationship.getId().toString()
-        );
-
-        return LocationRelationshipResponse.of(relationship);
-    }
-
-    @Transactional
-    @RequiresAuditComment(operation = AuditOperation.UPDATE, targetType = AuditEntityType.LOCATION_RELATIONSHIP)
-    public void endRelationship(UUID locationId, UUID relationshipId) {
-        LocationRelationship relationship = this.repository.locationRelationshipRepo.findById(relationshipId)
-                .orElseThrow(() -> new ResourceNotFoundException("location relationship", relationshipId));
-
-        if (!relationship.getSource().getId().equals(locationId)
-                && !relationship.getTarget().getId().equals(locationId)) {
-            throw new ResourceNotFoundException("location relationship", relationshipId);
-        }
-
-        if (relationship.isActive()) {
-            relationship.end(Instant.now());
-            this.repository.locationRelationshipRepo.saveAndFlush(relationship);
-        }
-
-        this.auditService.addEvent(
-                AuditOperation.UPDATE,
-                AuditEntityType.LOCATION_RELATIONSHIP,
-                relationshipId.toString()
-        );
     }
 }

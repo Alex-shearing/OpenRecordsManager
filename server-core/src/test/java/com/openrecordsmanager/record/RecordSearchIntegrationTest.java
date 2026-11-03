@@ -15,7 +15,7 @@ import com.openrecordsmanager.property.ObjectProperty;
 import com.openrecordsmanager.record.dto.RecordSearchResponse;
 import com.openrecordsmanager.search.dto.ObjectSearchRequest;
 import com.openrecordsmanager.record.type.RecordType;
-import com.openrecordsmanager.record.type.RecordTypeProperty;
+import com.openrecordsmanager.template.ManagedObjectTypeProperty;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -212,7 +212,7 @@ class RecordSearchIntegrationTest {
                 .putLong(recordId.getLeastSignificantBits())
                 .array();
         Integer count = this.jdbcTemplate.queryForObject(
-                "SELECT COUNT(*) FROM record_property_value WHERE record_id = ? AND property_id = ?",
+                "SELECT COUNT(*) FROM managed_object_property_value WHERE managed_object_id = ? AND property_id = ?",
                 Integer.class,
                 idBytes,
                 CUSTOM_PROP.toString()
@@ -242,12 +242,12 @@ class RecordSearchIntegrationTest {
                             null,
                             SecurityFilterUsage.SHOW_ALL,
                             Set.of(
-                                    new RecordTypeProperty<>(titleProperty, null),
-                                    new RecordTypeProperty<>(customProperty, null)
+                                    new ManagedObjectTypeProperty<>(titleProperty, null),
+                                    new ManagedObjectTypeProperty<>(customProperty, null)
                             )
                     ))
             );
-            type.getProperties().size();
+            type.getDeclaredProperties().size();
             return type;
         });
     }

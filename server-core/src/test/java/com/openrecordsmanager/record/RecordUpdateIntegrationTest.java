@@ -20,7 +20,7 @@ import com.openrecordsmanager.record.dto.NewRecordRequest;
 import com.openrecordsmanager.record.dto.RecordResponse;
 import com.openrecordsmanager.record.dto.UpdateRecordRequest;
 import com.openrecordsmanager.record.type.RecordType;
-import com.openrecordsmanager.record.type.RecordTypeProperty;
+import com.openrecordsmanager.template.ManagedObjectTypeProperty;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -94,7 +94,7 @@ class RecordUpdateIntegrationTest {
                 RecordType recordType = new RecordType(TEST_RECORD_TYPE, null,
                         null,
                         SecurityFilterUsage.SHOW_ALL,
-                        Set.of(new RecordTypeProperty<>(titleProperty, null))
+                        Set.of(new ManagedObjectTypeProperty<>(titleProperty, null))
                 );
                 this.repository.recordTypeRepo.saveAndFlush(recordType);
             }
@@ -143,10 +143,10 @@ class RecordUpdateIntegrationTest {
                         .map(p -> (ObjectProperty<String>) p)
                         .orElseThrow();
 
-                Set<RecordTypeProperty<?>> properties = new LinkedHashSet<>();
-                properties.add(new RecordTypeProperty<>(titleProperty, null));
-                properties.add(new RecordTypeProperty<>(listItemProp, null));
-                properties.add(new RecordTypeProperty<>(listMultiProp, null));
+                Set<ManagedObjectTypeProperty<?>> properties = new LinkedHashSet<>();
+                properties.add(new ManagedObjectTypeProperty<>(titleProperty, null));
+                properties.add(new ManagedObjectTypeProperty<>(listItemProp, null));
+                properties.add(new ManagedObjectTypeProperty<>(listMultiProp, null));
 
                 RecordType recordType = new RecordType(
                         LIST_RECORD_TYPE,

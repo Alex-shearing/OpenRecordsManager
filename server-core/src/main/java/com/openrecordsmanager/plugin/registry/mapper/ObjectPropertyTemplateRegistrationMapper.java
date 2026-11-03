@@ -57,7 +57,7 @@ public class ObjectPropertyTemplateRegistrationMapper extends TemplateRegistrati
                 expressions.buildExpression(definition.validator()),
                 expressions.buildExpression(definition.securityFilter()),
                 PropertyType.toTree(definition.defaultValue()),
-                definition.userHidden()
+                definition.systemProperty()
         );
 
         repository.objectPropertyRepo.saveAndFlush(type);

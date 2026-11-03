@@ -18,7 +18,7 @@ public class AuthLocalPlugin implements Plugin {
         ComponentReference<ObjectPropertyTemplate<String>> property = registry.registerComponent(
                 "password_hash",
                 ObjectPropertyTemplate.builder(PropertyType.STRING)
-                        .userHidden()
+                        .systemProperty()
                         .build()
         );
 

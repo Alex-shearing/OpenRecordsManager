@@ -7,7 +7,9 @@ import com.openrecordsmanager.api.template.list.ListTemplate;
 import org.jspecify.annotations.Nullable;
 import tools.jackson.databind.annotation.JsonDeserialize;
 
-import java.util.*;
+import java.util.HashSet;
+import java.util.Objects;
+import java.util.Set;
 
 @JsonDeserialize
 public record ObjectPropertyTemplate<T>(
@@ -16,7 +18,7 @@ public record ObjectPropertyTemplate<T>(
         @Nullable ExpressionBuilder validator,
         @Nullable T defaultValue,
         @Nullable ExpressionBuilder securityFilter,
-        boolean userHidden
+        boolean systemProperty
 ) implements TemplateComponent {
 
     public ObjectPropertyTemplate {
@@ -46,7 +48,7 @@ public record ObjectPropertyTemplate<T>(
         private T defaultValue = null;
         @Nullable
         private ExpressionBuilder securityFilter = null;
-        private boolean userHidden = false;
+        private boolean systemProperty = false;
 
         private Builder(PropertyType<T> type) {
             this.type = type;
@@ -135,8 +137,8 @@ public record ObjectPropertyTemplate<T>(
          *
          * @return this builder
          */
-        public Builder<T> userHidden() {
-            this.userHidden = true;
+        public Builder<T> systemProperty() {
+            this.systemProperty = true;
             return this;
         }
 
@@ -147,7 +149,7 @@ public record ObjectPropertyTemplate<T>(
                     this.validator,
                     this.defaultValue,
                     this.securityFilter,
-                    this.userHidden
+                    this.systemProperty
             );
         }
     }

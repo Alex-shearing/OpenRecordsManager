@@ -21,7 +21,7 @@ import java.util.Collection;
 
 /**
  * Bridges wire/storage {@link JsonNode} and domain {@code T} for object properties.
- * Installed as an ambient service so {@link ObjectPropertyHolder} can resolve values
+ * Installed as an ambient service so {@link ManagedObject} can resolve values
  * without constructor injection.
  */
 @Component
@@ -71,7 +71,7 @@ public class PropertyValueCodec {
             return type.parse(wire);
         }
 
-        CatalogAccess catalog = catalogFor(requireListType(property));
+        CatalogAccess catalog = this.catalogFor(requireListType(property));
         T parsed = type.parse(wire, catalog);
         if (parsed == null) {
             throw ApiException.validationFailed(
@@ -90,7 +90,7 @@ public class PropertyValueCodec {
     public JsonNode toStored(ObjectProperty<?> property, @Nullable Object domainValue) {
         if (property.getType().allowsList() && domainValue != null) {
             requireListType(property);
-            return toIdNode(domainValue);
+            return this.toIdNode(domainValue);
         }
         return PropertyType.toTree(domainValue);
     }
@@ -106,7 +106,7 @@ public class PropertyValueCodec {
             return property.getType().parse(stored);
         }
 
-        CatalogAccess catalog = catalogFor(requireListType(property));
+        CatalogAccess catalog = this.catalogFor(requireListType(property));
         return property.getType().parse(stored, catalog);
     }
 
@@ -118,7 +118,7 @@ public class PropertyValueCodec {
             return NullNode.getInstance();
         }
         if (property.getType().allowsList()) {
-            return toIdNode(domainValue);
+            return this.toIdNode(domainValue);
         }
         return PropertyType.toTree(domainValue);
     }

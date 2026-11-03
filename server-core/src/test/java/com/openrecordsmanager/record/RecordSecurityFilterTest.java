@@ -1,16 +1,15 @@
 package com.openrecordsmanager.record;
 
 import com.openrecordsmanager.api.ResourceIdentifier;
-import com.openrecordsmanager.api.location.LocationKind;
+import com.openrecordsmanager.api.property.ManagedObjectKind;
 import com.openrecordsmanager.api.template.property.PropertyType;
 import com.openrecordsmanager.api.template.recordtype.SecurityFilterUsage;
 import com.openrecordsmanager.location.type.LocationType;
-import com.openrecordsmanager.location.type.LocationTypeProperty;
+import com.openrecordsmanager.template.ManagedObjectTypeProperty;
 import com.openrecordsmanager.location.user.User;
 import com.openrecordsmanager.plugin.ExpressionsService;
 import com.openrecordsmanager.property.ObjectProperty;
 import com.openrecordsmanager.record.type.RecordType;
-import com.openrecordsmanager.record.type.RecordTypeProperty;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,10 +42,10 @@ class RecordSecurityFilterTest {
         );
         LocationType userType = new LocationType(
                 ResourceIdentifier.valueOf("test:filter_user_type"),
-                LocationKind.USER,
+                ManagedObjectKind.USER,
                 Set.of(
-                        new LocationTypeProperty<>(numberProperty, null),
-                        new LocationTypeProperty<>(stringProperty, null)
+                        new ManagedObjectTypeProperty<>(numberProperty, null),
+                        new ManagedObjectTypeProperty<>(stringProperty, null)
                 )
         );
         this.testUser = new User("test_user", null, userType);
@@ -72,7 +71,7 @@ class RecordSecurityFilterTest {
                 SecurityFilterUsage.HIDE_RECORD,
                 new HashSet<>()
         );
-        recordType.getProperties().add(new RecordTypeProperty<>(stringProperty, null));
+        recordType.getDeclaredProperties().add(new ManagedObjectTypeProperty<>(stringProperty, null));
 
         Record record = new Record("Record", recordType);
         record.setProperty(stringProperty, "test value");

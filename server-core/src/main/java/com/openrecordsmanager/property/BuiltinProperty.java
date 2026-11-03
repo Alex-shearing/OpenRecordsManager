@@ -6,7 +6,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Marks an entity field as a builtin column-backed {@link ObjectPropertyHolder} property.
+ * Marks an entity field as a builtin column-backed {@link ManagedObject} property.
  * Discovered by {@link BuiltinPropertyBinding#scan(Class)}.
  * <p>
  * {@code jsonStored} is inferred from {@code @JdbcTypeCode(SqlTypes.JSON)}.

@@ -9,7 +9,7 @@ import org.jspecify.annotations.Nullable;
 import java.util.*;
 
 /**
- * Table / column metadata for SQL search against an {@code ObjectPropertyHolder} kind.
+ * Table / column metadata for SQL search against an {@code ManagedObject} kind.
  * Built from entity bindings + Hibernate metamodel identifiers via {@link BuiltinColumnResolver}.
  */
 public record ObjectSearchSchema(
@@ -26,26 +26,30 @@ public record ObjectSearchSchema(
     public static ObjectSearchSchema of(
             SearchFieldTarget target,
             Class<?> entityClass,
-            Map<ResourceIdentifier, ? extends BuiltinPropertyBinding<?, ?>> bindings,
+            Map<ResourceIdentifier, BuiltinPropertyBinding<?>> bindings,
             BuiltinColumnResolver columnResolver
     ) {
         BuiltinColumnResolver.HolderTableMetadata mainTable = columnResolver.holderTables(entityClass);
+        QualifiedSqlColumn primaryKey = mainTable.primaryKey();
 
         Map<ResourceIdentifier, BuiltinColumn> columns = new HashMap<>();
         List<ResourceIdentifier> defaultSearchFields = new ArrayList<>();
         Set<QualifiedSqlColumn> joins = new LinkedHashSet<>();
 
-        for (BuiltinPropertyBinding<?, ?> binding : bindings.values()) {
+        for (BuiltinPropertyBinding<?> binding : bindings.values()) {
             BuiltinColumnResolver.ResolvedColumn resolved =
                     columnResolver.resolveColumn(entityClass, binding.javaAttribute());
 
+            QualifiedSqlColumn column = resolved.column();
+            QualifiedSqlColumn tablePrimaryKey = resolved.tablePrimaryKey();
+
             columns.put(
                     binding.id(),
-                    new BuiltinColumn(resolved.column(), binding.propertyType(), binding.jsonStored())
+                    new BuiltinColumn(column, binding.propertyType(), binding.jsonStored())
             );
 
-            if (!resolved.tablePrimaryKey().equals(mainTable.primaryKey())) {
-                joins.add(resolved.tablePrimaryKey());
+            if (!tablePrimaryKey.equals(primaryKey)) {
+                joins.add(tablePrimaryKey);
             }
             if (binding.defaultSearch()) {
                 defaultSearchFields.add(binding.id());
@@ -54,7 +58,7 @@ public record ObjectSearchSchema(
 
         return new ObjectSearchSchema(
                 target,
-                mainTable.primaryKey(),
+                primaryKey,
                 List.copyOf(joins),
                 mainTable.holderFk(),
                 mainTable.propertyId(),

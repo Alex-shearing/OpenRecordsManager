@@ -12,7 +12,8 @@ import com.openrecordsmanager.plugin.ExpressionsService;
 import com.openrecordsmanager.plugin.registry.ComponentCatalog;
 import com.openrecordsmanager.property.ObjectProperty;
 import com.openrecordsmanager.record.type.RecordType;
-import com.openrecordsmanager.record.type.RecordTypeProperty;
+import com.openrecordsmanager.template.ManagedObjectType;
+import com.openrecordsmanager.template.ManagedObjectTypeProperty;
 
 import java.util.Optional;
 import java.util.Set;
@@ -34,13 +35,23 @@ public class RecordTypeTemplateRegistrationMapper extends TemplateRegistrationMa
             ResourceIdentifier id,
             RecordTypeTemplate component
     ) {
-        Set<RecordTypeProperty<?>> properties = component.properties()
+        Set<ManagedObjectTypeProperty<?>> properties = component.properties()
                 .stream()
-                .map(def -> createRecordTypeProperty(def, catalog, repository))
-                .collect(Collectors.<RecordTypeProperty<?>>toSet());
+                .map(def -> createTypeProperty(def, catalog, repository))
+                .collect(Collectors.<ManagedObjectTypeProperty<?>>toSet());
+
+        ManagedObjectType baseType = null;
+        if (component.baseType() != null) {
+            baseType = repository.recordTypeRepo.findById(component.baseType().id())
+                    .orElseThrow(() -> new IllegalArgumentException(
+                            "Attempted to use base record type that was not registered: " + component.baseType()
+                    ));
+        }
 
         RecordType type = new RecordType(
                 id,
+                component.abstractType(),
+                baseType,
                 component.allowedContentTypes(),
                 expressions.buildExpression(component.securityFilter()),
                 component.securityFilterUsage(),
@@ -50,7 +61,7 @@ public class RecordTypeTemplateRegistrationMapper extends TemplateRegistrationMa
     }
 
     @SuppressWarnings("unchecked")
-    private static <T> RecordTypeProperty<T> createRecordTypeProperty(
+    private static <T> ManagedObjectTypeProperty<T> createTypeProperty(
             PropertyAssignment<T> assignment,
             ComponentCatalog catalog,
             DataRepository repository
@@ -60,7 +71,7 @@ public class RecordTypeTemplateRegistrationMapper extends TemplateRegistrationMa
                 .getRegistered(id, repository)
                 .orElseThrow(() -> new IllegalArgumentException("Attempted to use property that was not registered: " + id));
 
-        return new RecordTypeProperty<>(
+        return new ManagedObjectTypeProperty<>(
                 property, PropertyType.toTree(assignment.defaultValue())
         );
     }

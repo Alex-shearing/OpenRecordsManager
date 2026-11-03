@@ -15,7 +15,7 @@ import com.openrecordsmanager.plugin.registry.ComponentCatalog;
 import com.openrecordsmanager.property.ObjectProperty;
 import com.openrecordsmanager.record.Record;
 import com.openrecordsmanager.record.type.RecordType;
-import com.openrecordsmanager.record.type.RecordTypeProperty;
+import com.openrecordsmanager.template.ManagedObjectTypeProperty;
 import com.openrecordsmanager.search.sql.BuiltinColumnResolver;
 import com.openrecordsmanager.search.sql.ObjectSearchSchema;
 import org.junit.jupiter.api.BeforeEach;
@@ -163,10 +163,10 @@ class ObjectSearchExecutorIntegrationTest {
                     this.repository.recordTypeRepo.saveAndFlush(new RecordType(SEARCH_RECORD_TYPE, null,
                             null,
                             SecurityFilterUsage.SHOW_ALL,
-                            Set.of(new RecordTypeProperty<>(titleProperty, null))
+                            Set.of(new ManagedObjectTypeProperty<>(titleProperty, null))
                     ))
             );
-            type.getProperties().size();
+            type.getDeclaredProperties().size();
             return type;
         });
     }

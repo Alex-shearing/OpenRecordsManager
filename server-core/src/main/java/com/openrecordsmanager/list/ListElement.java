@@ -4,25 +4,20 @@ import com.openrecordsmanager.api.ResourceIdentifier;
 import com.openrecordsmanager.api.template.list.IListElement;
 import com.openrecordsmanager.api.types.ComponentType;
 import com.openrecordsmanager.api.types.ComponentTypes;
-import com.openrecordsmanager.database.util.ResourceIdentifierJavaType;
 import com.openrecordsmanager.template.RegisteredComponent;
 import jakarta.persistence.*;
-import org.hibernate.annotations.JavaType;
 import org.jspecify.annotations.Nullable;
 
 import java.time.Instant;
 import java.util.HashSet;
-import java.util.Objects;
 import java.util.Set;
 
 @Entity
 @Table(name = "list_element")
+@DiscriminatorValue("list_element")
+@PrimaryKeyJoinColumn(name = "id")
 @SuppressWarnings("NotNullFieldNotInitialized")
-public class ListElement implements IListElement, RegisteredComponent {
-    @Id
-    @JavaType(ResourceIdentifierJavaType.class)
-    private ResourceIdentifier id;
-
+public class ListElement extends RegisteredComponent implements IListElement {
     @ManyToOne(optional = false)
     @JoinColumn(nullable = false)
     private ListType parent;
@@ -33,12 +28,6 @@ public class ListElement implements IListElement, RegisteredComponent {
     @Column
     @Nullable
     private Instant activeTo;
-
-    @Column(nullable = false)
-    private Instant dateCreated;
-
-    @Column(nullable = false)
-    private Instant dateModified;
 
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(
@@ -58,17 +47,11 @@ public class ListElement implements IListElement, RegisteredComponent {
             @Nullable Instant activeTo,
             Set<String> aliases
     ) {
-        this.id = id;
+        super(id);
         this.parent = parent;
         this.elementIndex = elementIndex;
         this.activeTo = activeTo;
         this.aliases = aliases;
-        this.dateCreated = Instant.now();
-        this.dateModified = Instant.now();
-    }
-
-    public ResourceIdentifier getId() {
-        return this.id;
     }
 
     public ListType getParent() {
@@ -93,18 +76,6 @@ public class ListElement implements IListElement, RegisteredComponent {
         this.touchDateModified();
     }
 
-    public Instant getDateCreated() {
-        return this.dateCreated;
-    }
-
-    public Instant getDateModified() {
-        return this.dateModified;
-    }
-
-    public void touchDateModified() {
-        this.dateModified = Instant.now();
-    }
-
     public Set<String> getAliases() {
         return this.aliases;
     }
@@ -118,25 +89,9 @@ public class ListElement implements IListElement, RegisteredComponent {
     public int index() {
         return this.elementIndex;
     }
-    
+
     @Override
     public ComponentType<?> getComponentType() {
         return ComponentTypes.LIST_ELEMENT;
-    }
-
-    @Override
-    public boolean equals(@Nullable Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (!(o instanceof ListElement that)) {
-            return false;
-        }
-        return Objects.equals(this.id, that.id);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hashCode(this.id);
     }
 }
